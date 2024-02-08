@@ -1,0 +1,124 @@
+﻿on_death = {
+	first_valid_on_action = {
+		mourning_period_on_action
+	}
+}
+mourning_period_on_action = {
+	effect = {
+		save_scope_as = dead_relation
+		if = {
+			limit = {
+				has_game_rule = mourning_cycle
+			}
+			if = {
+				limit = {
+					is_married = yes
+				}
+				every_spouse = { #Spouses
+					if = { #Primary Spouse
+						limit = {
+							exists = primary_spouse
+							primary_spouse = {
+								this = scope:dead_relation
+							}
+						}
+						add_character_flag = {
+							flag = dead_main_spouse_flag
+							days = 5
+						}
+					}
+					add_to_list = mourners_list
+				}
+			}
+			if = { #Children
+				limit = {
+					any_child = {
+						NOR = {
+							has_trait = incapable
+							is_in_list = mourners_list
+						}
+						count >= 1
+					}
+				}
+				every_child = {
+					limit = {
+						NOR = {
+							has_trait = incapable
+							is_in_list = mourners_list
+						}
+					}
+					add_character_flag = {
+						flag = dead_important_relative_flag
+						days = 4
+					}
+					add_to_list = mourners_list
+				}
+			}
+			if = { #Parents
+				limit = {
+					age >= 10
+					any_parent = {
+						NOR = {
+							has_trait = incapable
+							is_in_list = mourners_list
+						}
+						highest_held_title_tier >= tier_duchy
+						exists = player_heir
+						player_heir = {
+							this = scope:dead_relation
+						}
+						count >= 1
+					}
+				}
+				every_parent = {
+					limit = {
+						NOR = {
+							has_trait = incapable
+							is_in_list = mourners_list
+						}
+						highest_held_title_tier >= tier_duchy
+						exists = player_heir
+						player_heir = {
+							this = scope:dead_relation
+						}
+					}
+					add_character_flag = {
+						flag = dead_important_relative_flag
+						days = 4
+					}
+					add_to_list = mourners_list
+				}
+			}
+			every_in_list = {
+				list = mourners_list
+				trigger_event = {
+					id = harem_politics.0015
+					days = 3
+				} 
+			}
+		}
+		if = {
+			limit = {
+				is_married = yes
+			}
+			every_spouse = { #Spouses
+				if = { #Primary Spouse
+					limit = {
+						is_landed = yes
+						exists = primary_spouse
+						primary_spouse = {
+							this = scope:dead_relation
+						}
+						any_spouse = {
+							NOT = {
+								this = scope:dead_relation
+							}
+							count >= 1
+						}
+					}
+					new_primary_spouse_on_action_effect = yes
+				}
+			}
+		}
+	}
+}
