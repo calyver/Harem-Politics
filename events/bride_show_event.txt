@@ -34,7 +34,7 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		}
 	}
 	OR = {
-		AND = { #If they aren't betrothed, you can arrange a marriage with them
+		AND = { #If they aren't betrothed you can arrange a marriage with them
 			age = 15
 			exists = betrothed
 			root = {
@@ -45,7 +45,7 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 	}
 	age <= 22
 	NOR = {
-		AND = { #If you betrothed them already, why should they participate?
+		AND = { #If you betrothed them already why should they participate?
 			exists = betrothed
 			betrothed = { is_close_family_of = root }
 		}
@@ -74,6 +74,7 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		has_trait = eunuch
 		has_trait = adulterer
 		has_trait = fornicator
+		has_trait = lustful
 		has_trait = deviant
 		has_trait = murderer
 		has_trait = kinslayer_1
@@ -96,6 +97,7 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		has_trait = bubonic_plague
 		has_trait = cancer
 		has_trait = consumption
+		has_trait = gluttonous
 		has_trait = great_pox
 		has_trait = gout_ridden
 		has_trait = leper
@@ -104,6 +106,8 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		has_trait = smallpox
 		has_trait = typhus
 		has_trait = dwarf
+		has_sexuality = bisexual
+		has_sexuality = heterosexual
 		sex_same_as = root
 	}
 }
@@ -187,6 +191,12 @@ scripted_effect bride_show_next_candidate_effect = {
 					NOR = {
 						has_character_flag = flag_demoted_spouse
 						has_character_flag = flag_demoted_grand_consort
+						has_character_flag = flag_demoted_noble_consort
+						has_character_flag = flag_demoted_noble_lady
+						has_character_flag = flag_demoted_noble_attendant
+						has_character_flag = flag_demoted_consort
+						has_character_flag = flag_demoted_lady
+						has_character_flag = flag_demoted_attendant
 						has_character_modifier = demoted_spouse_modifier
 						has_character_modifier = demoted_primary_spouse_modifier
 					}
@@ -301,7 +311,7 @@ scripted_effect bride_show_next_candidate_effect = {
 						diplomacy >= 13
 						learning >= 13
 					}
-					add = 5
+					add = 10
 				}
 				modifier = { #Skill considerations
 					OR = {
@@ -309,21 +319,21 @@ scripted_effect bride_show_next_candidate_effect = {
 						diplomacy >= 17
 						learning >= 17
 					}
-					add = 10
+					add = 15
 				}
 				modifier = { #Parents would leave their children
 					any_child = {
 						even_if_dead = yes
 						count = 0
 					}
-					add = 20
+					add = 900
 				}
 				modifier = { #Virginity is valuable
 					any_spouse = {
 						even_if_dead = yes
 						count = 0
 					}
-					add = 20
+					add = 900
 				}
 				modifier = { #Characters that believe in concubinage are more elegible
 					AND = {
@@ -377,9 +387,6 @@ bride_show.0001 = {
 	right_portrait = { 	
 		character = root
 		animation = personality_rational
-	}	
-
-	immediate = {
 	}
 	
 	# Let's go!
@@ -1167,6 +1174,7 @@ bride_show.0002 = {
 				multiplier = 2
 			}
 		}
+		trigger_event = bride_show.0006
 	}
 
 	#Make them my concubine
@@ -1469,6 +1477,7 @@ bride_show.0002 = {
 				}
 			}
 		}
+		trigger_event = bride_show.0007
 	}
 
 	#Recruit to court
@@ -1486,7 +1495,7 @@ bride_show.0002 = {
 			scope:potential_candidate = {
 				age >= 16
 				OR = {
-					AND = { #If they're close to inherit, they must be betrothed. Otherwise, a marriage can still be arranged
+					AND = { #If they're close to inherit they must be betrothed. Otherwise a marriage can still be arranged
 						exists = betrothed
 						exists = court_owner
 						court_owner.primary_title = {
@@ -1924,9 +1933,6 @@ bride_show.0003 = {
 	lower_right_portrait = { 	
 		character = scope:candidate_3
 	}
-
-	immediate = {
-	}
 	
 	option = {
 		name = bride_show.0003.a
@@ -2198,6 +2204,364 @@ bride_show.0005 = {
 				agrees_with_bride_show = no
 			}
 			text = bride_show.0004.b
+		}
+	}
+}
+
+################
+##Ranking Wives##
+################
+bride_show.0006 = {
+	type = character_event
+	title = bride_show.0006.t
+	desc = bride_show.0006.desc
+	right_portrait = { 	
+		character = scope:potential_candidate
+		animation = personality_compassionate
+	}
+
+	option = {
+		name = bride_show.0006.a
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = grand_consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.b
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.c
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_lady_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.d
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_attendant_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.e
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.f
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = lady_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0006.g
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = yes
+					scope:recipient = {
+						AND = {
+							is_spouse_of = scope:actor
+							is_courtier_of = scope:actor
+							NOT = { this = scope:liege.primary_spouse }
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = attendant_court_position
+			}
+		}
+	}
+}
+
+################
+##Ranking Concubines##
+################
+bride_show.0007 = {
+	type = character_event
+	title = bride_show.0007.t
+	desc = bride_show.0007.desc
+	right_portrait = { 	
+		character = scope:potential_candidate
+		animation = personality_compassionate
+	}
+
+	option = {
+		name = bride_show.0007.a
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = no
+					scope:recipient = {
+						AND = {
+							is_concubine_of = scope:actor
+							is_courtier_of = scope:actor
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = grand_consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.b
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = no
+					scope:recipient = {
+						AND = {
+							is_concubine_of = scope:actor
+							is_courtier_of = scope:actor
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.c
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = no
+					scope:recipient = {
+						AND = {
+							is_concubine_of = scope:actor
+							is_courtier_of = scope:actor
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_lady_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.d
+		trigger = {
+			scope:actor = {
+				AND = {
+					accepts_polygamy = no
+					scope:recipient = {
+						AND = {
+							is_concubine_of = scope:actor
+							is_courtier_of = scope:actor
+						}
+					}
+				}
+			}
+		}
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = noble_attendant_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.e
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = consort_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.f
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = lady_court_position
+			}
+		}
+	}
+
+	option = {
+		name = bride_show.0007.g
+		IF = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			appoint_court_position = {
+				recipient = scope:potential_candidate
+				court_position = attendant_court_position
+			}
 		}
 	}
 }
