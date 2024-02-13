@@ -139,7 +139,7 @@ scripted_effect bride_show_next_candidate_effect = {
 				}
 			}
 		}
-		#Characters will be created only if not at least 3 candidates
+		#Characters will be created only if not at least 4 candidates
 		if = {
 			limit = { 
 				OR = { 
@@ -160,7 +160,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					location = root.capital_province
 					template = potential_bride_character
 					gender = female
-					save_scope_as = bride_1
+					save_scope_as = bride
 				}
 			}
 			else_if = {
@@ -169,27 +169,22 @@ scripted_effect bride_show_next_candidate_effect = {
 					location = root.capital_province
 					template = potential_bride_character
 					gender = male
-					save_scope_as = bride_1
+					save_scope_as = bride
 				}
 			}
-			scope:bride_1 = {
+			scope:bride = {
 				add_to_list = elegible_candidates
 				add_to_list = chosen_candidate_list
 				add_character_flag = created_bride_flag
 			}
-			clear_saved_scope = bride_1
+			clear_saved_scope = bride
 		}
 		random_in_list = {
 			list = elegible_candidates
 			weight = {
-				base = 5
+				base = 35
 				modifier = { #Non-rejected consorts are preferred
-					NOR = {
-						has_character_flag = flag_demoted_spouse
-						has_character_flag = flag_demoted_grand_consort
-						has_character_modifier = demoted_spouse_modifier
-						has_character_modifier = demoted_primary_spouse_modifier
-					}
+					is_demoted_consort_trigger = no
 					add = 40
 				}
 				modifier = { #Ready to be consorts are preferred
@@ -204,11 +199,23 @@ scripted_effect bride_show_next_candidate_effect = {
 					is_lowborn = no
 					add = 10
 				}
-				modifier = { #Child of vassals are preferred
+				modifier = { #More if it was set
+					exists = local_var:family_background_important
+					is_lowborn = no
+					add = 20
+				}
+				modifier = { #Children of vassals are preferred
 					any_close_or_extended_family_member = {
 						is_vassal_of = root
 					}
-					add = 200
+					add = 10
+				}
+				modifier = { #More if it was set
+					any_close_or_extended_family_member = {
+						is_vassal_of = root
+					}
+					exists = local_var:family_background_important
+					add = 20
 				}
 				modifier = { #Child of powerful vassals are preferred
 					any_close_family_member = {
@@ -218,128 +225,245 @@ scripted_effect bride_show_next_candidate_effect = {
 							is_parent_of = root
 						}
 					}
+					add = 10
+				}
+				modifier = { #More if it was set
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							is_parent_of = root
+						}
+					}
+					exists = local_var:family_background_important
 					add = 100
 				}
 				modifier = { #Noble rank
 					any_close_family_member = {
-						highest_held_title_tier >= tier_barony
+						highest_held_title_tier <= tier_duchy
 					}
 					add = 5
 				}
-				modifier = { #Noble rank
+				modifier = { #Noble rank - preference for powerful background
 					any_close_family_member = {
 						highest_held_title_tier >= tier_county
 					}
-					add = 10
+					exists = local_var:family_background_important
+					add = 5
 				}
-				modifier = { #Ducal rank
+				modifier = { #Ducal rank - preference for powerful background
 					any_close_family_member = {
 						highest_held_title_tier >= tier_duchy
 					}
-					add = 15
+					exists = local_var:family_background_important
+					add = 5
 				}
-				modifier = { #Royal rank
+				modifier = { #Royal rank - preference for powerful background
 					any_close_family_member = {
 						highest_held_title_tier >= tier_kingdom
 					}
+					exists = local_var:family_background_important
 					add = 10
 				}
-				modifier = { #Imperial rank
+				modifier = { #Imperial rank - preference for powerful background
 					any_close_family_member = {
 						highest_held_title_tier = tier_empire
 					}
+					exists = local_var:family_background_important
 					add = 5
 				}
-				modifier = { #Nepotism wins
+				modifier = { #Nepotism wins if family background is important
 					any_close_or_extended_family_member = {
 						is_close_or_extended_family_of = root
 					}
-					add = 10
+					exists = local_var:family_background_important
+					add = 15
 				}
 				modifier = { #Trait considerations
 					OR = {
-						has_trait = beauty_good_1
-						has_trait = intellect_good_1
-						has_trait = physique_good_1
+						has_trait = beauty_good
+						has_trait = intellect_good
+						has_trait = physique_good
 					}
 					add = 5
 				}
-				modifier = { #Trait considerations
+				modifier = { #Trait considerations - beauty is important
+					OR = {
+						has_trait = beauty_good_1
+						has_trait = physique_good_1
+					}
+					exists = local_var:beauty_important
+					add = 20
+				}
+				modifier = { #Trait considerations - beauty is important
 					OR = {
 						has_trait = beauty_good_2
-						has_trait = intellect_good_2
 						has_trait = physique_good_2
 					}
-					add = 10
+					exists = local_var:beauty_important
+					add = 25
 				}
-				modifier = { #Trait considerations
+				modifier = { #Trait considerations - beauty is important
 					OR = {
 						has_trait = beauty_good_3
-						has_trait = intellect_good_3
 						has_trait = physique_good_3
 					}
-					add = 15
+					exists = local_var:beauty_important
+					add = 30
 				}
-				modifier = { #Virtuous traits are encouraged
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_sinful_traits > 0
+					exists = local_var:personality_skills_important
+					add = -10
+				}
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_sinful_traits >= 2
+					exists = local_var:personality_skills_important
+					add = -10
+				}
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_sinful_traits >= 3
+					exists = local_var:personality_skills_important
+					add = -10
+				}
+				modifier = { #Bonus for virtuous candidates - if virtuous traits matter
 					AND = {
 						num_sinful_traits = 0
 						num_virtuous_traits >= 1
 					}
+					exists = local_var:personality_skills_important
+					add = 5
+				}
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_virtuous_traits >= 1
+					exists = local_var:personality_skills_important
 					add = 10
 				}
-				modifier = { #Skill considerations
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_virtuous_traits >= 2
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Virtuous traits are encouraged - if they were chosen
+					num_virtuous_traits >= 3
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Skill considerations - if they were chosen
 					OR = {
 						stewardship >= 9
 						diplomacy >= 9
 						learning >= 9
 					}
+					exists = local_var:personality_skills_important
 					add = 5
 				}
-				modifier = { #Skill considerations
+				modifier = { #Skill considerations - if they were chosen
 					OR = {
 						stewardship >= 13
 						diplomacy >= 13
 						learning >= 13
 					}
+					exists = local_var:personality_skills_important
 					add = 5
 				}
-				modifier = { #Skill considerations
+				modifier = { #Skill considerations - if they were chosen
 					OR = {
 						stewardship >= 17
 						diplomacy >= 17
 						learning >= 17
 					}
+					exists = local_var:personality_skills_important
 					add = 10
+				}
+				modifier = { #Bonus - skill considerations - if they were chosen
+					AND = {
+						stewardship >= 13
+						diplomacy >= 13
+						learning >= 13
+					}
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = content
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = calm
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = gregarious
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = compassionate
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = forgiving
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = honest
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen - bonus for non-scheming consorts
+					harem_politics_evil_consort_trigger = no
+					exists = local_var:personality_skills_important
+					add = 10
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = intellect_good_1
+					exists = local_var:personality_skills_important
+					add = 20
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = intellect_good_2
+					exists = local_var:personality_skills_important
+					add = 25
+				}
+				modifier = { #Trait considerations - if they were chosen
+					has_trait = intellect_good_3
+					exists = local_var:personality_skills_important
+					add = 30
+				}
+				modifier = { #Scheming consorts will try their best to be chosen... and they make the harem interesting
+					harem_politics_evil_consort_trigger = yes
+					add = 15
 				}
 				modifier = { #Parents would leave their children
 					any_child = {
 						even_if_dead = yes
 						count = 0
 					}
-					add = 20
+					add = 40
 				}
 				modifier = { #Virginity is valuable
 					any_spouse = {
 						even_if_dead = yes
 						count = 0
 					}
-					add = 20
+					add = 40
 				}
 				modifier = { #Characters that believe in concubinage are more elegible
 					AND = {
 						root = {
 							OR = {
-								faith = { has_doctrine_parameter = allows_concubinage }
-								faith = { has_doctrine_parameter = allows_polygamy }
-								culture = { has_cultural_parameter = allows_polygamy }
-								culture = { has_cultural_parameter = allows_concubinage }
+								accepts_concubinage = yes
+								accepts_polygamy = yes
 							}
 						}
 						OR = {
-							faith = { has_doctrine_parameter = allows_concubinage }
-							faith = { has_doctrine_parameter = allows_polygamy }
-							culture = { has_cultural_parameter = allows_polygamy }
-							culture = { has_cultural_parameter = allows_concubinage }
+							accepts_concubinage = yes
+							accepts_polygamy = yes
 						}
 					}
 					add = 20
@@ -360,38 +484,155 @@ scripted_effect bride_show_next_candidate_effect = {
 				exists = scope:candidate_4
 			}
 		}
-		trigger_event = bride_show.0003
+		trigger_event = bride_show.0006
 	}
 	#No
 	else = {
-		trigger_event = bride_show.0002
+		trigger_event = bride_show.0005
 	}
 }
 
+#######################
+##Choosing parameters##
+#######################
+
+##Family background##
 bride_show.0001 = { 
 	type = character_event
 	title = bride_show.0001.t
 	desc = bride_show.0001.desc
 	theme = realm
 	
+	left_portrait = { 	
+		character = root
+		animation = personality_honorable
+	}
+	
+	# Family background is important
+	option = {
+		name = bride_show.0001.a
+		set_local_variable = {
+			name = family_background_important
+			value = yes
+		}
+		ai_chance = { #The AI will always choose this
+			base = 15
+		}
+	}
+
+	#It's irrelevant
+	option = {
+		name = bride_show.0001.b
+		ai_chance = {
+			base = 0
+		}
+	}
+	after = {
+		trigger_event = {
+			id = bride_show.0002
+			days = { 4 8 }
+		}
+	}
+}
+
+##Beauty##
+bride_show.0002 = { 
+	type = character_event
+	title = bride_show.0001.t
+	desc = bride_show.0002.desc
+	theme = realm
+	
 	right_portrait = { 	
 		character = root
 		animation = personality_rational
-	}	
+	}
+	
+	# Beauty is important
+	option = {
+		name = bride_show.0001.a
+		set_local_variable = {
+			name = beauty_important
+			value = yes
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
 
-	immediate = {
+	#It's irrelevant
+	option = {
+		name = bride_show.0001.b
+		ai_chance = { #The AI will always choose this
+			base = 15
+		}
+	}
+	after = {
+		trigger_event = {
+			id = bride_show.0003
+			days = { 4 8 }
+		}
+	}
+}
+
+##Personality and skills##
+bride_show.0003 = { 
+	type = character_event
+	title = bride_show.0001.t
+	desc = bride_show.0003.desc
+	theme = realm
+	
+	left_portrait = { 	
+		character = root
+		animation = personality_compassionate
+	}
+	
+	# Personality and skills are important
+	option = {
+		name = bride_show.0003.a
+		set_local_variable = {
+			name = personality_skills_important
+			value = yes
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+
+	#It's irrelevant
+	option = {
+		name = bride_show.0001.b
+		ai_chance = { #The AI will always choose this
+			base = 15
+		}
+	}
+	after = {
+		trigger_event = {
+			id = bride_show.0004
+			days = { 4 8 }
+		}
+	}
+}
+
+bride_show.0004 = { 
+	type = character_event
+	title = bride_show.0004.t
+	desc = bride_show.0004.desc
+	theme = realm
+	
+	right_portrait = { 	
+		character = root
+		animation = personality_rational
 	}
 	
 	# Let's go!
 	option = {
-		name = bride_show.0001.a
-		custom_tooltip = bride_show.0001.a.tt
+		name = bride_show.0004.a
+		custom_tooltip = bride_show.0004.a.tt
 		
 		hidden_effect = {
 			#Set up lists
 			every_vassal = {
 				limit = { 
-					is_ai = yes 
 					NOR = { 
 						government_has_flag = government_is_theocracy
 						is_at_war_with = root
@@ -499,9 +740,9 @@ scripted_effect bride_show_saved_candidate_effect = {
 }
 
 #Pick your portraits
-bride_show.0002 = {
+bride_show.0005 = {
 	type = character_event
-	title = bride_show.0001.t
+	title = bride_show.0004.t
 	desc = {
 		first_valid = { #Intro
 			triggered_desc = {
@@ -514,7 +755,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.start_3.desc
+				desc = bride_show.0005.start_3.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -526,10 +767,10 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.start_2.desc
+				desc = bride_show.0005.start_2.desc
 			}
 			triggered_desc = {
-				desc = bride_show.0002.start.desc
+				desc = bride_show.0005.start.desc
 			}
 		}
 		first_valid = { #Traits
@@ -564,7 +805,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.shy_2.desc
+				desc = bride_show.0005.shy_2.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -583,7 +824,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.shy.desc
+				desc = bride_show.0005.shy.desc
 			}
 			triggered_desc = {
 				trigger = { #2 #4
@@ -616,7 +857,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.brave_2.desc
+				desc = bride_show.0005.brave_2.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -635,7 +876,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.brave.desc
+				desc = bride_show.0005.brave.desc
 			}
 			triggered_desc = {
 				trigger = { #2 #4
@@ -668,7 +909,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.arrogant_2.desc
+				desc = bride_show.0005.arrogant_2.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -687,7 +928,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.arrogant.desc
+				desc = bride_show.0005.arrogant.desc
 			}
 			triggered_desc = {
 				trigger = { #2 #4
@@ -706,10 +947,10 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.generic_1_2.desc
+				desc = bride_show.0005.generic_1_2.desc
 			}
 			triggered_desc = {
-				desc = bride_show.0002.generic_1.desc
+				desc = bride_show.0005.generic_1.desc
 			}
 		}
 		first_valid = { #Beauty
@@ -719,7 +960,7 @@ bride_show.0002 = {
 						has_trait = beauty_good_3
 					}
 				}
-				desc = bride_show.0002.beautiful.desc
+				desc = bride_show.0005.beautiful.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -727,7 +968,7 @@ bride_show.0002 = {
 						has_trait = beauty_good_2
 					}
 				}
-				desc = bride_show.0002.handsome.desc
+				desc = bride_show.0005.handsome.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -735,10 +976,10 @@ bride_show.0002 = {
 						has_trait = beauty_good_1
 					}
 				}
-				desc = bride_show.0002.comely.desc
+				desc = bride_show.0005.comely.desc
 			}
 			triggered_desc = {
-				desc = bride_show.0002.generic_2.desc
+				desc = bride_show.0005.generic_2.desc
 			}
 		}
 		first_valid = { #Intellect
@@ -748,7 +989,7 @@ bride_show.0002 = {
 						has_trait = intellect_good_3
 					}
 				}
-				desc = bride_show.0002.genius.desc
+				desc = bride_show.0005.genius.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -756,7 +997,7 @@ bride_show.0002 = {
 						has_trait = intellect_good_2
 					}
 				}
-				desc = bride_show.0002.intelligent.desc
+				desc = bride_show.0005.intelligent.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -764,10 +1005,10 @@ bride_show.0002 = {
 						has_trait = intellect_good_1
 					}
 				}
-				desc = bride_show.0002.quick.desc
+				desc = bride_show.0005.quick.desc
 			}
 			triggered_desc = {
-				desc = bride_show.0002.generic_3.desc
+				desc = bride_show.0005.generic_3.desc
 			}
 		}
 		first_valid = { #Skills
@@ -781,7 +1022,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.stewardship.desc
+				desc = bride_show.0005.stewardship.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -793,7 +1034,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.learning.desc
+				desc = bride_show.0005.learning.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -805,7 +1046,7 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.diplomacy.desc
+				desc = bride_show.0005.diplomacy.desc
 			}
 			triggered_desc = {
 				trigger = {
@@ -826,13 +1067,13 @@ bride_show.0002 = {
 						}
 					}
 				}
-				desc = bride_show.0002.multiple.desc
+				desc = bride_show.0005.multiple.desc
 			}
 			triggered_desc = {
-				desc = bride_show.0002.generic_4.desc
+				desc = bride_show.0005.generic_4.desc
 			}
 		}
-		desc = bride_show.0002.end.desc
+		desc = bride_show.0005.end.desc
 	}
 	theme = realm
 	
@@ -847,7 +1088,7 @@ bride_show.0002 = {
 	
 	# Marry them
 	option = {
-		name = bride_show.0002.a
+		name = bride_show.0005.a
 		trigger = {
 			allowed_more_spouses = yes
 			scope:potential_candidate = {
@@ -909,7 +1150,7 @@ bride_show.0002 = {
 								this = scope:candidate_marriage
 							}
 						}
-						trigger_event = bride_show.0005
+						trigger_event = bride_show.0008
 					}
 					else = {
 						hidden_effect = {
@@ -1171,7 +1412,7 @@ bride_show.0002 = {
 
 	#Make them my concubine
 	option = {
-		name = bride_show.0002.b
+		name = bride_show.0005.b
 		trigger = {
 			allowed_concubines = yes
 			allowed_more_concubines = yes
@@ -1240,7 +1481,7 @@ bride_show.0002 = {
 								this = scope:candidate_concubinage
 							}
 						}
-						trigger_event = bride_show.0005
+						trigger_event = bride_show.0008
 					}
 					else = {
 						hidden_effect = {
@@ -1473,14 +1714,14 @@ bride_show.0002 = {
 
 	#Recruit to court
 	option = { # Recruit to court and break betrothal
-		name = bride_show.0002.c
+		name = bride_show.0005.c
 		if = {
 			limit = { #PS
 				scope:potential_candidate = {
 					exists = betrothed
 				}
 			}
-			custom_tooltip = bride_show.0002.c.tt
+			custom_tooltip = bride_show.0005.c.tt
 		}
 		trigger = {
 			scope:potential_candidate = {
@@ -1540,7 +1781,7 @@ bride_show.0002 = {
 								this = scope:candidate_courtier
 							}
 						}
-						trigger_event = bride_show.0005
+						trigger_event = bride_show.0008
 					}
 					else = {
 						hidden_effect = {
@@ -1641,7 +1882,7 @@ bride_show.0002 = {
 
 	#Break betrothal for kids
 	option = { # I've got plans for you
-		name = bride_show.0002.d
+		name = bride_show.0005.d
 		trigger = {
 			scope:potential_candidate = {
 				age <= 15
@@ -1674,7 +1915,7 @@ bride_show.0002 = {
 							this = scope:potential_candidate
 						}
 					}
-					trigger_event = bride_show.0005
+					trigger_event = bride_show.0008
 				}
 				else = {
 					hidden_effect = {
@@ -1737,7 +1978,7 @@ bride_show.0002 = {
 
 	# Pass
 	option = {
-		name = bride_show.0002.e
+		name = bride_show.0005.e
 		if = {
 			limit = { 
 				OR = {
@@ -1748,10 +1989,10 @@ bride_show.0002 = {
 					exists = scope:candidate_3
 				}
 			}
-			custom_tooltip = bride_show.0002.e_last.tt
+			custom_tooltip = bride_show.0005.e_last.tt
 		}
 		else  = {
-			custom_tooltip = bride_show.0002.e.tt
+			custom_tooltip = bride_show.0005.e.tt
 		}
 		
 		if = {
@@ -1882,25 +2123,25 @@ bride_show.0002 = {
 
 }
 
-bride_show.0003 = {
+bride_show.0006 = {
 	type = character_event
-	title = bride_show.0003.t
+	title = bride_show.0006.t
 	desc = {
 		first_valid = {
 			triggered_desc = {
 				trigger = {
 					is_male = yes
 				}
-				desc = bride_show.0003_curtsy.desc
+				desc = bride_show.0006_curtsy.desc
 			}
 			triggered_desc = {
 				trigger = {
 					is_female = yes
 				}
-				desc = bride_show.0003_bow.desc
+				desc = bride_show.0006_bow.desc
 			}
 		}
-		desc = bride_show.0003.end.desc
+		desc = bride_show.0006.end.desc
 	}
 	theme = realm
 	
@@ -1929,7 +2170,7 @@ bride_show.0003 = {
 	}
 	
 	option = {
-		name = bride_show.0003.a
+		name = bride_show.0006.a
 		
 		hidden_effect = {
 			every_in_list = {
@@ -2039,7 +2280,7 @@ bride_show.0003 = {
 #############################
 ##Announcing the Bride Show##
 #############################
-bride_show.0004 = {
+bride_show.0007 = {
 	type = letter_event
 	opening = {
 		first_valid = {
@@ -2099,13 +2340,13 @@ bride_show.0004 = {
 			trigger = {
 				agrees_with_bride_show = yes
 			}
-			text = bride_show.0004.a
+			text = bride_show.0007.a
 		}
 		name = { #Negative
 			trigger = {
 				agrees_with_bride_show = no
 			}
-			text = bride_show.0004.b
+			text = bride_show.0007.b
 		}
 	}
 }
@@ -2113,7 +2354,7 @@ bride_show.0004 = {
 ################
 ##Notification##
 ################
-bride_show.0005 = {
+bride_show.0008 = {
 	type = letter_event
 	opening = {
 		first_valid = {
@@ -2191,13 +2432,13 @@ bride_show.0005 = {
 			trigger = {
 				agrees_with_bride_show = yes
 			}
-			text = bride_show.0004.a
+			text = bride_show.0007.a
 		}
 		name = { #Negative
 			trigger = {
 				agrees_with_bride_show = no
 			}
-			text = bride_show.0004.b
+			text = bride_show.0007.b
 		}
 	}
 }
