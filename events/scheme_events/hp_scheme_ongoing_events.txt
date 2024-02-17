@@ -1,0 +1,1375 @@
+﻿namespace = hp_miscarriage_scheme_ongoing
+
+# 1001-1999: Events triggered by agents
+# 2001-2999: Events triggered by the target
+# 3001-3999: Events triggered by Scheme Owner
+# 4001-4999: Events when targeting children
+
+
+#######################
+# A Well-timed Bribe
+# by Linnéa Thimrén and Petter Vilberg
+#######################
+# Can pay gold for scheme progress
+hp_miscarriage_scheme_ongoing.1001 = {
+	type = character_event
+	title = hp_scheme_ongoing.1001.t
+	desc = intrigue_scheme_ongoing.1001.desc #Check
+	theme = generic_intrigue_scheme
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+	left_portrait = {
+		character = scope:agent
+		animation = personality_greedy
+	}
+	right_portrait = scope:target
+
+	trigger = {
+		exists = scope:scheme
+		scope:scheme = {
+			scheme_number_of_agents > 0
+			any_scheme_agent = {
+				is_alive = yes
+				exists = location
+				location = scope:target.capital_province
+			}
+		}
+		short_term_gold < medium_gold_value_check
+		NOT = { exists = scope:scheme.var:had_payment_event }
+	}
+
+	immediate = {
+		scope:scheme = {
+			random_scheme_agent = {
+				limit = {
+					exists = location
+					location = scope:target.capital_province
+					is_alive = yes
+				}
+				save_scope_as = agent
+				add_character_flag = {
+					flag = use_stealth_clothes
+					days = 1
+				}
+			}
+			set_variable = {
+				name = had_payment_event
+				value = yes
+				days = 3650
+			}
+		}
+		#Dummy check to avoid errors since the flag is only checked in portrait modifiers otherwise
+		if = {
+			limit = {
+				has_character_flag = use_stealth_clothes
+			}
+			#Didn't see you there!
+		}
+	}
+
+	option = { #Pay the gold
+		name = intrigue_scheme_ongoing.1001.a
+		remove_short_term_gold = medium_gold_value
+		scope:agent = {
+			duel = {
+				skill = intrigue
+				value = 10
+				20 = {
+					desc = intrigue_scheme_ongoing.1008.a.success
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 0.75
+						min = 0
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.success
+							left_icon = scope:agent
+							scope:scheme = {
+								add_scheme_modifier = {
+									type = scheme_agent_closing_in_modifier
+								}
+							}
+						}
+					}
+				}
+				15 = {
+					desc = intrigue_scheme_ongoing.1008.a.failure
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -0.5
+						min = -14
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.failure
+							left_icon = scope:agent
+							if = {
+								limit = {
+									scope:scheme = {
+										is_scheme_exposed = yes
+									}
+								}
+								scope:scheme = {
+									expose_scheme_agent = scope:agent
+								}
+							}
+							else = {
+								scope:scheme = {
+									expose_scheme = yes
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stress_impact = {
+			greedy = medium_stress_impact_gain
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_trait = ambitious
+			}
+		}
+	}
+
+	option = { #Save it
+		name = intrigue_scheme_ongoing.1001.b
+		scope:agent = {
+			add_opinion = {
+				modifier = respect_opinion
+				target = root
+				opinion = -10
+			}
+		}
+		stress_impact = {
+			impatient = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_trait = greedy
+			}
+		}
+	}
+}
+
+########################
+# You will give them poisong directly
+########################
+hp_miscarriage_scheme_ongoing.1002 = {
+	type = character_event
+	title = hp_scheme_ongoing.1002.t
+	desc = intrigue_scheme_ongoing.1002.desc #Check
+	theme = generic_intrigue_scheme
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+	left_portrait = {
+		character = scope:target
+		animation = idle
+	}
+	right_portrait = scope:target
+
+	trigger = {
+		exists = scope:scheme
+		exists = scope:miscarriage_method
+		scope:miscarriage_method = flag:miscarriage_poison
+	}
+
+	immediate = {
+		scope:scheme = {
+			random_scheme_agent = {
+				limit = {
+					exists = location
+					location = scope:target.capital_province
+					is_alive = yes
+				}
+				save_scope_as = agent
+				add_character_flag = {
+					flag = use_stealth_clothes
+					days = 1
+				}
+			}
+			set_variable = {
+				name = had_payment_event
+				value = yes
+				days = 3650
+			}
+		}
+		#Dummy check to avoid errors since the flag is only checked in portrait modifiers otherwise
+		if = {
+			limit = {
+				has_character_flag = use_stealth_clothes
+			}
+			#Didn't see you there!
+		}
+	}
+
+	option = { #Pay the gold
+		name = intrigue_scheme_ongoing.1001.a
+		remove_short_term_gold = medium_gold_value
+		scope:agent = {
+			duel = {
+				skill = intrigue
+				value = 10
+				20 = {
+					desc = intrigue_scheme_ongoing.1008.a.success
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 0.75
+						min = 0
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.success
+							left_icon = scope:agent
+							scope:scheme = {
+								add_scheme_modifier = {
+									type = scheme_agent_closing_in_modifier
+								}
+							}
+						}
+					}
+				}
+				15 = {
+					desc = intrigue_scheme_ongoing.1008.a.failure
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -0.5
+						min = -14
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.failure
+							left_icon = scope:agent
+							if = {
+								limit = {
+									scope:scheme = {
+										is_scheme_exposed = yes
+									}
+								}
+								scope:scheme = {
+									expose_scheme_agent = scope:agent
+								}
+							}
+							else = {
+								scope:scheme = {
+									expose_scheme = yes
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stress_impact = {
+			greedy = medium_stress_impact_gain
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_trait = ambitious
+			}
+		}
+	}
+
+	option = { #Save it
+		name = intrigue_scheme_ongoing.1001.b
+		scope:agent = {
+			add_opinion = {
+				modifier = respect_opinion
+				target = root
+				opinion = -10
+			}
+		}
+		stress_impact = {
+			impatient = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_trait = greedy
+			}
+		}
+	}
+}
+
+
+##################################
+# Target is closing in on agent
+##################################
+
+#Suitable agent
+scripted_trigger hp_miscarriage_scheme_ongoing_1008_suitable_agent = {
+	NOT = { is_agent_exposed_in_scheme = scope:scheme }
+}
+
+hp_miscarriage_scheme_ongoing.1008 = {
+	type = character_event
+	title = intrigue_scheme_ongoing.1008.t
+	desc = intrigue_scheme_ongoing.1008.desc
+	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = scope:agent
+		animation = scheme
+	}
+	right_portrait = scope:defender
+	lower_right_portrait = scope:spymaster
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		NOT = { scope:scheme.scheme_target.court_owner = root }
+		NOT = { has_character_flag = had_hp_miscarriage_scheme_ongoing_1008_event }
+		scope:scheme = {
+			any_scheme_agent = {
+				hp_miscarriage_scheme_ongoing_1008_suitable_agent = yes
+			}
+		}
+		scope:target = {
+			is_landed = yes
+		}
+	}
+
+	weight_multiplier = {
+		base = 0.75
+		modifier = {
+			add = 0.5
+			scope:scheme = { scheme_number_of_exposed_agents > 0 }
+		}
+		modifier = {
+			trigger = {
+				exists = cp:councillor_spymaster
+			}
+			add = 0.25
+			exists = cp:councillor_spymaster
+			cp:councillor_spymaster = {
+				is_performing_council_task = task_find_secrets
+				councillor_task_target = scope:scheme.scheme_defender
+			}
+		}
+	}
+
+	immediate = {
+		add_character_flag = {
+			flag = had_hp_miscarriage_scheme_ongoing_1008_event
+			days = 1825
+		}
+		scope:scheme = {
+			scheme_defender = {
+				save_scope_as = defender
+			}
+			random_scheme_agent = {
+				limit = {
+					hp_miscarriage_scheme_ongoing_1008_suitable_agent = yes
+				}
+				#A target of more value for the scheme is more likely to be picked
+				weight = {
+					base = 10
+					compare_modifier = {
+						trigger = { intrigue > 10 }
+						value = intrigue
+						multiplier = 0.5
+						max = 10
+					}
+				}
+				save_scope_as = agent
+
+				add_character_flag = {
+					flag = use_stealth_clothes
+					days = 1
+				}
+			}
+		}
+
+		#Is my spymaster currently spying in target's court?
+		if = {
+			limit = {
+				exists = cp:councillor_spymaster
+				cp:councillor_spymaster = {
+					is_performing_council_task = task_find_secrets
+					councillor_task_target = scope:defender
+				}
+			}
+			cp:councillor_spymaster = {
+				save_scope_as = councillor
+			}
+		}
+	}
+
+	#Let them work it out on their own
+	option = {
+		name = intrigue_scheme_ongoing.1008.a
+		scope:agent = {
+			duel = {
+				skill = intrigue
+				value = 10
+				15 = {
+					desc = intrigue_scheme_ongoing.1008.a.success
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 0.5
+						min = -14
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.success
+							left_icon = scope:agent
+							scope:agent = {
+								add_intrigue_skill = 1
+							}
+						}
+					}
+				}
+				15 = {
+					desc = intrigue_scheme_ongoing.1008.a.failure
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -0.5
+						min = -14
+					}
+					root = {
+						send_interface_toast = {
+							title = intrigue_scheme_ongoing.1008.a.failure
+							left_icon = scope:agent
+							if = {
+								limit = {
+									scope:scheme = {
+										is_scheme_exposed = no
+									}
+								}
+								scope:scheme = {
+									expose_scheme = yes
+								}
+							}
+							else = {
+								scope:scheme = {
+									expose_scheme_agent = scope:agent
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	#Their trail needs to end
+	option = {
+		name = intrigue_scheme_ongoing.1008.b
+		scope:agent = {
+			forbid_from_scheme = scope:scheme
+		}
+	}
+
+	#Have your spymaster intervene
+	option = {
+		name = intrigue_scheme_ongoing.1008.c
+		trigger = {
+			exists = scope:councillor
+		}
+		scope:councillor = {
+			add_character_modifier = {
+				modifier = spymaster_task_sacrificed_efficiency_modifier
+				days = 3650
+			}
+		}
+	}
+}
+
+
+
+#############################
+# A Close Relation Gets a Push to Join the Scheme
+#############################
+
+scripted_trigger hp_miscarriage_scheme_ongoing_1008_close_relation = {
+	scope:scheme = {
+		NOT = { scheme_is_character_agent = prev }
+	}
+	is_valid_as_agent_in_scheme = scope:scheme
+	join_scheme_chance = {
+		scheme = scope:scheme
+		min = -15
+		max = 1
+	}
+	opinion = {
+		target = root
+		value > 30
+	}
+	is_ai = yes
+}
+
+hp_miscarriage_scheme_ongoing.1009 = {
+	type = character_event
+	title = intrigue_scheme_ongoing.1009.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = intrigue_scheme_ongoing.1009.elope.desc
+			}
+			desc = intrigue_scheme_ongoing.1009.desc
+		}
+	}
+	theme = generic_intrigue_scheme
+	left_portrait = scope:potential_agent
+	right_portrait = scope:target
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		scope:scheme = {
+			scheme_progress < 8
+		}
+		OR = {
+			any_relation = {
+				type = lover
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+			any_relation = {
+				type = friend
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+			any_close_family_member = {
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+		}
+		NOT = { has_character_flag = had_hp_miscarriage_scheme_ongoing_1009_event }
+	}
+
+	immediate = {
+		add_character_flag = {
+			flag = had_hp_miscarriage_scheme_ongoing_1009_event
+			days = 1825
+		}
+		random_relation = {
+			type = lover
+			limit = {
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+			add_to_list = potential_agents
+		}
+		random_relation = {
+			type = friend
+			limit = {
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+			add_to_list = potential_agents
+		}
+		random_close_family_member = {
+			limit = {
+				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+			}
+			add_to_list = potential_agents
+		}
+		random_in_list = {
+			list = potential_agents
+			save_scope_as = potential_agent
+		}
+	}
+
+	option = { #Please help me
+		name = intrigue_scheme_ongoing.1009.a
+		scope:potential_agent = {
+			force_add_to_scheme = {
+				scheme = scope:scheme
+				years = 5
+			}
+		}
+		ai_chance = {
+			base = 100
+			ai_value_modifier = {
+				ai_compassion = -0.5
+				ai_honor = -0.5
+				ai_boldness = 1
+				ai_greed = 0.5
+			}
+		}
+	}
+
+	option = { #There is one thing you can do...
+		name = intrigue_scheme_ongoing.1009.b
+		scope:scheme = {
+			add_scheme_progress = 8
+		}
+		ai_chance = {
+			base = 100
+			modifier = {
+				add = -50
+				scope:scheme.scheme_power_resistance_difference < 0
+			}
+			compare_modifier = { #Less likely the less advantage you have in the scheme
+				value = scope:scheme.scheme_power_resistance_difference
+				multiplier = -1
+			}
+		}
+	}
+}
+
+
+########################
+# Messenger pigeon by Mathilda Bjarnehed
+##########################
+scripted_trigger hp_miscarriage_scheme_ongoing_3005_favor_agent_trigger = {
+	basic_is_available_ai = yes
+	OR = {
+		has_relation_friend = scope:target
+		AND = { # Could be a servant
+			sex_same_as = scope:target
+			has_dynasty = no
+		}
+		is_close_family_of = scope:target
+	}
+}
+
+scripted_trigger hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = {
+	basic_is_available_ai = yes
+}
+
+
+hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
+	type = character_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = sabotage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = favor_event_title
+			}
+		}
+		desc = intrigue_scheme_ongoing.3005.t
+	}
+	desc = intrigue_scheme_ongoing.3005.desc
+	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = scope:pigeon_recipient
+		animation = scheme
+	}
+	right_portrait = scope:right_portrait
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		scope:scheme = {
+			NOT = { has_variable = had_intrigue_scheme_ongoing_3005_event }
+			OR = {
+				scheme_type = favor
+				any_scheme_agent = { hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = yes }
+			}
+		}
+		exists = scope:target.host
+		NOT = { scope:target.host = root }
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 1
+			has_character_modifier = modifier_hunt_friend_of_animal
+		}
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_intrigue_scheme_ongoing_3005_event
+				value = yes
+			}
+		}
+
+		# Who is receiving pigeon? favor: target
+		if = {
+			limit = { scope:scheme = { scheme_type = favor } }
+			scope:target = { save_scope_as = pigeon_recipient }
+
+			#Try to save a random agent
+			scope:scheme = {
+				random_scheme_agent = {
+					limit = { hp_miscarriage_scheme_ongoing_3005_favor_agent_trigger = yes }
+					save_scope_as = favor_agent
+					add_character_flag = {
+						flag = use_stealth_clothes
+						days = 1
+					}
+				}
+			}
+
+			scope:target.liege = {
+				save_scope_as = right_portrait
+			}
+		}
+		# Murder/abduct: agent
+		else = {
+			scope:scheme = {
+				random_scheme_agent = {
+					limit = { hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = yes }
+					save_scope_as = pigeon_recipient
+					add_character_flag = {
+						flag = use_stealth_clothes
+						days = 1
+					}
+				}
+				scope:target = { save_scope_as = right_portrait } # Just for the visuals
+			}
+		}
+
+		# Some more scopes
+		scope:target.host = {
+			save_scope_as = defender
+			if = {
+				limit = {
+					exists = capital_province
+				}
+				capital_province = { save_scope_as = target_location }
+			}
+		}
+		if = {
+			limit = { exists = capital_province } #Non-rulers can do these schemes too but it's only relevant for text
+			capital_province = { save_scope_as = root_location }
+		}
+	}
+
+	# Bribe someone to have it delivered
+	option = {
+		name = intrigue_scheme_ongoing.3005.a
+
+		remove_short_term_gold = minor_gold_value
+
+		random_list = {
+			70 = {
+				desc = intrigue_scheme_ongoing.3005.a.success
+				send_interface_toast = {
+					title = intrigue_scheme_ongoing.3005.a.success
+					left_icon = scope:defender
+					scope:scheme = {
+						add_scheme_modifier = {
+							type = intrigue_scheme_messenger_pigeon_modifier
+						}
+					}
+				}
+			}
+			30 = {
+				desc = intrigue_scheme_ongoing.3005.a.failure
+				send_interface_toast = {
+					title = intrigue_scheme_ongoing.3005.a.failure
+					left_icon = scope:defender
+				}
+			}
+		}
+
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	# Deliver it yourself
+	option = {
+		name = intrigue_scheme_ongoing.3005.b
+
+		scope:scheme = {
+			add_scheme_modifier = {
+				type = intrigue_scheme_messenger_pigeon_modifier
+			}
+			add_scheme_modifier = {
+				type = intrigue_scheme_involved_modifier
+			}
+		}
+
+		stress_impact = {
+			craven = medium_stress_impact_gain
+			paranoid = medium_stress_impact_gain
+		}
+	}
+
+	# Use an agent
+	option = {
+		name = intrigue_scheme_ongoing.3005.c
+		trigger = { exists = scope:favor_agent }
+		add_internal_flag = special
+		flavor = intrigue_scheme_ongoing.3005.c.f
+
+		scope:scheme = {
+			add_scheme_modifier = {
+				type = intrigue_scheme_messenger_pigeon_modifier
+			}
+		}
+	}
+
+	# Bad idea
+	option = {
+		name = intrigue_scheme_ongoing.3005.d
+	}
+}
+
+#########################################
+# by Letter Translation by Daniel Moore #
+#########################################
+
+hp_miscarriage_scheme_ongoing.3010 = {
+	type = character_event
+	title = intrigue_scheme_ongoing.3010.t
+	desc = intrigue_scheme_ongoing.3010.desc
+	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = root
+		animation = chancellor
+	}
+
+	trigger = {
+		scope:scheme = {
+			NOT = {
+				has_variable = had_intrigue_scheme_ongoing_3010_event
+			}
+		}
+		knows_language_of_culture = scope:target.culture
+		NOT = {
+			scope:target.culture = {
+				has_same_culture_language = root.culture
+			}
+		}
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_intrigue_scheme_ongoing_3010_event
+				value = yes
+			}
+		}
+	}
+
+	option = { #Do it yourself
+		name = intrigue_scheme_ongoing.3010.a
+		add_stress = minor_stress_gain
+		scope:scheme = {
+			add_scheme_modifier = {
+				type = intrigue_scheme_personally_translating_letters_modifier
+			}
+			add_scheme_progress = 8
+		}
+		stress_impact = {
+			lazy = medium_stress_gain
+		}
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_energy = 0.5
+			}
+		}
+	}
+
+	option = { #Let the translators handle it
+		name = intrigue_scheme_ongoing.3010.b
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_energy = -0.5
+			}
+		}
+	}
+
+
+}
+
+###############################
+# Secret Code by Daniel Moore #
+###############################
+
+hp_miscarriage_scheme_ongoing.3011 = { #By Daniel Moore
+	type = character_event
+	title = intrigue_scheme_ongoing.3011.t
+	desc = intrigue_scheme_ongoing.3011.desc
+	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = scope:multilingual_agent
+		animation = throne_room_writer
+	}
+
+	trigger = {
+		scope:scheme = {
+			NOT = {
+				has_variable = had_intrigue_scheme_ongoing_3011_event
+			}
+
+			any_scheme_agent ={
+				num_of_known_languages > 2
+			}
+		}
+
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_intrigue_scheme_ongoing_3011_event
+				value = yes
+			}
+
+			random_scheme_agent = {
+				limit = {
+					num_of_known_languages > 2
+				}
+				save_scope_as = multilingual_agent
+
+			}
+
+			random_culture_global = {
+				limit = {
+					scope:multilingual_agent = { knows_language_of_culture = prev }
+					NOT = { has_same_culture_language = scope:multilingual_agent.culture }
+				}
+
+				save_scope_as = language_culture
+			}
+
+			random_culture_global = {
+				limit = {
+					scope:multilingual_agent = { knows_language_of_culture = prev }
+					NOT = { has_same_culture_language = scope:multilingual_agent.culture }
+					NOT = { has_same_culture_language = scope:language_culture }
+				}
+
+				save_scope_as = language_culture_2
+			}
+		}
+	}
+
+	option = { #Excellent Idea
+		name = intrigue_scheme_ongoing.3011.a
+		#Lower discovery chance
+		scope:scheme = {
+			add_scheme_modifier = {
+				type = intrigue_scheme_secret_code_modifier
+			}
+		}
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_energy = 0.5
+			}
+		}
+
+	}
+
+	option = { #Our efforts are best spent elsewhere
+		name = intrigue_scheme_ongoing.3011.b
+		scope:scheme = {
+			add_scheme_progress = 8
+		}
+		scope:multilingual_agent = {
+			add_opinion = {
+				modifier = opinion_scheme_code_rejected
+				target = root
+			}
+		}
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_rationality = 0.5
+			}
+		}
+	}
+}
+
+
+
+###########################################################
+# Other events
+# 5000-5999
+###########################################################
+
+###########################################
+# Distract guards with itching powder
+# by Linnéa Thimrén
+###########################################
+
+hp_miscarriage_scheme_ongoing.5001 = {
+	type = character_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = sabotage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = favor_event_title
+			}
+		}
+		desc = intrigue_scheme_ongoing.5001.t
+	}
+	desc = intrigue_scheme_ongoing.5001.desc
+	theme = generic_intrigue_scheme
+	left_portrait = scope:servant
+	right_portrait = scope:target
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		is_available_adult = yes
+		scope:scheme = {
+			NOT = { has_variable = had_itching_scheme_event }
+		}
+		scope:target = {
+			is_landed = yes
+			is_ai = yes # We don't want to spontaneously create mystery servant characters for players
+			is_adult = yes
+		}
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_itching_scheme_event
+				value = yes
+				days = 3650
+			}
+		}
+		create_character = {
+			employer = scope:target
+			template = servant_character
+			gender_female_chance = root_faith_dominant_gender_adjusted_female_chance
+			save_scope_as = servant
+		}
+	}
+
+	# Rose hips it is!
+	option = {
+		trigger = {
+			OR = {
+				is_ai = no
+				short_term_gold >= 50
+			}
+		}
+		name = intrigue_scheme_ongoing.5001.a
+		remove_short_term_gold = 50
+		scope:scheme = {
+			add_scheme_progress = 8
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	# Ruin their clothes! For fun!
+	option = {
+		name = intrigue_scheme_ongoing.5001.b
+		scope:target = {
+			add_prestige = medium_prestige_loss
+		}
+		stress_impact = {
+			fickle = minor_stress_impact_loss
+		}
+		ai_chance = {
+			base = 0
+			modifier = {
+				add = 50
+				has_trait = fickle
+			}
+		}
+	}
+}
+
+
+###########################################
+# Gift them poisonous gold
+# by Linnéa Thimrén
+###########################################
+hp_miscarriage_scheme_ongoing.5005 = {
+	type = character_event
+	title = intrigue_scheme_ongoing.5005.t
+	desc = intrigue_scheme_ongoing.5005.desc
+	theme = generic_intrigue_scheme
+	left_portrait = scope:spymaster
+	right_portrait = scope:target
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		is_available_adult = yes
+		gold > root.minor_gold_value
+		scope:scheme = {
+			NOT = { has_variable = had_poisonous_gold_event }
+		}
+		exists = cp:councillor_spymaster
+		cp:councillor_spymaster = {
+			save_temporary_scope_as = court_spymaster
+		}
+		NOT = { scope:court_spymaster = scope:target }
+		scope:target = {
+			is_physically_able_adult = yes
+		}
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_poisonous_gold_event
+				value = yes
+				days = 3650
+			}
+		}
+		if = {
+			limit = {
+				exists = cp:councillor_spymaster
+			}
+			cp:councillor_spymaster = {
+				save_scope_as = spymaster
+			}
+		}
+	}
+
+	# Give them poisonous gold
+	option = {
+		name = intrigue_scheme_ongoing.5005.a
+		pay_short_term_gold = { #Give them their gift...
+			target = scope:target
+			gold = root.minor_gold_value
+		}
+		show_as_tooltip = { #Actually add it in their response event
+			scope:target = {
+				add_character_modifier = {
+					modifier = poisonous_gold_modifier
+					years = 7
+				}
+			}
+		}
+		scope:scheme = {
+			add_scheme_progress = 8
+		}
+		scope:target = { #Response event
+			trigger_event = intrigue_scheme_ongoing.5006
+		}
+		#Risk of bad side effects
+		hidden_effect = {
+			if = {
+				limit = {
+					any_child = {
+						is_courtier_of = root
+						is_ai = yes
+					}
+				}
+				random = {
+					chance = 15
+					trigger_event = {
+						id = intrigue_scheme_ongoing.5007
+						days = { 10 30 }
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					exists = cp:councillor_spymaster
+					cp:councillor_spymaster = { is_ai = yes }
+				}
+				random = {
+					chance = 15
+					trigger_event = {
+						id = intrigue_scheme_ongoing.5008
+						days = { 10 30 }
+					}
+				}
+			}
+		}
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	# Nah
+	option = {
+		name = intrigue_scheme_ongoing.5005.b
+		ai_chance = {
+			base = 0
+			modifier = {
+				add = 50
+				has_trait = greedy
+			}
+		}
+	}
+}
+
+#Your spymaster touched the gold!
+hp_miscarriage_scheme_ongoing.5008 = {
+	type = character_event
+	title = intrigue_scheme_ongoing.5007.t
+	desc = {
+		desc = intrigue_scheme_ongoing.5007.desc_opening
+		desc = intrigue_scheme_ongoing.5008.desc
+	}
+	theme = skull
+	left_portrait = scope:poisoned
+
+	immediate = {
+		cp:councillor_spymaster = {
+			save_scope_as = poisoned
+			add_character_modifier = {
+				modifier = poisonous_gold_modifier
+				years = 7
+			}
+		}
+	}
+
+	option = {
+		name = intrigue_scheme_ongoing.5008.a
+		flavor = intrigue_scheme_ongoing.5007.a.tt
+	}
+}
+
+
+
+###########################################
+# Find old architectural papers
+# by Linnéa Thimrén
+###########################################
+
+hp_miscarriage_scheme_ongoing.5019 = {
+	type = character_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = sabotage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = favor_event_title
+			}
+		}
+		desc = intrigue_scheme_ongoing.5019.t
+	}
+	desc = intrigue_scheme_ongoing.5019.desc
+	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = scope:agent
+		animation = scheme
+	}
+	right_portrait = scope:target
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+
+	trigger = {
+		is_available_adult = yes
+		scope:target = {
+			is_landed = yes
+			NOT = { is_courtier_of = root }
+		}
+		scope:scheme = {
+			NOT = { has_variable = had_architectural_papers_event }
+			any_scheme_agent = {
+				is_alive = yes
+			}
+		}
+	}
+
+	immediate = {
+		scope:scheme = {
+			set_variable = {
+				name = had_architectural_papers_event
+				value = yes
+				days = 3650
+			}
+			random_scheme_agent = {
+				limit = {
+					is_courtier_of = scope:target
+					is_alive = yes
+				}
+				alternative_limit = {
+					is_alive = yes
+				}
+				save_scope_as = agent
+				add_character_flag = {
+					flag = use_stealth_clothes
+					days = 1
+				}
+			}
+		}
+		if = {
+			limit = {
+				employs_court_position = royal_architect_court_position
+				any_court_position_holder = {
+					type = royal_architect_court_position
+				}
+			}
+			random_court_position_holder = {
+				type = royal_architect_court_position
+				save_scope_as = architect
+			}
+		}
+	}
+
+	# Cool let's use them!
+	option = {
+		name = intrigue_scheme_ongoing.5019.a
+		scope:scheme = { add_scheme_progress = 8 }
+	}
+
+	# Inspiration for own rebuilding!
+	option = {
+		name = intrigue_scheme_ongoing.5019.b
+		if = {
+			limit = {
+				exists = scope:architect
+			}
+			custom_tooltip = intrigue_scheme_ongoing.5019.b.tt
+			add_character_modifier = {
+				modifier = hidden_nooks_and_crannies_architect_modifier
+				years = 10
+			}
+		}
+		else = {
+			add_character_modifier = {
+				modifier = hidden_nooks_and_crannies_modifier
+				years = 10
+			}
+		}
+	}
+}
