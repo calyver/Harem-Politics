@@ -1,4 +1,4 @@
-﻿namespace = hp_miscarriage_scheme_ongoing
+﻿namespace = calyver_scheme_ongoing
 
 # 1001-1999: Events triggered by agents
 # 2001-2999: Events triggered by the target
@@ -11,10 +11,34 @@
 # by Linnéa Thimrén and Petter Vilberg
 #######################
 # Can pay gold for scheme progress
-hp_miscarriage_scheme_ongoing.1001 = {
+calyver_scheme_ongoing.1001 = {
 	type = character_event
-	title = hp_scheme_ongoing.1001.t
-	desc = intrigue_scheme_ongoing.1001.desc #Check
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = sabotage } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = abort } }
+				desc = sabotage_event_title
+			}
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = favor_event_title
+			}
+		}
+		desc = intrigue_scheme_ongoing.1001.t
+	}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:scheme = { scheme_type = favor } }
+				desc = intrigue_scheme_ongoing.1001.elope.desc
+			}
+			desc = intrigue_scheme_ongoing.1001.desc
+		}
+	}
 	theme = generic_intrigue_scheme
 	widget = {
 		gui = "event_window_widget_scheme"
@@ -32,8 +56,7 @@ hp_miscarriage_scheme_ongoing.1001 = {
 			scheme_number_of_agents > 0
 			any_scheme_agent = {
 				is_alive = yes
-				exists = location
-				location = scope:target.capital_province
+				is_courtier_of = scope:target
 			}
 		}
 		short_term_gold < medium_gold_value_check
@@ -44,8 +67,7 @@ hp_miscarriage_scheme_ongoing.1001 = {
 		scope:scheme = {
 			random_scheme_agent = {
 				limit = {
-					exists = location
-					location = scope:target.capital_province
+					is_courtier_of = scope:target
 					is_alive = yes
 				}
 				save_scope_as = agent
@@ -95,7 +117,7 @@ hp_miscarriage_scheme_ongoing.1001 = {
 						}
 					}
 				}
-				15 = {
+				10 = {
 					desc = intrigue_scheme_ongoing.1008.a.failure
 					compare_modifier = {
 						value = scope:duel_value
@@ -132,8 +154,8 @@ hp_miscarriage_scheme_ongoing.1001 = {
 		ai_chance = {
 			base = 50
 			modifier = {
-				add = 10
-				has_trait = ambitious
+				add = 100
+				has_trait = greedy
 			}
 		}
 	}
@@ -152,76 +174,105 @@ hp_miscarriage_scheme_ongoing.1001 = {
 		}
 		ai_chance = {
 			base = 50
-			modifier = {
-				add = 10
-				has_trait = greedy
-			}
 		}
 	}
 }
 
 ########################
-# You will give them poisong directly
+# Divine Righteousness
+# by Linnéa Thimrén and Petter Vilberg
 ########################
-hp_miscarriage_scheme_ongoing.1002 = {
+# Ends justify the means giving you a nice boost
+calyver_scheme_ongoing.1002 = {
 	type = character_event
-	title = hp_scheme_ongoing.1002.t
-	desc = intrigue_scheme_ongoing.1002.desc #Check
+	title = intrigue_scheme_ongoing.1002.t
+	desc = intrigue_scheme_ongoing.1002.desc
 	theme = generic_intrigue_scheme
+	left_portrait = {
+		character = scope:agent_in_question
+		animation = personality_zealous
+	}
+	right_portrait = scope:target
 	widget = {
 		gui = "event_window_widget_scheme"
 		container = "custom_widgets_container"
 	}
-	left_portrait = {
-		character = scope:target
-		animation = idle
-	}
-	right_portrait = scope:target
 
 	trigger = {
-		exists = scope:scheme
-		exists = scope:miscarriage_method
-		scope:miscarriage_method = flag:miscarriage_poison
+		scope:scheme = {
+			any_scheme_agent = {
+				has_trait = zealous
+				is_christian_trigger = yes
+				intrigue < 4
+				NOT = { is_agent_exposed_in_scheme = scope:scheme }
+			}
+			scheme_target = {
+				piety_level <= medium_piety_level
+			}
+			NOT = { has_variable = had_overly_zealous_agent_event }
+		}
+		scope:scheme.scheme_target = {
+			age > 15
+			is_christian_trigger = yes
+		}
+	}
+
+	weight_multiplier = {
+		base = 0.5
+		modifier = {
+			add = 1
+			scope:scheme = {
+				is_scheme_exposed = yes
+			}
+		}
+		modifier = {
+			factor = 1.5
+			scope:scheme = {
+				any_scheme_agent = {
+					has_trait = zealous
+					NOT = { faith = scope:scheme.scheme_target.faith }
+					NOT = { is_agent_exposed_in_scheme = scope:scheme }
+				}
+			}
+		}
 	}
 
 	immediate = {
 		scope:scheme = {
 			random_scheme_agent = {
 				limit = {
-					exists = location
-					location = scope:target.capital_province
-					is_alive = yes
+					has_trait = zealous
+					NOT = { faith = scope:scheme.scheme_target.faith }
+					NOT = { is_agent_exposed_in_scheme = scope:scheme }
 				}
-				save_scope_as = agent
+				alternative_limit = {
+					has_trait = zealous
+					NOT = { is_agent_exposed_in_scheme = scope:scheme }
+				}
+				save_scope_as = agent_in_question
 				add_character_flag = {
 					flag = use_stealth_clothes
 					days = 1
 				}
 			}
 			set_variable = {
-				name = had_payment_event
+				name = had_overly_zealous_agent_event
 				value = yes
 				days = 3650
 			}
 		}
-		#Dummy check to avoid errors since the flag is only checked in portrait modifiers otherwise
-		if = {
-			limit = {
-				has_character_flag = use_stealth_clothes
-			}
-			#Didn't see you there!
-		}
 	}
 
-	option = { #Pay the gold
-		name = intrigue_scheme_ongoing.1001.a
-		remove_short_term_gold = medium_gold_value
-		scope:agent = {
+	# Encourage them
+	option = {
+		name = intrigue_scheme_ongoing.1002.a
+		trigger = { NOT = { has_trait = zealous } }
+		scope:agent_in_question = {
 			duel = {
-				skill = intrigue
+				skill = diplomacy
 				value = 10
 				20 = {
-					desc = intrigue_scheme_ongoing.1008.a.success
+					desc = intrigue_scheme_ongoing.1002.a.success
 					compare_modifier = {
 						value = scope:duel_value
 						multiplier = 0.75
@@ -229,18 +280,18 @@ hp_miscarriage_scheme_ongoing.1002 = {
 					}
 					root = {
 						send_interface_toast = {
-							title = intrigue_scheme_ongoing.1008.a.success
-							left_icon = scope:agent
+							title = intrigue_scheme_ongoing.1002.a.success
+							left_icon = scope:agent_in_question
 							scope:scheme = {
 								add_scheme_modifier = {
-									type = scheme_agent_closing_in_modifier
+									type = lifestyle_converted_informants_modifier
 								}
 							}
 						}
 					}
 				}
-				15 = {
-					desc = intrigue_scheme_ongoing.1008.a.failure
+				5 = {
+					desc = intrigue_scheme_ongoing.1002.a.failure
 					compare_modifier = {
 						value = scope:duel_value
 						multiplier = -0.5
@@ -248,57 +299,70 @@ hp_miscarriage_scheme_ongoing.1002 = {
 					}
 					root = {
 						send_interface_toast = {
-							title = intrigue_scheme_ongoing.1008.a.failure
-							left_icon = scope:agent
+							title = intrigue_scheme_ongoing.1002.a.failure
+							left_icon = scope:agent_in_question
 							if = {
 								limit = {
 									scope:scheme = {
-										is_scheme_exposed = yes
+										is_scheme_exposed = no
 									}
 								}
 								scope:scheme = {
-									expose_scheme_agent = scope:agent
+									expose_scheme = yes
+									expose_scheme_agent = scope:agent_in_question
 								}
 							}
 							else = {
 								scope:scheme = {
-									expose_scheme = yes
+									expose_scheme_agent = scope:agent_in_question
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-		stress_impact = {
-			greedy = medium_stress_impact_gain
+			add_opinion = {
+				modifier = friendliness_opinion
+				opinion = 20
+				target = root
+			}
 		}
 		ai_chance = {
 			base = 50
-			modifier = {
-				add = 10
-				has_trait = ambitious
+			ai_value_modifier = {
+				ai_boldness = 0.5
 			}
 		}
 	}
 
-	option = { #Save it
-		name = intrigue_scheme_ongoing.1001.b
-		scope:agent = {
+	# They will shut up!
+	option = {
+		name = intrigue_scheme_ongoing.1002.b
+		scope:agent_in_question = {
 			add_opinion = {
 				modifier = respect_opinion
 				target = root
-				opinion = -10
+				opinion = -15
 			}
 		}
 		stress_impact = {
-			impatient = minor_stress_impact_gain
+			zealous = major_stress_impact_gain
 		}
 		ai_chance = {
 			base = 50
-			modifier = {
-				add = 10
-				has_trait = greedy
+		}
+	}
+
+	option = {
+		name = intrigue_scheme_ongoing.1002.c
+		trigger = {
+			has_trait = zealous
+		}
+		trait = zealous
+		send_interface_toast = {
+			title = intrigue_scheme_ongoing.1002.a.success
+			scope:scheme = {
+				add_scheme_progress = 8
 			}
 		}
 	}
@@ -310,11 +374,11 @@ hp_miscarriage_scheme_ongoing.1002 = {
 ##################################
 
 #Suitable agent
-scripted_trigger hp_miscarriage_scheme_ongoing_1008_suitable_agent = {
+scripted_trigger calyver_scheme_ongoing_1008_suitable_agent = {
 	NOT = { is_agent_exposed_in_scheme = scope:scheme }
 }
 
-hp_miscarriage_scheme_ongoing.1008 = {
+calyver_scheme_ongoing.1008 = {
 	type = character_event
 	title = intrigue_scheme_ongoing.1008.t
 	desc = intrigue_scheme_ongoing.1008.desc
@@ -332,10 +396,10 @@ hp_miscarriage_scheme_ongoing.1008 = {
 
 	trigger = {
 		NOT = { scope:scheme.scheme_target.court_owner = root }
-		NOT = { has_character_flag = had_hp_miscarriage_scheme_ongoing_1008_event }
+		NOT = { has_character_flag = had_calyver_scheme_ongoing_1008_event }
 		scope:scheme = {
 			any_scheme_agent = {
-				hp_miscarriage_scheme_ongoing_1008_suitable_agent = yes
+				calyver_scheme_ongoing_1008_suitable_agent = yes
 			}
 		}
 		scope:target = {
@@ -364,7 +428,7 @@ hp_miscarriage_scheme_ongoing.1008 = {
 
 	immediate = {
 		add_character_flag = {
-			flag = had_hp_miscarriage_scheme_ongoing_1008_event
+			flag = had_calyver_scheme_ongoing_1008_event
 			days = 1825
 		}
 		scope:scheme = {
@@ -373,7 +437,7 @@ hp_miscarriage_scheme_ongoing.1008 = {
 			}
 			random_scheme_agent = {
 				limit = {
-					hp_miscarriage_scheme_ongoing_1008_suitable_agent = yes
+					calyver_scheme_ongoing_1008_suitable_agent = yes
 				}
 				#A target of more value for the scheme is more likely to be picked
 				weight = {
@@ -495,7 +559,7 @@ hp_miscarriage_scheme_ongoing.1008 = {
 # A Close Relation Gets a Push to Join the Scheme
 #############################
 
-scripted_trigger hp_miscarriage_scheme_ongoing_1008_close_relation = {
+scripted_trigger calyver_scheme_ongoing_1008_close_relation = {
 	scope:scheme = {
 		NOT = { scheme_is_character_agent = prev }
 	}
@@ -512,7 +576,7 @@ scripted_trigger hp_miscarriage_scheme_ongoing_1008_close_relation = {
 	is_ai = yes
 }
 
-hp_miscarriage_scheme_ongoing.1009 = {
+calyver_scheme_ongoing.1009 = {
 	type = character_event
 	title = intrigue_scheme_ongoing.1009.t
 	desc = {
@@ -539,41 +603,41 @@ hp_miscarriage_scheme_ongoing.1009 = {
 		OR = {
 			any_relation = {
 				type = lover
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 			any_relation = {
 				type = friend
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 			any_close_family_member = {
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 		}
-		NOT = { has_character_flag = had_hp_miscarriage_scheme_ongoing_1009_event }
+		NOT = { has_character_flag = had_calyver_scheme_ongoing_1009_event }
 	}
 
 	immediate = {
 		add_character_flag = {
-			flag = had_hp_miscarriage_scheme_ongoing_1009_event
+			flag = had_calyver_scheme_ongoing_1009_event
 			days = 1825
 		}
 		random_relation = {
 			type = lover
 			limit = {
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 			add_to_list = potential_agents
 		}
 		random_relation = {
 			type = friend
 			limit = {
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 			add_to_list = potential_agents
 		}
 		random_close_family_member = {
 			limit = {
-				hp_miscarriage_scheme_ongoing_1008_close_relation = yes
+				calyver_scheme_ongoing_1008_close_relation = yes
 			}
 			add_to_list = potential_agents
 		}
@@ -625,7 +689,7 @@ hp_miscarriage_scheme_ongoing.1009 = {
 ########################
 # Messenger pigeon by Mathilda Bjarnehed
 ##########################
-scripted_trigger hp_miscarriage_scheme_ongoing_3005_favor_agent_trigger = {
+scripted_trigger calyver_scheme_ongoing_3005_favor_agent_trigger = {
 	basic_is_available_ai = yes
 	OR = {
 		has_relation_friend = scope:target
@@ -637,12 +701,12 @@ scripted_trigger hp_miscarriage_scheme_ongoing_3005_favor_agent_trigger = {
 	}
 }
 
-scripted_trigger hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = {
+scripted_trigger calyver_scheme_ongoing_3005_other_agent_trigger = {
 	basic_is_available_ai = yes
 }
 
 
-hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
+calyver_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 	type = character_event
 	title = {
 		first_valid = {
@@ -651,7 +715,7 @@ hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
-				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				trigger = { scope:scheme = { scheme_type = abort } }
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
@@ -678,7 +742,7 @@ hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 			NOT = { has_variable = had_intrigue_scheme_ongoing_3005_event }
 			OR = {
 				scheme_type = favor
-				any_scheme_agent = { hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = yes }
+				any_scheme_agent = { calyver_scheme_ongoing_3005_other_agent_trigger = yes }
 			}
 		}
 		exists = scope:target.host
@@ -709,7 +773,7 @@ hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 			#Try to save a random agent
 			scope:scheme = {
 				random_scheme_agent = {
-					limit = { hp_miscarriage_scheme_ongoing_3005_favor_agent_trigger = yes }
+					limit = { calyver_scheme_ongoing_3005_favor_agent_trigger = yes }
 					save_scope_as = favor_agent
 					add_character_flag = {
 						flag = use_stealth_clothes
@@ -726,7 +790,7 @@ hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 		else = {
 			scope:scheme = {
 				random_scheme_agent = {
-					limit = { hp_miscarriage_scheme_ongoing_3005_other_agent_trigger = yes }
+					limit = { calyver_scheme_ongoing_3005_other_agent_trigger = yes }
 					save_scope_as = pigeon_recipient
 					add_character_flag = {
 						flag = use_stealth_clothes
@@ -833,7 +897,7 @@ hp_miscarriage_scheme_ongoing.3005 = { #by Mathilda Bjarnehed
 # by Letter Translation by Daniel Moore #
 #########################################
 
-hp_miscarriage_scheme_ongoing.3010 = {
+calyver_scheme_ongoing.3010 = {
 	type = character_event
 	title = intrigue_scheme_ongoing.3010.t
 	desc = intrigue_scheme_ongoing.3010.desc
@@ -905,7 +969,7 @@ hp_miscarriage_scheme_ongoing.3010 = {
 # Secret Code by Daniel Moore #
 ###############################
 
-hp_miscarriage_scheme_ongoing.3011 = { #By Daniel Moore
+calyver_scheme_ongoing.3011 = { #By Daniel Moore
 	type = character_event
 	title = intrigue_scheme_ongoing.3011.t
 	desc = intrigue_scheme_ongoing.3011.desc
@@ -1014,7 +1078,7 @@ hp_miscarriage_scheme_ongoing.3011 = { #By Daniel Moore
 # by Linnéa Thimrén
 ###########################################
 
-hp_miscarriage_scheme_ongoing.5001 = {
+calyver_scheme_ongoing.5001 = {
 	type = character_event
 	title = {
 		first_valid = {
@@ -1023,7 +1087,7 @@ hp_miscarriage_scheme_ongoing.5001 = {
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
-				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				trigger = { scope:scheme = { scheme_type = abort } }
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
@@ -1112,7 +1176,7 @@ hp_miscarriage_scheme_ongoing.5001 = {
 # Gift them poisonous gold
 # by Linnéa Thimrén
 ###########################################
-hp_miscarriage_scheme_ongoing.5005 = {
+calyver_scheme_ongoing.5005 = {
 	type = character_event
 	title = intrigue_scheme_ongoing.5005.t
 	desc = intrigue_scheme_ongoing.5005.desc
@@ -1232,7 +1296,7 @@ hp_miscarriage_scheme_ongoing.5005 = {
 }
 
 #Your spymaster touched the gold!
-hp_miscarriage_scheme_ongoing.5008 = {
+calyver_scheme_ongoing.5008 = {
 	type = character_event
 	title = intrigue_scheme_ongoing.5007.t
 	desc = {
@@ -1265,7 +1329,7 @@ hp_miscarriage_scheme_ongoing.5008 = {
 # by Linnéa Thimrén
 ###########################################
 
-hp_miscarriage_scheme_ongoing.5019 = {
+calyver_scheme_ongoing.5019 = {
 	type = character_event
 	title = {
 		first_valid = {
@@ -1274,7 +1338,7 @@ hp_miscarriage_scheme_ongoing.5019 = {
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
-				trigger = { scope:scheme = { scheme_type = miscarriage } }
+				trigger = { scope:scheme = { scheme_type = abort } }
 				desc = sabotage_event_title
 			}
 			triggered_desc = {
