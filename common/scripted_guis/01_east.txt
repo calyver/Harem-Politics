@@ -1,0 +1,57 @@
+﻿east_update_harem_list = {
+	scope = character
+	
+	effect = {
+		# Clears lists
+		clear_variable_list = harem_spouse_list
+		clear_variable_list = harem_concubine_list
+		clear_variable_list = harem_spouse_house_list
+		
+		every_living_character = {
+			limit = { 
+				is_spouse_of = root
+			}
+			save_scope_as = spouse_ally
+			root = {
+				add_to_variable_list = {
+					name = harem_spouse_list
+					target = scope:spouse_ally
+				}
+			}
+		}
+		ordered_living_character = {
+			limit = { 
+				is_landed = yes
+				exists = scope:spouse_ally.house
+				OR = { 
+					house = scope:spouse_ally.house
+					is_close_family_of = scope:spouse_ally
+				}
+				highest_held_title_tier >= tier_county
+			}
+			order_by = tier
+			max = 10
+			save_scope_as = spouse_ally_house
+			root = {
+				add_to_variable_list = {
+					name = harem_spouse_house_list
+					target = scope:spouse_ally_house
+				}
+			}
+		}
+		every_living_character = {
+			limit = { 
+				#has_relation_lover = root
+				is_consort_of = root
+				NOT = { is_spouse_of = root }
+			}
+			save_scope_as = concubine_ally
+			root = {
+				add_to_variable_list = {
+					name = harem_concubine_list
+					target = scope:concubine_ally
+				}
+			}
+		}
+	}
+}
