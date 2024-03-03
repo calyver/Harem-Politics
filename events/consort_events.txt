@@ -543,18 +543,15 @@ scripted_trigger threatening_pregnant_consort_trigger = {
 	has_trait = pregnant #Because 1-month pregnant characters count as pregnant without showing the signs
 	NOR = {
 		this = root
-		has_relation_best_friend = root
-		has_relation_friend = root
 		has_relation_soulmate = root
 		has_relation_lover = root
 	}
-	is_courtier_of = $PARTNER$
-	#OR = {
-	#	is_courtier_of = $PARTNER$
-	#	any_liege_or_above = {
-	#		this = $PARTNER$
-	#	}
-	#}
+	OR = {
+		is_courtier_of = $PARTNER$
+		any_liege_or_above = {
+			this = $PARTNER$
+		}
+	}
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -12510,7 +12507,7 @@ consort_events.0019 = {
 ##############################
 consort_events.0020 = {
 	type = character_event
-	title = consort_events.0020.t
+	title = consort_events.0019.t
 	desc = consort_events.0020.desc
 	theme = corruption
 	override_background = {
@@ -12530,9 +12527,6 @@ consort_events.0020 = {
 		any_consort = {
 			is_landed = yes
 			highest_held_title_tier >= tier_county
-			any_consort = {
-				this = scope:actor
-			}
 			save_temporary_scope_as = temporary_partner
 			any_consort = {
 				threatening_pregnant_consort_trigger = { PARTNER = scope:temporary_partner }
@@ -12542,7 +12536,7 @@ consort_events.0020 = {
 		NOR = {
 			exists = scope:is_being_divorced
 			exists = scope:is_being_set_aside
-			has_character_flag = flag_considered_ruining_pregnancy_
+			has_character_flag = attempted_miscarriage_flag
 		}
 		
 		OR = {
@@ -12561,14 +12555,6 @@ consort_events.0020 = {
 	}
 	
 	immediate = {
-		show_as_tooltip = {
-			stress_impact = {
-				compassionate = major_stress_impact_gain
-				forgiving = major_stress_impact_gain
-				honest = medium_stress_impact_gain
-				just = medium_stress_impact_gain
-			}
-		}
 		random_consort = {
 			limit = {
 				is_landed = yes
@@ -12590,8 +12576,7 @@ consort_events.0020 = {
 		duel = {
 			skill = intrigue
 			target = scope:recipient
-			# Not caught
-			50 = {
+			50 = { # Not caught
 				compare_modifier = {
 					value = scope:duel_value
 					multiplier = 2.5
@@ -12626,6 +12611,16 @@ consort_events.0020 = {
 					scope:recipient = {
 						has_trait = deceitful
 					}
+				}
+				modifier = { #Herbalist
+					add = -15
+					scope:recipient = {
+						has_trait = lifestyle_herbalist
+					}
+				}
+				modifier = { #Herbalist
+					add = 15
+					has_trait = lifestyle_herbalist
 				}
 				modifier = { #Scheming consorts
 					add = -15
@@ -12663,15 +12658,15 @@ consort_events.0020 = {
 					is_concubine = yes
 				}
 				modifier = { #Spouses have authority
-					add = 20
+					add = 10
 					is_married = yes
 				}
 				modifier = { #The Grand Consort too
-					add = 20
+					add = 5
 					has_court_position = grand_consort_court_position
 				}
 				modifier = { #The Main Spouse and parents do more
-					add = 25
+					add = 10
 					OR = { 	
 						AND = { 
 							exists = scope:partner.primary_spouse
@@ -12688,19 +12683,19 @@ consort_events.0020 = {
 					}
 				}
 				modifier = { #Spouses have authority
-					add = -20
+					add = -10
 					scope:recipient = {
 						is_married = yes
 					}
 				}
 				modifier = { #The Grand Consort too
-					add = -20
+					add = -5
 					scope:recipient = {
 						has_court_position = grand_consort_court_position
 					}
 				}
 				modifier = { #The Main Spouse and parents do more
-					add = -25
+					add = -10
 					scope:recipient = { 	
 						OR = { 	
 							AND = { 
@@ -12712,12 +12707,226 @@ consort_events.0020 = {
 					}
 				}
 				
+				modifier = { #Intelligent consorts
+					add = -5
+					scope:recipient = {
+						has_trait = intellect_good_1
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = -10
+					scope:recipient = {
+						has_trait = intellect_good_2
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = -15
+					scope:recipient = {
+						has_trait = intellect_good_3
+					}
+				}
+
+				modifier = { #Intelligent consorts
+					add = 5
+					has_trait = intellect_good_1
+				}
+				modifier = { #Intelligent consorts
+					add = 7
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent consorts
+					add = 10
+					has_trait = intellect_good_3
+				}
+
 				#Actual effect
+				custom_tooltip = consort_events.0020.success
+				set_local_variable = {
+					name = short_method_miscarriage
+					value = yes
+				}
 				trigger_event = {
 					id = consort_events.0021
 					days = { 10 20 }
 				}
 			}
+			50 = { # Caught
+				compare_modifier = {
+					value = scope:duel_value
+					multiplier = -2.5
+					min = -50
+				}
+				modifier = { #Paranoid consorts
+					add = 10
+					scope:recipient = {
+						has_trait = paranoid
+					}
+				}
+				modifier = { #Rivals
+					add = 5
+					scope:recipient = {
+						has_relation_potential_rival = root
+					}
+				}
+				modifier = { #Friends
+					add = 10
+					scope:recipient = {
+						has_relation_rival = root
+					}
+				}
+				modifier = { #Friends
+					add = 15
+					scope:recipient = {
+						has_relation_nemesis = root
+					}
+				}
+				modifier = { #Traits
+					add = 15
+					scope:recipient = {
+						has_trait = deceitful
+					}
+				}
+				modifier = { #Herbalist
+					add = 15
+					scope:recipient = {
+						has_trait = lifestyle_herbalist
+					}
+				}
+				modifier = { #Herbalist
+					add = -15
+					has_trait = lifestyle_herbalist
+				}
+				modifier = { #Scheming consorts
+					add = 15
+					scope:recipient = {
+						has_character_modifier = scheming_consort_modifier
+					}
+				}
+				modifier = { #Vigilant consorts
+					add = 15
+					scope:recipient = {
+						has_character_modifier = more_vigilant_recistance_modifier
+					}
+				}
+				opinion_modifier = {
+					who = scope:recipient
+					opinion_target = root
+					min = -30
+					max = 30
+					multiplier = -1
+				}
+				
+				modifier = { #Favored consorts are harder to target
+					add = 15
+					scope:recipient = {
+						has_character_modifier = favored_consort_modifier
+					}
+				}
+				modifier = { #Favored consorts have more servants at their disposal
+					add = -15
+					has_character_modifier = favored_consort_modifier
+				}
+				
+				modifier = { #Concubines have less servants at their disposal
+					add = 10
+					is_concubine = yes
+				}
+				modifier = { #Spouses have authority
+					add = -10
+					is_married = yes
+				}
+				modifier = { #The Grand Consort too
+					add = -5
+					has_court_position = grand_consort_court_position
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = -10
+					OR = { 	
+						AND = { 
+							exists = scope:partner.primary_spouse
+							this = scope:partner.primary_spouse
+						}
+						is_parent_of = scope:partner
+					}
+				}
+				
+				modifier = { #Spouses have authority
+					add = -10
+					scope:recipient = {
+						is_concubine = yes
+					}
+				}
+				modifier = { #Spouses have authority
+					add = 10
+					scope:recipient = {
+						is_married = yes
+					}
+				}
+				modifier = { #The Grand Consort too
+					add = 5
+					scope:recipient = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = 10
+					scope:recipient = { 	
+						OR = { 	
+							AND = { 
+								exists = scope:partner.primary_spouse
+								this = scope:partner.primary_spouse
+							}
+							is_parent_of = scope:partner
+						}
+					}
+				}
+				
+				modifier = { #Intelligent consorts
+					add = 5
+					scope:recipient = {
+						has_trait = intellect_good_1
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = 10
+					scope:recipient = {
+						has_trait = intellect_good_2
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = 15
+					scope:recipient = {
+						has_trait = intellect_good_3
+					}
+				}
+
+				modifier = { #Intelligent consorts
+					add = -5
+					has_trait = intellect_good_1
+				}
+				modifier = { #Intelligent consorts
+					add = -7
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent consorts
+					add = -10
+					has_trait = intellect_good_3
+				}
+
+				#Actual effect
+				custom_tooltip = consort_events.0020.failure
+				scope:partner = {
+					trigger_event = {
+						id = harem_politics.0021
+						days = { 10 20 }
+					}
+				}
+			}
+		}
+
+		add_character_flag = {
+			flag = attempted_miscarriage_flag
+			months = 6
 		}
 		
 		stress_impact = {
@@ -12726,8 +12935,8 @@ consort_events.0020 = {
 			forgiving = minor_stress_impact_gain
 			just = minor_stress_impact_gain
 			temperate = minor_stress_impact_gain
-			calm = minor_stress_impact_gain
 			loyal = minor_stress_impact_gain
+			zealous = minor_stress_impact_gain
 		}
 		
 		ai_chance = {
@@ -12737,14 +12946,13 @@ consort_events.0020 = {
 				ai_compassion = -0.25
 				ai_greed = 0.25
 				ai_honor = -0.25
-				ai_energy = 0.10
 			}
 			modifier = { #Traits
 				add = 20
 				has_trait = disloyal
 			}
 			modifier = { #Traits
-				add = 15
+				add = 5
 				has_trait = brave
 			}
 			modifier = { #Traits
@@ -12756,7 +12964,7 @@ consort_events.0020 = {
 				has_trait = greedy
 			}
 			modifier = { #Traits
-				add = 10
+				add = 5
 				has_trait = cynical
 			}
 			modifier = { #Traits
@@ -12774,10 +12982,6 @@ consort_events.0020 = {
 			modifier = { #Traits
 				add = -20
 				has_trait = zealous
-			}
-			modifier = { #Traits
-				add = 10
-				has_trait = paranoid
 			}
 			modifier = { #Traits
 				add = -50
@@ -12808,20 +13012,66 @@ consort_events.0020 = {
 				has_trait = calm
 			}
 			modifier = { #Traits
-				add = -15
+				add = -5
 				has_trait = shy
 			}
 			modifier = { #Traits
-				add = -15
+				add = -5
 				has_trait = humble
 			}
 			modifier = { #Scheming Consorts
-				add = 15
+				add = 10
 				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Evil Consorts
+				add = 5
+				harem_politics_evil_consort_trigger = yes
+			}
+			modifier = { #Intrigue
+				add = 10
+				intrigue < medium_skill_rating
+			}
+			modifier = { #Intellect
+				add = 10
+				has_trait = intellect_bad
 			}
 			modifier = { #Consort Ling
 				has_character_flag = flag_yanwan
 				add = 15
+			}
+			modifier = { #You're a powerful consort
+				add = 10
+				OR = {
+					AND = {
+						exists = scope:partner.primary_spouse
+						this = scope:partner.primary_spouse
+					}
+					has_court_position = grand_consort_court_position
+					is_spouse_of = scope:partner
+				}
+			}
+			modifier = { #She's a powerful consort
+				add = 10
+				scope:recipient = {
+					OR = {
+						AND = {
+							exists = scope:partner.primary_spouse
+							this = scope:partner.primary_spouse
+						}
+						has_court_position = grand_consort_court_position
+						is_spouse_of = scope:partner
+						has_character_modifier = favored_consort_modifier
+					}
+				}
+			}
+
+			modifier = { #You're favored
+				has_character_modifier = favored_consort_modifier
+				add = 15
+			}
+			modifier = { #You're unfavored
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
 			}
 			
 			opinion_modifier = {
@@ -12834,10 +13084,667 @@ consort_events.0020 = {
 		}
 	}
 	
+	#End the pregnancy - long method
+	option = {
+		name = consort_events.0020.b
+		trigger = {
+			scope:recipient = {
+				pregnancy_month <= 6
+			}
+		}
+		show_as_unavailable = { 
+			custom_tooltip = { text = advanced_pregnancy } 
+			scope:recipient = {
+				pregnancy_month > 6
+			}
+		}
+
+		duel = {
+			skill = intrigue
+			target = scope:recipient
+			65 = { # Not caught
+				compare_modifier = {
+					value = scope:duel_value
+					multiplier = 2
+					min = -50
+				}
+				modifier = { #Trusting consorts
+					add = 15
+					scope:recipient = {
+						has_trait = trusting
+					}
+				}
+				modifier = { #Friends
+					add = 7
+					scope:recipient = {
+						has_relation_potential_friend = root
+					}
+				}
+				modifier = { #Friends
+					add = 12
+					scope:recipient = {
+						has_relation_friend = root
+					}
+				}
+				modifier = { #Friends
+					add = 20
+					scope:recipient = {
+						has_relation_best_friend = root
+					}
+				}
+				modifier = { #Traits
+					add = -15
+					scope:recipient = {
+						has_trait = deceitful
+					}
+				}
+				modifier = { #Herbalist
+					add = -15
+					scope:recipient = {
+						has_trait = lifestyle_herbalist
+					}
+				}
+				modifier = { #Herbalist
+					add = 15
+					has_trait = lifestyle_herbalist
+				}
+				modifier = { #Scheming consorts
+					add = -15
+					scope:recipient = {
+						has_character_modifier = scheming_consort_modifier
+					}
+				}
+				modifier = { #Vigilant consorts
+					add = -15
+					scope:recipient = {
+						has_character_modifier = more_vigilant_recistance_modifier
+					}
+				}
+				opinion_modifier = {
+					who = scope:recipient
+					opinion_target = root
+					min = -30
+					max = 30
+					multiplier = 1
+				}
+				
+				modifier = { #Favored consorts are harder to target
+					add = -12
+					scope:recipient = {
+						has_character_modifier = favored_consort_modifier
+					}
+				}
+				modifier = { #Favored consorts have more servants at their disposal
+					add = 12
+					has_character_modifier = favored_consort_modifier
+				}
+				
+				modifier = { #Concubines have less servants at their disposal
+					add = -10
+					is_concubine = yes
+				}
+				modifier = { #Spouses have authority
+					add = 15
+					is_married = yes
+				}
+				modifier = { #The Grand Consort too
+					add = 7
+					has_court_position = grand_consort_court_position
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = 15
+					OR = { 	
+						AND = { 
+							exists = scope:partner.primary_spouse
+							this = scope:partner.primary_spouse
+						}
+						is_parent_of = scope:partner
+					}
+				}
+				
+				modifier = { #Spouses have authority
+					add = 10
+					scope:recipient = {
+						is_concubine = yes
+					}
+				}
+				modifier = { #Spouses have authority
+					add = -12
+					scope:recipient = {
+						is_married = yes
+					}
+				}
+				modifier = { #The Grand Consort too
+					add = -7
+					scope:recipient = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = -15
+					scope:recipient = { 	
+						OR = { 	
+							AND = { 
+								exists = scope:partner.primary_spouse
+								this = scope:partner.primary_spouse
+							}
+							is_parent_of = scope:partner
+						}
+					}
+				}
+				
+				modifier = { #Intelligent consorts
+					add = -5
+					scope:recipient = {
+						has_trait = intellect_good_1
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = -10
+					scope:recipient = {
+						has_trait = intellect_good_2
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = -15
+					scope:recipient = {
+						has_trait = intellect_good_3
+					}
+				}
+
+				modifier = { #Intelligent consorts
+					add = 5
+					has_trait = intellect_good_1
+				}
+				modifier = { #Intelligent consorts
+					add = 7
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent consorts
+					add = 10
+					has_trait = intellect_good_3
+				}
+
+				#Actual effect
+				custom_tooltip = consort_events.0020.success
+				set_local_variable = {
+					name = long_method_miscarriage
+					value = yes
+				}
+				trigger_event = {
+					id = consort_events.0021
+					days = { 60 120 }
+				}
+			}
+			35 = { # Caught
+				compare_modifier = {
+					value = scope:duel_value
+					multiplier = -2
+					min = -50
+				}
+				modifier = { #Trusting consorts
+					add = -17
+					scope:recipient = {
+						has_trait = trusting
+					}
+				}
+				modifier = { #Friends
+					add = -7
+					scope:recipient = {
+						has_relation_potential_friend = root
+					}
+				}
+				modifier = { #Friends
+					add = -12
+					scope:recipient = {
+						has_relation_friend = root
+					}
+				}
+				modifier = { #Friends
+					add = -20
+					scope:recipient = {
+						has_relation_best_friend = root
+					}
+				}
+				modifier = { #Traits
+					add = 15
+					scope:recipient = {
+						has_trait = deceitful
+					}
+				}
+				modifier = { #Herbalist
+					add = 15
+					scope:recipient = {
+						has_trait = lifestyle_herbalist
+					}
+				}
+				modifier = { #Herbalist
+					add = -15
+					has_trait = lifestyle_herbalist
+				}
+				modifier = { #Scheming consorts
+					add = 15
+					scope:recipient = {
+						has_character_modifier = scheming_consort_modifier
+					}
+				}
+				modifier = { #Vigilant consorts
+					add = 15
+					scope:recipient = {
+						has_character_modifier = more_vigilant_recistance_modifier
+					}
+				}
+				opinion_modifier = {
+					who = scope:recipient
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = -1
+				}
+				
+				modifier = { #Favored consorts are harder to target
+					add = 12
+					scope:recipient = {
+						has_character_modifier = favored_consort_modifier
+					}
+				}
+				modifier = { #Favored consorts have more servants at their disposal
+					add = -12
+					has_character_modifier = favored_consort_modifier
+				}
+				
+				modifier = { #Concubines have less servants at their disposal
+					add = 10
+					is_concubine = yes
+				}
+				modifier = { #Spouses have authority
+					add = -15
+					is_married = yes
+				}
+				modifier = { #The Grand Consort too
+					add = -7
+					has_court_position = grand_consort_court_position
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = -15
+					OR = { 	
+						AND = { 
+							exists = scope:partner.primary_spouse
+							this = scope:partner.primary_spouse
+						}
+						is_parent_of = scope:partner
+					}
+				}
+				
+				modifier = { #Spouses have authority
+					add = -10
+					scope:recipient = {
+						is_concubine = yes
+					}
+				}
+				modifier = { #Spouses have authority
+					add = 12
+					scope:recipient = {
+						is_married = yes
+					}
+				}
+				modifier = { #The Grand Consort too
+					add = 7
+					scope:recipient = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				modifier = { #The Main Spouse and parents do more
+					add = 15
+					scope:recipient = { 	
+						OR = { 	
+							AND = { 
+								exists = scope:partner.primary_spouse
+								this = scope:partner.primary_spouse
+							}
+							is_parent_of = scope:partner
+						}
+					}
+				}
+				
+				modifier = { #Intelligent consorts
+					add = 5
+					scope:recipient = {
+						has_trait = intellect_good_1
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = 10
+					scope:recipient = {
+						has_trait = intellect_good_2
+					}
+				}
+				modifier = { #Intelligent consorts
+					add = 15
+					scope:recipient = {
+						has_trait = intellect_good_3
+					}
+				}
+
+				modifier = { #Intelligent consorts
+					add = -5
+					has_trait = intellect_good_1
+				}
+				modifier = { #Intelligent consorts
+					add = -7
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent consorts
+					add = -10
+					has_trait = intellect_good_3
+				}
+
+				#Actual effect
+				custom_tooltip = consort_events.0020.failure
+				scope:partner = {
+					trigger_event = {
+						id = harem_politics.0021
+						days = { 20 120 }
+					}
+				}
+			}
+		}
+
+		add_character_flag = {
+			flag = attempted_miscarriage_flag
+			months = 6
+		}
+		
+		stress_impact = {
+			honest = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+			just = minor_stress_impact_gain
+			temperate = minor_stress_impact_gain
+			loyal = minor_stress_impact_gain
+			zealous = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 10
+			ai_value_modifier = {
+				ai_boldness = 0.25
+				ai_compassion = -0.25
+				ai_greed = 0.25
+				ai_honor = -0.25
+			}
+			modifier = { #Traits
+				add = 20
+				has_trait = disloyal
+			}
+			modifier = { #Traits
+				add = 5
+				has_trait = brave
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = ambitious
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = greedy
+			}
+			modifier = { #Traits
+				add = 5
+				has_trait = cynical
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = deceitful
+			}
+			modifier = { #Traits
+				add = -15
+				has_trait = craven
+			}
+			modifier = { #Traits
+				add = -25
+				has_trait = loyal
+			}
+			modifier = { #Traits
+				add = -20
+				has_trait = zealous
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = lazy
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = honest
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = compassionate
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = forgiving
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = just
+			}
+			modifier = { #Traits
+				add = -50
+				has_trait = temperate
+			}
+			modifier = { #Traits
+				add = -20
+				has_trait = calm
+			}
+			modifier = { #Traits
+				add = -5
+				has_trait = shy
+			}
+			modifier = { #Traits
+				add = -5
+				has_trait = humble
+			}
+			modifier = { #Scheming Consorts
+				add = 10
+				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Evil Consorts
+				add = 5
+				harem_politics_evil_consort_trigger = yes
+			}
+			modifier = { #Intrigue
+				add = 10
+				intrigue >= medium_skill_rating
+			}
+			modifier = { #Intellect
+				add = 10
+				has_trait = intellect_good
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_yanwan
+				add = 15
+			}
+			modifier = { #You're a powerful consort
+				add = 10
+				OR = {
+					AND = {
+						exists = scope:partner.primary_spouse
+						this = scope:partner.primary_spouse
+					}
+					has_court_position = grand_consort_court_position
+					is_spouse_of = scope:partner
+				}
+			}
+			modifier = { #She's a powerful consort
+				add = 10
+				scope:recipient = {
+					OR = {
+						AND = {
+							exists = scope:partner.primary_spouse
+							this = scope:partner.primary_spouse
+						}
+						has_court_position = grand_consort_court_position
+						is_spouse_of = scope:partner
+						has_character_modifier = favored_consort_modifier
+					}
+				}
+			}
+
+			modifier = { #You're favored
+				has_character_modifier = favored_consort_modifier
+				add = 15
+			}
+			modifier = { #You're unfavored
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
+			}
+			
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:recipient
+				min = -30
+				max = 30
+				multiplier = -1
+			}
+		}
+	}
+
 	#Nope
 	option = {
 		name = consort_events.0020.c
-		#Add modifiers
+		stress_impact = {
+			ambitious = minor_stress_impact_gain
+			greedy = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 10
+			ai_value_modifier = {
+				ai_boldness = -0.25
+				ai_compassion = 0.25
+				ai_greed = -0.25
+				ai_honor = 0.25
+			}
+			modifier = { #Traits
+				add = -10
+				has_trait = disloyal
+			}
+			modifier = { #Traits
+				add = -5
+				has_trait = brave
+			}
+			modifier = { #Traits
+				add = -25
+				has_trait = ambitious
+			}
+			modifier = { #Traits
+				add = -25
+				has_trait = greedy
+			}
+			modifier = { #Traits
+				add = -5
+				has_trait = cynical
+			}
+			modifier = { #Traits
+				add = -10
+				has_trait = deceitful
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = craven
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = loyal
+			}
+			modifier = { #Traits
+				add = 20
+				has_trait = zealous
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = lazy
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = honest
+			}
+			modifier = { #Traits
+				add = 50
+				has_trait = compassionate
+			}
+			modifier = { #Traits
+				add = 50
+				has_trait = forgiving
+			}
+			modifier = { #Traits
+				add = 50
+				has_trait = just
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = temperate
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = calm
+			}
+			modifier = { #Traits
+				add = 5
+				has_trait = shy
+			}
+			modifier = { #Traits
+				add = 5
+				has_trait = humble
+			}
+			modifier = { #Scheming Consorts
+				add = -5
+				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Good Consorts
+				add = 5
+				harem_politics_evil_consort_trigger = no
+			}
+			modifier = { #Intrigue
+				add = -5
+				intrigue >= medium_skill_rating
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_yanwan
+				add = -15
+			}
+			modifier = { #You're a weak consort
+				add = 20
+				is_concubine = yes
+				is_grand_consort_trigger = no
+			}
+			modifier = { #She's a weak consort
+				add = 20
+				scope:recipient = {
+					is_concubine = yes
+					is_grand_consort_trigger = no
+					NOT = { has_character_modifier = favored_consort_modifier }
+				}
+			}
+
+			modifier = { #You're favored
+				has_character_modifier = favored_consort_modifier
+				add = -10
+			}
+			modifier = { #You're unfavored
+				has_character_modifier = unfavored_consort_modifier
+				add = 5
+			}
+			
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:recipient
+				min = -30
+				max = 30
+				multiplier = -1
+			}
+		}
 	}
 	
 }
@@ -12845,7 +13752,7 @@ consort_events.0020 = {
 ######################
 ##More hidden events##
 ######################
-##Successful pregnancy termination - rushed way##
+##Discreet pregnancy termination - rushed way##
 consort_events.0021 = {
 	#type = character_event
 	#title = harem_politics.000.t
@@ -12876,23 +13783,182 @@ consort_events.0021 = {
 					threatening_pregnant_consort_trigger = { PARTNER = scope:partner }
 				}
 			}
-			scope:recipient = {
-				harem_politics_risky_not_caught_pregnancy_effect = yes
+			if = {
+				limit = {
+					exists = local_var:short_method_miscarriage
+				}
+				scope:recipient = {
+					harem_politics_risky_not_caught_pregnancy_effect = yes
+				}
+			}
+			else_if = {
+				limit = {
+					exists = local_var:long_method_miscarriage
+				}
+				scope:recipient = {
+					harem_politics_riskfree_not_caught_pregnancy_effect = yes
+				}
 			}
 		}
-		else_if = {
-			limit = {
-				scope:recipient = {
-					OR = {
-						is_pregnant = no
-						is_alive = no
-					}
-				}		
-			}
+		else = {
 			scope:actor = {
-				#Send just a toast
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = unvalid_miscarriage_t
+					right_icon = scope:recipient
+					custom_tooltip = unvalid_miscarriage_desc
+				}
 			}
 		}		
 	}
 	
+}
+
+#############################
+##Miscarriage notifications##
+#############################
+##Notification for pregnant consort##
+consort_events.0022 = {
+	type = character_event
+	title = consort_events.0022.t
+	desc = {
+		desc = consort_events.0022.start.desc
+		first_valid = {
+			triggered_desc = { #They were punished
+				trigger = {
+					scope:schemer = {
+						is_imprisoned_by = scope:partner
+					}
+				}
+				desc = consort_events.0022.arrested.desc
+			}
+			triggered_desc = { #They weren't
+				desc = consort_events.0022.generic.desc
+			}
+		}
+		desc = consort_events.0022.end.desc
+	}
+	theme = corruption
+	override_background = {
+		reference = corridor_night
+	}
+	
+	left_portrait = { 	
+		character = scope:schemer
+		animation = shock
+	}
+	right_portrait = { 	
+		character = root
+		animation = worry
+	}
+	
+	trigger = {
+	}
+	
+	immediate = {
+		scope:schemer = {
+			save_scope_as = secondary_actor
+		}
+		worsening_relationship_consort_effect = yes
+		show_as_tooltip = {
+			add_opinion = {
+				target = scope:schemer
+				modifier = hatred_spouse_opinion
+			}
+		}
+		add_character_modifier = {#
+			modifier = more_vigilant_recistance_modifier
+			years = 2
+		}
+	}
+
+	option = {
+		name = consort_events.0022.a
+		
+		ai_chance = {
+			base = 10
+		}
+	}
+	
+}
+
+##Success##
+consort_events.0026 = {
+	type = character_event
+	title = consort_events.0026.t
+	desc = {
+		desc = consort_events.0026.start.desc
+		first_valid = { #Intro
+			triggered_desc = {
+				trigger = {
+					scope:recipient = {
+						has_trait = ill
+					}
+				}
+				desc = consort_events.0026.ill.desc
+			}
+			triggered_desc = {
+				trigger = {
+					scope:recipient = {
+						is_alive = no
+					}
+				}
+				desc = consort_events.0026.dead.desc
+			}
+			triggered_desc = {
+				desc = consort_events.0026.generic.desc
+			}
+		}
+		desc = consort_events.0026.end.desc
+	}
+	theme = corruption
+	override_background = {
+		reference = corridor_night
+	}
+	
+	left_portrait = { 	
+		character = scope:actor
+		animation = schadenfreude
+	}
+	right_portrait = { 	
+		character = scope:recipient
+		animation = sadness
+	}
+	
+	immediate = {
+		show_as_tooltip = {
+			scope:recipient = {
+				if = {
+					limit = {
+						is_alive = yes
+					}
+					pregnancy_cleanup_effect = yes
+					if = {
+						limit = {
+							has_trait = ill
+						}
+						add_trait = ill
+					}
+				}
+				else = {
+					scope:recipient = {
+						death = { killer = root death_reason = death_treatment }
+					}
+					scope:actor = {
+						add_secret = {
+							type = secret_murder
+							target = scope:recipient
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = consort_events.0026.a
+		ai_chance = {
+			base = 1
+		}
+	}
 }
