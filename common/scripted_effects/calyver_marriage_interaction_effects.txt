@@ -1,0 +1,3805 @@
+﻿calyver_marriage_interaction_on_accept_effect = {
+	#Use hook
+	if = {
+		limit = { 
+			exists = scope:hook 
+			always = scope:hook 
+		}
+		scope:actor = {
+			use_hook = scope:recipient
+		}
+		#To make sure betrothals can't be broken if a hook was used
+		if = {
+			limit = {
+				OR = {
+					scope:secondary_actor = { is_adult = no }
+					scope:secondary_recipient = { is_adult = no }
+				}
+			}
+			scope:secondary_actor = {
+				set_variable = {
+					name = hook_used_for_betrothal
+					value = scope:secondary_recipient
+				}
+			}
+		}
+	}
+
+	#No longer concubine
+	if = {
+		limit = {
+			scope:secondary_recipient = { is_concubine = yes }
+		}
+		scope:secondary_recipient = {
+			random_consort = {
+				limit = {
+					any_concubine = { this = scope:secondary_recipient }
+				}
+				remove_concubine = scope:secondary_recipient
+			}
+			if = {
+				limit = { has_character_flag = flag_scolded_consort }
+				remove_character_flag = flag_scolded_consort
+			}
+		}
+	}
+	if = {
+		limit = {
+			scope:secondary_actor = { is_concubine = yes }
+		}
+		scope:secondary_actor = {
+			random_consort = {
+				limit = {
+					any_concubine = { this = scope:secondary_actor }
+				}
+				remove_concubine = scope:secondary_actor
+			}
+			if = {
+				limit = { has_character_flag = flag_scolded_consort }
+				remove_character_flag = flag_scolded_consort
+			}
+		}
+	}
+	# A Grand Wedding was promised
+	if = {
+		limit = {
+			exists = scope:grand_wedding_promise
+			scope:grand_wedding_promise = yes
+		}
+		set_grand_wedding_betrothal_variables = {
+			SPOUSE_1 = scope:secondary_actor
+			SPOUSE_2 = scope:secondary_recipient
+			HOST = scope:actor
+			PROMISEE = scope:recipient
+		}
+	}
+
+	#Marriage notification events
+	hidden_effect = {
+		scope:actor = {
+			if = {
+				limit = { NOT = { this = scope:recipient } }
+				trigger_event = marriage_interaction.0010
+			}
+			else = { #In my own court
+				if = {
+					limit = { #Betrothal?
+						OR = {
+							scope:secondary_actor = { is_adult = no }
+							scope:secondary_recipient = { is_adult = no }
+							scope:secondary_actor = { has_been_promised_grand_wedding = yes }
+							scope:secondary_recipient = { has_been_promised_grand_wedding = yes }
+						}
+					}
+					send_interface_toast = {
+						title = arrange_marriage_interaction_accept_betrothal_toast
+						left_icon = scope:secondary_actor 
+						right_icon = scope:secondary_recipient
+						custom_tooltip  = arrange_marriage_interaction_accept_betrothal_toast_desc
+					}
+				}
+				else = {
+					send_interface_toast = {
+						title = arrange_marriage_interaction_accept_toast
+						left_icon = scope:secondary_actor 
+						right_icon = scope:secondary_recipient
+						custom_tooltip  = arrange_marriage_interaction_accept_toast_desc
+					}
+				}
+			}
+		}
+
+		# Apply any relevant opinion penalties for relatives of spouse.
+		scope:secondary_actor = {
+			if = { # Polygamy
+				limit = { 
+					any_consort = {
+						count >= 2
+					}
+				}
+				every_consort = {
+					# If the spouse themselves does not believe in polygamy...
+					limit = {
+						NOR = {
+							accepts_polygamy = yes
+							accepts_concubinage = yes
+						}
+					}
+
+					#... then family members who also do not believe in polygamy aren't happy about having a relative forced into polygamous union with you.
+					every_close_family_member = {
+						if = {
+							limit = { 
+								NOR = {
+									accepts_polygamy = yes
+									accepts_concubinage = yes
+								}
+							}
+							add_opinion = {
+								target = scope:secondary_actor
+								modifier = relative_in_blasphemous_union_opinion
+							}
+						}
+					}
+
+					# NOTE: Spouse's own opinions handled in the 'on_marriage' code on_action inside of marriage_concubinage.txt, and are not included here.
+				}
+			}
+		}
+		scope:secondary_recipient = {
+			if = { #Same-sex relations
+				limit = {
+					allowed_to_marry_same_sex_trigger = no
+					sex_same_as = scope:secondary_actor
+				}
+				every_close_family_member = {
+					if = {
+						limit = { 
+							allowed_to_marry_same_sex_trigger = no
+						}
+						add_opinion = {
+							target = scope:secondary_actor
+							modifier = relative_in_blasphemous_union_opinion
+						}
+					}
+				}
+			}
+		}
+		# Courtly vassals like grand weddings
+		scope:secondary_actor = {
+			if = {
+				limit = {
+					any_vassal = {
+						has_vassal_stance = courtly
+					}
+				}
+				if = {
+					limit = {
+						has_been_promised_grand_wedding = yes
+					}
+					every_vassal = {
+						limit = {
+							has_vassal_stance = courtly
+						}
+						add_opinion = {
+							target = scope:secondary_actor
+							modifier = prestigious_wedding_opinion
+						}
+					}
+				}
+			}
+		}
+		scope:secondary_recipient = {
+			if = {
+				limit = {
+					any_vassal = {
+						has_vassal_stance = courtly
+					}
+				}
+				if = {
+					limit = {
+						has_been_promised_grand_wedding = yes
+					}
+					every_vassal = {
+						limit = {
+							has_vassal_stance = courtly
+						}
+						add_opinion = {
+							target = scope:secondary_recipient
+							modifier = prestigious_wedding_opinion
+						}
+					}
+				}
+			}
+		}
+	}
+
+	###MANAGEMENT SCRIPT FOR VARIOUS EVENTS/CONTENT###
+	
+	#If your spouse councillor had boosted the chance of marriage, remove modifier
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				has_character_modifier = heir_easier_to_marry_off_modifier
+			}
+			scope:actor = { player_heir = scope:secondary_actor }
+		}
+		scope:secondary_actor = {
+			remove_character_modifier = heir_easier_to_marry_off_modifier
+		}
+	}
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				is_child_of = scope:actor
+				has_character_modifier = child_easier_to_marry_off_modifier
+			}
+		}
+		scope:secondary_actor = {
+			remove_character_modifier = child_easier_to_marry_off_modifier
+		}
+	}
+
+	#AI Break up consideration after marriage
+	scope:secondary_recipient = { 
+		if = {
+			limit = {
+				is_adult = yes
+				is_ai = yes
+			}
+			scope:secondary_actor = { save_scope_as = new_spouse_secondary_actor }
+			trigger_event = lover.0205
+		}
+	}
+	scope:secondary_actor = {
+		if = {
+			limit = {
+				is_adult = yes
+				is_ai = yes
+			}
+			scope:secondary_recipient = { save_scope_as = new_spouse_secondary_recipient }
+			trigger_event = lover.0205
+		}
+	}
+
+	# Struggle parameters
+
+	#interfaith wedding costs piety
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				NOT = { faith = scope:secondary_recipient.faith }
+			}
+			scope:actor ={
+				any_character_struggle = {
+					has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_costs_piety
+				}
+			}
+		}
+		scope:actor = {
+			add_piety = major_piety_loss
+		}
+	}
+	#interfaith wedding provides piety
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				NOT = { faith = scope:secondary_recipient.faith }
+			}
+			scope:actor ={
+				any_character_struggle = {
+					has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_gives_piety
+				}
+			}
+		}
+		scope:actor = {
+			add_piety = medium_piety_gain
+		}
+	}
+
+	#other stuff 
+	#Khurramites and Mazdakists gain piety from marrying lowborn
+	if = {
+		limit = {
+			scope:secondary_recipient = {
+				is_lowborn = yes 
+			}
+			scope:actor.faith = {
+				has_doctrine = tenet_communal_possessions 
+			}
+		}
+		scope:actor = {
+			add_piety = medium_piety_gain
+		}
+	}
+	calyver_marriage_harem_politics_effect = yes
+}
+
+calyver_marriage_harem_politics_effect = {
+	#Concubines get jealous
+	if = {
+		limit = {
+			scope:secondary_recipient = {
+				any_concubine = {
+					count >= 1
+				}
+			}
+		}
+		scope:secondary_actor = {
+			save_scope_as = new_spouse
+		}
+		hidden_effect = {
+			scope:secondary_recipient = {
+				save_scope_as = current_partner
+				every_concubine = {
+					calyver_update_active_consort_opinion_effect = yes
+				}
+			}
+		}
+		clear_saved_scope = new_spouse
+		clear_saved_scope = current_partner
+	}
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				any_concubine = {
+					count >= 1
+				}
+			}
+		}
+		scope:secondary_recipient = {
+			save_scope_as = new_spouse
+		}
+		hidden_effect = {
+			scope:secondary_actor = {
+				save_scope_as = current_partner
+				every_concubine = {
+					calyver_update_active_consort_opinion_effect = yes
+				}
+			}
+		}
+	}
+	
+	#New consorts
+	scope:secondary_recipient = {
+		add_character_flag = {
+			flag = flag_new_consort
+			years = 2
+		}
+	}
+	scope:secondary_actor = {
+		add_character_flag = {
+			flag = flag_new_consort
+			years = 2
+		}
+	}
+	
+	#Promotions and demotions
+	if = {
+		limit = {
+			OR = {
+				scope:secondary_recipient = {
+					AND = {
+						OR = {
+							has_character_modifier = demoted_primary_spouse_modifier
+							has_character_modifier = demoted_spouse_modifier
+							has_character_flag = flag_demoted_spouse
+							has_character_flag = flag_demoted_grand_consort
+							has_character_flag = flag_divorced_spouse
+							has_character_flag = flag_divorced_grand_consort
+							has_character_flag = flag_divorced_primary_spouse
+						}
+						OR = {
+							has_opinion_modifier = {
+								target = scope:secondary_actor
+								modifier = divorced_me_opinion
+							}
+							has_opinion_modifier = {
+								target = scope:secondary_actor
+								modifier = demoted_me_concubine_marriage_opinion
+							}
+						}
+					}
+				}
+				scope:secondary_actor = {
+					AND = {
+						OR = {
+							has_character_modifier = demoted_primary_spouse_modifier
+							has_character_modifier = demoted_spouse_modifier
+							has_character_flag = flag_demoted_spouse
+							has_character_flag = flag_demoted_grand_consort
+							has_character_flag = flag_divorced_spouse
+							has_character_flag = flag_divorced_grand_consort
+							has_character_flag = flag_divorced_primary_spouse
+						}
+						OR = {
+							has_opinion_modifier = {
+								target = scope:secondary_recipient
+								modifier = divorced_me_opinion
+							}
+							has_opinion_modifier = {
+								target = scope:secondary_recipient
+								modifier = demoted_me_concubine_marriage_opinion
+							}
+						}
+					}
+				}
+			}
+		}
+		spouse_management_effect = yes
+	}
+	else_if = {
+		limit = {
+			NOT = {
+				scope:actor = scope:recipient
+			}
+		}
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = scope:actor
+			TARGET = scope:recipient
+			VALUE = medium_unity_gain
+			DESC = clan_unity_marry_off.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}	
+	}
+	child_promotion_effect = yes
+}
+
+calyver_concubine_on_accept_effect = {
+	scope:recipient = {
+		trigger_event = marriage_interaction.0040
+		if = {
+			# Victim is angry for being forced into concubinage.
+			limit = {
+				is_imprisoned = yes
+			}
+			release_from_prison = yes
+			add_opinion = {
+				target = scope:actor
+				modifier = forced_me_concubine_marriage_opinion
+			}
+
+			# Family members of victim are also angry that you've forced them into concubinage.
+			every_close_family_member = {
+				limit = { 
+					NOT = { this = scope:actor } # Don't hate yourself.
+				}
+				custom = all_family_members
+				add_opinion = {
+					target = scope:actor
+					modifier = forced_family_concubine_marriage_opinion
+				}
+				hidden_effect = {
+					send_interface_message = {
+						type = event_generic_neutral
+						title = msg_close_family_member_taken_as_concubine_title
+						right_icon = scope:recipient
+						left_icon = scope:secondary_actor
+						show_as_tooltip = { scope:secondary_actor = { make_concubine = scope:recipient } }
+					}
+				}
+				# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
+				if = {
+					limit = {
+						OR = {
+							NOT = { accepts_concubinage = yes }
+							NOT = { faith = { has_doctrine = tenet_polyamory } }
+							AND = {
+								allowed_to_marry_same_sex_trigger = no
+								scope:recipient = { sex_same_as = scope:secondary_actor }
+							}
+						}
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = relative_in_blasphemous_union_opinion
+					}
+				}
+			}
+					
+			# Spouses, if any exist, are also furious.
+			if = {
+				limit = {
+					is_married = yes
+				}
+				every_spouse = {
+					hidden_effect = {
+						if = {
+							limit = {
+								exists = primary_spouse
+								primary_spouse = {
+									this = scope:recipient
+								}
+								any_spouse = {
+									count >= 2
+								}
+							}
+							new_primary_spouse_divorce_effect = {
+								PREVIOUS_PS = scope:recipient
+								PARTNER = prev
+							}
+						}
+					}
+					show_as_tooltip = {
+						add_opinion = {
+							target = scope:actor
+							modifier = forced_spouse_concubine_marriage_opinion
+						}
+						divorce = scope:recipient # no additional opinion hit, no scripted effect
+					}
+					trigger_event = marriage_interaction.0041
+				}
+			}
+			
+			# Stealing concubines pisses the former concubinist off.
+			if = {
+				limit = {
+					is_concubine = yes
+				}
+				this.concubinist = {
+					show_as_tooltip = {
+						add_opinion = {
+							target = scope:secondary_actor
+							modifier = stole_concubine_opinion
+						}
+						remove_concubine = scope:recipient # no additional opinion hit, no scripted effect
+					}
+					trigger_event = marriage_interaction.0041
+				}
+			}
+
+			# Break any betrothals which may exist (without additional opinion penalties).
+			if = {
+				limit = { exists = betrothed }
+				betrothed = { trigger_event = marriage_interaction.0041 }
+				break_betrothal = betrothed
+			}
+
+			# Having concubines means they're now no longer yours.
+			if = {
+				limit = { number_of_concubines > 0	}
+				every_concubine = {
+					scope:recipient = {
+						remove_concubine = prev
+					}
+				}
+			}
+			forced_concubine_harem_politics_effect = yes
+		}
+		make_concubine_harem_politics_effect = yes
+	}
+
+	# Send us a notification about what we just did.
+	scope:secondary_actor = {
+		hidden_effect = {
+			send_interface_toast = {
+				type = event_generic_neutral
+				title = msg_concubine_taken_title
+				right_icon = scope:recipient
+				if = {
+					limit = {
+						scope:recipient = {
+							NOT = {
+								is_concubine_of = scope:secondary_actor
+							}
+						}
+					}
+					make_concubine = scope:recipient
+				}
+			}
+		}
+	}
+}
+
+make_concubine_harem_politics_effect = {
+	save_scope_as = target_recipient
+	if = {
+		limit = {
+			AND = {
+				OR = {
+					has_character_flag = flag_divorced_primary_spouse
+					has_character_flag = flag_divorced_grand_consort
+					has_character_flag = flag_divorced_spouse
+				}
+				OR = {
+					any_former_spouse = {
+						this = scope:actor
+					}
+					any_former_concubinist = {
+						this = scope:actor
+					}
+				}
+			}
+		}
+		spouse_demotion_effect = yes
+	}
+	else = {
+		add_character_flag = {
+			flag = flag_new_consort
+			years = 2
+		}
+		
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = scope:actor
+			TARGET = scope:recipient
+			VALUE = minor_unity_gain
+			DESC = clan_unity_concubinage.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}
+	}
+	child_demotion_effect = yes
+	stress_impact = {
+		shy = minor_stress_impact_gain
+		paranoid = minor_stress_impact_gain
+		craven = minor_stress_impact_gain
+		chaste = minor_stress_impact_gain
+	}
+}
+forced_concubine_harem_politics_effect = {
+	#No more mourning
+	if = {
+		limit = {
+			has_character_modifier = mourner_modifier
+		}
+		remove_character_modifier = mourner_modifier
+	}
+	if = {
+		limit = {
+			has_character_modifier = merry_mourner_modifier
+		}
+		remove_character_modifier = merry_mourner_modifier
+	}
+	hidden_effect = {
+		#Remove character flags and modifiers
+		if = {
+			limit = {
+				NOR = {
+					any_former_spouse = {
+						this = scope:actor
+					}
+					any_former_concubinist = {
+						this = scope:actor
+					}
+					any_consort = {
+						this = scope:actor
+					}
+				}
+			}
+			if = { #Demoted primary spouses
+				limit = { 
+					has_character_modifier = demoted_primary_spouse_modifier 
+				}
+				remove_character_modifier = demoted_primary_spouse_modifier
+			}
+			if = { #Demoted spouses
+				limit = { 
+					has_character_modifier = demoted_spouse_modifier 
+				}
+				remove_character_modifier = demoted_spouse_modifier
+			}
+			if = { #Demoted Grand Consorts
+				limit = { 
+					has_character_flag = flag_demoted_grand_consort 
+				}
+				remove_character_flag = flag_demoted_grand_consort
+			}
+			if = { #Demoted spouses
+				limit = { 
+					has_character_flag = flag_demoted_spouse 
+				}
+				remove_character_flag = flag_demoted_spouse
+			}
+			
+			if = { #Divorced primary spouse
+				limit = { 
+					has_character_flag = flag_divorced_primary_spouse 
+				}
+				remove_character_flag = flag_divorced_primary_spouse
+			}
+			if = { #Divorced Grand Consorts
+				limit = { 
+					has_character_flag = flag_divorced_grand_consort 
+				}
+				remove_character_flag = flag_divorced_grand_consort
+			}
+			if = { #Divorced spouses
+				limit = { 
+					has_character_flag = flag_divorced_spouse 
+				}
+				remove_character_flag = flag_divorced_spouse
+			}
+			if = { #Divorced spouses
+				limit = { 
+					has_character_flag = flag_new_consort 
+				}
+				remove_character_flag = flag_new_consort
+			}
+			if = {
+				limit = { has_character_flag = flag_scolded_consort }
+				remove_character_flag = flag_scolded_consort
+			}
+			if = {
+				limit = {
+					any_former_spouse = {
+						count >= 1
+					}
+				}
+				every_former_spouse = {
+					former_consort_forced_concubine_effect = yes
+				}
+			}
+			if = {
+				limit = {
+					any_former_concubinist = {
+						count >= 1
+					}
+				}
+				every_former_concubinist = {
+					former_consort_forced_concubine_effect = yes
+				}
+			}
+		}
+	}
+	if = {
+		limit = { has_character_modifier = favored_consort_modifier }
+		remove_character_modifier = favored_consort_modifier
+	}
+	if = {
+		limit = { has_character_modifier = unfavored_consort_modifier }
+		remove_character_modifier = unfavored_consort_modifier
+	}
+}
+
+former_consort_forced_concubine_effect = {
+	save_scope_as = former_spouse_scope
+	if = {
+		limit = {
+			any_consort = {
+				count >= 2
+			}
+		}
+		every_consort = { #Updating consort opinions
+			if = { #The primary spouse is relieved
+				limit = {
+					has_opinion_modifier = {
+						target = scope:target_recipient
+						modifier = threatening_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = scope:target_recipient
+					modifier = threatening_consort_opinion
+				}
+			}
+			if = { #Other consorts don't feel jealous
+				limit = {
+					has_opinion_modifier = {
+						target = scope:target_recipient
+						modifier = envy_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = scope:target_recipient
+					modifier = envy_consort_opinion
+				}
+			}
+			if = { #Craven consorts don't feel threatened by a despot
+				limit = {
+					AND = {
+						OR = {
+							is_concubine = yes
+							AND = {
+								is_married = yes
+								scope:target_recipient = {
+									AND = {
+										OR = {
+											is_grand_consort_trigger = yes
+											this = scope:former_spouse_scope.primary_spouse
+										}
+										NOR = {
+											has_character_modifier = demoted_primary_spouse_modifier
+											has_character_modifier = demoted_spouse_modifier
+										}
+									}
+								}
+							}
+						}
+						NOR = {
+							has_relation_best_friend = scope:target_recipient
+							has_relation_friend = scope:target_recipient
+							has_relation_soulmate = scope:target_recipient
+							has_relation_lover = scope:target_recipient
+							has_relation_soulmate = scope:former_spouse_scope
+							this = scope:target_recipient
+						}
+						scope:target_recipient = {
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+				}
+				stress_impact = {
+					craven = minor_stress_impact_loss
+					shy = minor_stress_impact_loss
+					paranoid = minor_stress_impact_loss
+				}
+			}
+		}
+		clear_saved_scope = former_spouse_scope
+	}
+}
+
+spouse_management_effect = {
+	scope:secondary_recipient = {
+		#Remarrying your divorced primary spouse
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_primary_spouse
+			}
+			remove_character_flag = flag_divorced_primary_spouse
+			
+			#The secondary_actor has another primary spouse
+			if = {
+				limit = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						NOT = {
+							this = scope:secondary_recipient
+						}
+					}
+				}
+				# If we're a clan this interaction affects unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:actor
+					TARGET = scope:recipient
+					VALUE = minor_unity_loss
+					DESC = clan_unity_demotion.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				add_character_modifier = {
+					modifier = demoted_primary_spouse_modifier
+				}
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = scope:secondary_actor
+					modifier = demoted_me_concubine_marriage_opinion
+				}
+				#Relatives too
+				save_scope_as = demoted_consort_scope
+				scope:secondary_actor = {
+					save_scope_as = demoter
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:secondary_actor } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = scope:secondary_actor
+					}
+					hidden_effect = {
+						send_interface_message = {
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = scope:secondary_recipient
+							left_icon = scope:secondary_actor
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_county }
+					add_prestige = { value = miniscule_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_duchy }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_kingdom }
+					add_prestige = { value = medium_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_empire }
+					add_prestige = { value = major_prestige_loss }
+				}
+			}
+			else_if = { #The secondary_actor has no primary spouse
+				limit = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						this = scope:secondary_recipient
+					}
+				}
+			}
+		}
+		
+		#Remarrying a divorced Grand Consort
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_grand_consort
+			}
+			remove_character_flag = flag_divorced_grand_consort
+			#The secondary_actor has another primary spouse
+			if = {
+				limit = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						NOT = {
+							this = scope:secondary_recipient
+						}
+					}
+				}
+				# If we're a clan this interaction affects unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:actor
+					TARGET = scope:recipient
+					VALUE = minor_unity_loss
+					DESC = clan_unity_demotion.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				add_character_flag = {
+					flag = flag_demoted_grand_consort
+				}
+				add_character_modifier = {
+					modifier = demoted_spouse_modifier
+				}
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = scope:secondary_actor
+					modifier = demoted_me_concubine_marriage_opinion
+				}
+				#Relatives too
+				save_scope_as = demoted_consort_scope
+				scope:secondary_actor = {
+					save_scope_as = demoter
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:secondary_actor } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = scope:secondary_actor
+					}
+					hidden_effect = {
+						send_interface_message = {
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = scope:secondary_recipient
+							left_icon = scope:secondary_actor
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_kingdom }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_actor.primary_title.tier = tier_empire }
+					add_prestige = { value = medium_prestige_loss }
+				}
+			}
+			else_if = { #The secondary_actor has no primary spouse
+				limit = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						this = scope:secondary_recipient
+					}
+				}
+			}
+		}
+		
+		#Remarrying a divorced secondary spouse
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_spouse
+			}
+			remove_character_flag = flag_divorced_spouse
+		}
+		
+		#Remarrying a demoted primary spouse
+		if = {
+			limit = {
+				AND = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						this = scope:secondary_recipient
+					}
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
+			}
+			remove_character_modifier = demoted_primary_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_actor
+				REINSTATED = scope:secondary_recipient
+			}
+		}
+		
+		#Remarrying a demoted Grand Consort
+		if = {
+			limit = {
+				AND = {
+					exists = scope:secondary_actor.primary_spouse 
+					scope:secondary_actor.primary_spouse = {
+						this = scope:secondary_recipient
+					}
+					has_character_flag = flag_demoted_grand_consort
+				}
+			}
+			remove_character_flag = flag_demoted_grand_consort
+			remove_character_modifier = demoted_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_actor
+				REINSTATED = scope:secondary_recipient
+			}
+		}
+		
+		#Remarrying a demoted spouse
+		if = {
+			limit = {
+				has_character_flag = flag_demoted_spouse
+			}
+			remove_character_flag = flag_demoted_spouse
+			remove_character_modifier = demoted_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_actor
+				REINSTATED = scope:secondary_recipient
+			}
+		}
+	}
+	
+	scope:secondary_actor = {
+		#Remarrying your divorced primary spouse
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_primary_spouse
+			}
+			remove_character_flag = flag_divorced_primary_spouse
+			
+			#The secondary_recipient has a new primary spouse
+			if = {
+				limit = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						NOT = {
+							this = scope:secondary_actor
+						}
+					}
+				}
+				# If we're a clan this interaction affects unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:actor
+					TARGET = scope:recipient
+					VALUE = minor_unity_loss
+					DESC = clan_unity_demotion.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				add_character_modifier = {
+					modifier = demoted_primary_spouse_modifier
+				}
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = scope:secondary_recipient
+					modifier = demoted_me_concubine_marriage_opinion
+				}
+				#Relatives too
+				save_scope_as = demoted_consort_scope
+				scope:secondary_recipient = {
+					save_scope_as = demoter
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:secondary_recipient } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = scope:secondary_recipient
+					}
+					hidden_effect = {
+						send_interface_message = {
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = scope:secondary_actor
+							left_icon = scope:secondary_recipient
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_county }
+					add_prestige = { value = miniscule_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_duchy }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_kingdom }
+					add_prestige = { value = medium_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_empire }
+					add_prestige = { value = major_prestige_loss }
+				}
+			}
+			else_if = { #The secondary_recipient has a no spouse
+				limit = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						this = scope:secondary_actor
+					}
+				}
+			}
+		}
+		
+		#Remarrying a divorced Grand Consort
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_grand_consort
+			}
+			remove_character_flag = flag_divorced_grand_consort
+			#The secondary_recipient has a primary spouse
+			if = {
+				limit = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						NOT = {
+							this = scope:secondary_actor
+						}
+					}
+				}
+				# If we're a clan this interaction affects unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:actor
+					TARGET = scope:recipient
+					VALUE = minor_unity_loss
+					DESC = clan_unity_demotion.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				add_character_flag = {
+					flag = flag_demoted_grand_consort
+				}
+				add_character_modifier = {
+					modifier = demoted_spouse_modifier
+				}
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = scope:secondary_recipient
+					modifier = demoted_me_concubine_marriage_opinion
+				}
+				#Relatives too
+				save_scope_as = demoted_consort_scope
+				scope:secondary_recipient = {
+					save_scope_as = demoter
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:secondary_recipient } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = scope:secondary_recipient
+					}
+					hidden_effect = {
+						send_interface_message = {
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = scope:secondary_actor
+							left_icon = scope:secondary_recipient
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_kingdom }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_empire }
+					add_prestige = { value = medium_prestige_loss }
+				}
+			}
+			else_if = { #The secondary_recipient has a no spouse
+				limit = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						this = scope:secondary_actor
+					}	
+				}
+			}
+		}
+		
+		#Remarrying a divorced secondary spouse
+		if = {
+			limit = {
+				has_character_flag = flag_divorced_spouse
+			}
+			remove_character_flag = flag_divorced_spouse
+		}
+		
+		#Remarrying a demoted primary spouse
+		if = {
+			limit = {
+				AND = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						this = scope:secondary_actor
+					}
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
+			}
+			remove_character_modifier = demoted_primary_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_recipient
+				REINSTATED = scope:secondary_actor
+			}
+		}
+		
+		#Remarrying a demoted Grand Consort
+		if = {
+			limit = {
+				AND = {
+					exists = scope:secondary_recipient.primary_spouse
+					scope:secondary_recipient.primary_spouse = {
+						this = scope:secondary_actor
+					}
+					has_character_flag = flag_demoted_grand_consort
+				}
+			}
+			remove_character_flag = flag_demoted_grand_consort
+			remove_character_modifier = demoted_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_recipient
+				REINSTATED = scope:secondary_actor
+			}
+		}
+		
+		#Remarrying a demoted spouse
+		if = {
+			limit = {
+				has_character_flag = flag_demoted_spouse
+			}
+			remove_character_flag = flag_demoted_spouse
+			remove_character_modifier = demoted_spouse_modifier
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:secondary_recipient
+				REINSTATED = scope:secondary_actor
+			}
+		}
+	}
+}
+
+spouse_demotion_effect = {
+	hidden_effect = {	
+		child_demotion_effect = yes
+	}
+	scope:actor = {
+		hidden_effect = {
+			every_consort = {
+				if = { #Craven consorts don't feel threatened by a despot
+					limit = {
+						AND = {
+							OR = {
+								is_concubine = yes
+								AND = {
+									is_married = yes
+									scope:recipient = {
+										AND = {
+											OR = {
+												is_grand_consort_trigger = yes
+												this = scope:actor.primary_spouse
+											}
+											NOR = {
+												has_character_modifier = demoted_primary_spouse_modifier
+												has_character_modifier = demoted_spouse_modifier
+											}
+										}
+									}
+								}
+							}
+							NOR = {
+								has_relation_best_friend = scope:recipient
+								has_relation_friend = scope:recipient
+								has_relation_soulmate = scope:recipient
+								has_relation_lover = scope:recipient
+								has_relation_soulmate = scope:actor
+								this = scope:recipient
+							}
+							scope:recipient = {
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+					}
+					stress_impact = {
+						craven = minor_stress_impact_loss
+						shy = minor_stress_impact_loss
+						paranoid = minor_stress_impact_loss
+					}
+				}
+			}
+		}
+	}
+	scope:recipient = {
+		#Characters flags and modifiers for events
+		#Taking a primary spouse as a concubine
+		if = {
+			limit = {
+				OR = {
+					has_character_flag = flag_divorced_primary_spouse
+					AND = {
+						is_married = yes
+						this = scope:actor.primary_spouse
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_character_flag = flag_divorced_primary_spouse
+				}
+				remove_character_flag = flag_divorced_primary_spouse
+			}
+			if = {
+				limit = {
+					has_character_flag = flag_demoted_grand_consort
+				}
+				remove_character_flag = flag_demoted_grand_consort
+			}
+			if = {
+				limit = {
+					has_character_flag = flag_demoted_spouse
+				}
+				remove_character_flag = flag_demoted_spouse
+			}
+			if = { #If for whatever reason, they have another flag
+				limit = {
+					has_character_flag = flag_divorced_grand_consort
+				}
+				remove_character_flag = flag_divorced_grand_consort
+			}
+			if = { #If for whatever reason, they have another flag
+				limit = {
+					has_character_flag = flag_divorced_spouse
+				}
+				remove_character_flag = flag_divorced_spouse
+			}
+			hidden_effect = {
+				if = { #If for whatever reason, they have another modifier
+					limit = {
+						has_character_modifier = demoted_spouse_modifier
+					}
+					remove_character_modifier = demoted_spouse_modifier
+				}
+			}
+			add_character_modifier = {
+				modifier = demoted_primary_spouse_modifier
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_relation_rival = scope:actor
+						has_relation_nemesis = scope:actor
+						has_relation_potential_rival = scope:actor
+					}
+				}
+				set_relation_potential_rival = scope:actor
+			}
+			if = {
+				limit = { scope:actor.primary_title.tier = tier_county }
+				add_prestige = { value = miniscule_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_duchy }
+				add_prestige = { value = minor_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_kingdom }
+				add_prestige = { value = medium_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_empire }
+				add_prestige = { value = major_prestige_loss }
+			}
+			scope:actor = {
+				if = {
+					limit = {
+						any_vassal = { 
+							OR = { 
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							has_vassal_stance = courtly
+						}
+					}
+					custom_tooltip = demote_consort_courtly_vassal_penalty
+					hidden_effect = {
+						every_vassal = {
+							limit = { 
+								OR = { 
+									accepts_concubinage = yes
+									accepts_polygamy = yes
+								}
+								has_vassal_stance = courtly
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = demoted_primary_spouse_vassal_opinion
+							}
+						}
+					}
+				}
+				
+				if = { #A GC spouse should automatically become the PS
+					limit = { 
+						AND = { 
+							scope:recipient = {
+								this = scope:actor.primary_spouse
+							}
+							any_spouse = {
+								count >= 2
+							}
+						}
+					}
+					new_primary_spouse_divorce_effect = {
+						PREVIOUS_PS = scope:recipient
+						PARTNER = scope:actor
+					}
+				}
+			}
+		}
+		else_if = { #Taking a Grand Consort as concubine
+			limit = {
+				AND = {
+					OR = {
+						has_character_flag = flag_divorced_grand_consort
+						AND = {
+							is_married = yes
+							is_grand_consort_trigger = yes
+						}
+					}
+					NOR = { 
+						has_character_modifier = demoted_primary_spouse_modifier
+						this = scope:actor.primary_spouse
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_court_position = grand_consort_court_position
+				}
+				scope:actor = {
+					revoke_court_position = {
+						recipient = scope:recipient
+						court_position = grand_consort_court_position
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_character_flag = flag_divorced_grand_consort
+				}
+				remove_character_flag = flag_divorced_grand_consort
+			}
+			add_character_flag = {
+				flag = flag_demoted_grand_consort
+			}
+			add_character_modifier = {
+				modifier = demoted_spouse_modifier
+			}
+			if = {
+				limit = { 
+					NOR = { 
+						has_relation_potential_rival = scope:actor
+						has_relation_rival = scope:actor
+						has_relation_nemesis = scope:actor
+					} 
+				}
+				set_relation_potential_rival = scope:actor
+			}
+			if = {
+				limit = { scope:actor.primary_title.tier = tier_kingdom }
+				add_prestige = { value = minor_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_empire }
+				add_prestige = { value = medium_prestige_loss }
+			}
+			scope:actor = {
+				if = {
+					limit = {
+						any_vassal = { 
+							OR = { 
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							has_vassal_stance = courtly
+						}
+					}
+					custom_tooltip = demote_consort_courtly_vassal_penalty
+					hidden_effect = {
+						every_vassal = {
+							limit = { 
+								OR = { 
+									accepts_concubinage = yes
+									accepts_polygamy = yes
+								}
+								has_vassal_stance = courtly
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = demoted_grand_consort_vassal_opinion
+							}
+						}
+					}
+				}
+			}
+		}
+		else_if = { #Taking a secondary spouse as a concubine
+			limit = {
+				AND = {
+					OR = {
+						has_character_flag = flag_divorced_spouse
+						is_married = yes
+					}
+					NOR = { 
+						has_character_modifier = demoted_primary_spouse_modifier
+						has_character_flag = flag_demoted_grand_consort
+						this = scope:actor.primary_spouse
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_character_flag = flag_divorced_spouse
+				}
+				remove_character_flag = flag_divorced_spouse
+			}
+			add_character_flag = {
+				flag = flag_demoted_spouse
+			}
+			add_character_modifier = {
+				modifier = demoted_spouse_modifier
+			}
+			if = {
+				limit = { 
+					NOR = { 
+						has_relation_potential_rival = scope:actor
+						has_relation_rival = scope:actor
+						has_relation_nemesis = scope:actor
+					} 
+				}
+				set_relation_potential_rival = scope:actor
+			}
+			if = {
+				limit = { scope:actor.primary_title.tier = tier_county }
+				add_prestige = { value = miniscule_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_duchy }
+				add_prestige = { value = miniscule_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_kingdom }
+				add_prestige = { value = minor_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_empire }
+				add_prestige = { value = minor_prestige_loss }
+			}
+			scope:actor = {
+				if = {
+					limit = {
+						any_vassal = { 
+							OR = { 
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							has_vassal_stance = courtly
+						}
+					}
+					custom_tooltip = demote_consort_courtly_vassal_penalty
+					hidden_effect = {
+						every_vassal = {
+							limit = { 
+								OR = { 
+									accepts_concubinage = yes
+									accepts_polygamy = yes
+								}
+								has_vassal_stance = courtly
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = demoted_spouse_vassal_opinion
+							}
+						}
+					}
+				}
+			}
+		}
+		# Victim is naturally angry for being demoted.
+		add_opinion = {
+			target = scope:actor
+			modifier = demoted_me_concubine_marriage_opinion
+		}
+		
+		if = { #No longer favored
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		if = { #Nor unfavored
+			limit = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			remove_character_modifier = unfavored_consort_modifier
+		}
+		if = { #No longer primary opinion
+			limit = {
+				has_opinion_modifier = {
+					target = scope:actor
+					modifier = spouse_made_primary_opinion
+				}
+			}
+			remove_opinion = {
+				modifier = spouse_made_primary_opinion
+				target = scope:actor
+			}
+		}
+		if = { #No longer secondary opinion
+			limit = {
+				has_opinion_modifier = {
+					target = scope:actor
+					modifier = spouse_made_secondary_opinion
+				}
+			}
+			remove_opinion = {
+				modifier = spouse_made_secondary_opinion
+				target = scope:actor
+			}
+		}
+		if = { #No longer reinstated opinion
+			limit = {
+				has_opinion_modifier = {
+					target = scope:actor
+					modifier = reinstated_me_opinion
+				}
+			}
+			remove_opinion = {
+				modifier = reinstated_me_opinion
+				target = scope:actor
+			}
+		}
+		if = { #No longer thankful
+			limit = {
+				has_opinion_modifier = {
+					target = scope:actor
+					modifier = thankful_consort_opinion
+				}
+			}
+			remove_opinion = {
+				target = scope:actor
+				modifier = thankful_consort_opinion
+			}
+		}
+		
+		if = {
+			limit = {
+				any_close_or_extended_family_member = {
+					has_opinion_modifier = {
+						target = scope:actor
+						modifier = reinstated_relative_marriage_opinion
+					}
+				}
+			}
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = scope:actor } }
+				custom = all_family_members
+				remove_opinion = {
+					modifier = reinstated_relative_marriage_opinion
+					target = scope:actor
+				}
+			}
+		}
+		every_close_or_extended_family_member = {
+			limit = { NOT = { this = scope:actor } } # don't hate yourself just because of demotion
+			custom = all_family_members
+			add_opinion = {
+				modifier = demoted_concubine_marriage_opinion
+				target = scope:actor
+			}
+			hidden_effect = {
+				send_interface_message = {
+					type = event_generic_bad
+					title = demoted_relative_marriage
+					right_icon = scope:recipient
+					left_icon = scope:secondary_actor
+					show_as_tooltip = { scope:secondary_actor = { make_concubine = scope:recipient } }
+				}
+				if = {
+					limit = {
+						has_opinion_modifier = {
+							target = scope:actor
+							modifier = thankful_consort_relative_opinion
+						}
+					}
+					remove_opinion = {
+						target = scope:actor
+						modifier = thankful_consort_relative_opinion
+					}
+				}
+			}
+		}
+	}
+	
+	scope:actor = {
+		hidden_effect = {
+			every_consort = {
+				if = { #The primary spouse is relieved
+					limit = {
+						has_opinion_modifier = {
+							target = scope:recipient
+							modifier = threatening_consort_opinion
+						}
+					}
+					remove_opinion = {
+						target = scope:recipient
+						modifier = threatening_consort_opinion
+					}
+				}
+				if = { #Other consorts don't feel jealous
+					limit = {
+						has_opinion_modifier = {
+							target = scope:recipient
+							modifier = envy_consort_opinion
+						}
+					}
+					remove_opinion = {
+						target = scope:recipient
+						modifier = envy_consort_opinion
+					}
+				}
+			}
+		}
+		##House unity effect##
+		#PS#
+		if = {
+			limit = {
+				exists = primary_spouse
+				primary_spouse = {
+					this = scope:recipient
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = massive_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			
+		}
+		else_if = {
+			limit = {
+				scope:recipient = {
+					OR = {	
+						has_character_flag = flag_divorced_primary_spouse
+						has_character_modifier = demoted_primary_spouse_modifier
+					}
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = medium_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			
+		}
+		else_if = { #GC#
+			limit = {
+				scope:recipient = {
+					is_grand_consort_trigger = yes
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = major_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			
+		}
+		else_if = { #GC#
+			limit = {
+				scope:recipient = {
+					OR = {
+						has_character_flag = flag_demoted_grand_consort
+						has_character_flag = flag_divorced_grand_consort
+					}
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = minor_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			
+		}
+		else_if = { #SS#
+			limit = {
+				scope:recipient = {
+					is_married = yes
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = medium_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+		}
+		else_if = {
+			limit = {
+				scope:recipient = {
+					has_character_flag = flag_divorced_spouse
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = minor_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}	
+		}
+		if = {
+			limit = {
+				is_spouse_of = scope:recipient
+			}
+			scope:recipient = {
+				trigger_event = marriage_interaction.0030
+			}
+			divorce = scope:recipient
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = msg_concubine_taken_title #A NEW ONE
+					right_icon = scope:recipient
+					if = {
+						limit = {
+							scope:recipient = {
+								NOT = {
+									is_concubine_of = scope:secondary_actor
+								}
+							}
+						}
+						make_concubine = scope:recipient
+					}
+				}
+			}
+		}
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+		}
+		if = {
+			limit = { 
+				AND = {
+					has_trait = just
+					NOT = { has_imprisonment_reason = scope:recipient }
+				}
+			}
+			stress_impact = {
+				just = minor_stress_impact_gain
+			}
+		}
+	}
+}
+
+child_promotion_effect = {
+	scope:secondary_recipient = {
+		#Remove traits
+		hidden_effect = {
+			every_child = {
+				if = {
+					limit = {
+						is_child_of = scope:secondary_actor
+					}
+					if = {
+						limit = {
+							has_any_bastard_trait_trigger = yes
+						}
+						remove_all_bastard_traits = yes
+					}
+					if = {
+						limit = {
+							has_trait = bastard_founder
+						}
+						remove_trait = bastard_founder
+					}
+					if = { #child_of_concubine_female
+						limit = {
+							has_trait = child_of_concubine_female
+						}
+						remove_trait = child_of_concubine_female
+					}
+					if = { #child_of_concubine_male
+						limit = {
+							has_trait = child_of_concubine_male
+						}
+						remove_trait = child_of_concubine_male
+					}
+				}
+			}
+		}
+	}
+	
+	scope:secondary_actor = {
+		#Remove traits
+		hidden_effect = {
+			every_child = {
+				if = {
+					limit = {
+						is_child_of = scope:secondary_recipient
+					}
+					if = {
+						limit = {
+							has_any_bastard_trait_trigger = yes
+						}
+						remove_all_bastard_traits = yes
+					}
+					if = {
+						limit = {
+							has_trait = bastard_founder
+						}
+						remove_trait = bastard_founder
+					}
+					if = { #child_of_concubine_female
+						limit = {
+							has_trait = child_of_concubine_female
+						}
+						remove_trait = child_of_concubine_female
+					}
+					if = { #child_of_concubine_male
+						limit = {
+							has_trait = child_of_concubine_male
+						}
+						remove_trait = child_of_concubine_male
+					}
+				}
+			}
+		}
+	}
+}
+
+child_demotion_effect = {
+	scope:recipient = {
+		#If children don't have the Child of Concubine trait, add it.
+		every_child = {
+			if = {
+				limit = {
+					is_child_of = scope:actor
+				}
+				hidden_effect = {
+					if = {
+						limit = {
+							has_any_bastard_trait_trigger = yes
+						}
+						remove_all_bastard_traits = yes
+					}
+					if = {
+						limit = {
+							has_trait = bastard_founder
+						}
+						remove_trait = bastard_founder
+					}
+				}
+				if = {
+					limit = {
+						AND = {
+							scope:recipient = {
+								is_female = yes
+							}
+							NOT = { has_trait = child_of_concubine_female }
+						}
+					}
+					add_trait = child_of_concubine_female
+				}
+				else_if = {
+					limit = {
+						AND = {
+							scope:recipient = {
+								is_male = yes
+							}
+							NOT = { has_trait = child_of_concubine_male }
+						}
+					}
+					add_trait = child_of_concubine_male
+				}
+			}
+		}
+	}
+}
+
+#Divorce effects
+divorce_effect = {
+	
+	# Opinion hit
+	$DIVORCEE$ = {
+		divorcee_effect = {
+			DIVORCER = $DIVORCER$
+			DIVORCEE = $DIVORCEE$
+		}
+		every_close_or_extended_family_member = {
+			limit = { NOT = { this = $DIVORCER$ } } # don't hate yourself just because of some incest
+			custom = all_family_members
+			add_opinion = {
+				modifier = divorced_close_kin
+				target = $DIVORCER$
+			}
+		}
+		if = {
+			limit = {
+				has_character_modifier = rejected_from_marriage_bed_modifier
+			}
+			remove_character_modifier = rejected_from_marriage_bed_modifier
+		}
+	}
+	
+	$DIVORCER$ = {
+		divorcer_effect = {
+			DIVORCER = $DIVORCER$
+			DIVORCEE = $DIVORCEE$
+		}
+		reverse_add_opinion = {
+			modifier = divorced_me_opinion
+			target = $DIVORCEE$
+		}
+		if = {
+			limit = {
+				any_spouse = {
+					this = $DIVORCEE$
+				}
+			}
+			divorce = $DIVORCEE$
+		}
+		if = {
+			limit = {
+				has_character_modifier = rejected_from_marriage_bed_modifier
+			}
+			remove_character_modifier = rejected_from_marriage_bed_modifier
+		}
+	}
+}
+
+divorcee_effect = {
+	#Harem Politics effects#
+	#Character flags for events and modifiers
+	if = { #Primary spouse
+		limit = {
+			OR = {
+				AND = {	
+					exists = $DIVORCER$.primary_spouse
+					this = $DIVORCER$.primary_spouse
+				}
+				has_character_modifier = demoted_primary_spouse_modifier
+			}
+		}
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = $DIVORCER$
+			TARGET = $DIVORCEE$
+			VALUE = major_unity_loss
+			DESC = clan_unity_divorce.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}
+		add_character_flag = {
+			flag = flag_divorced_primary_spouse
+		}
+		if = {
+			limit = {
+				AND = {	
+					exists = $DIVORCER$.primary_spouse
+					this = $DIVORCER$.primary_spouse
+				}
+				$DIVORCER$ = {
+					any_spouse = {
+						count >= 2
+					}
+				}
+			}
+			$DIVORCER$ = {
+				new_primary_spouse_divorce_effect = {
+					PREVIOUS_PS = $DIVORCEE$
+					PARTNER = $DIVORCER$
+				}
+			}
+		}
+	}
+	else_if = { #Grand Consort
+		limit = {
+			OR = {
+				is_grand_consort_trigger = yes
+				has_character_flag = flag_demoted_grand_consort
+			}
+		}
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = $DIVORCER$
+			TARGET = $DIVORCEE$
+			VALUE = medium_unity_loss
+			DESC = clan_unity_divorce.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}
+		add_character_flag = {
+			flag = flag_divorced_grand_consort
+		}
+	}
+	else = { #Regular secondary spouse
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = $DIVORCER$
+			TARGET = $DIVORCEE$
+			VALUE = minor_unity_loss
+			DESC = clan_unity_divorce.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}
+		add_character_flag = {
+			flag = flag_divorced_spouse
+		}
+	}
+	if = {
+		limit = { $DIVORCER$.primary_title.tier = tier_county }
+		add_prestige = { value = miniscule_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCER$.primary_title.tier = tier_duchy }
+		add_prestige = { value = minor_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCER$.primary_title.tier = tier_kingdom }
+		add_prestige = { value = medium_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCER$.primary_title.tier = tier_empire }
+		add_prestige = { value = major_prestige_loss }
+	}
+	
+	#Removing demoted modifiers and flags
+	if = { #If for whatever reason, they have another modifier
+		limit = {
+			has_character_modifier = demoted_spouse_modifier
+		}
+		remove_character_modifier = demoted_spouse_modifier
+	}
+	if = { #If for whatever reason, they have another modifier
+		limit = {
+			has_character_modifier = demoted_primary_spouse_modifier
+		}
+		remove_character_modifier = demoted_primary_spouse_modifier
+	}
+	if = { #Flags
+		limit = {
+			has_character_flag = flag_demoted_grand_consort
+		}
+		remove_character_flag = flag_demoted_grand_consort
+	}
+	if = { #Flags
+		limit = {
+			has_character_flag = flag_demoted_spouse
+		}
+		remove_character_flag = flag_demoted_spouse
+	}
+	if = {
+		limit = { has_character_flag = flag_new_consort }
+		remove_character_flag = flag_new_consort
+	}
+	
+	if = {
+		limit = { 
+			NOR = { 
+				has_relation_potential_rival = $DIVORCER$
+				has_relation_rival = $DIVORCER$
+				has_relation_nemesis = $DIVORCER$
+			} 
+		}
+		set_relation_potential_rival = $DIVORCER$
+	}
+	if = { #No longer thankful
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCER$
+				modifier = thankful_consort_opinion
+			}
+		}
+		remove_opinion = {
+			target = $DIVORCER$
+			modifier = thankful_consort_opinion
+		}
+	}
+	
+	if = { #No longer favored
+		limit = {
+			has_character_modifier = favored_consort_modifier
+		}
+		remove_character_modifier = favored_consort_modifier
+	}
+	if = { #Nor unfavored
+		limit = {
+			has_character_modifier = unfavored_consort_modifier
+		}
+		remove_character_modifier = unfavored_consort_modifier
+	}
+	
+	if = { #No longer primary opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCER$
+				modifier = spouse_made_primary_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = spouse_made_primary_opinion
+			target = $DIVORCER$
+		}
+	}
+	if = { #No longer secondary opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCER$
+				modifier = spouse_made_secondary_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = spouse_made_secondary_opinion
+			target = $DIVORCER$
+		}
+	}
+	if = { #No longer reinstated opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCER$
+				modifier = reinstated_me_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = reinstated_me_opinion
+			target = $DIVORCER$
+		}
+	}
+	if = {
+		limit = {
+			any_close_or_extended_family_member = {
+				has_opinion_modifier = {
+					target = $DIVORCER$
+					modifier = reinstated_relative_marriage_opinion
+				}
+			}
+		}
+		every_close_or_extended_family_member = {
+			limit = { NOT = { this = $DIVORCER$ } }
+			custom = all_family_members
+			remove_opinion = {
+				modifier = reinstated_relative_marriage_opinion
+				target = $DIVORCER$
+			}
+		}
+	}
+	hidden_effect = {
+		#Update consort opinion
+		every_consort = {
+			if = { #The primary spouse is relieved
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCER$
+						modifier = threatening_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = $DIVORCER$
+					modifier = threatening_consort_opinion
+				}
+			}
+			if = { #Other consorts don't feel jealous
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCER$
+						modifier = envy_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = $DIVORCER$
+					modifier = envy_consort_opinion
+				}
+			}
+			if = { #Craven consorts don't feel threatened by a despot
+				limit = {
+					AND = {
+						OR = {
+							is_concubine = yes
+							AND = {
+								is_married = yes
+								$DIVORCER$ = {
+									AND = {
+										OR = {
+											is_grand_consort_trigger = yes
+											this = $DIVORCEE$.primary_spouse
+										}
+										NOR = {
+											has_character_modifier = demoted_primary_spouse_modifier
+											has_character_modifier = demoted_spouse_modifier
+										}
+									}
+								}
+							}
+						}
+						NOR = {
+							has_relation_best_friend = $DIVORCER$
+							has_relation_friend = $DIVORCER$
+							has_relation_soulmate = $DIVORCER$
+							has_relation_lover = $DIVORCER$
+							has_relation_soulmate = $DIVORCEE$
+							this = $DIVORCER$
+						}
+						$DIVORCER$ = {
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+				}
+				stress_impact = {
+					craven = minor_stress_impact_loss
+					shy = minor_stress_impact_loss
+					paranoid = minor_stress_impact_loss
+				}
+			}
+		}
+		every_close_or_extended_family_member = {
+			limit = {
+				AND = {
+					NOT = { this = $DIVORCER$ }
+					has_opinion_modifier = {
+						target = $DIVORCER$
+						modifier = thankful_consort_relative_opinion
+					}
+				}
+			}
+			remove_opinion = {
+				target = $DIVORCER$
+				modifier = thankful_consort_relative_opinion
+			}
+		}
+	}
+}
+
+divorcer_effect = {
+	#Harem Politics effects#
+	#Character flags for events and modifiers
+	if = { #Primary spouse
+		limit = {
+			OR = {
+				AND = {	
+					exists = $DIVORCEE$.primary_spouse
+					this = $DIVORCEE$.primary_spouse
+				}
+				has_character_modifier = demoted_primary_spouse_modifier
+			}
+		}
+		add_character_flag = {
+			flag = flag_divorced_primary_spouse
+		}
+		if = {
+			limit = {
+				AND = {	
+					exists = $DIVORCEE$.primary_spouse
+					this = $DIVORCEE$.primary_spouse
+				}
+				$DIVORCEE$ = {
+					any_spouse = {
+						count >= 2
+					}
+				}
+			}
+			$DIVORCEE$ = {
+				new_primary_spouse_divorce_effect = {
+					PREVIOUS_PS = $DIVORCER$
+					PARTNER = $DIVORCEE$
+				}
+			}
+		}
+	}
+	else_if = { #Grand Consort
+		limit = {
+			OR = {
+				is_grand_consort_trigger = yes
+				has_character_flag = flag_demoted_grand_consort
+			}
+		}
+		add_character_flag = {
+			flag = flag_divorced_grand_consort
+		}
+	}
+	else = { #Regular secondary spouse
+		add_character_flag = {
+			flag = flag_divorced_spouse
+		}
+	}
+	if = {
+		limit = { $DIVORCEE$.primary_title.tier = tier_county }
+		add_prestige = { value = miniscule_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCEE$.primary_title.tier = tier_duchy }
+		add_prestige = { value = minor_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCEE$.primary_title.tier = tier_kingdom }
+		add_prestige = { value = medium_prestige_loss }
+	}
+	else_if = {
+		limit = { $DIVORCEE$.primary_title.tier = tier_empire }
+		add_prestige = { value = major_prestige_loss }
+	}
+	
+	#Removing demoted modifiers and flags
+	if = { #If for whatever reason, they have another modifier
+		limit = {
+			has_character_modifier = demoted_spouse_modifier
+		}
+		remove_character_modifier = demoted_spouse_modifier
+	}
+	if = { #If for whatever reason, they have another modifier
+		limit = {
+			has_character_modifier = demoted_primary_spouse_modifier
+		}
+		remove_character_modifier = demoted_primary_spouse_modifier
+	}
+	if = { #Flags
+		limit = {
+			has_character_flag = flag_demoted_grand_consort
+		}
+		remove_character_flag = flag_demoted_grand_consort
+	}
+	if = { #Flags
+		limit = {
+			has_character_flag = flag_demoted_spouse
+		}
+		remove_character_flag = flag_demoted_spouse
+	}
+	if = {
+		limit = { has_character_flag = flag_new_consort }
+		remove_character_flag = flag_new_consort
+	}
+	
+	if = { #No longer thankful
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCEE$
+				modifier = thankful_consort_opinion
+			}
+		}
+		remove_opinion = {
+			target = $DIVORCEE$
+			modifier = thankful_consort_opinion
+		}
+	}
+	
+	if = { #No longer favored
+		limit = {
+			has_character_modifier = favored_consort_modifier
+		}
+		remove_character_modifier = favored_consort_modifier
+	}
+	if = { #Nor unfavored
+		limit = {
+			has_character_modifier = unfavored_consort_modifier
+		}
+		remove_character_modifier = unfavored_consort_modifier
+	}
+
+	if = { #No longer primary opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCEE$
+				modifier = spouse_made_primary_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = spouse_made_primary_opinion
+			target = $DIVORCEE$
+		}
+	}
+	if = { #No longer secondary opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCEE$
+				modifier = spouse_made_secondary_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = spouse_made_secondary_opinion
+			target = $DIVORCEE$
+		}
+	}
+	if = { #No longer reinstated opinion
+		limit = {
+			has_opinion_modifier = {
+				target = $DIVORCEE$
+				modifier = reinstated_me_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = reinstated_me_opinion
+			target = $DIVORCEE$
+		}
+	}
+	hidden_effect = {
+		every_close_or_extended_family_member = {
+			limit = { NOT = { this = $DIVORCEE$ } }
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCEE$
+						modifier = reinstated_relative_marriage_opinion
+					}
+				}
+				remove_opinion = {
+					modifier = reinstated_relative_marriage_opinion
+					target = $DIVORCEE$
+				}
+			}
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCEE$
+						modifier = thankful_consort_relative_opinion
+					}
+				}
+				remove_opinion = {
+					target = $DIVORCEE$
+					modifier = thankful_consort_relative_opinion
+				}
+			}
+		}
+		#Update consort opinion
+		every_consort = {
+			if = { #The primary spouse is relieved
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCEE$
+						modifier = threatening_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = $DIVORCEE$
+					modifier = threatening_consort_opinion
+				}
+			}
+			if = { #Other consorts don't feel jealous
+				limit = {
+					has_opinion_modifier = {
+						target = $DIVORCEE$
+						modifier = envy_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = $DIVORCEE$
+					modifier = envy_consort_opinion
+				}
+			}
+			if = { #Craven consorts don't feel threatened by a despot
+				limit = {
+					AND = {
+						OR = {
+							is_concubine = yes
+							AND = {
+								is_married = yes
+								$DIVORCEE$ = {
+									AND = {
+										OR = {
+											is_grand_consort_trigger = yes
+											this = $DIVORCER$.primary_spouse
+										}
+										NOR = {
+											has_character_modifier = demoted_primary_spouse_modifier
+											has_character_modifier = demoted_spouse_modifier
+										}
+									}
+								}
+							}
+						}
+						NOR = {
+							has_relation_best_friend = $DIVORCEE$
+							has_relation_friend = $DIVORCEE$
+							has_relation_soulmate = $DIVORCEE$
+							has_relation_lover = $DIVORCEE$
+							has_relation_soulmate = $DIVORCER$
+							this = $DIVORCEE$
+						}
+						$DIVORCEE$ = {
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+				}
+				stress_impact = {
+					craven = minor_stress_impact_loss
+					shy = minor_stress_impact_loss
+					paranoid = minor_stress_impact_loss
+				}
+			}
+		}
+	}
+}
+
+new_primary_spouse_divorce_effect = {
+	if = { 
+		limit = { 
+			any_spouse = {
+				has_court_position = grand_consort_court_position
+				NOT = {	
+					this = $PREVIOUS_PS$
+				}
+			}
+		}
+		random_spouse = {
+			limit = {
+				has_court_position = grand_consort_court_position
+			}
+			save_scope_as = new_primary_spouse
+		}
+		set_primary_spouse = scope:new_primary_spouse
+		make_primary_spouse_effect = {
+			DEMOTER = $PARTNER$
+		}
+		clear_saved_scope = new_primary_spouse
+	}
+	else = {
+		hidden_effect = {
+			every_spouse = {
+				limit = { 	
+					NOT = {	
+						this = $PREVIOUS_PS$
+					}
+				}
+				add_to_temporary_list = future_primary_spouse
+			}
+			random_in_list = {
+				list = future_primary_spouse
+				weight = {
+					base = 100
+					modifier = {
+						faith = $PARTNER$.faith
+						add = 20
+					}
+					modifier = {
+						culture = $PARTNER$.culture
+						add = 10
+					}
+					modifier = {
+						is_demoted_consort_trigger = no
+						add = 30
+					}
+					modifier = {
+						is_lowborn = no
+						add = 50
+					}
+					modifier = {
+						any_close_or_extended_family_member = {
+							is_landed = yes
+						}
+						add = 20
+					}
+					modifier = {
+						any_close_family_member = {
+							highest_held_title_tier = tier_county
+						}
+						add = 15
+					}
+					modifier = {
+						any_close_family_member = {
+							highest_held_title_tier = tier_duchy
+						}
+						add = 25
+					}
+					modifier = {
+						any_close_family_member = {
+							highest_held_title_tier = tier_kingdom
+						}
+						add = 35
+					}
+					modifier = {
+						any_close_family_member = {
+							highest_held_title_tier = tier_empire
+						}
+						add = 45
+					}
+					modifier = {
+						any_close_family_member = {
+							is_vassal_of = $PARTNER$
+						}
+						add = 10
+					}
+					modifier = {
+						any_close_family_member = {
+							is_powerful_vassal_of = $PARTNER$
+						}
+						add = 35
+					}
+					modifier = {
+						any_close_family_member = {
+							is_councillor_of = $PARTNER$
+						}
+						add = 30
+					}
+					modifier = {
+						any_close_family_member = {
+							is_liege_or_above_of = $PARTNER$
+						}
+						add = 500
+					}
+					
+					modifier = {
+						NOT = { has_character_flag = flag_new_consort }
+						add = 10
+					}
+					modifier = {
+						has_character_modifier = unfavored_consort_modifier
+						add = -15
+					}
+					modifier = {
+						has_character_modifier = favored_consort_modifier
+						add = 5
+					}
+					modifier = {
+						num_virtuous_traits >= 1
+						add = 5
+					}
+					modifier = {
+						num_sinful_traits >= 1
+						add = -10
+					}
+					modifier = {
+						any_secret = {
+							exists = secret_owner
+							is_known_by = $PARTNER$
+							is_criminal_for = $PARTNER$
+						}
+						add = -10
+					}
+					modifier = {
+						OR = {
+							has_relation_rival = $PARTNER$
+							has_relation_nemesis = $PARTNER$
+							has_relation_potential_rival = $PARTNER$
+						}
+						add = -25
+					}
+					opinion_modifier = { #Opinion
+						WHO = $PARTNER$
+						opinion_target = prev
+						min = -50
+						max = 10
+						multiplier = 0.50
+					}
+					
+				}
+				save_scope_as = new_primary_spouse
+			}
+			set_primary_spouse = scope:new_primary_spouse
+			make_primary_spouse_effect = {
+				DEMOTER = $PARTNER$
+			}
+			clear_saved_scope = new_primary_spouse
+		}
+	}
+}
+
+less_verbose_divorce_effect = {
+	hidden_effect = {
+		# Opinion hit
+		$DIVORCEE$ = {
+			divorcee_effect = {
+				DIVORCER = $DIVORCER$
+				DIVORCEE = $DIVORCEE$
+			}
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = $DIVORCER$ } } # don't hate yourself just because of some incest
+				custom = all_family_members
+				add_opinion = {
+					modifier = divorced_close_kin
+					target = $DIVORCER$
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				$DIVORCEE$ = {
+					has_character_modifier = rejected_from_marriage_bed_modifier
+				}
+			}
+			$DIVORCEE$ = { remove_character_modifier = rejected_from_marriage_bed_modifier }
+		}
+	}
+	$DIVORCER$ = {
+		hidden_effect = {
+			if = {
+				limit = {
+					has_character_modifier = rejected_from_marriage_bed_modifier
+				}
+				remove_character_modifier = rejected_from_marriage_bed_modifier
+			}
+			divorcer_effect = {
+				DIVORCER = $DIVORCER$
+				DIVORCEE = $DIVORCEE$
+			}
+			reverse_add_opinion = {
+				modifier = divorced_me_opinion
+				target = $DIVORCEE$
+			}
+		}
+		if = {
+			limit = {
+				any_spouse = {
+					this = $DIVORCEE$
+				}
+			}
+			divorce = $DIVORCEE$
+		}
+	}
+}
+
+#Setting a new primary spouse
+set_primary_spouse_effect = {
+	if = {
+		limit = {
+			exists = scope:actor.primary_spouse
+			scope:actor.primary_spouse = {
+				NOT = {
+					this = scope:recipient
+				}
+			}
+		}
+		scope:actor.primary_spouse = {
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						target = scope:actor
+						modifier = spouse_made_primary_opinion
+					}
+				}
+				remove_opinion = {
+					modifier = spouse_made_primary_opinion
+					target = scope:actor
+				}
+			}
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						target = scope:actor
+						modifier = reinstated_me_opinion
+					}
+				}
+				remove_opinion = {
+					modifier = reinstated_me_opinion
+					target = scope:actor
+				}
+			}
+			if = { #No longer thankful
+				limit = {
+					has_opinion_modifier = {
+						target = scope:actor
+						modifier = thankful_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = scope:actor
+					modifier = thankful_consort_opinion
+				}
+			}
+			add_opinion = {
+				target = scope:actor
+				modifier = spouse_made_secondary_opinion
+			}
+			if = {
+				limit = { 
+					NOR = {
+						has_relation_best_friend = scope:actor
+						has_relation_friend = scope:actor
+						has_relation_soulmate = scope:actor
+						has_relation_lover = scope:actor
+						has_relation_rival = scope:actor
+						has_relation_nemesis = scope:actor
+						has_relation_potential_rival = scope:actor
+					} 
+				}
+				set_relation_potential_rival = scope:actor
+			}
+			if = {
+				limit = {
+					any_close_or_extended_family_member = {
+						has_opinion_modifier = {
+							target = scope:actor
+							modifier = reinstated_relative_marriage_opinion
+						}
+					}
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:actor } }
+					custom = all_family_members
+					remove_opinion = {
+						modifier = reinstated_relative_marriage_opinion
+						target = scope:actor
+					}
+				}
+			}
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = scope:actor } } # don't hate yourself just because of demotion
+				custom = all_family_members
+				add_opinion = {
+					modifier = demoted_concubine_marriage_opinion
+					target = scope:actor
+				}
+			}
+			add_opinion = {
+				target = scope:recipient
+				modifier = hatred_spouse_opinion
+			}
+			hidden_effect = {
+				if = {
+					limit = { 
+						NOR = {
+							has_relation_best_friend = scope:recipient
+							has_relation_friend = scope:recipient
+							has_relation_soulmate = scope:recipient
+							has_relation_lover = scope:recipient
+							has_relation_rival = scope:recipient
+							has_relation_nemesis = scope:recipient
+							has_relation_potential_rival = scope:recipient
+						}
+					}
+					set_relation_potential_rival = scope:recipient
+				}
+				if = { #No longer reinstated opinion
+					limit = {
+						has_opinion_modifier = {
+							target = scope:actor
+							modifier = reinstated_me_opinion
+						}
+					}
+					remove_opinion = {
+						modifier = reinstated_me_opinion
+						target = scope:actor
+					}
+				}
+				if = { #No longer favored
+					limit = {
+						has_character_modifier = favored_consort_modifier
+					}
+					remove_character_modifier = favored_consort_modifier
+				}
+				if = { #Nor unfavored
+					limit = {
+						has_character_modifier = unfavored_consort_modifier
+					}
+					remove_character_modifier = unfavored_consort_modifier
+				}
+				send_interface_toast = {
+					title = set_primary_spouse_interaction_toast
+					left_icon = scope:actor
+					right_icon = scope:recipient
+
+					custom_tooltip = set_primary_spouse_interaction_toast_removed
+				}
+				add_character_modifier = {
+					modifier = demoted_primary_spouse_modifier
+				}
+			}
+			if = {
+				limit = { scope:actor.primary_title.tier = tier_county }
+				add_prestige = { value = miniscule_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_duchy }
+				add_prestige = { value = minor_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_kingdom }
+				add_prestige = { value = medium_prestige_loss }
+			}
+			else_if = {
+				limit = { scope:actor.primary_title.tier = tier_empire }
+				add_prestige = { value = major_prestige_loss }
+			}
+			save_scope_as = previous_primary_spouse
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:previous_primary_spouse
+				VALUE = medium_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+		}
+	}
+	scope:actor = {
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+		}
+		if = {
+			limit = { 
+				AND = {
+					has_trait = just
+					exists = primary_spouse
+					NOT = { has_imprisonment_reason = primary_spouse }
+				}
+			}
+			stress_impact = {
+				just = minor_stress_impact_gain
+			}
+		}
+		if = {
+			limit = { 
+				AND = {
+					has_trait = just
+					has_imprisonment_reason = scope:recipient
+				}
+			}
+			stress_impact = {
+				just = minor_stress_impact_loss
+			}
+		}
+		set_primary_spouse = scope:recipient
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = scope:actor
+			TARGET = scope:recipient
+			VALUE = medium_unity_gain
+			DESC = clan_unity_promotion.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}
+		save_scope_as = secondary_actor
+		save_scope_as = current_partner
+		hidden_effect = {	
+			every_consort = {
+				scope:recipient = {
+					save_scope_as = new_primary_spouse
+				}
+				calyver_downgrade_active_consort_opinion_effect = yes
+				#Consorts will update their opinions on new primary_spouse
+				if = {
+					limit = {
+						AND = {
+							scope:recipient = {
+								NOT = { has_character_modifier = demoted_primary_spouse_modifier }
+							}
+							harem_politics_evil_consort_trigger = yes
+							NOR = {
+								has_relation_best_friend = scope:recipient
+								has_relation_friend = scope:recipient
+								has_relation_soulmate = scope:recipient
+								has_relation_lover = scope:recipient
+								has_relation_soulmate = scope:actor
+								this = scope:recipient
+							}
+							OR = { #Only harem consorts would care
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							opinion = {
+								target = scope:recipient
+								value <= low_positive_opinion
+							}
+						}
+					}
+					add_opinion = {
+						target = scope:recipient
+						modifier = envy_consort_opinion
+					}
+				}
+				if = {
+					limit = {
+						AND = {
+							NOR = {
+								has_relation_best_friend = scope:recipient
+								has_relation_friend = scope:recipient
+								has_relation_soulmate = scope:recipient
+								has_relation_lover = scope:recipient
+								this = scope:recipient
+							}
+							scope:recipient = {
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+					}
+					stress_impact = {
+						craven = minor_stress_impact_gain
+						shy = minor_stress_impact_gain
+						paranoid = minor_stress_impact_gain
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_consort = {
+						has_court_position = grand_consort_court_position
+						NOT = {
+							this = scope:recipient
+						}
+					}
+				}
+				random_consort = {
+					limit = {
+						has_court_position = grand_consort_court_position
+					}
+					save_scope_as = grand_consort_scope
+				}
+			}
+			if = { #For some reason, can't update consorts opinions
+				limit = {
+					exists = scope:grand_consort_scope
+				}
+				if = {
+					limit = {
+						scope:previous_primary_spouse = {
+							has_opinion_modifier = {
+								target = scope:grand_consort_scope
+								modifier = threatening_consort_opinion
+							}
+						}
+					}
+					scope:previous_primary_spouse = {
+						remove_opinion = {
+							target = scope:grand_consort_scope
+							modifier = threatening_consort_opinion
+						}
+					}
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							AND = {
+								OR = {
+									has_trait = craven
+									has_trait = paranoid
+									has_trait = shy
+									harem_politics_evil_consort_trigger = yes
+								}
+								NOR = {
+									has_relation_best_friend = scope:grand_consort_scope
+									has_relation_friend = scope:grand_consort_scope
+									has_relation_soulmate = scope:grand_consort_scope
+									has_relation_lover = scope:grand_consort_scope
+								}
+								opinion = {
+									target = scope:grand_consort_scope
+									value <= low_positive_opinion
+								}
+								OR = { #Only harem consorts would care
+									accepts_concubinage = yes
+									accepts_polygamy = yes
+								}
+							}
+						}
+					}
+					scope:recipient = {
+						add_opinion = {
+							target = scope:grand_consort_scope
+							modifier = threatening_consort_opinion
+						}
+					}
+				}
+				scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
+					if = {
+						limit = {
+							AND = {
+								harem_politics_evil_consort_trigger = yes
+								opinion = {
+									target = scope:grand_consort_scope
+									value <= 20
+								}
+								OR = { #Only harem consorts would care
+									accepts_concubinage = yes
+									accepts_polygamy = yes
+								}
+							}
+						}
+						add_opinion = {
+							target = root
+							modifier = ignored_consort_opinion
+						}
+					}
+				}
+			}
+			send_interface_toast = {
+				title = set_primary_spouse_interaction_toast
+				left_icon = scope:actor
+				right_icon = scope:new_primary_spouse
+
+				custom_tooltip = set_primary_spouse_interaction_toast_changed
+			}
+		}
+		if = {
+			limit = {
+				any_vassal = { 
+					OR = { 
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+					has_vassal_stance = courtly
+				}
+			}
+			custom_tooltip = demote_consort_courtly_vassal_penalty
+			hidden_effect = {
+				every_vassal = {
+					limit = { 
+						OR = { 
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+						has_vassal_stance = courtly
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = demoted_primary_spouse_vassal_opinion
+					}
+				}
+			}
+		}
+	}
+	make_primary_spouse_effect = {
+		DEMOTER = scope:actor
+	}
+}
+
+make_primary_spouse_effect = {
+	$DEMOTER$ = {
+		save_scope_as = demoter
+	}
+	scope:new_primary_spouse = {
+		hidden_effect = {	
+			send_interface_toast = {
+				title = set_primary_spouse_interaction_toast
+				left_icon = scope:demoter
+				right_icon = scope:new_primary_spouse
+
+				custom_tooltip = set_primary_spouse_interaction_toast_added
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_character_modifier = demoted_primary_spouse_modifier
+					}
+				}
+				add_character_modifier = {
+					modifier = favored_consort_modifier
+					years = 10
+				}
+			}
+			if = { #Nor unfavored
+				limit = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+				remove_character_modifier = unfavored_consort_modifier
+			}
+		}
+		
+		if = {
+			limit = {
+				OR = { #Only harem consorts would care
+					accepts_concubinage = yes
+					accepts_polygamy = yes
+				}
+				NOT = {
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
+			}
+			add_opinion = {
+				target = $DEMOTER$
+				modifier = spouse_made_primary_opinion
+			}
+		}
+		
+		if = { #Character flags
+			limit = {
+				OR = {
+					has_character_flag = flag_demoted_grand_consort
+					has_character_flag = flag_demoted_spouse
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
+			}
+			if = { #Character flags
+				limit = {
+					has_character_flag = flag_demoted_grand_consort
+				}
+				remove_character_flag = flag_demoted_grand_consort
+			}
+			else_if = { #Character flags
+				limit = {
+					has_character_flag = flag_demoted_spouse
+				}
+				remove_character_flag = flag_demoted_spouse
+			}
+			else = { #Modifiers
+				remove_character_modifier = demoted_primary_spouse_modifier
+			}
+			
+			add_opinion = {
+				modifier = reinstated_me_opinion
+				target = $DEMOTER$
+			}
+			if = {
+				limit = {
+					has_character_modifier = demoted_spouse_modifier
+				}
+				remove_character_modifier = demoted_spouse_modifier
+			}
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = $DEMOTER$ } }
+				custom = all_family_members
+				add_opinion = {
+					modifier = reinstated_relative_marriage_opinion
+					target = $DEMOTER$
+				}
+			}
+		}
+		
+		if = {
+			limit = { $DEMOTER$.primary_title.tier = tier_county }
+			add_prestige = { value = miniscule_prestige_gain }
+		}
+		else_if = {
+			limit = { $DEMOTER$.primary_title.tier = tier_duchy }
+			add_prestige = { value = minor_prestige_gain }
+		}
+		else_if = {
+			limit = { $DEMOTER$.primary_title.tier = tier_kingdom }
+			add_prestige = { value = medium_prestige_gain }
+		}
+		else_if = {
+			limit = { $DEMOTER$.primary_title.tier = tier_empire }
+			add_prestige = { value = major_prestige_gain }
+		}
+	}
+	hidden_effect = {
+		scope:demoter = {
+			every_consort = {
+				if = { #Opinions
+					limit = {
+						AND = {
+							NOR = {
+								has_relation_best_friend = scope:new_primary_spouse
+								has_relation_friend = scope:new_primary_spouse
+								has_relation_soulmate = scope:new_primary_spouse
+								has_relation_lover = scope:new_primary_spouse
+								has_relation_soulmate = scope:demoter
+								this = scope:new_primary_spouse
+							}
+						}
+					}
+					if = { #Envy
+						limit = {
+							harem_politics_evil_consort_trigger = yes
+						}
+						add_opinion = {
+							target = scope:new_primary_spouse
+							modifier = envy_consort_opinion
+						}
+						if = { #AI
+							limit = {
+								is_ai = no
+							}
+							send_interface_toast = {
+								type = event_generic_bad
+								title = new_primary_spouse_t
+								right_icon = scope:new_primary_spouse
+								left_icon = scope:demoter
+								custom_tooltip = new_primary_spouse_desc
+								if = { #Stress
+									limit = {
+										scope:new_primary_spouse = {
+											harem_politics_evil_consort_trigger = yes
+										}
+									}
+									stress_impact = {
+										craven = minor_stress_impact_loss
+										shy = minor_stress_impact_loss
+										paranoid = minor_stress_impact_loss
+									}
+								}
+							}
+						}
+						if = { #Stress
+							limit = {
+								is_ai = yes
+							}
+							stress_impact = {
+								craven = minor_stress_impact_loss
+								shy = minor_stress_impact_loss
+								paranoid = minor_stress_impact_loss
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#Updating consorts' opinions
+calyver_update_active_consort_opinion_effect = {
+
+	if = {
+		# If this opinion change was triggered by being divorced/set-aside, we may still technically be married/joined to PARTNER at this moment, but we won't be very shortly and should skip this step.
+		limit = {
+			NOR = {
+				exists = scope:is_being_divorced
+				exists = scope:is_being_set_aside
+			}
+		}
+		
+		#Concubines will get jealous of every new spouse
+		if = {
+			limit = {		
+				AND = {
+					is_concubine = yes
+					exists = scope:new_spouse
+					NOR = {
+						has_relation_best_friend = scope:new_spouse
+						has_relation_friend = scope:new_spouse
+						has_relation_soulmate = scope:new_spouse
+						has_relation_lover = scope:new_spouse
+						this = scope:new_spouse
+					}
+					scope:current_partner = {
+						exists = primary_spouse
+						OR = {
+							primary_spouse = {
+								this = scope:new_spouse
+							}
+							AND = {
+								primary_spouse = {
+									NOT = {
+										this = scope:new_spouse
+									}
+								}
+								scope:new_spouse = {
+									NOR = {
+										has_character_flag = flag_demoted_grand_consort
+										has_character_modifier = demoted_primary_spouse_modifier
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if = { #The GC expects to be the next PS
+				limit = {		
+					AND = {
+						has_court_position = grand_consort_court_position
+						harem_politics_evil_consort_trigger = yes
+						OR = { #Only harem consorts would care
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+						opinion = {
+							target = scope:recipient
+							value <= 20
+						}
+					}
+				}
+				add_opinion = {
+					target = scope:current_partner
+					modifier = ignored_consort_opinion
+				}
+			}
+			if = {
+				limit = {		
+					AND = {
+						harem_politics_evil_consort_trigger = yes
+						NOT = {
+							has_opinion_modifier = {
+								target = scope:new_spouse
+								modifier = envy_consort_opinion
+							}
+						}
+						OR = { #Only harem consorts would care
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+						opinion = {
+							target = scope:new_spouse
+							value <= 20
+						}
+					}
+				}
+				add_opinion = {
+					target = scope:new_spouse
+					modifier = envy_consort_opinion
+				}
+			}
+			if = {
+				limit = {		
+					scope:new_spouse = {
+						harem_politics_evil_consort_trigger = yes
+					}
+				}
+				stress_impact = {
+					craven = minor_stress_impact_gain
+					shy = minor_stress_impact_gain
+					paranoid = minor_stress_impact_gain
+				}
+			}
+		}
+	}
+}
+
+calyver_downgrade_active_consort_opinion_effect = {
+	if = {
+		# If this opinion change was triggered by being divorced/set-aside, we may still technically be married/joined to PARTNER at this moment, but we won't be very shortly and should skip this step.
+		limit = {
+			NOR = {
+				exists = scope:is_being_divorced
+				exists = scope:is_being_set_aside
+			}
+		}
+		#Consorts will update their opinions on previous primary spouse
+		if = {
+			limit = {
+				exists = scope:previous_primary_spouse
+			}
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						target = scope:previous_primary_spouse
+						modifier = envy_consort_opinion
+					}
+				}
+				remove_opinion = {
+					target = scope:previous_primary_spouse
+					modifier = envy_consort_opinion
+				}
+			}
+			if = { #Craven consorts don't feel threatened by a despot primary spouse
+				limit = {
+					AND = {
+						NOR = {
+							has_relation_best_friend = scope:previous_primary_spouse
+							has_relation_friend = scope:previous_primary_spouse
+							has_relation_soulmate = scope:previous_primary_spouse
+							has_relation_lover = scope:previous_primary_spouse
+							this = scope:previous_primary_spouse
+						}
+						scope:previous_primary_spouse = {
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+				}
+				stress_impact = {
+					craven = minor_stress_impact_loss
+					shy = minor_stress_impact_loss
+					paranoid = minor_stress_impact_loss
+				}
+			}
+		}
+	}
+}
+
+new_primary_spouse_on_action_effect = {
+	if = { #The Grand Consort is promoted
+		limit = {
+			any_spouse = {
+				has_court_position = grand_consort_court_position
+				NOT = {	
+					this = scope:dead_relation
+				}
+			}
+		}
+		random_spouse = {
+			limit = {
+				has_court_position = grand_consort_court_position
+			}
+			save_scope_as = new_primary_spouse
+		}
+	}
+	else = {
+		every_spouse = {
+			limit = { 	
+				NOT = {	
+					this = scope:dead_relation
+				}
+			}
+			add_to_temporary_list = future_primary_spouse
+		}
+		random_in_list = {
+			list = future_primary_spouse
+			weight = {
+				base = 100
+				modifier = {
+					faith = root.faith
+					add = 20
+				}
+				modifier = {
+					culture = root.culture
+					add = 10
+				}
+				modifier = {
+					is_demoted_consort_trigger = no
+					add = 30
+				}
+				modifier = {
+					is_lowborn = no
+					add = 50
+				}
+				modifier = {
+					any_close_or_extended_family_member = {
+						is_landed = yes
+					}
+					add = 20
+				}
+				modifier = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_county
+					}
+					add = 15
+				}
+				modifier = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_duchy
+					}
+					add = 25
+				}
+				modifier = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_kingdom
+					}
+					add = 35
+				}
+				modifier = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_empire
+					}
+					add = 45
+				}
+				modifier = {
+					any_close_family_member = {
+						is_vassal_of = root
+					}
+					add = 10
+				}
+				modifier = {
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+					}
+					add = 35
+				}
+				modifier = {
+					any_close_family_member = {
+						is_councillor_of = root
+					}
+					add = 30
+				}
+				modifier = {
+					any_close_family_member = {
+						is_liege_or_above_of = root
+					}
+					add = 500
+				}
+				
+				modifier = {
+					NOT = { has_character_flag = flag_new_consort }
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = unfavored_consort_modifier
+					add = -15
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 5
+				}
+				modifier = {
+					num_virtuous_traits >= 1
+					add = 5
+				}
+				modifier = {
+					num_sinful_traits >= 1
+					add = -10
+				}
+				modifier = {
+					any_secret = {
+						exists = secret_owner
+						is_known_by = root
+						is_criminal_for = root
+					}
+					add = -10
+				}
+				modifier = {
+					OR = {
+						has_relation_rival = root
+						has_relation_nemesis = root
+						has_relation_potential_rival = root
+					}
+					add = -25
+				}
+				opinion_modifier = { #Opinion
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = 0.25
+				}
+				
+			}
+			save_scope_as = new_primary_spouse
+		}
+	}
+	set_primary_spouse = scope:new_primary_spouse
+	scope:new_primary_spouse = {
+		if = {
+			limit = {
+				has_character_modifier = demoted_primary_spouse_modifier
+			}
+			remove_character_modifier = demoted_primary_spouse_modifier
+			add_opinion = {
+				modifier = reinstated_me_opinion
+				target = root
+			}
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = root } }
+				add_opinion = {
+					modifier = reinstated_relative_marriage_opinion
+					target = root
+				}
+			}
+		}
+	}
+}
+
+consort_reinstatement_effect = {
+	add_opinion = {
+		modifier = reinstated_me_opinion
+		target = $REINSTATOR$
+	}
+	every_close_or_extended_family_member = {
+		limit = { NOT = { this = $REINSTATOR$ } }
+		custom = all_family_members
+		add_opinion = {
+			modifier = reinstated_relative_marriage_opinion
+			target = $REINSTATOR$
+		}
+	}
+	# If we're a clan this interaction affects unity
+	add_clan_unity_interaction_effect = {
+		CHARACTER = $REINSTATOR$
+		TARGET = $REINSTATED$
+		VALUE = minor_unity_gain
+		DESC = clan_unity_promotion.desc
+		REVERSE_NON_HOUSE_TARGET = no
+	}
+}
+
+calyver_remove_consort_flags_effect = {
+	if = { #Diplomatic consorts
+		limit = {
+			has_character_modifier = diplomatic_consort_modifier
+		}
+		remove_character_modifier = diplomatic_consort_modifier
+	}
+	if = { #Scheming consorts
+		limit = {
+			has_character_modifier = scheming_consort_modifier
+		}
+		remove_character_modifier = scheming_consort_modifier
+	}
+}
