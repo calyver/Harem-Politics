@@ -1,0 +1,872 @@
+﻿#Events handling sabotage outcomes
+
+# System by Petter Vilberg
+
+namespace = sabotage_outcome
+
+##################################
+# MAINTENANCE EVENTS 0000 - 0099
+##################################
+
+sabotage_outcome.0001 = {
+
+	hidden = yes
+
+	immediate = {
+		add_character_flag = { #Only resolve one sabotage in the same day
+			flag = is_in_event_sabotage_outcome_0001
+			days = 1
+		}
+		trigger_event = {
+			on_action = sabotage_setup
+		}
+	}
+}
+
+
+#################
+# METHOD SELECTION EVENTS
+# 1000-1999
+#################
+
+######################
+# Success or Failure
+######################
+sabotage_outcome.1001 = {
+	type = character_event
+	title = sabotage_outcome.1001.t
+	desc = {
+		desc = sabotage_outcome.1001.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:arrival
+				}
+				desc = sabotage_outcome.1001.arrival
+			}
+			desc = sabotage_outcome.1001.no_arrival
+		}
+		desc = sabotage_outcome.1001.ending
+	}
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	immediate = {
+		save_scope_value_as = {
+			name = sabotage_method
+			value = flag:sabotaged_performance
+		}
+		sabotage_outcome_roll_setup_effect = yes
+		
+		scope:target.capital_province = { save_scope_as = departure }
+
+		# Save arrival location
+		if = {
+			limit = { scope:target = { is_travelling = yes } }
+			scope:target = {
+				current_travel_plan = {
+					next_destination_province = { save_scope_as = arrival }
+				}
+			}
+		}
+		else = {
+			scope:owner.top_liege = {
+				random_sub_realm_county = {
+					limit = {
+						NOR = {
+							this = scope:departure
+							holder = scope:owner
+						}
+						scope:departure = {
+							squared_distance = {
+								target = prev
+								value < 100000
+							}
+						}
+					}
+					save_scope_as = arrival
+				}
+			}
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.1001.a
+		sabotage_outcome_roll_effect = yes
+	}
+}
+
+######################
+# Success or Failure
+######################
+sabotage_outcome.1002 = {
+	type = character_event
+	title = sabotage_outcome.1002.t
+	desc = sabotage_outcome.1002.desc
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	immediate = {
+		save_scope_value_as = {
+			name = sabotage_method
+			value = flag:sabotaged_meal
+		}
+		sabotage_outcome_roll_setup_effect = yes
+
+		# Save travel information for loc 
+		scope:target = {
+			capital_province = { save_scope_as = departure }
+			current_travel_plan = {
+				next_destination_province = { save_scope_as = arrival }
+			}
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.1002.a
+		sabotage_outcome_roll_effect = yes
+	}
+}
+
+######################
+# Success or Failure
+######################
+sabotage_outcome.1003 = {
+	type = character_event
+	title = sabotage_outcome.1003.t
+	desc = sabotage_outcome.1003.desc
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	immediate = {
+		sabotage_outcome_roll_setup_effect = yes
+		scope:target.court_owner.capital_province.barony = {
+			save_scope_as = court_location
+		}
+		save_scope_value_as = {
+			name = sabotage_method
+			value = flag:sabotaged_evening
+		}
+		sabotage_outcome_roll_setup_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.1003.a
+		sabotage_outcome_roll_effect = yes
+	}
+}
+
+
+#####################################
+# SUCCESS OUTCOMES 2001 - 2999
+#####################################
+
+#######################
+# Success
+#######################
+sabotage_outcome.2001 = {
+	type = character_event
+	desc = sabotage_outcome.2001.desc
+	theme = intrigue
+	left_portrait = {
+		character = scope:target
+		animation = fear
+	}
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	trigger = {
+		scope:sabotage_method = flag:sabotaged_performance
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_success_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.2001.a
+	}
+}
+
+#######################
+# Success
+#######################
+sabotage_outcome.2002 = {
+	type = character_event
+	desc = sabotage_outcome.2002.desc
+	theme = intrigue
+	left_portrait = {
+		character = scope:target
+		animation = fear
+	}
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	trigger = {
+		scope:sabotage_method = flag:sabotaged_meal
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_success_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.2002.a
+	}
+}
+
+#######################
+# Success
+#######################
+sabotage_outcome.2003 = {
+	type = character_event
+	desc = sabotage_outcome.2003.desc
+	theme = intrigue
+	left_portrait = {
+		character = scope:target
+		animation = fear
+	}
+	widget = {
+		gui = "event_window_widget_scheme"
+		container = "custom_widgets_container"
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+
+	trigger = {
+		scope:sabotage_method = flag:sabotaged_evening
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_success_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.2003.a
+	}
+}
+
+
+#################################
+# FAILURE OUTCOMES 4000 - 4999
+#################################
+
+### Failure
+sabotage_outcome.4001 = {
+	type = character_event
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.4001.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:scheme_discovered
+				}
+				desc = sabotage_outcome.4001.owner_discovered
+			}
+			desc = sabotage_outcome.4001.owner_secret
+		}
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_failure_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.4001.a
+	}
+}
+
+### Failure
+sabotage_outcome.4002 = {
+	type = character_event
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.4002.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:scheme_discovered
+				}
+				desc = sabotage_outcome.4002.owner_discovered
+			}
+			desc = sabotage_outcome.4002.owner_secret
+		}
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_failure_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.4002.a
+	}
+}
+
+### Failure
+sabotage_outcome.4003 = {
+	type = character_event
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.4003.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:scheme_discovered
+				}
+				desc = sabotage_outcome.4003.owner_discovered
+			}
+			desc = sabotage_outcome.4003.owner_secret
+		}
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		sabotage_failure_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.4003.a
+	}
+}
+
+
+########################################
+# TARGET SUCCESS NOTIFICATIONS
+########################################
+
+#
+sabotage_outcome.5001 = {
+	type = character_event
+	title = sabotage_outcome.5001.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5001.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5001.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5001.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5001.sabotaged_evening
+			}
+		}
+	}
+
+
+	immediate = {
+		if = {
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		add_character_modifier = {
+			modifier = unfavored_consort_modifier
+			days = 720
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5001.a
+		trigger = {
+			exists = scope:scheme_successful
+		}
+		if = {
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		add_character_modifier = {
+			modifier = unfavored_consort_modifier
+			days = 720
+		}
+	}
+}
+
+###################################
+# TARGET FAILURE NOTIFICATIONS
+###################################
+
+#
+sabotage_outcome.5002 = {
+	type = character_event
+	title = sabotage_outcome.5002.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5002.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5002.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5002.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5002.sabotaged_evening
+			}
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:scheme_discovered
+			}
+			scope:owner = {
+				save_scope_as = revealed_owner
+			}
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5002.a
+		trigger = {
+			exists = scope:scheme_discovered
+		}
+		add_character_modifier = {
+			modifier = watchful_modifier
+			days = watchful_modifier_duration
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5002.b
+		trigger = {
+			NOT = { exists = scope:scheme_discovered }
+		}
+		add_character_modifier = {
+			modifier = watchful_modifier
+			days = watchful_modifier_duration
+		}
+	}
+}
+
+########################################
+# OWNER SUCCESS NOTIFICATIONS
+########################################
+
+#
+sabotage_outcome.5003 = {
+	type = character_event
+	title = sabotage_outcome.5003.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5003.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5003.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5003.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5003.sabotaged_evening
+			}
+		}
+	}
+
+
+	immediate = {
+		successful_sabotage_outcome_event_option_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.5003.a
+		trigger = {
+			exists = scope:scheme_successful
+		}
+	}
+}
+
+###################################
+# OWNER FAILURE NOTIFICATIONS
+###################################
+
+#
+sabotage_outcome.5004 = {
+	type = character_event
+	title = sabotage_outcome.5004.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5004.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5004.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5004.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5004.sabotaged_evening
+			}
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:scheme_discovered
+			}
+			scope:owner = {
+				save_scope_as = revealed_owner
+			}
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5004.a
+		trigger = {
+			exists = scope:scheme_discovered
+		}
+		if = {
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		add_character_modifier = {
+			modifier = unfavored_consort_modifier
+			days = 720
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5004.b
+		trigger = {
+			NOT = { exists = scope:scheme_discovered }
+		}
+		add_character_modifier = {
+			modifier = watchful_modifier
+			days = watchful_modifier_duration
+		}
+	}
+}
+
+########################################
+# OWNER SUCCESS NOTIFICATIONS
+########################################
+
+#
+sabotage_outcome.5005 = {
+	type = character_event
+	title = sabotage_outcome.5005.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5005.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5005.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5005.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5005.sabotaged_evening
+			}
+		}
+	}
+
+
+	immediate = {
+		successful_sabotage_outcome_event_option_effect = yes
+	}
+
+	option = {
+		name = sabotage_outcome.5005.a
+		trigger = {
+			exists = scope:scheme_successful
+		}
+	}
+}
+
+###################################
+# PRIMARY SPOUSE FAILURE NOTIFICATIONS
+###################################
+
+#
+sabotage_outcome.5006 = {
+	type = character_event
+	title = sabotage_outcome.5006.t
+	theme = intrigue
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:sabotage_target
+		animation = shock
+	}
+	right_portrait = {
+		character = scope:sabotage_target.primary_spouse
+		triggered_animation = {
+			trigger = { has_any_bad_relationship_with_character_trigger = { CHARACTER = root } }
+			animation = stress
+		}
+		animation = shock
+	}
+	desc = {
+		desc = sabotage_outcome.5006.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_performance
+				}
+				desc = sabotage_outcome.5006.sabotaged_performance
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_meal
+				}
+				desc = sabotage_outcome.5006.sabotaged_meal
+			}
+			triggered_desc = {
+				trigger = {
+					scope:sabotage_method = flag:sabotaged_evening
+				}
+				desc = sabotage_outcome.5006.sabotaged_evening
+			}
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:scheme_discovered
+			}
+			scope:owner = {
+				save_scope_as = revealed_owner
+			}
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5006.a
+		trigger = {
+			exists = scope:scheme_discovered
+		}
+	}
+
+	option = {
+		name = sabotage_outcome.5006.b
+		trigger = {
+			NOT = { exists = scope:scheme_discovered }
+		}
+	}
+}
