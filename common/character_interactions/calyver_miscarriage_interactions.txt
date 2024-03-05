@@ -1,0 +1,252 @@
+﻿######################
+### End pregnancy Scheme###
+######################
+miscarriage_interaction = {
+	icon = pregnant
+	common_interaction = yes
+	interface_priority = 150
+	category = interaction_category_hostile
+
+	ignores_pending_interaction_block = yes
+
+	desc = miscarriage_interaction_desc #Check
+
+	is_shown = {
+		scope:actor = {
+			OR = {
+				is_married = yes
+				is_concubine = yes
+			}
+		}
+		NOR = { 
+			scope:recipient = scope:actor
+			scope:recipient = { 
+				is_consort_of = scope:actor
+			}
+		}
+		scope:recipient = {
+			in_diplomatic_range = scope:actor
+			is_pregnant = yes
+			has_trait = pregnant
+			pregnancy_month <= 8
+			exists = pregnancy_assumed_father
+			pregnancy_assumed_father = {
+				is_landed = yes
+				highest_held_title_tier >= tier_county
+				any_consort = {
+					this = scope:actor
+				}
+				any_consort = {
+					this = scope:recipient
+				}
+				OR = {
+					any_courtier = {
+						this = scope:recipient
+					}
+					any_vassal_or_below = {
+						this = scope:recipient
+					}
+				}
+			}
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:recipient = { is_busy_in_events_localised = yes }
+		scope:actor = {
+			is_imprisoned = no
+		}
+		scope:actor = {
+			NOT = {
+				has_trait = incapable
+			}
+		}
+		scope:actor = {
+			NOR = {
+				has_relation_soulmate = scope:recipient
+				has_relation_lover = scope:recipient
+			}
+		}
+		custom_tooltip = {
+			scope:actor = {
+				NOT = {
+					has_character_flag = attempted_miscarriage_flag
+				}
+			}
+			text = recently_attempted_miscarriage_message
+		}
+	}
+	
+	on_accept = {
+		scope:actor = {
+			trigger_event = consort_events.0020
+		}
+	}
+	
+	ai_targets = {
+		ai_recipients = prisoners
+		ai_recipients = courtiers
+		ai_recipients = family
+		ai_recipients = scripted_relations
+		ai_recipients = known_secrets
+		ai_recipients = dynasty
+		ai_recipients = vassals
+		ai_recipients = realm_characters
+	}
+	
+	ai_potential = {
+		any_child = {
+			count < 1
+		}
+		is_imprisoned = no
+		NOT = {
+			has_trait = incapable
+		}
+		
+	}
+	
+	ai_frequency = 15
+	ai_will_do = {
+		base = 0
+		ai_value_modifier = {
+			ai_boldness = 0.75
+			ai_honor = -0.5
+		}
+		modifier = { #New consorts are less likely to do so
+			add = -5
+			has_character_flag = flag_new_consort
+		}
+		modifier = { #Evil consorts
+			add = 5
+			harem_politics_evil_consort_trigger = yes
+		}
+		modifier = { #Rivals
+			add = 20
+			OR = {
+				has_relation_potential_rival = scope:recipient
+				has_relation_rival = scope:recipient
+				has_relation_nemesis = scope:recipient
+			}
+		}
+		modifier = { #Scheming consorts
+			add = 5
+			has_character_modifier = scheming_consort_modifier
+		}
+		opinion_modifier = { #Opinion
+			opinion_target = scope:recipient
+			multiplier = -0.5
+		}
+		modifier = { #Favored consorts
+			add = 10
+			scope:recipient = {
+				has_character_modifier = favored_consort_modifier
+			}
+		}
+		modifier = { #The main spouse must protect their position
+			add = 10
+			is_married = yes
+			any_spouse = {
+				primary_spouse = {
+					this = scope:actor
+				}
+			}
+			scope:recipient = {
+				OR = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:actor.primary_spouse
+							is_councillor_of = scope:actor.primary_spouse
+							is_parent_of = scope:actor.primary_spouse
+						}
+					}
+					has_court_position = grand_consort_court_position
+					AND = {
+						is_married = yes
+						any_spouse = {
+							primary_spouse = {
+								this = scope:actor
+							}
+						}
+					}
+				}
+			}
+		}
+		modifier = { #The Grand Consort must protect their position
+			add = 15
+			has_court_position = grand_consort_court_position
+			scope:recipient = {
+				OR = {
+					any_close_family_member = { #Powerful consorts
+						OR = {
+							AND = {
+								scope:actor = {
+									is_married = yes
+								}
+								is_powerful_vassal_of = scope:actor.primary_spouse
+								is_councillor_of = scope:actor.primary_spouse
+								is_parent_of = scope:actor.primary_spouse
+							}
+							
+							AND = {
+								scope:actor = {
+									is_concubine = yes
+								}
+								is_powerful_vassal_of = scope:actor.concubinist
+								is_councillor_of = scope:actor.concubinist
+								is_parent_of = scope:actor.concubinist
+							}
+						}
+					}
+					AND = {#Other spouses
+						is_married = yes
+						any_spouse = {
+							any_consort = {
+								this = scope:actor
+							}
+						}
+					}
+				}
+			}
+		}
+		modifier = { #Intrigue
+			add = 10
+			intrigue >= medium_skill_rating
+		}
+		modifier = { #Intrigue
+			add = -15
+			intrigue < medium_skill_rating
+		}
+		modifier = { #Intrigue
+			add = -20
+			intrigue <= mediocre_skill_rating
+		}
+		modifier = { #Craven consorts
+			add = -10
+			OR = {
+				has_trait = shy
+				has_trait = craven
+			}
+		}
+		modifier = { #Lovers
+			factor = 0
+			OR = {
+				has_relation_friend = scope:recipient
+				has_relation_best_friend = scope:recipient
+
+				has_relation_lover = scope:recipient
+				has_relation_soulmate = scope:recipient
+			}
+		}
+		modifier = { #Good consorts
+			factor = 0
+			OR = {
+				has_trait = compassionate
+				has_trait = forgiving
+				has_trait = honest
+				has_trait = just
+			}
+		}
+	}
+	
+	auto_accept = yes
+}

@@ -7,14 +7,18 @@ scripted_trigger harem_politics_demoted_consort_trigger = {
 	is_physically_able_ai_adult = yes
 	is_demoted_consort_trigger = yes
 	NOR = {
+		has_character_flag = flag_pleaded_for
 		AND = {
 			exists = root.primary_spouse 
 			this = root.primary_spouse 
 		}
-		has_character_flag = flag_pleaded_for
 		AND = { 
 			has_character_flag = flag_demoted_grand_consort
 			is_grand_consort_trigger = yes
+		}
+		AND = { 
+			has_character_flag = flag_demoted_spouse
+			is_spouse_of = root
 		}
 	}
 	is_courtier_of = root
@@ -111,34 +115,8 @@ harem_politics.0001 = {
 	}
 	
 	trigger = {
-		OR = {
-			AND = { #Demoted concubines
-				allowed_more_spouses = yes
-				any_concubine = {
-					harem_politics_demoted_consort_trigger = yes
-				}
-			}
-			AND = { #Concubine GC
-				highest_held_title_tier >= tier_kingdom
-				accepts_polygamy = no
-				any_concubine = {
-					has_character_flag = flag_demoted_grand_consort
-					harem_politics_demoted_consort_trigger = yes
-				}
-			}
-			AND = { #Spouse GC
-				highest_held_title_tier >= tier_kingdom
-				any_spouse = {
-					has_character_flag = flag_demoted_grand_consort
-					harem_politics_demoted_consort_trigger = yes
-				}
-			}
-			AND = {
-				any_spouse = {
-					has_character_modifier = demoted_primary_spouse_modifier
-					harem_politics_demoted_consort_trigger = yes
-				}
-			}
+		any_consort = {
+			harem_politics_demoted_consort_trigger = yes
 		}
 		OR = {
 			any_courtier = {
@@ -18088,8 +18066,8 @@ harem_politics.0019 = {
 				}
 				compatibility_modifier = {
 					compatibility_target = scope:yu_daying
-					multiplier = 2
-					min = 0
+					multiplier = -2
+					min = 1
 					max = 30
 				}
 				
@@ -20242,6 +20220,324 @@ harem_politics.0020 = {
 		add_character_flag = {
 			flag = had_walking_consorts_event_flag
 			years = 4
+		}
+	}
+}
+
+###################################################
+##A consort was caught trying to ruin a pregnancy##
+###################################################
+harem_politics.0021 = {
+	type = character_event
+	title = consort_events.0017.t
+	desc = harem_politics.0021.desc
+	theme = corruption
+	override_background = {
+		reference = throne_room
+	}
+	
+	right_portrait = { 	
+		character = scope:schemer
+		animation = shock
+	}
+	left_portrait = { 	
+		character = scope:pregnant_consort
+		animation = disbelief
+	}
+	
+	trigger = {
+		is_landed = yes
+	}
+	
+	immediate = {
+		hidden_effect = {
+			scope:actor = {	
+				send_interface_toast = {
+					type = event_generic_bad
+					title = unsuccessful_miscarriage_t
+					right_icon = scope:recipient
+					custom_tooltip = unsuccessful_miscarriage_caught_desc
+				}
+				save_scope_as = schemer
+				clear_saved_scope = actor
+			}
+			scope:recipient = {	
+				add_opinion = {
+					target = scope:schemer
+					modifier = hatred_spouse_opinion
+				}
+				save_scope_as = pregnant_consort
+				clear_saved_scope = recipient
+			}
+		}
+	}
+	
+	option = { #Arrest them!
+        name = harem_politics.0021.a
+		trigger = {
+			is_liege_or_above_of = scope:schemer
+		}
+		add_opinion = {
+			target = scope:schemer
+			modifier = attempted_miscarriage
+		}
+		rightfully_imprison_character_effect = {
+			TARGET = scope:schemer
+			IMPRISONER = root
+		}
+		scope:pregnant_consort = {
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+			if = {
+				limit = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				remove_character_modifier = unfavored_consort_modifier
+			}
+		}
+		scope:schemer = {
+			if = {
+				limit = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				remove_character_modifier = favored_consort_modifier
+			}
+			add_character_modifier = {
+				modifier = unfavored_consort_modifier
+				years = 3
+			}
+		}
+		
+		stress_impact = {
+			forgiving = minor_stress_impact_gain 
+			compassionate = minor_stress_impact_gain 
+		}
+		
+        ai_chance = {
+            base = 50
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:schemer
+				min = -20
+				max = 20
+				multiplier = -1
+			}
+			opinion_modifier = { #Opinion of pregnant consort
+				opinion_target = scope:pregnant_consort
+				min = -20
+				max = 20
+				multiplier = 1
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -50
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -50
+			}
+				
+			modifier = { #Traits
+				has_trait = just
+				add = 10
+			}
+			modifier = { #Traits
+				has_trait = vengeful
+				add = 15
+			}
+
+			modifier = { #Favor
+				scope:pregnant_consort = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 5
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:pregnant_consort = { 
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+						}
+					}
+				}
+				add = 10
+			}
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:pregnant_consort = { 
+					this = root.primary_spouse
+				}
+				add = 15
+			}
+			#Grand consort
+			modifier = {
+				scope:pregnant_consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			#Other spouses
+			modifier = {
+				scope:pregnant_consort = { 
+					is_married = yes
+				}
+				add = 5
+			}
+			#More chances if few kids
+			modifier = {
+				any_child = { 
+					count < 3
+				}
+				add = 10
+			}
+        }
+    }
+	
+	option = { #Let them go
+        name = consort_events.0001.c
+		
+		scope:schemer = {
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+			if = {
+				limit = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				remove_character_modifier = unfavored_consort_modifier
+			}
+			add_character_modifier = {
+				modifier = favored_consort_modifier
+				years = 3
+			}
+		}
+		scope:pregnant_consort = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+			if = {
+				limit = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				remove_character_modifier = favored_consort_modifier
+			}
+			add_character_modifier = {
+				modifier = unfavored_consort_modifier
+				years = 3
+			}
+		}
+
+		stress_impact = {
+			just = minor_stress_impact_gain 
+			vengeful = minor_stress_impact_gain 
+		}
+		
+        ai_chance = {
+            base = 25
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:schemer
+				min = -20
+				max = 20
+				multiplier = 1
+			}
+			opinion_modifier = { #Opinion of pregnant consort
+				opinion_target = scope:pregnant_consort
+				min = -20
+				max = 20
+				multiplier = -1
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = 10
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = 10
+			}
+				
+			modifier = { #Traits
+				has_trait = just
+				add = -25
+			}
+			modifier = { #Traits
+				has_trait = vengeful
+				add = -50
+			}
+
+			modifier = { #Favor
+				scope:pregnant_consort = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:schemer = { 
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+						}
+					}
+				}
+				add = 10
+			}
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:schemer = { 
+					this = root.primary_spouse
+				}
+				add = 15
+			}
+			#Grand consort
+			modifier = {
+				scope:schemer = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			#Other spouses
+			modifier = {
+				scope:schemer = { 
+					is_married = yes
+				}
+				add = 5
+			}
+        }
+    }
+	
+	after = {
+		scope:pregnant_consort = {
+			trigger_event = {
+				id = consort_events.0022
+				days = 1
+			}
 		}
 	}
 }
