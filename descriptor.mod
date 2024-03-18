@@ -1,6 +1,9 @@
-version="1.0"
+version="2.7"
 tags={
 	"Gameplay"
+	"Events"
+	"Schemes"
+	"Decisions"
 }
-name="Test Wives and Concubines"
-supported_version="1.8.0"
+name="Harem Politics"
+supported_version="1.12.*"
