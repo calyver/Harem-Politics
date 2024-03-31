@@ -3793,7 +3793,7 @@ harem_politics.0004 = {
 	}
 	trigger = {
 		OR = {		
-			AND = { #Promote a concubine to Grand Consort
+			AND = { #Promote a consort to Grand Consort
 				gold >= minor_gold_value
 				highest_held_title_tier >= tier_kingdom
 				NOT = { employs_court_position = grand_consort_court_position }
@@ -3847,14 +3847,33 @@ harem_politics.0004 = {
 				add_to_list = potential_consorts_list
 			}
 		}
-		every_consort = {
+		
+		if = {
 			limit = {
-				AND = {
-					harem_politics_valid_promotion_consort_trigger = yes
-					is_concubine = yes
+				OR = {
+					AND = {
+						allowed_more_spouses = yes
+						any_concubine = {
+							harem_politics_valid_promotion_consort_trigger = yes
+						}
+					}
+					AND = {
+						highest_held_title_tier >= tier_kingdom
+						NOT = { employs_court_position = grand_consort_court_position }
+						accepts_polygamy = no
+						accepts_concubinage = yes
+						any_concubine = {
+							harem_politics_valid_promotion_consort_trigger = yes
+						}
+					}
 				}
 			}
-			add_to_list = potential_consorts_list
+			every_concubine = {
+				limit = {
+					harem_politics_valid_promotion_consort_trigger = yes
+				}
+				add_to_list = potential_consorts_list
+			}
 		}
 		
 		random_in_list = {
@@ -3864,6 +3883,10 @@ harem_politics.0004 = {
 			}
 			weight = {
 				base = 10
+				modifier = { #Lowborn
+					is_lowborn = no
+					add = 15
+				}
 				modifier = { #Soulmate
 					has_relation_soulmate = root
 					add = 60
@@ -4240,8 +4263,36 @@ harem_politics.0004 = {
 				add = 20
 			}
 			modifier = { #Favored consort
-				has_character_modifier = favored_consort_modifier
-				add = 5
+				scope:loved_consort = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Lowborns
+				scope:loved_consort = {
+					is_lowborn = yes
+				}
+				add = -10
+			}
+			modifier = { #Less likely if the candidate is lowborn and low legitimacy
+				add = -35
+				OR = {
+					AND = {
+						highest_held_title_tier = tier_empire
+						legitimacy_level <= 3
+					}
+					AND = {
+						highest_held_title_tier = tier_kingdom
+						legitimacy_level <= 2
+					}
+					AND = {
+						highest_held_title_tier = tier_duchy
+						legitimacy_level <= 1
+					}
+				}
+				scope:loved_consort = {
+					is_lowborn = yes
+				}
 			}
 			modifier = { #Culture
 				culture = scope:loved_consort.culture
@@ -4625,7 +4676,7 @@ harem_politics.0004 = {
 				scope:loved_consort = {
 					is_lowborn = yes
 				}
-				add = 20
+				add = 15
 			}
 			modifier = { #Faith considerations
 				NOT = { faith = scope:loved_consort.faith }				
@@ -15304,6 +15355,16 @@ harem_politics.0015 = {
         name = harem_politics.0015.a
 		flavor = harem_politics.0015.a_tt
 		
+		if = {
+			limit = {
+				OR = {
+					has_character_flag = dead_important_relative_flag
+					has_character_flag = dead_main_spouse_flag
+				}
+			}
+			add_legitimacy = miniscule_legitimacy_gain
+		}
+		
 		add_character_modifier = {
 			modifier = mourner_modifier
 			years = 1
@@ -15469,6 +15530,7 @@ harem_politics.0015 = {
 				modifier = merry_mourner_modifier
 				years = 1
 			}
+			add_legitimacy = medium_legitimacy_loss
 			if = {
 				limit = {
 					any_parent = {
@@ -15537,6 +15599,31 @@ harem_politics.0015 = {
 			modifier = {
 				add = -25
 				has_trait = forgiving
+			}
+			modifier = {
+				add = 15
+				is_at_war = yes
+			}
+			modifier = { #Less likely if low legitimacy
+				add = -35
+				OR = {
+					AND = {
+						highest_held_title_tier = tier_empire
+						legitimacy_level <= 3
+					}
+					AND = {
+						highest_held_title_tier = tier_kingdom
+						legitimacy_level <= 2
+					}
+					AND = {
+						highest_held_title_tier = tier_duchy
+						legitimacy_level <= 1
+					}
+				}
+				OR = {
+					has_character_flag = dead_important_relative_flag
+					has_character_flag = dead_main_spouse_flag
+				}
 			}
         }
     }
