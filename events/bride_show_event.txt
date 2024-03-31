@@ -101,7 +101,6 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		has_trait = typhus
 		has_trait = dwarf
 		has_trait = physique_bad_3	#Weak candidates wouln't make it to the capital without getting sick.
-		sex_same_as = root
 	}
 	OR = { #Beauty parameters
 		AND = { #Beauty matters
@@ -125,6 +124,7 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 			exists = local_var:personality_skills_important
 		}
 	}
+	can_take_as_concubine_character_trigger = { CHARACTER = root }
 }
 
 scripted_trigger can_have_four_candidates_trigger = {
@@ -600,7 +600,7 @@ bride_show.0002 = {
 			value = yes
 		}
 		ai_chance = {
-			base = 0
+			base = 1
 		}
 	}
 
@@ -652,7 +652,7 @@ bride_show.0003 = {
 			value = yes
 		}
 		ai_chance = {
-			base = 0
+			base = 1
 		}
 	}
 
@@ -1338,6 +1338,26 @@ bride_show.0005 = {
 				add = 10
 				scope:potential_candidate = {
 					is_lowborn = no
+				}
+			}
+			modifier = { #Less likely if the candidate is lowborn and low legitimacy
+				add = -75
+				OR = {
+					AND = {
+						highest_held_title_tier = tier_empire
+						legitimacy_level <= 3
+					}
+					AND = {
+						highest_held_title_tier = tier_kingdom
+						legitimacy_level <= 2
+					}
+					AND = {
+						highest_held_title_tier = tier_duchy
+						legitimacy_level <= 1
+					}
+				}
+				scope:potential_candidate = {
+					is_lowborn = yes
 				}
 			}
 			modifier = { #More likely if the shares same faith
@@ -2230,6 +2250,8 @@ bride_show.0006 = {
 	
 	option = {
 		name = bride_show.0006.a
+		
+		add_legitimacy = miniscule_legitimacy_gain
 		
 		hidden_effect = {
 			every_in_list = {

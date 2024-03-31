@@ -24,6 +24,53 @@
 			}
 		}
 	}
+	
+	#Legitimacy loss for marrying a lowborn
+	if = {
+		limit = {
+			scope:actor = {
+				NOT = { has_variable = lowborn_legitimacy_cooldown }
+			}
+			scope:actor = scope:secondary_actor # We check that you're marrying them yourself
+			scope:secondary_recipient = { is_lowborn = yes }
+		}
+		if = {
+			limit = {
+				scope:actor = { is_ai = no }
+			}
+			scope:actor = {
+				send_interface_toast = {
+					type = event_toast_effect_good
+					title = married_lowborn_toast
+					left_icon = scope:actor
+					add_legitimacy = {
+						value = medium_legitimacy_loss
+						multiply = scope:actor.primary_title.tier
+					}
+				}
+			}
+		}
+		else = { # To avoid destroying polygamy AIs
+			scope:actor = {
+				send_interface_toast = {
+					type = event_toast_effect_good
+					title = married_lowborn_toast
+					left_icon = scope:actor
+					add_legitimacy = {
+						value = minor_legitimacy_loss
+					}
+				}
+			}
+			hidden_effect = {
+				scope:actor = {
+					set_variable = {
+						name = lowborn_legitimacy_cooldown
+						years = 10
+					}
+				}
+			}
+		}
+	}
 
 	#No longer concubine
 	if = {
@@ -142,7 +189,7 @@
 						}
 					}
 
-					# NOTE: Spouse's own opinions handled in the 'on_marriage' code on_action inside of marriage_concubinage.txt and are not included here.
+					# NOTE: Spouse's own opinions handled in the 'on_marriage' code on_action inside of marriage_concubinage.txt, and are not included here.
 				}
 			}
 		}
@@ -216,7 +263,7 @@
 
 	###MANAGEMENT SCRIPT FOR VARIOUS EVENTS/CONTENT###
 	
-	#If your spouse councillor had boosted the chance of marriage remove modifier
+	#If your spouse councillor had boosted the chance of marriage, remove modifier
 	if = {
 		limit = {
 			scope:secondary_actor = {
@@ -360,20 +407,6 @@ calyver_marriage_harem_politics_effect = {
 		}
 	}
 	
-	#New consorts
-	scope:secondary_recipient = {
-		add_character_flag = {
-			flag = flag_new_consort
-			years = 2
-		}
-	}
-	scope:secondary_actor = {
-		add_character_flag = {
-			flag = flag_new_consort
-			years = 2
-		}
-	}
-	
 	#Promotions and demotions
 	if = {
 		limit = {
@@ -388,12 +421,6 @@ calyver_marriage_harem_politics_effect = {
 							has_character_flag = flag_divorced_spouse
 							has_character_flag = flag_divorced_grand_consort
 							has_character_flag = flag_divorced_primary_spouse
-							has_character_flag = flag_divorced_noble_consort
-							has_character_flag = flag_divorced_noble_lady
-							has_character_flag = flag_divorced_noble_attendant
-							has_character_flag = flag_divorced_consort
-							has_character_flag = flag_divorced_lady
-							has_character_flag = flag_divorced_attendant
 						}
 						OR = {
 							has_opinion_modifier = {
@@ -417,12 +444,6 @@ calyver_marriage_harem_politics_effect = {
 							has_character_flag = flag_divorced_spouse
 							has_character_flag = flag_divorced_grand_consort
 							has_character_flag = flag_divorced_primary_spouse
-							has_character_flag = flag_divorced_noble_consort
-							has_character_flag = flag_divorced_noble_lady
-							has_character_flag = flag_divorced_noble_attendant
-							has_character_flag = flag_divorced_consort
-							has_character_flag = flag_divorced_lady
-							has_character_flag = flag_divorced_attendant
 						}
 						OR = {
 							has_opinion_modifier = {
@@ -453,7 +474,20 @@ calyver_marriage_harem_politics_effect = {
 			VALUE = medium_unity_gain
 			DESC = clan_unity_marry_off.desc
 			REVERSE_NON_HOUSE_TARGET = no
-		}	
+		}
+		#New consorts
+		scope:secondary_recipient = {
+			add_character_flag = {
+				flag = flag_new_consort
+				years = 2
+			}
+		}
+		scope:secondary_actor = {
+			add_character_flag = {
+				flag = flag_new_consort
+				years = 2
+			}
+		}
 	}
 	child_promotion_effect = yes
 }
@@ -493,7 +527,7 @@ calyver_concubine_on_accept_effect = {
 				}
 				# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
 				if = {
-					limit = {
+					limit = { 
 						OR = {
 							NOT = { accepts_concubinage = yes }
 							NOT = { faith = { has_doctrine = tenet_polyamory } }
@@ -510,7 +544,7 @@ calyver_concubine_on_accept_effect = {
 				}
 			}
 					
-			# Spouses if any exist are also furious.
+			# Spouses, if any exist, are also furious.
 			if = {
 				limit = {
 					is_married = yes
@@ -527,10 +561,15 @@ calyver_concubine_on_accept_effect = {
 									count >= 2
 								}
 							}
+							add_character_flag = {
+								flag = flag_lowborn_exception
+								days = 2
+							}
 							new_primary_spouse_divorce_effect = {
 								PREVIOUS_PS = scope:recipient
 								PARTNER = prev
 							}
+							remove_character_flag = flag_lowborn_exception
 						}
 					}
 					show_as_tooltip = {
@@ -538,12 +577,12 @@ calyver_concubine_on_accept_effect = {
 							target = scope:actor
 							modifier = forced_spouse_concubine_marriage_opinion
 						}
-						divorce = scope:recipient # no additional opinion hit no scripted effect
+						divorce = scope:recipient # no additional opinion hit, no scripted effect
 					}
 					trigger_event = marriage_interaction.0041
 				}
 			}
-			
+					
 			# Stealing concubines pisses the former concubinist off.
 			if = {
 				limit = {
@@ -555,7 +594,7 @@ calyver_concubine_on_accept_effect = {
 							target = scope:secondary_actor
 							modifier = stole_concubine_opinion
 						}
-						remove_concubine = scope:recipient # no additional opinion hit no scripted effect
+						remove_concubine = scope:recipient # no additional opinion hit, no scripted effect
 					}
 					trigger_event = marriage_interaction.0041
 				}
@@ -861,6 +900,21 @@ spouse_management_effect = {
 						}
 					}
 				}
+				if = { #Legitimacy loss#
+					limit = {
+						scope:secondary_actor = {
+							NOT = {
+								has_imprisonment_reason = scope:secondary_recipient
+							}
+							this = scope:actor
+						}
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+					scope:actor = {
+						add_legitimacy = minor_legitimacy_loss
+					}
+				}
 				# If we're a clan this interaction affects unity
 				add_clan_unity_interaction_effect = {
 					CHARACTER = scope:actor
@@ -1079,6 +1133,21 @@ spouse_management_effect = {
 						}
 					}
 				}
+				if = { #Legitimacy loss#
+					limit = {
+						scope:secondary_recipient = {
+							NOT = {
+								has_imprisonment_reason = scope:secondary_actor
+							}
+							this = scope:actor
+						}
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+					scope:actor = {
+						add_legitimacy = minor_legitimacy_loss
+					}
+				}
 				# If we're a clan this interaction affects unity
 				add_clan_unity_interaction_effect = {
 					CHARACTER = scope:actor
@@ -1285,6 +1354,189 @@ spouse_demotion_effect = {
 		child_demotion_effect = yes
 	}
 	scope:actor = {
+		##House unity and legitimacy effect##
+		#PS#
+		if = {
+			limit = {
+				exists = primary_spouse
+				primary_spouse = {
+					this = scope:recipient
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = massive_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = medium_legitimacy_loss
+			}
+		}
+		else_if = {
+			limit = {
+				scope:recipient = {
+					OR = {	
+						has_character_flag = flag_divorced_primary_spouse
+						has_character_modifier = demoted_primary_spouse_modifier
+					}
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = medium_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
+		else_if = { #GC#
+			limit = {
+				scope:recipient = {
+					is_grand_consort_trigger = yes
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = major_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
+		else_if = { #GC#
+			limit = {
+				scope:recipient = {
+					OR = {
+						has_character_flag = flag_demoted_grand_consort
+						has_character_flag = flag_divorced_grand_consort
+					}
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = minor_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
+		else_if = { #SS#
+			limit = {
+				scope:recipient = {
+					is_married = yes
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = medium_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
+		else_if = {
+			limit = {
+				scope:recipient = {
+					has_character_flag = flag_divorced_spouse
+				}
+			}
+			# If we're a clan this interaction affects unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:actor
+				TARGET = scope:recipient
+				VALUE = minor_unity_loss
+				DESC = clan_unity_demotion.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}	
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:recipient
+						}
+					}
+					scope:recipient = {
+						num_sinful_traits = 0
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
 		hidden_effect = {
 			every_consort = {
 				if = { #Craven consorts don't feel threatened by a despot
@@ -1361,20 +1613,20 @@ spouse_demotion_effect = {
 				}
 				remove_character_flag = flag_demoted_spouse
 			}
-			if = { #If for whatever reason they have another flag
+			if = { #If for whatever reason, they have another flag
 				limit = {
 					has_character_flag = flag_divorced_grand_consort
 				}
 				remove_character_flag = flag_divorced_grand_consort
 			}
-			if = { #If for whatever reason they have another flag
+			if = { #If for whatever reason, they have another flag
 				limit = {
 					has_character_flag = flag_divorced_spouse
 				}
 				remove_character_flag = flag_divorced_spouse
 			}
 			hidden_effect = {
-				if = { #If for whatever reason they have another modifier
+				if = { #If for whatever reason, they have another modifier
 					limit = {
 						has_character_modifier = demoted_spouse_modifier
 					}
@@ -1537,7 +1789,7 @@ spouse_demotion_effect = {
 							}
 							add_opinion = {
 								target = scope:actor
-								modifier = demoted_grand_consort_vassal_opinion
+								modifier = demoted_spouse_vassal_opinion
 							}
 						}
 					}
@@ -1771,109 +2023,6 @@ spouse_demotion_effect = {
 				}
 			}
 		}
-		##House unity effect##
-		#PS#
-		if = {
-			limit = {
-				exists = primary_spouse
-				primary_spouse = {
-					this = scope:recipient
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = massive_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}
-			
-		}
-		else_if = {
-			limit = {
-				scope:recipient = {
-					OR = {	
-						has_character_flag = flag_divorced_primary_spouse
-						has_character_modifier = demoted_primary_spouse_modifier
-					}
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = medium_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}
-			
-		}
-		else_if = { #GC#
-			limit = {
-				scope:recipient = {
-					is_grand_consort_trigger = yes
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = major_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}
-			
-		}
-		else_if = { #GC#
-			limit = {
-				scope:recipient = {
-					OR = {
-						has_character_flag = flag_demoted_grand_consort
-						has_character_flag = flag_divorced_grand_consort
-					}
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = minor_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}
-			
-		}
-		else_if = { #SS#
-			limit = {
-				scope:recipient = {
-					is_married = yes
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = medium_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}
-		}
-		else_if = {
-			limit = {
-				scope:recipient = {
-					has_character_flag = flag_divorced_spouse
-				}
-			}
-			# If we're a clan this interaction affects unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:actor
-				TARGET = scope:recipient
-				VALUE = minor_unity_loss
-				DESC = clan_unity_demotion.desc
-				REVERSE_NON_HOUSE_TARGET = no
-			}	
-		}
 		if = {
 			limit = {
 				is_spouse_of = scope:recipient
@@ -1996,7 +2145,7 @@ child_promotion_effect = {
 
 child_demotion_effect = {
 	scope:recipient = {
-		#If children don't have the Child of Concubine trait add it.
+		#If children don't have the Child of Concubine trait, add it.
 		every_child = {
 			if = {
 				limit = {
@@ -2115,6 +2264,20 @@ divorcee_effect = {
 			DESC = clan_unity_divorce.desc
 			REVERSE_NON_HOUSE_TARGET = no
 		}
+		if = { #Legitimacy loss#
+			limit = {
+				$DIVORCER$ = {
+					NOT = {
+						has_imprisonment_reason = $DIVORCEE$
+					}
+				}
+				num_sinful_traits = 0
+				is_lowborn = no
+			}
+			$DIVORCER$ = {
+				add_legitimacy = medium_legitimacy_loss
+			}
+		}
 		add_character_flag = {
 			flag = flag_divorced_primary_spouse
 		}
@@ -2153,6 +2316,20 @@ divorcee_effect = {
 			DESC = clan_unity_divorce.desc
 			REVERSE_NON_HOUSE_TARGET = no
 		}
+		if = { #Legitimacy loss#
+			limit = {
+				$DIVORCER$ = {
+					NOT = {
+						has_imprisonment_reason = $DIVORCEE$
+					}
+				}
+				num_sinful_traits = 0
+				is_lowborn = no
+			}
+			$DIVORCER$ = {
+				add_legitimacy = minor_legitimacy_loss
+			}
+		}
 		add_character_flag = {
 			flag = flag_divorced_grand_consort
 		}
@@ -2165,6 +2342,20 @@ divorcee_effect = {
 			VALUE = minor_unity_loss
 			DESC = clan_unity_divorce.desc
 			REVERSE_NON_HOUSE_TARGET = no
+		}
+		if = { #Legitimacy loss#
+			limit = {
+				$DIVORCER$ = {
+					NOT = {
+						has_imprisonment_reason = $DIVORCEE$
+					}
+				}
+				num_sinful_traits = 0
+				is_lowborn = no
+			}
+			$DIVORCER$ = {
+				add_legitimacy = minor_legitimacy_loss
+			}
 		}
 		add_character_flag = {
 			flag = flag_divorced_spouse
@@ -2188,13 +2379,13 @@ divorcee_effect = {
 	}
 	
 	#Removing demoted modifiers and flags
-	if = { #If for whatever reason they have another modifier
+	if = { #If for whatever reason, they have another modifier
 		limit = {
 			has_character_modifier = demoted_spouse_modifier
 		}
 		remove_character_modifier = demoted_spouse_modifier
 	}
-	if = { #If for whatever reason they have another modifier
+	if = { #If for whatever reason, they have another modifier
 		limit = {
 			has_character_modifier = demoted_primary_spouse_modifier
 		}
@@ -2463,13 +2654,13 @@ divorcer_effect = {
 	}
 	
 	#Removing demoted modifiers and flags
-	if = { #If for whatever reason they have another modifier
+	if = { #If for whatever reason, they have another modifier
 		limit = {
 			has_character_modifier = demoted_spouse_modifier
 		}
 		remove_character_modifier = demoted_spouse_modifier
 	}
-	if = { #If for whatever reason they have another modifier
+	if = { #If for whatever reason, they have another modifier
 		limit = {
 			has_character_modifier = demoted_primary_spouse_modifier
 		}
@@ -2697,31 +2888,7 @@ new_primary_spouse_divorce_effect = {
 						add = 10
 					}
 					modifier = {
-						is_demoted_grand_consort_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_demoted_noble_consort_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_demoted_noble_lady_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_demoted_noble_attendant_trigger = no
-						add = 30
-					}
-					modifier = {
 						is_demoted_consort_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_demoted_lady_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_demoted_attendant_trigger = no
 						add = 30
 					}
 					modifier = {
@@ -3005,18 +3172,6 @@ set_primary_spouse_effect = {
 					}
 					set_relation_potential_rival = scope:recipient
 				}
-				if = { #No longer reinstated opinion
-					limit = {
-						has_opinion_modifier = {
-							target = scope:actor
-							modifier = reinstated_me_opinion
-						}
-					}
-					remove_opinion = {
-						modifier = reinstated_me_opinion
-						target = scope:actor
-					}
-				}
 				if = { #No longer favored
 					limit = {
 						has_character_modifier = favored_consort_modifier
@@ -3064,6 +3219,20 @@ set_primary_spouse_effect = {
 				VALUE = medium_unity_loss
 				DESC = clan_unity_demotion.desc
 				REVERSE_NON_HOUSE_TARGET = no
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					is_lowborn = no
+					num_sinful_traits = 0
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:previous_primary_spouse
+						}
+					}
+				}
+				scope:actor = {
+					add_legitimacy = medium_legitimacy_loss
+				}
 			}
 		}
 	}
@@ -3181,7 +3350,7 @@ set_primary_spouse_effect = {
 					save_scope_as = grand_consort_scope
 				}
 			}
-			if = { #For some reason can't update consorts opinions
+			if = { #For some reason, can't update consorts opinions
 				limit = {
 					exists = scope:grand_consort_scope
 				}
@@ -3241,8 +3410,8 @@ set_primary_spouse_effect = {
 							AND = {
 								harem_politics_evil_consort_trigger = yes
 								opinion = {
-									target = scope:grand_consort_scope
-									value <= 20
+									target = scope:recipient
+									value <= 10
 								}
 								OR = { #Only harem consorts would care
 									accepts_concubinage = yes
@@ -3406,6 +3575,55 @@ make_primary_spouse_effect = {
 			limit = { $DEMOTER$.primary_title.tier = tier_empire }
 			add_prestige = { value = major_prestige_gain }
 		}
+		
+		scope:demoter = {
+			if = { #Legitimacy loss#
+				limit = {
+					exists = scope:previous_primary_spouse
+					scope:previous_primary_spouse = {
+						is_lowborn = yes
+					}
+					scope:new_primary_spouse = {
+						is_lowborn = no
+					}
+				}
+				#No legitimacy loss, even if the new PS is sinful
+				add_legitimacy = minor_legitimacy_gain
+			}
+			else_if = { #Legitimacy loss#
+				limit = {
+					scope:new_primary_spouse = {
+						is_lowborn = no
+					}
+					NOR = {
+						has_character_flag = dead_main_spouse_flag
+						has_character_flag = flag_lowborn_exception
+					}
+					OR = {
+						has_imprisonment_reason = scope:new_primary_spouse
+						scope:new_primary_spouse = {
+							num_sinful_traits > 0
+						}
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+			else_if = { #Legitimacy loss#
+				limit = {
+					scope:new_primary_spouse = {
+						is_lowborn = yes
+					}
+					NOR = {
+						has_character_flag = dead_main_spouse_flag
+						has_character_flag = flag_lowborn_exception
+					}
+				}
+				add_legitimacy = {
+					value = minor_legitimacy_loss
+					multiply = scope:actor.primary_title.tier
+				}
+			}
+		}
 	}
 	hidden_effect = {
 		scope:demoter = {
@@ -3476,7 +3694,7 @@ make_primary_spouse_effect = {
 calyver_update_active_consort_opinion_effect = {
 
 	if = {
-		# If this opinion change was triggered by being divorced/set-aside we may still technically be married/joined to PARTNER at this moment but we won't be very shortly and should skip this step.
+		# If this opinion change was triggered by being divorced/set-aside, we may still technically be married/joined to PARTNER at this moment, but we won't be very shortly and should skip this step.
 		limit = {
 			NOR = {
 				exists = scope:is_being_divorced
@@ -3583,7 +3801,7 @@ calyver_update_active_consort_opinion_effect = {
 
 calyver_downgrade_active_consort_opinion_effect = {
 	if = {
-		# If this opinion change was triggered by being divorced/set-aside we may still technically be married/joined to PARTNER at this moment but we won't be very shortly and should skip this step.
+		# If this opinion change was triggered by being divorced/set-aside, we may still technically be married/joined to PARTNER at this moment, but we won't be very shortly and should skip this step.
 		limit = {
 			NOR = {
 				exists = scope:is_being_divorced
@@ -3671,31 +3889,7 @@ new_primary_spouse_on_action_effect = {
 					add = 10
 				}
 				modifier = {
-					is_demoted_grand_consort_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_demoted_noble_consort_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_demoted_noble_lady_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_demoted_noble_attendant_trigger = no
-					add = 30
-				}
-				modifier = {
 					is_demoted_consort_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_demoted_lady_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_demoted_attendant_trigger = no
 					add = 30
 				}
 				modifier = {
