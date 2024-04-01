@@ -9,8 +9,124 @@
 		clear_variable_list = harem_gc_list
 		clear_variable_list = harem_ss_list
 		clear_variable_list = harem_concubine_list
+		#Remove variables
+		if = { #Show the GC
+			limit = {
+				has_variable = show_gc
+			}
+			remove_variable = show_gc
+		}
+		if = { #Show the SS list
+			limit = {
+				has_variable = show_ss_list
+			}
+			remove_variable = show_ss_list
+		}
+		if = { #Show the concubine list
+			limit = {
+				has_variable = show_concubine_list
+			}
+			remove_variable = show_concubine_list
+		}
 	}
 	else = {
+		calyver_update_harem_list_effect = yes
 		set_variable = show_harem_window
+	}
+}
+
+calyver_update_harem_list_effect = {
+	if = { #Is the character married?
+		limit = {
+			exists = scope:harem_master
+		}
+		clear_saved_scope = harem_master
+	}
+	
+	save_scope_as = harem_master
+	if = { #Is the character married?
+		limit = {
+			is_married = yes
+		}
+		primary_spouse = {
+			save_scope_as = harem_head
+		}
+		add_to_variable_list = {
+			name = harem_ps_list
+			target = scope:harem_head
+		}
+	}
+	
+	if = { #Can you have a Grand Consort?
+		limit = {
+			highest_held_title_tier >= tier_kingdom
+		}
+		set_variable = show_gc
+		if = {
+			limit = {
+				any_consort = {
+					has_court_position = grand_consort_court_position
+				}
+			}
+			random_consort = {
+				limit = {
+					has_court_position = grand_consort_court_position
+				}
+				save_scope_as = grand_consort
+			}
+			add_to_variable_list = {
+				name = harem_gc_list
+				target = scope:grand_consort
+			}
+		}
+	}
+	
+	if = { #Do you accept polygamy?
+		limit = {
+			accepts_polygamy = yes
+		}
+		set_variable = show_ss_list
+		every_consort = {
+			limit = {
+				is_married = yes
+				NOR = {
+					this = root.primary_spouse
+					has_court_position = grand_consort_court_position
+				}
+			}
+			#order_by = consort_hierarchy_score
+			
+			save_scope_as = ss_consort
+			root = {
+				add_to_variable_list = {
+					name = harem_ss_list
+					target = scope:ss_consort
+				}
+			}
+		}
+	}
+	
+	if = { #Do you accept concubinage?
+		limit = {
+			accepts_concubinage = yes
+		}
+		set_variable = show_concubine_list
+		every_consort = {
+			limit = {
+				is_concubine = yes
+				NOT = {
+					has_court_position = grand_consort_court_position
+				}
+			}
+			#order_by = consort_hierarchy_score
+			
+			save_scope_as = concubine_consort
+			root = {
+				add_to_variable_list = {
+					name = harem_concubine_list
+					target = scope:concubine_consort
+				}
+			}
+		}
 	}
 }
