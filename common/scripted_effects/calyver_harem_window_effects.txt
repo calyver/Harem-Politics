@@ -10,23 +10,29 @@
 		clear_variable_list = harem_ss_list
 		clear_variable_list = harem_concubine_list
 		#Remove variables
-		if = { #Show the GC
+		if = { #GC
 			limit = {
 				has_variable = show_gc
 			}
 			remove_variable = show_gc
 		}
-		if = { #Show the SS list
+		if = { #SS list
 			limit = {
 				has_variable = show_ss_list
 			}
 			remove_variable = show_ss_list
 		}
-		if = { #Show the concubine list
+		if = { #Concubine list
 			limit = {
 				has_variable = show_concubine_list
 			}
 			remove_variable = show_concubine_list
+		}
+		if = { #Can't visit the harem
+			limit = {
+				has_variable = cant_visit_harem
+			}
+			remove_variable = cant_visit_harem
 		}
 	}
 	else = {
@@ -128,5 +134,181 @@ calyver_update_harem_list_effect = {
 				}
 			}
 		}
+	}
+	
+	if = { #Can you visit the harem?
+		limit = {
+			OR = {
+				has_trait = ill
+				has_trait = wounded_1
+				has_trait = infirm
+				has_trait = eunuch
+				has_trait = disfigured
+				
+				has_trait = wounded_2
+				has_trait = wounded_3						
+				has_trait = incapable
+				has_trait = maimed
+				has_trait = blind
+				has_trait = bubonic_plague
+				has_trait = cancer
+				has_trait = consumption
+				has_trait = great_pox
+				has_trait = gout_ridden
+				has_trait = leper
+				has_trait = pneumonic
+				has_trait = smallpox
+				has_trait = typhus
+				
+				has_trait = dysentery
+				has_trait = ergotism
+				has_trait = measles
+				
+				is_at_war = yes
+				has_variable = flag_visited_harem
+				is_travelling = yes
+				is_available_allow_travelling = no
+				
+				realm_has_any_epidemic = {
+					SIZE = 1
+					INTENSITY = minor
+				}
+				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+			}
+		}
+		set_variable = cant_visit_harem
+	}
+}
+
+visit_harem_effect = {
+	save_scope_as = harem_master
+	random_list = {
+		25 = { #Your consorts are performing
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					has_character_flag = flag_new_consort
+					count >= 3
+				}
+				add = 10
+			}
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					count >= 5
+				}
+				add = 5
+			}
+			trigger_event = {
+				id = harem_politics.0016
+				days = { 5 14 }
+			}
+		}
+		25 = { #You find two consorts on a walk
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					count >= 4
+				}
+				add = 10
+			}
+			trigger_event = {
+				id = harem_politics.0020
+				days = { 5 14 }
+			}
+		}
+		10 = { #Meeting Consort Ling through Consort Chun
+			modifier = {
+				highest_held_title_tier < tier_kingdom
+				factor = 0
+			}
+			trigger_event = {
+				id = harem_politics.0009
+				days = { 5 14 }
+			}
+		}
+		25 = { #Meeting Consort Ling through Consort Jia
+			modifier = {
+				highest_held_title_tier < tier_kingdom
+				factor = 0
+			}
+			trigger_event = {
+				id = harem_politics.0010
+				days = { 5 14 }
+			}
+		}
+		25 = { #Yu disrespects Zhen Huan
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					has_character_flag = flag_new_consort
+					count >= 3
+				}
+				add = 10
+			}
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					count >= 5
+				}
+				add = 10
+			}
+			trigger_event = {
+				id = harem_politics.0019
+				days = { 5 14 }
+			}
+		}
+		25 = { #You find Consort Ying playing in the garden
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					has_character_flag = flag_new_consort
+					count >= 2
+				}
+				add = 10
+			}
+			trigger_event = {
+				id = harem_politics.0022
+				days = { 5 14 }
+			}
+		}
+		25 = { #Visiting a consort to spend the day with
+			modifier = {
+				any_consort = {
+					is_courtier_of = scope:harem_master
+					count >= 6
+				}
+				add = 10
+			}
+			trigger_event = {
+				id = harem_politics.0023
+				days = { 5 14 }
+			}
+		}
+		25 = { #Generic event	
+			modifier = {
+				OR = {	
+					has_trait = impotent
+					has_trait = lovers_pox 
+					has_trait = early_great_pox 
+					has_trait = inbred 
+				}
+				add = 20
+			}
+			modifier = {
+				any_consort = {
+					count <= 3
+				}
+				add = 10
+			}
+			trigger_event = {
+				id = harem_politics.0024 
+				days = { 5 14 }
+			}
+		}
+	}
+	set_variable = {
+		name = flag_visited_harem
+		years = 3
 	}
 }

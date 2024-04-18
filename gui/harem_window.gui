@@ -21,7 +21,7 @@ window = {
 		
 			blockoverride "header_text"
 			{
-				text = "HAREM_WINDOW_TITLE"
+				text = "check_harem_decision"
 			}
 		
 			blockoverride "button_close"
@@ -56,7 +56,7 @@ window = {
 					name = "characters_grid"
 					datamodel_reuse_widgets = yes
 					datamodel = "[GetPlayer.MakeScope.GetList('harem_ps_list')]"
-					visible = "[Not(CharacterSelectionList.IsBuildingList)]"
+					visible = "[Not(IsDataModelEmpty(GetPlayer.MakeScope.GetList('harem_ps_list')))]"
 
 					item = {
 						widget_harem_list_item_finder = {
@@ -94,7 +94,7 @@ window = {
 					name = "characters_grid"
 					datamodel_reuse_widgets = yes
 					datamodel = "[GetPlayer.MakeScope.GetList('harem_gc_list')]"
-					visible = "[Not(CharacterSelectionList.IsBuildingList)]"
+					visible = "[IsDataModelEmpty(GetPlayer.MakeScope.GetList('harem_gc_list'))]"
 
 					item = {
 						widget_harem_list_item_finder = {
@@ -132,7 +132,7 @@ window = {
 					name = "characters_grid"
 					datamodel_reuse_widgets = yes
 					datamodel = "[GetPlayer.MakeScope.GetList('harem_ss_list')]"
-					visible = "[Not(CharacterSelectionList.IsBuildingList)]"
+					visible = "[Not(IsDataModelEmpty(GetPlayer.MakeScope.GetList('harem_ss_list')))]"
 
 					item = {
 						widget_harem_list_item_finder = {
@@ -170,7 +170,7 @@ window = {
 					name = "characters_grid"
 					datamodel_reuse_widgets = yes
 					datamodel = "[GetPlayer.MakeScope.GetList('harem_concubine_list')]"
-					visible = "[Not(CharacterSelectionList.IsBuildingList)]"
+					visible = "[Not(GetPlayer.MakeScope.GetList('harem_concubine_list'))]"
 
 					item = {
 						widget_harem_list_item_finder = {
@@ -194,23 +194,19 @@ window = {
 
 			# default step
 			widget = {
-				visible = "[Not(GetVariableSystem.HasValue( 'show_decision_next_step', 'true' ))]"
-				visible = "[Not(GetPlayer.HasFlag('flag_visited_harem'))]"
 				size = { 380 50 }
-
-				# next step button
-				
-
 				decision_confirm_button = {
 					name = "harem_decision_button"
-					visible = "[Not( DecisionDetailView.HasNextStep )]"
 					text = "IM_TT_HAREM_WINDOW"
-					datacontext = "[GetScriptedGui( 'visit_harem_gui' )]"
-					onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
-					visible = "[Not(GetPlayer.HasFlag('flag_visited_harem'))]"
+					onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					enabled = "[Not(GetPlayer.MakeScope.Var('cant_visit_harem').IsSet)]"
 					size = { 100% 100% }
+					
+					tooltip = "cant_visit_harem_tooltip" # xxx is a loc key here
+					tooltip_visible = "[GetPlayer.MakeScope.Var('cant_visit_harem').IsSet]"
 				}
+				
 			}
 
 			spacer = {

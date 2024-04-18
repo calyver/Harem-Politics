@@ -6524,10 +6524,6 @@ consort_events.0007 = {
 	#}
 	
 	immediate = {
-		add_character_flag = {
-			flag = has_consort_event_flag
-			months = 5
-		}
 		save_scope_as = partner
 		every_courtier = {
 			limit = {
@@ -6611,805 +6607,843 @@ consort_events.0007 = {
 			save_scope_as = harem_authority
 			save_scope_as = secondary_actor
 		}
-		random_consort = {
+		if = {
 			limit = {
-				is_valid_harem_victim_trigger = { CONSORT_AUTHORITY = scope:harem_authority }
+				exists = scope:harem_authority
 			}
-			weight = {
-				base = 60
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = prev
-					min = -40
-					max = 40
-					multiplier = -0.40
+			random_consort = {
+				limit = {
+					is_valid_harem_victim_trigger = { CONSORT_AUTHORITY = scope:harem_authority }
 				}
-				modifier = { #Scheming consorts
-					add = 10
-					has_character_modifier = scheming_consort_modifier
-				}
-				modifier = { #Potential rivals
-					add = 5
-					has_relation_potential_rival = scope:harem_authority
-				}
-				modifier = { #Rivals
-					add = 10
-					has_relation_rival = scope:harem_authority
-				}
-				modifier = { #Rivals
-					add = 15
-					has_relation_nemesis = scope:harem_authority
-				}
-				modifier = { #Scolded consorts are less likely to misbehave
-					add = -10
-					has_character_flag = flag_scolded_consort
-				}
-				modifier = { #The GC is harder to punish
-					add = 10
-					NOT = {
-						has_court_position = grand_consort_court_position
+				weight = {
+					base = 60
+					opinion_modifier = { #Opinion
+						WHO = scope:harem_authority
+						opinion_target = prev
+						min = -40
+						max = 40
+						multiplier = -0.40
 					}
-				}
-				modifier = { #To make player decide between their PS/parent and favored consorts
-					add = 10
-					has_character_modifier = favored_consort_modifier
-				}
-				modifier = { #Evil consorts misbehave more
-					add = 10
-					harem_politics_evil_consort_trigger = yes
-				}
-				modifier = { #Concubines are more powerless
-					add = 10
-					is_concubine = yes
-				}
-				modifier = { #Lowborn consorts are more powerless
-					add = 10
-					is_lowborn = yes
-				}
-				modifier = { #Strong consorts are more likely to misbehave
-					add = 10
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_close_family_of = root
-							is_liege_or_above_of = root
-							AND = {
-								is_knight_of = root
-								is_acclaimed = yes
-							}
-						}
+					modifier = { #Scheming consorts
+						add = 10
+						has_character_modifier = scheming_consort_modifier
 					}
-				}
-			}
-			save_scope_as = valid_target_consort
-		}
-		
-		random_list = {
-			50 = { #The victim is punished severely
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = scope:valid_target_consort
-					min = -30
-					max = 30
-					multiplier = -0.50
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = sadistic
+					modifier = { #Potential rivals
+						add = 5
+						has_relation_potential_rival = scope:harem_authority
 					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = callous
+					modifier = { #Rivals
+						add = 10
+						has_relation_rival = scope:harem_authority
 					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = vengeful
+					modifier = { #Rivals
+						add = 15
+						has_relation_nemesis = scope:harem_authority
 					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = just
-					}
-					add = -10
-				}
-				modifier = { #New consorts
-					scope:valid_target_consort = { 
-						has_character_flag = flag_new_consort
-					}
-					add = 5
-				}
-				modifier = { #Loved consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_relation_lover = root
-							has_relation_soulmate = root
-							has_relation_friend = root
-							has_relation_best_friend = root
-						}
-					}
-					add = -15
-				}
-				modifier = { #Unfavored consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = unfavored_consort_modifier
-							has_relation_rival = root
-							has_relation_potential_rival = root
-						}
-					}
-					add = 15
-				}
-				
-				modifier = { #Concubines
-					scope:valid_target_consort = { 
-						is_concubine = yes
-					}
-					add = 10
-				}
-				modifier = { #GC
-					scope:valid_target_consort = { 
-						has_court_position = grand_consort_court_position
-					}
-					add = -15
-				}
-				modifier = { #Spouses
-					scope:valid_target_consort = { 
-						is_spouse_of = root
-					}
-					add = -10
-				}
-				modifier = { #Fertile consorts
-					scope:valid_target_consort = { 
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-					}
-					add = -15
-				}
-				modifier = { #Powerful consorts
-					scope:valid_target_consort = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_close_family_of = root
-								is_liege_or_above_of = root
-								AND = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-						}
-					}
-					add = -20
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = compassionate
-					}
-					add = -25
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = forgiving
-					}
-					add = -25
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = calm
-					}
-					add = -25
-				}
-				modifier = { #Scolded consorts
-					scope:harem_authority = { 
+					modifier = { #Scolded consorts are less likely to misbehave
+						add = -10
 						has_character_flag = flag_scolded_consort
 					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add = 15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						NOR = {	
-							has_trait = sadistic
-							has_trait = callous
-							has_trait = vengeful
+					modifier = { #The GC is harder to punish
+						add = 10
+						NOT = {
+							has_court_position = grand_consort_court_position
 						}
 					}
-					factor = 0
-				}
-				
-				scope:harem_authority = {
-					consort_torture_effect = yes
-				}
-			}
-			50 = { #Very high punishment
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = scope:valid_target_consort
-					min = -30
-					max = 30
-					multiplier = -0.50
-				}
-				modifier = { #Loved consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_relation_lover = root
-							has_relation_soulmate = root
-							has_relation_friend = root
-							has_relation_best_friend = root
-						}
-					}
-					add = -15
-				}
-				modifier = { #Unfavored consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = unfavored_consort_modifier
-							has_relation_rival = root
-							has_relation_potential_rival = root
-						}
-					}
-					add = 15
-				}
-				
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = sadistic
-					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = callous
-					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = vengeful
-					}
-					add = 5
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = just
-					}
-					add = -10
-				}
-				modifier = { #New consorts
-					scope:valid_target_consort = { 
-						has_character_flag = flag_new_consort
-					}
-					add = 5
-				}
-				modifier = { #Concubines
-					scope:valid_target_consort = { 
-						is_concubine = yes
-					}
-					add = 10
-				}
-				modifier = { #GC
-					scope:valid_target_consort = { 
-						has_court_position = grand_consort_court_position
-					}
-					add = -15
-				}
-				modifier = { #Spouses
-					scope:valid_target_consort = { 
-						is_spouse_of = root
-					}
-					add = -10
-				}
-				modifier = { #Fertile consorts
-					scope:valid_target_consort = { 
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-					}
-					add = -15
-				}
-				modifier = { #Powerful consorts
-					scope:valid_target_consort = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_close_family_of = root
-								is_liege_or_above_of = root
-								AND = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-						}
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = compassionate
-					}
-					add = -25
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = forgiving
-					}
-					add = -25
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = calm
-					}
-					add = -15
-				}
-				modifier = { #Scolded consorts
-					scope:harem_authority = { 
-						has_character_flag = flag_scolded_consort
-					}
-					add = -10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						NOR = {	
-							has_trait = sadistic
-							has_trait = callous
-							has_trait = vengeful
-						}
-					}
-					factor = 0
-				}
-				scope:harem_authority = {
-					sleep_deprieved_starved_effect = yes
-				}
-			}
-			50 = { #High punishment
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = scope:valid_target_consort
-					min = -25
-					max = 25
-					multiplier = -0.25
-				}
-				modifier = { #Loved consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_relation_lover = root
-							has_relation_soulmate = root
-							has_relation_friend = root
-							has_relation_best_friend = root
-						}
-					}
-					add = -15
-				}
-				modifier = { #Unfavored consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = unfavored_consort_modifier
-							has_relation_rival = root
-							has_relation_potential_rival = root
-						}
-					}
-					add = 15
-				}
-				modifier = { #Concubines
-					scope:valid_target_consort = { 
-						is_concubine = yes
-					}
-					add = 10
-				}
-				modifier = { #GC
-					scope:valid_target_consort = { 
-						has_court_position = grand_consort_court_position
-					}
-					add = -10
-				}
-				modifier = { #Spouses
-					scope:valid_target_consort = { 
-						is_spouse_of = root
-					}
-					add = -5
-				}
-				modifier = { #Fertile consorts
-					scope:valid_target_consort = { 
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-					}
-					add = -10
-				}
-				modifier = { #Powerful consorts
-					scope:valid_target_consort = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_close_family_of = root
-								is_liege_or_above_of = root
-								AND = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-						}
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = compassionate
-					}
-					add = -20
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = forgiving
-					}
-					add = -20
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = calm
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add = 10
-				}
-				modifier = { #Scolded consorts
-					scope:harem_authority = { 
-						has_character_flag = flag_scolded_consort
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = just
-					}
-					add = -5
-				}
-				modifier = { #New consorts
-					scope:valid_target_consort = { 
-						has_character_flag = flag_new_consort
-					}
-					add = 5
-				}
-				scope:harem_authority = {
-					high_punishment_effect = yes
-				}
-			}
-			50 = { #Moderate punishment
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = scope:valid_target_consort
-					min = -20
-					max = 20
-					multiplier = -0.20
-				}
-				modifier = { #Loved consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_relation_lover = root
-							has_relation_soulmate = root
-							has_relation_friend = root
-							has_relation_best_friend = root
-						}
-					}
-					add = -10
-				}
-				modifier = { #Unfavored consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = unfavored_consort_modifier
-							has_relation_rival = root
-							has_relation_potential_rival = root
-						}
-					}
-					add = 10
-				}
-				modifier = { #GC
-					scope:valid_target_consort = { 
-						has_court_position = grand_consort_court_position
-					}
-					add = -5
-				}
-				modifier = { #Spouses
-					scope:valid_target_consort = { 
-						is_spouse_of = root
-					}
-					add = -5
-				}
-				modifier = { #Fertile consorts
-					scope:valid_target_consort = { 
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-					}
-					add = -5
-				}
-				modifier = { #Powerful consorts
-					scope:valid_target_consort = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_close_family_of = root
-								is_liege_or_above_of = root
-								AND = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-						}
-					}
-					add = -10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = compassionate
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = forgiving
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = calm
-					}
-					add = -15
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = temperate
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = diligent
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add = 5
-				}
-				modifier = { #Scolded consorts
-					scope:harem_authority = { 
-						has_character_flag = flag_scolded_consort
-					}
-					add = -5
-				}
-				modifier = { #New consorts
-					scope:valid_target_consort = { 
-						has_character_flag = flag_new_consort
-					}
-					add = 5
-				}
-				scope:harem_authority = {
-					moderate_punishment = yes
-				}
-			}
-			50 = { #Scolding
-				opinion_modifier = { #Opinion
-					WHO = scope:harem_authority
-					opinion_target = scope:valid_target_consort
-					min = -20
-					max = 20
-					multiplier = 0.20
-				}
-				modifier = { #Loved consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_relation_lover = root
-							has_relation_soulmate = root
-							has_relation_friend = root
-							has_relation_best_friend = root
-						}
-					}
-					add = 10
-				}
-				modifier = { #Unfavored consorts
-					scope:valid_target_consort = { 
-						OR = {
-							has_character_modifier = unfavored_consort_modifier
-							has_relation_rival = root
-							has_relation_potential_rival = root
-						}
-					}
-					add = -5
-				}
-				modifier = { #GC
-					scope:valid_target_consort = { 
-						has_court_position = grand_consort_court_position
-					}
-					add = 10
-				}
-				modifier = { #Spouses
-					scope:valid_target_consort = { 
-						is_spouse_of = root
-					}
-					add = 5
-				}
-				modifier = { #Fertile consorts
-					scope:valid_target_consort = { 
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-					}
-					add = 10
-				}
-				modifier = { #Powerful consorts
-					scope:valid_target_consort = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_close_family_of = root
-								is_liege_or_above_of = root
-								AND = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-						}
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = compassionate
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = forgiving
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = calm
-					}
-					add = 10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						has_trait = diligent
-					}
-					add = -10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						OR = {	
-							has_trait = sadistic
-							has_trait = callous
-							has_trait = vengeful
-						}
-					}
-					add = -10
-				}
-				modifier = { #Traits
-					scope:harem_authority = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add = -10
-				}
-				modifier = { #Scolded consorts
-					scope:harem_authority = { 
-						has_character_flag = flag_scolded_consort
-					}
-					add = 10
-				}
-				scope:harem_authority = {
-					scolding_punishment = yes
-				}
-			}
-		}
-		random_list = {
-			1 = { #0001
-				modifier = {
-					scope:harem_authority = { 
-						age >= 27
-						is_consort_of = root
-					}
-					scope:valid_target_consort = {
+					modifier = { #To make player decide between their PS/parent and favored consorts
+						add = 10
 						has_character_modifier = favored_consort_modifier
-						OR = {
-							has_trait = arrogant
-							has_trait = greedy
-							has_trait = ambitious
-							has_trait = brave
-						}
-						age <= 21
 					}
-					add = 49
-				}
-				add_character_flag = {
-					flag = had_mei_event_flag
-					years = 5
-				}
-			}
-			25 = { #0002
-				modifier = {
-					highest_held_title_tier >= tier_kingdom
-					add = 25
-				}
-				add_character_flag = {
-					flag = had_hua_fei_event_flag
-					years = 2
-				}
-			}
-			50 = { #0004
-				add_character_flag = {
-					flag = ranting_consort_event
-					years = 2
-				}
-			}
-			1 = { #0005
-				modifier = {
-					exists = root.primary_spouse
-					scope:harem_authority = root.primary_spouse
-					scope:valid_target_consort = {
-						has_character_modifier = favored_consort_modifier
-						OR = {
-							has_trait = arrogant
-							has_trait = greedy
-							has_trait = ambitious
-							has_trait = brave
+					modifier = { #Evil consorts misbehave more
+						add = 10
+						harem_politics_evil_consort_trigger = yes
+					}
+					modifier = { #Concubines are more powerless
+						add = 10
+						is_concubine = yes
+					}
+					modifier = { #Lowborn consorts are more powerless
+						add = 10
+						is_lowborn = yes
+					}
+					modifier = { #Strong consorts are more likely to misbehave
+						add = 10
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+								is_close_family_of = root
+								is_liege_or_above_of = root
+								AND = {
+									is_knight_of = root
+									is_acclaimed = yes
+								}
+							}
 						}
 					}
-
-					add = 49
 				}
-				add_character_flag = {
-					flag = flag_had_arrogant_consort_event
-					years = 3
-				}
+				save_scope_as = valid_target_consort
 			}
-			120 = { #Nothing happens
+			if = {
+				limit = {
+					exists = scope:harem_authority
+					exists = scope:valid_target_consort
+				}
+				random_list = {
+					50 = { #The victim is punished severely
+						opinion_modifier = { #Opinion
+							WHO = scope:harem_authority
+							opinion_target = scope:valid_target_consort
+							min = -30
+							max = 30
+							multiplier = -0.50
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = sadistic
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = callous
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = vengeful
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = just
+							}
+							add = -10
+						}
+						modifier = { #New consorts
+							scope:valid_target_consort = { 
+								has_character_flag = flag_new_consort
+							}
+							add = 5
+						}
+						modifier = { #Loved consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = root
+									has_relation_soulmate = root
+									has_relation_friend = root
+									has_relation_best_friend = root
+								}
+							}
+							add = -15
+						}
+						modifier = { #Unfavored consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = unfavored_consort_modifier
+									has_relation_rival = root
+									has_relation_potential_rival = root
+								}
+							}
+							add = 15
+						}
+						
+						modifier = { #Concubines
+							scope:valid_target_consort = { 
+								is_concubine = yes
+							}
+							add = 10
+						}
+						modifier = { #GC
+							scope:valid_target_consort = { 
+								has_court_position = grand_consort_court_position
+							}
+							add = -15
+						}
+						modifier = { #Spouses
+							scope:valid_target_consort = { 
+								is_spouse_of = root
+							}
+							add = -10
+						}
+						modifier = { #Fertile consorts
+							scope:valid_target_consort = { 
+								any_child = {
+									is_child_of = root
+									count >= 1
+								}
+							}
+							add = -15
+						}
+						modifier = { #Powerful consorts
+							scope:valid_target_consort = { 
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = root
+										is_councillor_of = root
+										is_close_family_of = root
+										is_liege_or_above_of = root
+										AND = {
+											is_knight_of = root
+											is_acclaimed = yes
+										}
+									}
+								}
+							}
+							add = -20
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = compassionate
+							}
+							add = -25
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = forgiving
+							}
+							add = -25
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = calm
+							}
+							add = -25
+						}
+						modifier = { #Scolded consorts
+							scope:harem_authority = { 
+								has_character_flag = flag_scolded_consort
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								harem_politics_evil_consort_trigger = yes
+							}
+							add = 15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								NOR = {	
+									has_trait = sadistic
+									has_trait = callous
+									has_trait = vengeful
+								}
+							}
+							factor = 0
+						}
+						
+						scope:harem_authority = {
+							consort_torture_effect = yes
+						}
+					}
+					50 = { #Very high punishment
+						opinion_modifier = { #Opinion
+							WHO = scope:harem_authority
+							opinion_target = scope:valid_target_consort
+							min = -30
+							max = 30
+							multiplier = -0.50
+						}
+						modifier = { #Loved consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = root
+									has_relation_soulmate = root
+									has_relation_friend = root
+									has_relation_best_friend = root
+								}
+							}
+							add = -15
+						}
+						modifier = { #Unfavored consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = unfavored_consort_modifier
+									has_relation_rival = root
+									has_relation_potential_rival = root
+								}
+							}
+							add = 15
+						}
+						
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = sadistic
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = callous
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = vengeful
+							}
+							add = 5
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = just
+							}
+							add = -10
+						}
+						modifier = { #New consorts
+							scope:valid_target_consort = { 
+								has_character_flag = flag_new_consort
+							}
+							add = 5
+						}
+						modifier = { #Concubines
+							scope:valid_target_consort = { 
+								is_concubine = yes
+							}
+							add = 10
+						}
+						modifier = { #GC
+							scope:valid_target_consort = { 
+								has_court_position = grand_consort_court_position
+							}
+							add = -15
+						}
+						modifier = { #Spouses
+							scope:valid_target_consort = { 
+								is_spouse_of = root
+							}
+							add = -10
+						}
+						modifier = { #Fertile consorts
+							scope:valid_target_consort = { 
+								any_child = {
+									is_child_of = root
+									count >= 1
+								}
+							}
+							add = -15
+						}
+						modifier = { #Powerful consorts
+							scope:valid_target_consort = { 
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = root
+										is_councillor_of = root
+										is_close_family_of = root
+										is_liege_or_above_of = root
+										AND = {
+											is_knight_of = root
+											is_acclaimed = yes
+										}
+									}
+								}
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = compassionate
+							}
+							add = -25
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = forgiving
+							}
+							add = -25
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = calm
+							}
+							add = -15
+						}
+						modifier = { #Scolded consorts
+							scope:harem_authority = { 
+								has_character_flag = flag_scolded_consort
+							}
+							add = -10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								harem_politics_evil_consort_trigger = yes
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								NOR = {	
+									has_trait = sadistic
+									has_trait = callous
+									has_trait = vengeful
+								}
+							}
+							factor = 0
+						}
+						scope:harem_authority = {
+							sleep_deprieved_starved_effect = yes
+						}
+					}
+					50 = { #High punishment
+						opinion_modifier = { #Opinion
+							WHO = scope:harem_authority
+							opinion_target = scope:valid_target_consort
+							min = -25
+							max = 25
+							multiplier = -0.25
+						}
+						modifier = { #Loved consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = root
+									has_relation_soulmate = root
+									has_relation_friend = root
+									has_relation_best_friend = root
+								}
+							}
+							add = -15
+						}
+						modifier = { #Unfavored consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = unfavored_consort_modifier
+									has_relation_rival = root
+									has_relation_potential_rival = root
+								}
+							}
+							add = 15
+						}
+						modifier = { #Concubines
+							scope:valid_target_consort = { 
+								is_concubine = yes
+							}
+							add = 10
+						}
+						modifier = { #GC
+							scope:valid_target_consort = { 
+								has_court_position = grand_consort_court_position
+							}
+							add = -10
+						}
+						modifier = { #Spouses
+							scope:valid_target_consort = { 
+								is_spouse_of = root
+							}
+							add = -5
+						}
+						modifier = { #Fertile consorts
+							scope:valid_target_consort = { 
+								any_child = {
+									is_child_of = root
+									count >= 1
+								}
+							}
+							add = -10
+						}
+						modifier = { #Powerful consorts
+							scope:valid_target_consort = { 
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = root
+										is_councillor_of = root
+										is_close_family_of = root
+										is_liege_or_above_of = root
+										AND = {
+											is_knight_of = root
+											is_acclaimed = yes
+										}
+									}
+								}
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = compassionate
+							}
+							add = -20
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = forgiving
+							}
+							add = -20
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = calm
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								harem_politics_evil_consort_trigger = yes
+							}
+							add = 10
+						}
+						modifier = { #Scolded consorts
+							scope:harem_authority = { 
+								has_character_flag = flag_scolded_consort
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = just
+							}
+							add = -5
+						}
+						modifier = { #New consorts
+							scope:valid_target_consort = { 
+								has_character_flag = flag_new_consort
+							}
+							add = 5
+						}
+						scope:harem_authority = {
+							high_punishment_effect = yes
+						}
+					}
+					50 = { #Moderate punishment
+						opinion_modifier = { #Opinion
+							WHO = scope:harem_authority
+							opinion_target = scope:valid_target_consort
+							min = -20
+							max = 20
+							multiplier = -0.20
+						}
+						modifier = { #Loved consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = root
+									has_relation_soulmate = root
+									has_relation_friend = root
+									has_relation_best_friend = root
+								}
+							}
+							add = -10
+						}
+						modifier = { #Unfavored consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = unfavored_consort_modifier
+									has_relation_rival = root
+									has_relation_potential_rival = root
+								}
+							}
+							add = 10
+						}
+						modifier = { #GC
+							scope:valid_target_consort = { 
+								has_court_position = grand_consort_court_position
+							}
+							add = -5
+						}
+						modifier = { #Spouses
+							scope:valid_target_consort = { 
+								is_spouse_of = root
+							}
+							add = -5
+						}
+						modifier = { #Fertile consorts
+							scope:valid_target_consort = { 
+								any_child = {
+									is_child_of = root
+									count >= 1
+								}
+							}
+							add = -5
+						}
+						modifier = { #Powerful consorts
+							scope:valid_target_consort = { 
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = root
+										is_councillor_of = root
+										is_close_family_of = root
+										is_liege_or_above_of = root
+										AND = {
+											is_knight_of = root
+											is_acclaimed = yes
+										}
+									}
+								}
+							}
+							add = -10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = compassionate
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = forgiving
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = calm
+							}
+							add = -15
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = temperate
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = diligent
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								harem_politics_evil_consort_trigger = yes
+							}
+							add = 5
+						}
+						modifier = { #Scolded consorts
+							scope:harem_authority = { 
+								has_character_flag = flag_scolded_consort
+							}
+							add = -5
+						}
+						modifier = { #New consorts
+							scope:valid_target_consort = { 
+								has_character_flag = flag_new_consort
+							}
+							add = 5
+						}
+						scope:harem_authority = {
+							moderate_punishment = yes
+						}
+					}
+					50 = { #Scolding
+						opinion_modifier = { #Opinion
+							WHO = scope:harem_authority
+							opinion_target = scope:valid_target_consort
+							min = -20
+							max = 20
+							multiplier = 0.20
+						}
+						modifier = { #Loved consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = root
+									has_relation_soulmate = root
+									has_relation_friend = root
+									has_relation_best_friend = root
+								}
+							}
+							add = 10
+						}
+						modifier = { #Unfavored consorts
+							scope:valid_target_consort = { 
+								OR = {
+									has_character_modifier = unfavored_consort_modifier
+									has_relation_rival = root
+									has_relation_potential_rival = root
+								}
+							}
+							add = -5
+						}
+						modifier = { #GC
+							scope:valid_target_consort = { 
+								has_court_position = grand_consort_court_position
+							}
+							add = 10
+						}
+						modifier = { #Spouses
+							scope:valid_target_consort = { 
+								is_spouse_of = root
+							}
+							add = 5
+						}
+						modifier = { #Fertile consorts
+							scope:valid_target_consort = { 
+								any_child = {
+									is_child_of = root
+									count >= 1
+								}
+							}
+							add = 10
+						}
+						modifier = { #Powerful consorts
+							scope:valid_target_consort = { 
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = root
+										is_councillor_of = root
+										is_close_family_of = root
+										is_liege_or_above_of = root
+										AND = {
+											is_knight_of = root
+											is_acclaimed = yes
+										}
+									}
+								}
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = compassionate
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = forgiving
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = calm
+							}
+							add = 10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								has_trait = diligent
+							}
+							add = -10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								OR = {	
+									has_trait = sadistic
+									has_trait = callous
+									has_trait = vengeful
+								}
+							}
+							add = -10
+						}
+						modifier = { #Traits
+							scope:harem_authority = { 
+								harem_politics_evil_consort_trigger = yes
+							}
+							add = -10
+						}
+						modifier = { #Scolded consorts
+							scope:harem_authority = { 
+								has_character_flag = flag_scolded_consort
+							}
+							add = 10
+						}
+						scope:harem_authority = {
+							scolding_punishment = yes
+						}
+					}
+				}
+				random_list = {
+					1 = { #0001
+						modifier = {
+							scope:harem_authority = { 
+								age >= 27
+								is_consort_of = root
+							}
+							scope:valid_target_consort = {
+								has_character_modifier = favored_consort_modifier
+								OR = {
+									has_trait = arrogant
+									has_trait = greedy
+									has_trait = ambitious
+									has_trait = brave
+								}
+								age <= 21
+							}
+							add = 49
+						}
+						add_character_flag = {
+							flag = had_mei_event_flag
+							years = 5
+						}
+					}
+					25 = { #0002
+						modifier = {
+							highest_held_title_tier >= tier_kingdom
+							add = 25
+						}
+						add_character_flag = {
+							flag = had_hua_fei_event_flag
+							years = 2
+						}
+					}
+					50 = { #0004
+						add_character_flag = {
+							flag = ranting_consort_event
+							years = 2
+						}
+					}
+					1 = { #0005
+						modifier = {
+							exists = root.primary_spouse
+							scope:harem_authority = root.primary_spouse
+							scope:valid_target_consort = {
+								has_character_modifier = favored_consort_modifier
+								OR = {
+									has_trait = arrogant
+									has_trait = greedy
+									has_trait = ambitious
+									has_trait = brave
+								}
+							}
 
+							add = 49
+						}
+						add_character_flag = {
+							flag = flag_had_arrogant_consort_event
+							years = 3
+						}
+					}
+					120 = { #Nothing happens
+
+					}
+				}
+				random_list = {
+					50 = {			
+						add_character_flag = {
+							flag = has_consort_event_flag
+							months = 6
+						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = has_consort_event_flag
+							months = 3
+						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = has_consort_event_flag
+							years = 1
+						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = has_consort_event_flag
+							months = 18
+						}
+					}
+					50 = {			
+					}
+				}
+				begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = root }
 			}
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = root }
 	}
 	
 	#option = {
@@ -7478,34 +7512,6 @@ consort_events.0008 = {
 	#}
 	
 	immediate = {
-		random_list = {
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_positive_relation_flag
-					months = 6
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_positive_relation_flag
-					months = 3
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_positive_relation_flag
-					years = 1
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_positive_relation_flag
-					months = 18
-				}
-			}
-			50 = {			
-			}
-		}
 		save_scope_as = partner
 		random_courtier = {
 			limit = {
@@ -7540,139 +7546,178 @@ consort_events.0008 = {
 			}
 			save_scope_as = consort_friend
 		}
-		every_consort = {
+		if = {
 			limit = {
-				OR = {
-					can_set_relation_potential_friend_trigger = { CHARACTER = scope:consort_friend }
-					can_set_relation_friend_trigger = { CHARACTER = scope:consort_friend }
-					can_set_relation_best_friend_trigger = { CHARACTER = scope:consort_friend }
-				}
-				is_valid_generic_consort_trigger = yes
+				exists = scope:consort_friend
 			}
-			add_to_list = consort_friend_list
-		}
-		
-		random_in_list = {
-			list = consort_friend_list
-			weight = {
-				base = 10
-				opinion_modifier = { #Opinion
-					opinion_target = scope:consort_friend
-					min = 0
-					max = 25
-					multiplier = 0.25
-				}
-				modifier = {
+			every_consort = {
+				limit = {
 					OR = {
-						AND = {	
-							exists = root.primary_spouse
-							this = root.primary_spouse
-						}
-						is_spouse_of = root
-						has_court_position = grand_consort_court_position
-						is_parent_of = root
-						has_character_modifier = favored_consort_modifier
+						can_set_relation_potential_friend_trigger = { CHARACTER = scope:consort_friend }
+						can_set_relation_friend_trigger = { CHARACTER = scope:consort_friend }
+						can_set_relation_best_friend_trigger = { CHARACTER = scope:consort_friend }
 					}
-					add = 20
+					is_valid_generic_consort_trigger = yes
 				}
-				modifier = {
-					has_character_modifier = unfavored_consort_modifier
-					add = -10
-				}
-				modifier = {
-					has_relation_potential_friend = scope:consort_friend
-					add = 20
-				}
-				modifier = {
-					harem_politics_evil_consort_trigger = no
-					add = 10
-				}
-				compatibility_modifier = {
-					compatibility_target = scope:consort_friend
-					multiplier = 2
-					min = 0
-					max = 30
-				}
+				add_to_list = consort_friend_list
 			}
-			save_scope_as = valid_target_consort
-		}
-		scope:consort_friend = {
+			
+			random_in_list = {
+				list = consort_friend_list
+				weight = {
+					base = 10
+					opinion_modifier = { #Opinion
+						opinion_target = scope:consort_friend
+						min = 0
+						max = 25
+						multiplier = 0.25
+					}
+					modifier = {
+						OR = {
+							AND = {	
+								exists = root.primary_spouse
+								this = root.primary_spouse
+							}
+							is_spouse_of = root
+							has_court_position = grand_consort_court_position
+							is_parent_of = root
+							has_character_modifier = favored_consort_modifier
+						}
+						add = 20
+					}
+					modifier = {
+						has_character_modifier = unfavored_consort_modifier
+						add = -10
+					}
+					modifier = {
+						has_relation_potential_friend = scope:consort_friend
+						add = 20
+					}
+					modifier = {
+						harem_politics_evil_consort_trigger = no
+						add = 10
+					}
+					compatibility_modifier = {
+						compatibility_target = scope:consort_friend
+						multiplier = 2
+						min = 0
+						max = 30
+					}
+				}
+				save_scope_as = valid_target_consort
+			}
 			if = {
 				limit = {
-					can_set_relation_potential_friend_trigger = { CHARACTER = scope:valid_target_consort }
+					exists = scope:consort_friend
+					exists = scope:valid_target_consort
 				}
-				set_relation_potential_friend = scope:valid_target_consort
-				add_opinion = {
-					target = scope:valid_target_consort
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-				scope:valid_target_consort = {
-					add_opinion = {
-						target = scope:consort_friend
-						modifier = friendliness_opinion
-						opinion = 15
+				scope:consort_friend = {
+					if = {
+						limit = {
+							can_set_relation_potential_friend_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_potential_friend = scope:valid_target_consort
+						add_opinion = {
+							target = scope:valid_target_consort
+							modifier = friendliness_opinion
+							opinion = 15
+						}
+						scope:valid_target_consort = {
+							add_opinion = {
+								target = scope:consort_friend
+								modifier = friendliness_opinion
+								opinion = 15
+							}
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_potential_friend_desc
+								}
+							}
+						}
 					}
-				}
-				if = {
-					limit = {
-						debug_only = yes
+					else_if = {
+						limit = {
+							has_relation_potential_friend = scope:valid_target_consort
+						}
+						set_relation_friend = { 
+							target = scope:valid_target_consort
+							reason = consort_friendship_reason
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_friend_desc
+								}
+							}
+						}
 					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_friend
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_potential_friend_desc
+					else_if = {
+						limit = {
+							has_relation_friend = scope:valid_target_consort
+							can_set_relation_best_friend_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_best_friend = { 
+							target = scope:valid_target_consort
+							reason = consort_friendship_reason 
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_bff_desc
+								}
+							}
 						}
 					}
 				}
-			}
-			else_if = {
-				limit = {
-					has_relation_potential_friend = scope:valid_target_consort
-				}
-				set_relation_friend = { 
-					target = scope:valid_target_consort
-					reason = consort_friendship_reason
-				}
-				if = {
-					limit = {
-						debug_only = yes
-					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_friend
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_friend_desc
+				random_list = {
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 6
 						}
 					}
-				}
-			}
-			else_if = {
-				limit = {
-					has_relation_friend = scope:valid_target_consort
-					can_set_relation_best_friend_trigger = { CHARACTER = scope:valid_target_consort }
-				}
-				set_relation_best_friend = { 
-					target = scope:valid_target_consort
-					reason = consort_friendship_reason 
-				}
-				if = {
-					limit = {
-						debug_only = yes
-					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_friend
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_bff_desc
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 3
 						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							years = 1
+						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 18
+						}
+					}
+					50 = {			
 					}
 				}
 			}
@@ -7739,34 +7784,6 @@ consort_events.0009 = {
 	#}
 	
 	immediate = {
-		random_list = {
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_negative_relation_flag
-					months = 6
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_negative_relation_flag
-					months = 3
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_negative_relation_flag
-					years = 1
-				}
-			}
-			50 = {			
-				add_character_flag = {
-					flag = had_consort_negative_relation_flag
-					months = 18
-				}
-			}
-			50 = {			
-			}
-		}
 		save_scope_as = partner
 		random_courtier = {
 			limit = {
@@ -7801,150 +7818,189 @@ consort_events.0009 = {
 			}
 			save_scope_as = consort_rival
 		}
-		every_consort = {
+		if = {
 			limit = {
-				OR = {
-					can_set_relation_potential_rival_trigger = { CHARACTER = scope:consort_rival }
-					can_set_relation_rival_trigger = { CHARACTER = scope:consort_rival }
-					can_set_relation_nemesis_trigger = { CHARACTER = scope:consort_rival }
-				}
-				is_valid_generic_consort_trigger = yes
+				exists = scope:consort_rival
 			}
-			add_to_list = consort_rival_list
-		}
-		
-		random_in_list = {
-			list = consort_rival_list
-			weight = {
-				base = 10
-				opinion_modifier = { #Opinion
-					opinion_target = scope:consort_rival
-					min = -5
-					max = 30
-					multiplier = -0.30
-				}
-				modifier = {
+			every_consort = {
+				limit = {
 					OR = {
-						AND = {	
-							exists = root.primary_spouse
-							this = root.primary_spouse
-						}
-						is_spouse_of = root
-						has_court_position = grand_consort_court_position
-						has_character_modifier = favored_consort_modifier
+						can_set_relation_potential_rival_trigger = { CHARACTER = scope:consort_rival }
+						can_set_relation_rival_trigger = { CHARACTER = scope:consort_rival }
+						can_set_relation_nemesis_trigger = { CHARACTER = scope:consort_rival }
 					}
-					add = 10
+					is_valid_generic_consort_trigger = yes
 				}
-				modifier = {
-					has_relation_potential_rival = scope:consort_rival
-					add = 20
-				}
-				modifier = {
-					harem_politics_evil_consort_trigger = yes
-					add = 10
-				}
-				modifier = {
-					has_trait = gregarious
-					add = -10
-				}
-				modifier = {
-					has_trait = forgiving
-					add = -10
-				}
-				modifier = {
-					has_trait = compassionate
-					add = -10
-				}
-				modifier = {
-					has_trait = vengeful
-					add = 10
-				}
-				compatibility_modifier = {
-					compatibility_target = scope:consort_rival
-					multiplier = -2
-					min = 0
-					max = 30
-				}
+				add_to_list = consort_rival_list
 			}
-			save_scope_as = valid_target_consort
-		}
-		scope:consort_rival = {
+			
+			random_in_list = {
+				list = consort_rival_list
+				weight = {
+					base = 10
+					opinion_modifier = { #Opinion
+						opinion_target = scope:consort_rival
+						min = -5
+						max = 30
+						multiplier = -0.30
+					}
+					modifier = {
+						OR = {
+							AND = {	
+								exists = root.primary_spouse
+								this = root.primary_spouse
+							}
+							is_spouse_of = root
+							has_court_position = grand_consort_court_position
+							has_character_modifier = favored_consort_modifier
+						}
+						add = 10
+					}
+					modifier = {
+						has_relation_potential_rival = scope:consort_rival
+						add = 20
+					}
+					modifier = {
+						harem_politics_evil_consort_trigger = yes
+						add = 10
+					}
+					modifier = {
+						has_trait = gregarious
+						add = -10
+					}
+					modifier = {
+						has_trait = forgiving
+						add = -10
+					}
+					modifier = {
+						has_trait = compassionate
+						add = -10
+					}
+					modifier = {
+						has_trait = vengeful
+						add = 10
+					}
+					compatibility_modifier = {
+						compatibility_target = scope:consort_rival
+						multiplier = -2
+						min = 0
+						max = 30
+					}
+				}
+				save_scope_as = valid_target_consort
+			}
 			if = {
 				limit = {
-					can_set_relation_potential_rival_trigger = { CHARACTER = scope:valid_target_consort }
+					exists = scope:consort_rival
+					exists = scope:valid_target_consort
 				}
-				set_relation_potential_rival = scope:valid_target_consort
-				add_opinion = {
-					target = scope:valid_target_consort
-					modifier = unfriendly_opinion
-					opinion = -15
-				}
-				scope:valid_target_consort = {
-					add_opinion = {
-						target = scope:consort_rival
-						modifier = unfriendly_opinion
-						opinion = -15
+				scope:consort_rival = {
+					if = {
+						limit = {
+							can_set_relation_potential_rival_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_potential_rival = scope:valid_target_consort
+						add_opinion = {
+							target = scope:valid_target_consort
+							modifier = unfriendly_opinion
+							opinion = -15
+						}
+						scope:valid_target_consort = {
+							add_opinion = {
+								target = scope:consort_rival
+								modifier = unfriendly_opinion
+								opinion = -15
+							}
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_rival
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_potential_rival_desc
+								}
+							}
+						}
 					}
-				}
-				if = {
-					limit = {
-						debug_only = yes
+					else_if = {
+						limit = {
+							has_relation_potential_rival = scope:valid_target_consort
+						}
+						set_relation_rival = { 
+							target = scope:valid_target_consort
+							reason = consort_rival_reason
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_rival
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_rival_desc
+								}
+							}
+						}
 					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_rival
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_potential_rival_desc
+					else_if = {
+						limit = {
+							has_relation_rival = scope:valid_target_consort
+							can_set_relation_nemesis_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_nemesis = { 
+							target = scope:valid_target_consort
+							reason = consort_rival_reason 
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_rival
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_nemesis_desc
+								}
+							}
 						}
 					}
 				}
-			}
-			else_if = {
-				limit = {
-					has_relation_potential_rival = scope:valid_target_consort
-				}
-				set_relation_rival = { 
-					target = scope:valid_target_consort
-					reason = consort_rival_reason
-				}
-				if = {
-					limit = {
-						debug_only = yes
-					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_rival
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_rival_desc
+				random_list = {
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_negative_relation_flag
+							months = 6
 						}
 					}
-				}
-			}
-			else_if = {
-				limit = {
-					has_relation_rival = scope:valid_target_consort
-					can_set_relation_nemesis_trigger = { CHARACTER = scope:valid_target_consort }
-				}
-				set_relation_nemesis = { 
-					target = scope:valid_target_consort
-					reason = consort_rival_reason 
-				}
-				if = {
-					limit = {
-						debug_only = yes
-					}
-					root = {
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = new_relation_t
-							right_icon = scope:consort_rival
-							left_icon = scope:valid_target_consort
-							custom_tooltip = new_relation_nemesis_desc
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_negative_relation_flag
+							months = 3
 						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_negative_relation_flag
+							years = 1
+						}
+					}
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_negative_relation_flag
+							months = 18
+						}
+					}
+					50 = {			
 					}
 				}
 			}
