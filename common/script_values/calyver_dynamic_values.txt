@@ -213,3 +213,793 @@
 	}
 	ceiling = yes
 }
+
+#Favor values
+favor_base_value_gain = 8
+
+#Additions
+favor_miniscule_value_gain = {
+	add = favor_base_value_gain
+	divide = 2
+}
+favor_minor_value_gain = {
+	add = favor_base_value_gain
+}
+favor_medium_value_gain = {
+	add = favor_base_value_gain
+	add = favor_miniscule_value_gain
+}
+favor_high_value_gain = {
+	add = favor_base_value_gain
+	multiply = 2
+}
+favor_ultra_high_value_gain = {
+	add = favor_high_value_gain
+	add = favor_miniscule_value_gain
+}
+
+#Losses
+favor_miniscule_value_loss = {
+	value = 0
+	subtract = favor_miniscule_value_gain
+}
+favor_minor_value_loss = {
+	value = 0
+	subtract = favor_minor_value_gain
+}
+favor_medium_value_loss = {
+	value = 0
+	subtract = favor_medium_value_gain
+}
+favor_high_value_loss = {
+	value = 0
+	add = favor_high_value_gain
+}
+favor_ultra_high_value_loss = {
+	value = 0
+	subtract = favor_ultra_high_value_gain
+}
+
+#Bonus for high-ranking consorts
+favor_ps_bonus = { #The PS will have 6 additional months
+	value = favor_minor_value_gain
+	multiply = 6
+}
+favor_gc_bonus = { #The GC will have 3 additional months
+	value = favor_minor_value_gain
+	multiply = 3
+}
+favor_ss_bonus = { #SSs will have 1 additional month
+	add = favor_minor_value_gain
+}
+
+favor_points = {
+	
+	add = favor_minor_value_loss #Base favor loss
+
+	##Additions##
+	
+	#########New consorts#########
+	if = {
+		limit = { 
+			has_character_flag = flag_new_consort
+		}
+		add = {
+			desc = favor_addition_new_consort
+			value = 2
+		}
+	}
+	#########Ranking#########
+	#The PS
+	if = {
+		limit = { 
+			exists = scope:harem_master.primary_spouse
+			this = scope:harem_master.primary_spouse
+		}
+		add = {
+			desc = favor_addition_ps
+			value = 4
+		}
+	}
+	#The PS
+	if = {
+		limit = { 
+			has_court_position = grand_consort_court_position
+			is_demoted_consort_trigger = no
+		}
+		add = {
+			desc = favor_addition_gc
+			value = 2
+		}
+	}
+	#Spouses
+	if = {
+		limit = { 
+			is_spouse_of = scope:harem_master
+			is_demoted_consort_trigger = no
+		}
+		add = {
+			desc = favor_addition_ss
+			value = 2
+		}
+	}
+
+	#########Children#########
+	#Number of children
+	if = {
+		limit = { 
+			any_child = { 
+				is_child_of = scope:harem_master
+				is_alive = yes
+				count > 0
+			}
+		}
+		add = {
+			desc = favor_addition_children
+			value = {
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							count >= 1
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							count >= 2
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							count >= 3
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							count >= 4
+						}
+					}
+					add = 1
+				}
+			}
+		}
+	}
+	#Eligible children
+	if = {
+		limit = { 
+			any_child = { 
+				is_child_of = scope:harem_master
+				is_alive = yes
+				character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+				count > 0
+			}
+		}
+		add = {
+			desc = favor_addition_eligible_heirs
+			value = {
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+							count >= 1
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+							count >= 2
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+							count >= 3
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+							count >= 4
+						}
+					}
+					add = 1
+				}
+			}
+		}
+	}
+	#Player heir
+	if = {
+		limit = { 
+			any_child = { 
+				is_child_of = scope:harem_master
+				is_player_heir_of = scope:harem_master
+			}
+		}
+		add = {
+			desc = favor_addition_player_heir
+			value = 2
+		}
+	}
+	#Pregnant consorts
+	if = {
+		limit = { 
+			has_trait = pregnant
+		}
+		add = {
+			desc = favor_addition_pregnant
+			value = 2
+		}
+	}
+	#Friendly children
+	if = {
+		limit = { 
+			any_child = { 
+				is_child_of = scope:harem_master
+				is_alive = yes
+				OR = {	
+					has_relation_friend = scope:harem_master
+					has_relation_best_friend = scope:harem_master
+				}
+				count > 0
+			}
+		}
+		add = {
+			desc = favor_addition_friendly_children
+			value = {
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_friend = scope:harem_master
+							count >= 1
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_friend = scope:harem_master
+							count >= 2
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_best_friend = scope:harem_master
+						}
+					}
+					add = 4
+				}
+			}
+		}
+	}
+
+	#########Relation#########
+	#Friends
+	if = {
+		limit = { 
+			has_relation_friend = scope:harem_master
+		}
+		add = {
+			desc = favor_addition_friend
+			value = 2
+		}
+	}
+	#BFF
+	if = {
+		limit = { 
+			has_relation_best_friend = scope:harem_master
+		}
+		add = {
+			desc = favor_addition_bff
+			value = 4
+		}
+	}
+	#Lover
+	if = {
+		limit = { 
+			has_relation_lover = scope:harem_master
+		}
+		add = {
+			desc = favor_addition_lover
+			value = 4
+		}
+	}
+	#Soulmate
+	if = {
+		limit = { 
+			has_relation_soulmate = scope:harem_master
+		}
+		add = {
+			desc = favor_addition_soulmate
+			value = 6
+		}
+	}
+
+	#########Beauty#########
+	#Comely
+	if = {
+		limit = { 
+			has_trait = beauty_good_1
+		}
+		add = {
+			desc = favor_addition_comely
+			value = 2
+		}
+	}
+	#Handsome
+	if = {
+		limit = { 
+			has_trait = beauty_good_2
+		}
+		add = {
+			desc = favor_addition_handsome
+			value = 4
+		}
+	}
+	#Beautiful
+	if = {
+		limit = { 
+			has_trait = beauty_good_3
+		}
+		add = {
+			desc = favor_addition_beautiful
+			value = 6
+		}
+	}
+
+	#########Lineage#########
+	#Noble background
+	if = {
+		limit = { 
+			is_lowborn = no
+		}
+		add = {
+			desc = favor_addition_noble
+			value = 2
+		}
+	}
+	#Child of vassals
+	if = {
+		limit = { 
+			any_close_family_member = {
+				is_vassal_of = scope:harem_master
+				OR = {
+					highest_held_title_tier >= tier_county
+					is_powerful_vassal_of = scope:harem_master
+					is_councillor_of = scope:harem_master
+				}
+				max_military_strength < scope:harem_master.max_military_strength
+			}
+		}
+		add = {
+			desc = favor_addition_good_lineage
+			value = {
+				if = {
+					limit = { 
+						any_close_family_member = {
+							is_vassal_of = scope:harem_master
+							highest_held_title_tier >= tier_county
+							max_military_strength < scope:harem_master.max_military_strength
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = scope:harem_master
+								is_councillor_of = scope:harem_master
+							}
+							max_military_strength < scope:harem_master.max_military_strength
+						}
+					}
+					add = 4
+				}
+			}
+		}
+	}
+	#Powerful lineage
+	if = {
+		limit = { 
+			any_close_family_member = {
+				OR = {
+					is_liege_or_above_of = scope:harem_master
+					highest_held_title_tier >= tier_kingdom
+					max_military_strength >= scope:harem_master.max_military_strength
+				}
+			}
+		}
+		add = {
+			desc = favor_addition_powerful_lineage
+			value = {
+				if = {
+					limit = { 
+						OR = {
+							is_liege_or_above_of = scope:harem_master
+							max_military_strength >= scope:harem_master.max_military_strength
+						}
+					}
+					add = 4
+				}
+				if = {
+					limit = { 
+						any_close_family_member = {
+							highest_held_title_tier >= tier_kingdom
+						}
+					}
+					add = 2
+				}
+			}
+		}
+	}
+
+	#########Diplomacy#########
+	if = {
+		limit = { 
+			diplomacy >= 12
+		}
+		add = {
+			desc = favor_diplomacy
+			value = {
+				if = {
+					limit = { 
+						diplomacy >= 13
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						diplomacy >= 17
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						diplomacy >= 17
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						diplomacy >= 21
+					}
+					add = 2
+				}
+			}
+		}
+	}
+
+	##Subtractions##
+
+	#########Demoted consorts#########
+	if = {
+		limit = { 
+			is_demoted_consort_trigger = yes
+		}
+		subtract = {
+			desc = favor_subtraction_demoted_consort
+			value = {
+				if = {
+					limit = { 
+						has_character_modifier = demoted_spouse_modifier
+					}
+					subtract = 4
+				}
+				if = {
+					limit = { 
+						has_character_modifier = demoted_primary_spouse_modifier
+					}
+					subtract = 8
+				}
+			}
+		}
+	}
+
+	#########Relation#########
+	#Rivals
+	if = {
+		limit = { 
+			has_relation_rival = scope:harem_master
+		}
+		subtract = {
+			desc = favor_subtraction_rival
+			value = 4
+		}
+	}
+	#Nemesis
+	if = {
+		limit = { 
+			has_relation_nemesis = scope:harem_master
+		}
+		subtract = {
+			desc = favor_subtraction_nemesis
+			value = 8
+		}
+	}
+
+	#########Beauty#########
+	#Homely
+	if = {
+		limit = { 
+			has_trait = beauty_bad_1
+		}
+		subtract = {
+			desc = favor_subtraction_homely
+			value = 2
+		}
+	}
+	#Ugly
+	if = {
+		limit = { 
+			has_trait = beauty_bad_2
+		}
+		subtract = {
+			desc = favor_subtraction_ugly
+			value = 4
+		}
+	}
+	#Horrendous
+	if = {
+		limit = { 
+			has_trait = beauty_bad_3
+		}
+		subtract = {
+			desc = favor_subtraction_horrendous
+			value = 6
+		}
+	}
+
+	#########Diplomacy#########
+	if = {
+		limit = { 
+			diplomacy < 7
+		}
+		subtract = {
+			desc = favor_diplomacy
+			value = 2
+		}
+	}
+	
+	#########Competition#########
+	#Number of consorts
+	if = {
+		limit = { 
+			scope:harem_master = { 
+				any_consort = { 
+					is_courtier_of = scope:harem_master
+					count >= 5
+				}
+			}
+		}
+		subtract = {
+			desc = favor_subtraction_many_consorts
+			value = 2
+		}
+	}
+	#New consorts
+	if = {
+		limit = { 
+			NOT = { 
+				has_character_flag = flag_new_consort
+			}
+			scope:harem_master = { 
+				any_consort = { 
+					is_courtier_of = scope:harem_master
+					has_character_flag = flag_new_consort
+					count >= 1
+				}
+			}
+		}
+		subtract = {
+			desc = favor_subtraction_new_consorts
+			value = {
+				if = {
+					limit = { 
+						scope:harem_master = { 
+							any_consort = { 
+								is_courtier_of = scope:harem_master
+								has_character_flag = flag_new_consort
+								count >= 1
+							}
+						}
+					}
+					subtract = 2
+				}
+				if = {
+					limit = { 
+						scope:harem_master = { 
+							any_consort = { 
+								is_courtier_of = scope:harem_master
+								has_character_flag = flag_new_consort
+								count >= 2
+							}
+						}
+					}
+					subtract = 4
+				}
+				if = {
+					limit = { 
+						scope:harem_master = { 
+							any_consort = { 
+								is_courtier_of = scope:harem_master
+								has_character_flag = flag_new_consort
+								count >= 3
+							}
+						}
+					}
+					subtract = 6
+				}
+			}
+		}
+	}
+
+	#########Ageism#########
+	if = {
+		limit = { 
+			age >= 27
+		}
+		subtract = {
+			desc = favor_subtraction_age
+			value = {
+				if = {
+					limit = { 
+						age >= 27
+					}
+					subtract = 1
+				}
+				if = {
+					limit = { 
+						age >= 37
+					}
+					subtract = 1
+				}
+				if = {
+					limit = { 
+						age >= 45
+					}
+					subtract = 2
+				}
+				if = {
+					limit = { 
+						age >= 50
+					}
+					subtract = 2
+				}
+			}
+		}
+	}
+
+	#########Unfavored children#########
+	if = {
+		limit = { 
+			any_child = { 
+				is_child_of = scope:harem_master
+				is_alive = yes
+				OR = {	
+					has_relation_rival = scope:harem_master
+					has_relation_nemesis = scope:harem_master
+				}
+				count > 0
+			}
+		}
+		subtract = {
+			desc = favor_subtraction_unfriendly_children
+			value = {
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_rival = scope:harem_master
+							count >= 1
+						}
+					}
+					subtract = 2
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_rival = scope:harem_master
+							count >= 2
+						}
+					}
+					subtract = 2
+				}
+				if = {
+					limit = { 
+						any_child = { 
+							is_child_of = scope:harem_master
+							is_alive = yes
+							has_relation_nemesis = scope:harem_master
+							count >= 1
+						}
+					}
+					subtract = 4
+				}
+			}
+		}
+	}
+
+	#########Arrested#########
+	if = {
+		limit = { 
+			is_imprisoned_by = scope:harem_master
+			OR = { 
+				is_in_prison_type = house_arrest
+				is_in_prison_type = dungeon
+			}
+		}
+		subtract = {
+			desc = favor_subtraction_arrest
+			value = {
+				if = {
+					limit = { 
+						is_in_prison_type = house_arrest
+					}
+					subtract = 16
+				}
+				if = {
+					limit = { 
+						is_in_prison_type = dungeon
+					}
+					subtract = 32
+				}
+			}
+		}
+	}
+
+	min = 0
+	max = 964
+}
+
+# Levels of favor:
+# Beloved consort: 317 - 386
+# Favorite: 247 - 316
+# Neutral: 107 - 246
+# Unfavored: 37 - 106
+# Forgotten: 0 - 36

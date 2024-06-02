@@ -1,0 +1,672 @@
+namespace = consort_favor_valuation
+
+scripted_trigger is_valid_for_favor_system_trigger = {
+	is_courtier_of = root
+	is_alive = yes
+	is_incapable = no
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+
+scripted_effect clear_favor_modifiers_effect = {
+	if = { #Removing a beloved consort's unsuitable modifiers
+		limit = { 
+			var:favor >= 868
+		}
+		if = { #Lo longer favored
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		if = { #No longer unfavored
+			limit = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			remove_character_modifier = unfavored_consort_modifier
+		}
+		if = { #No longer forgotten
+			limit = {
+				has_character_modifier = forgotten_consort_modifier
+			}
+			remove_character_modifier = forgotten_consort_modifier
+		}
+	}
+	else_if = { #Removing a favored consort's unsuitable modifiers
+		limit = { 
+			var:favor < 868
+			var:favor >= 675
+		}
+		if = {
+			limit = {
+				has_character_modifier = beloved_consort_modifier
+			}
+			remove_character_modifier = beloved_consort_modifier
+		}
+		if = { #No longer unfavored
+			limit = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			remove_character_modifier = unfavored_consort_modifier
+		}
+		if = { #No longer forgotten
+			limit = {
+				has_character_modifier = forgotten_consort_modifier
+			}
+			remove_character_modifier = forgotten_consort_modifier
+		}
+	}
+	else_if = { #Removing a neutral consort's unsuitable modifiers
+		limit = { 
+			var:favor < 675
+			var:favor >= 290
+		}
+		if = { #No longer beloved
+			limit = {
+				has_character_modifier = beloved_consort_modifier
+			}
+			remove_character_modifier = beloved_consort_modifier
+		}
+		if = { #Lo longer favored
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		if = { #No longer unfavored
+			limit = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			remove_character_modifier = unfavored_consort_modifier
+		}
+		if = { #No longer forgotten
+			limit = {
+				has_character_modifier = forgotten_consort_modifier
+			}
+			remove_character_modifier = forgotten_consort_modifier
+		}
+	}
+	else_if = { #Removing an unfavored consort's unsuitable modifiers
+		limit = { 
+			var:favor < 290
+			var:favor >= 97
+		}
+		if = { #No longer beloved
+			limit = {
+				has_character_modifier = beloved_consort_modifier
+			}
+			remove_character_modifier = beloved_consort_modifier
+		}
+		if = { #Lo longer favored
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		if = { #No longer forgotten
+			limit = {
+				has_character_modifier = forgotten_consort_modifier
+			}
+			remove_character_modifier = forgotten_consort_modifier
+		}
+	}
+	else_if = { #Removing an unfavored consort's unsuitable modifiers
+		limit = { 
+			var:favor < 97
+		}
+		if = { #No longer beloved
+			limit = {
+				has_character_modifier = beloved_consort_modifier
+			}
+			remove_character_modifier = beloved_consort_modifier
+		}
+		if = { #Lo longer favored
+			limit = {
+				has_character_modifier = favored_consort_modifier
+			}
+			remove_character_modifier = favored_consort_modifier
+		}
+		if = { #No longer unfavored
+			limit = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			remove_character_modifier = unfavored_consort_modifier
+		}
+	}
+	clear_opinions_effect = yes
+}
+
+scripted_effect add_favor_modifiers_effect = {
+	if = { #Beloved
+		limit = { 
+			var:favor >= 868
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			add_character_modifier = beloved_consort_modifier
+		}	
+	}
+	else_if = { #Favorite
+		limit = { 
+			var:favor < 868
+			var:favor >= 675
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			add_character_modifier = favored_consort_modifier
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_opinion_modifier = {
+						target = scope:harem_master
+						modifier = grateful_opinion
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:harem_master
+				modifier = grateful_opinion
+				opinion = 5
+			}
+		}
+	}
+	else_if = { #Unfavored
+		limit = { 
+			var:favor < 290
+			var:favor >= 97
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+			}
+			add_character_modifier = unfavored_consort_modifier
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_opinion_modifier = {
+						target = scope:harem_master
+						modifier = ignored_consort_opinion
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:harem_master
+				modifier = ignored_consort_opinion
+				opinion = -10
+			}
+		}
+	}
+	else_if = { #Forgotten
+		limit = { 
+			var:favor < 97
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+			}
+			add_character_modifier = forgotten_consort_modifier
+		}
+	}
+}
+
+scripted_effect clear_opinions_effect = {
+	if = {
+		limit = {
+			var:favor >= 290
+			has_opinion_modifier = {
+				target = scope:harem_master
+				modifier = ignored_consort_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = ignored_consort_opinion
+			target = scope:harem_master
+		}
+	}
+	if = {
+		limit = {
+			var:favor < 675
+			has_opinion_modifier = {
+				target = scope:harem_master
+				modifier = grateful_opinion
+			}
+		}
+		remove_opinion = {
+			modifier = grateful_opinion
+			target = scope:harem_master
+		}
+	}
+}
+
+consort_favor_valuation.0001 = {
+	scope = none
+	hidden = yes
+
+	trigger = {
+		NOT = { has_game_rule = consort_favor_off }
+	}
+
+	immediate = {
+		
+		every_living_character = {
+			limit = {
+				accepts_harems = yes
+				is_landed = yes
+				OR = {
+					is_ai = no
+					highest_held_title_tier >= tier_kingdom
+				}
+				any_consort = {
+					is_valid_for_favor_system_trigger = yes
+					count >= 4
+				}
+			}
+			trigger_event = consort_favor_valuation.0002
+		}
+		
+		#Trigger the next wave of events.
+		trigger_event = {
+			id = consort_favor_valuation.0001
+			months = 1
+		}
+	}
+}
+
+consort_favor_valuation.0002 = {
+	hidden = yes
+
+	trigger = {
+		NOT = { has_game_rule = consort_favor_off }
+		accepts_harems = yes
+		is_landed = yes
+		OR = {
+			is_ai = no
+			highest_held_title_tier >= tier_kingdom
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = yes
+			count >= 4
+		}
+	}
+
+	immediate = {
+		save_scope_as = harem_master
+		every_consort = {
+			limit = {
+				is_valid_for_favor_system_trigger = yes
+			}
+			trigger_event = consort_favor_valuation.0003
+		}
+	}
+}
+
+consort_favor_valuation.0003 = {
+	hidden = yes
+
+	trigger = {
+		is_valid_for_favor_system_trigger = yes
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = favor }
+			}
+			set_variable = {
+				name = favor
+				value = 482
+			}
+			if = { #The PS will have 6 additional months of favor
+				limit = {
+					exists = scope:harem_master.primary_spouse
+					this = scope:harem_master.primary_spouse
+				}
+				change_variable = {
+					name = favor
+					add = favor_ps_bonus
+				}
+			}
+			else_if = { #The GC will have 3 additional months of favor
+				limit = {
+					is_demoted_consort_trigger = no
+					has_court_position = grand_consort_court_position
+				}
+				change_variable = {
+					name = favor
+					add = favor_gc_bonus
+				}
+			}
+			if = { #SSs will have 1 additional month of favor
+				limit = {
+					is_demoted_consort_trigger = no
+					is_married = yes
+				}
+				change_variable = {
+					name = favor
+					add = favor_ss_bonus
+				}
+			}
+			if = {
+				limit = {
+					is_ai = no
+				}
+				#trigger_event = 
+			}
+		}
+		else_if = {
+			limit = {
+				has_variable = favor
+			}
+			if = { #Beloved
+				limit = {
+					var:favor >= 868
+					is_ai = no
+				}
+				add_character_flag = beloved_consort_flag
+			}
+			else_if = { #Favorite
+				limit = {
+					var:favor >= 675
+					is_ai = no
+				}
+				add_character_flag = favored_consort_flag
+			}
+			else_if = { #Neutral
+				limit = {
+					var:favor >= 290
+					is_ai = no
+				}
+				add_character_flag = neutral_consort_flag
+			}
+			else_if = { #Unfavored
+				limit = {
+					var:favor >= 97
+					is_ai = no
+				}
+				add_character_flag = unfavored_consort_flag
+			}
+			else_if = { #Forgotten
+				limit = { 
+					var:favor < 97
+					is_ai = no
+				}
+				add_character_flag = forgotten_consort_flag
+			}
+
+			change_variable = {
+				name = favor
+				add = favor_points
+				min = 0
+				max = 964
+			}
+
+			#Notify changes
+			if = { #Becoming beloved
+				limit = {
+					is_ai = no
+					OR = {
+						has_character_flag = forgotten_consort_flag
+						has_character_flag = unfavored_consort_flag
+						has_character_flag = neutral_consort_flag
+						has_character_flag = favored_consort_flag
+					}
+					var:favor >= 868
+				}
+				trigger_event = consort_favor_valuation.0004				
+			}
+			if = { #Becoming forgotten
+				limit = {
+					is_ai = no
+					OR = {
+						has_character_flag = unfavored_consort_flag
+						has_character_flag = neutral_consort_flag
+						has_character_flag = favored_consort_flag
+						has_character_flag = beloved_consort_flag
+					}
+					var:favor < 97
+				}
+				trigger_event = consort_favor_valuation.0005			
+			}
+			if = { #Beloved
+				limit = {
+					has_character_flag = beloved_consort_flag
+				}
+				if = { #Negative change
+					limit = { 
+						var:favor < 868
+						var:favor >= 97
+					}
+					send_interface_toast = {
+						type = event_generic_bad
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.negative.t
+						desc = consort_favor_valuation.negative_beloved.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+				remove_character_flag = beloved_consort_flag
+			}
+			if = { #Favorite
+				limit = {
+					has_character_flag = favored_consort_flag
+				}
+				else_if = { #Negative change
+					limit = { 
+						var:favor < 675
+						var:favor >= 97
+					}
+					send_interface_toast = {
+						type = event_generic_bad
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.negative.t
+						desc = consort_favor_valuation.negative_favorite.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+				remove_character_flag = favored_consort_flag
+			}
+			if = { #Neutral
+				limit = {
+					has_character_flag = neutral_consort_flag
+				}
+				if = { #Positive change
+					limit = { 
+						var:favor < 868
+						var:favor >= 675
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.positive.t
+						desc = consort_favor_valuation.positive_neutral.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+				else_if = { #Negative change
+					limit = { 
+						var:favor < 290
+						var:favor >= 97
+					}
+					send_interface_toast = {
+						type = event_generic_bad
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.negative.t
+						desc = consort_favor_valuation.negative_neutral.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+				remove_character_flag = neutral_consort_flag
+			}
+			if = { #Unfavored
+				limit = {
+					has_character_flag = unfavored_consort_flag
+				}
+				if = { #Positive change
+					limit = { 
+						var:favor < 868
+						var:favor >= 290
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.positive.t
+						desc = consort_favor_valuation.positive_unfavored.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+			}
+			if = { #Forgotten
+				limit = {
+					has_character_flag = forgotten_consort_flag
+				}
+				if = { #Positive change
+					limit = { 
+						var:favor >= 97
+						var:favor < 868
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						right_icon = scope:harem_master
+						title = consort_favor_valuation.positive.t
+						desc = consort_favor_valuation.positive_forgotten.desc
+						
+						clear_favor_modifiers_effect = yes
+						add_favor_modifiers_effect = yes
+					}
+				}
+				remove_character_flag = forgotten_consort_flag
+			}
+			if = {
+				limit = {
+					is_ai = yes
+				}
+				clear_favor_modifiers_effect = yes
+				add_favor_modifiers_effect = yes
+			}
+		}
+	}
+}
+
+##################
+###I'm beloved!###
+##################
+consort_favor_valuation.0004 = {
+	type = character_event
+	title = consort_favor_valuation.0004.t
+	desc = consort_favor_valuation.0004.desc
+	theme = family
+	override_background = {
+		reference = corridor_day
+	}
+	
+	left_portrait = { 	
+		character = root
+		animation = ecstasy
+	}
+	right_portrait = { 	
+		character = scope:harem_master
+		animation = flirtation
+	}
+	
+	trigger = {
+		has_variable = favor
+		var:favor >= 868
+	}
+	
+	immediate = {
+		clear_favor_modifiers_effect = yes
+		add_favor_modifiers_effect = yes
+		add_opinion = {
+			target = scope:harem_master
+			modifier = grateful_opinion
+			opinion = 15
+		}
+	}
+	
+	option = {
+		name = consort_favor_valuation.0004.a
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+##################
+###I'm forgotten###
+##################
+consort_favor_valuation.0005 = {
+	type = character_event
+	title = consort_favor_valuation.0005.t
+	desc = consort_favor_valuation.0005.desc
+	theme = family
+	override_background = {
+		reference = corridor_night
+	}
+	
+	left_portrait = { 	
+		character = root
+		animation = grief
+	}
+	right_portrait = { 	
+		character = scope:harem_master
+		animation = dismissal
+	}
+	
+	trigger = {
+		has_variable = favor
+		var:favor < 97
+	}
+	
+	immediate = {
+		clear_favor_modifiers_effect = yes
+		add_favor_modifiers_effect = yes
+		add_opinion = {
+			target = scope:harem_master
+			modifier = ignored_consort_opinion
+			opinion = -15
+		}
+	}
+	
+	option = {
+		name = consort_favor_valuation.0005.a
+		ai_chance = {
+			base = 10
+		}
+	}
+}
