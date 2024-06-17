@@ -7894,6 +7894,7 @@ consort_events.0009 = {
 						can_set_relation_nemesis_trigger = { CHARACTER = scope:consort_rival }
 					}
 					is_valid_generic_consort_trigger = yes
+					NOT = { this = scope:consort_rival }
 				}
 				add_to_list = consort_rival_list
 			}
@@ -7949,6 +7950,37 @@ consort_events.0009 = {
 						multiplier = -2
 						min = 0
 						max = 30
+					}
+					modifier = { #Favorites clash with each other
+						scope:consort_rival = {
+							has_variable = favor
+							var:favor >= favorite_consort_lower_limit
+						}
+						has_variable = favor
+						var:favor >= favorite_consort_lower_limit
+						add = 10
+					}
+					modifier = { #Favorites clash with each other
+						scope:consort_rival = {
+							OR = {
+								has_relation_soulmate = scope:partner
+								has_relation_lover = scope:partner
+							}
+						}
+						OR = {
+							has_relation_soulmate = scope:partner
+							has_relation_lover = scope:partner
+						}
+						add = 5
+					}
+					modifier = { #Beloved consorts even more
+						scope:consort_rival = {
+							has_variable = favor
+							var:favor >= beloved_consort_lower_limit
+						}
+						has_variable = favor
+						var:favor >= beloved_consort_lower_limit
+						add = 10
 					}
 				}
 				save_scope_as = valid_target_consort
@@ -8099,6 +8131,7 @@ consort_events.0010 = {
 	#	reference = garden
 	#}
 	hidden = yes
+	orphan = yes
 	
 	#right_portrait = { 	
 	#	character = scope:consort_rival
@@ -14256,17 +14289,32 @@ consort_events.0022 = {
 	}
 	
 	immediate = {
-		scope:schemer = {
-			save_scope_as = secondary_actor
+		if = {
+			limit = {
+				has_relation_potential_rival = scope:schemer
+			}
+			set_relation_rival = { 
+				target = scope:schemer
+				reason = consort_rival_reason
+			}
 		}
-		worsening_relationship_consort_effect = yes
+		else_if = {
+			limit = {
+				has_relation_rival = scope:schemer
+				can_set_relation_nemesis_trigger = { CHARACTER = scope:schemer }
+			}
+			set_relation_nemesis = { 
+				target = scope:schemer
+				reason = consort_rival_reason 
+			}
+		}
 		show_as_tooltip = {
 			add_opinion = {
 				target = scope:schemer
 				modifier = hatred_spouse_opinion
 			}
 		}
-		add_character_modifier = {#
+		add_character_modifier = {
 			modifier = more_vigilant_recistance_modifier
 			years = 2
 		}

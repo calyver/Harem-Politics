@@ -138,18 +138,60 @@
 		multiply = 1.10
 	}
 	
-	if = { #Beauty
+	if = { #Physique
 		limit = {
 			scope:potential_candidate = {
-				has_trait = beauty_good_1
+				has_trait = physique_good_1
 			}
 		}
 		multiply = 1.05
 	}
+	if = { #Physique
+		limit = {
+			scope:potential_candidate = {
+				has_trait = physique_good_2
+			}
+		}
+		multiply = 1.10
+	}
+	if = { #Physique
+		limit = {
+			scope:potential_candidate = {
+				has_trait = physique_good_3
+			}
+		}
+		multiply = 1.15
+	}
+
+	if = { #Intellect
+		limit = {
+			scope:potential_candidate = {
+				has_trait = intellect_good_1
+			}
+		}
+		multiply = 1.05
+	}
+	if = { #Intellect
+		limit = {
+			scope:potential_candidate = {
+				has_trait = intellect_good_2
+			}
+		}
+		multiply = 1.10
+	}
+	if = { #Intellect
+		limit = {
+			scope:potential_candidate = {
+				has_trait = intellect_good_3
+			}
+		}
+		multiply = 1.15
+	}
+
 	if = { #Beauty
 		limit = {
 			scope:potential_candidate = {
-				has_trait = beauty_good_2
+				has_trait = beauty_good_1
 			}
 		}
 		multiply = 1.10
@@ -157,10 +199,44 @@
 	if = { #Beauty
 		limit = {
 			scope:potential_candidate = {
-				has_trait = beauty_good_3
+				has_trait = beauty_good_2
 			}
 		}
 		multiply = 1.15
+	}
+	if = { #Beauty
+		limit = {
+			scope:potential_candidate = {
+				has_trait = beauty_good_3
+			}
+		}
+		multiply = 1.20
+	}
+	if = { #Pure_blooded
+		limit = {
+			scope:potential_candidate = {
+				num_of_good_genetic_traits > 1
+			}
+		}
+		multiply = {
+			value = 1.10
+			if = {
+				limit = {
+					scope:potential_candidate = {
+						num_of_good_genetic_traits > 2
+					}
+				}
+				add = 0.10
+			}
+		}
+	}
+	if = { #Pure_blooded
+		limit = {
+			scope:potential_candidate = {
+				has_trait = pure_blooded
+			}
+		}
+		multiply = 1.20
 	}
 	
 	if = { #Skills
@@ -209,7 +285,25 @@
 		limit = {
 			has_trait = greedy
 		}
-		multiply = 0.75
+		multiply = 0.65
+	}
+
+	#Inflation
+	if = {
+		limit = {
+			culture = {
+				has_cultural_era_or_later = culture_era_high_medieval
+			}
+		}
+		multiply = 1.20
+	}
+	if = {
+		limit = {
+			culture = {
+				has_cultural_era_or_later = culture_era_late_medieval
+			}
+		}
+		multiply = 1.20
 	}
 	ceiling = yes
 }
@@ -253,7 +347,7 @@ favor_medium_value_loss = {
 }
 favor_high_value_loss = {
 	value = 0
-	add = favor_high_value_gain
+	subtract = favor_high_value_gain
 }
 favor_ultra_high_value_loss = {
 	value = 0
@@ -270,56 +364,106 @@ favor_gc_bonus = { #The GC will have 3 additional months
 	multiply = 3
 }
 favor_ss_bonus = { #SSs will have 1 additional month
-	add = favor_minor_value_gain
+	value = favor_minor_value_gain
 }
 
 favor_points = {
-	
-	add = favor_minor_value_loss #Base favor loss
+	value = 0
 
 	##Additions##
 	
 	#########New consorts#########
 	if = {
 		limit = { 
-			has_character_flag = flag_new_consort
+			root = { 	
+				has_character_flag = flag_new_consort
+			}
 		}
 		add = {
-			desc = favor_addition_new_consort
+			#desc = favor_addition_new_consort
 			value = 2
+			if = {
+				limit = {
+					root = { 	
+						NOR = {
+							has_character_modifier = beloved_consort_modifier
+							has_character_modifier = favored_consort_modifier
+							has_relation_soulmate = scope:harem_liege
+							has_relation_lover = scope:harem_liege
+						}
+					}
+				}
+				add = 1
+			}
 		}
 	}
+
+	#########Youth#########
+	if = {
+		limit = { 
+			root = { 	
+				age <= 23
+			}
+		}
+		add = {
+			#desc = favor_addition_new_consort
+			value = 2
+			if = {
+				limit = {
+					root = { 	
+						NOR = {
+							has_character_modifier = beloved_consort_modifier
+							has_character_modifier = favored_consort_modifier
+							has_relation_soulmate = scope:harem_liege
+							has_relation_lover = scope:harem_liege
+						}
+					}
+				}
+				add = 1
+			}
+		}
+	}
+
 	#########Ranking#########
 	#The PS
 	if = {
 		limit = { 
-			exists = scope:harem_master.primary_spouse
-			this = scope:harem_master.primary_spouse
+			exists = scope:harem_liege.primary_spouse
+			root = { 	
+				this = scope:harem_liege.primary_spouse
+			}
 		}
 		add = {
-			desc = favor_addition_ps
+			#desc = favor_addition_ps
 			value = 4
 		}
 	}
-	#The PS
+	#The GC
 	if = {
 		limit = { 
-			has_court_position = grand_consort_court_position
-			is_demoted_consort_trigger = no
+			root = { 	
+				has_court_position = grand_consort_court_position
+				is_demoted_consort_trigger = no
+			}
 		}
 		add = {
-			desc = favor_addition_gc
-			value = 2
+			#desc = favor_addition_gc
+			value = 3
 		}
 	}
 	#Spouses
 	if = {
 		limit = { 
-			is_spouse_of = scope:harem_master
-			is_demoted_consort_trigger = no
+			root = { 	
+				is_spouse_of = scope:harem_liege
+				is_demoted_consort_trigger = no
+				NOT = {
+					this = scope:harem_liege.primary_spouse
+				}
+			}
 		}
 		add = {
-			desc = favor_addition_ss
+			#desc = favor_addition_ss
 			value = 2
 		}
 	}
@@ -328,54 +472,81 @@ favor_points = {
 	#Number of children
 	if = {
 		limit = { 
-			any_child = { 
-				is_child_of = scope:harem_master
-				is_alive = yes
-				count > 0
+			root = { 
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					count > 0
+				}
 			}
 		}
 		add = {
-			desc = favor_addition_children
+			#desc = favor_addition_children
 			value = {
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							count >= 1
+						root = { 
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count >= 1
+							}
 						}
 					}
-					add = 1
+					add = 3
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							count >= 2
+						root = { 
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count >= 2
+							}
 						}
 					}
-					add = 1
+					add = 2
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							count >= 3
+						root = { 
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count >= 3
+							}
 						}
 					}
-					add = 1
+					add = 2
 				}
 				if = {
-					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							count >= 4
+					limit = {
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count >= 4
+							}
 						}
 					}
-					add = 1
+					add = 2
+				}
+				if = { #Closer to the throne
+					limit = {
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								scope:harem_liege.primary_title = {
+									place_in_line_of_succession = {
+										target = prev
+										value <= 3
+									}
+								}
+								count >= 1
+							}
+						}
+					}
+					add = 2
 				}
 			}
 		}
@@ -383,59 +554,69 @@ favor_points = {
 	#Eligible children
 	if = {
 		limit = { 
-			any_child = { 
-				is_child_of = scope:harem_master
-				is_alive = yes
-				character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
-				count > 0
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+					count > 0
+				}
 			}
 		}
 		add = {
-			desc = favor_addition_eligible_heirs
+			#desc = favor_addition_eligible_heirs
 			value = {
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
-							count >= 1
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 1
+							}
+						}
+					}
+					add = 3
+				}
+				if = {
+					limit = { 
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 2
+							}
 						}
 					}
 					add = 1
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
-							count >= 2
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 3
+							}
 						}
 					}
-					add = 1
+					add = 2
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
-							count >= 3
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 4
+							}
 						}
 					}
-					add = 1
-				}
-				if = {
-					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
-							count >= 4
-						}
-					}
-					add = 1
+					add = 2
 				}
 			}
 		}
@@ -443,70 +624,125 @@ favor_points = {
 	#Player heir
 	if = {
 		limit = { 
-			any_child = { 
-				is_child_of = scope:harem_master
-				is_player_heir_of = scope:harem_master
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_player_heir_of = scope:harem_liege
+				}
 			}
 		}
 		add = {
-			desc = favor_addition_player_heir
-			value = 2
+			#desc = favor_addition_player_heir
+			value = 4
 		}
 	}
 	#Pregnant consorts
 	if = {
 		limit = { 
-			has_trait = pregnant
+			root = {  
+				has_trait = pregnant
+			}
 		}
 		add = {
-			desc = favor_addition_pregnant
-			value = 2
+			#desc = favor_addition_pregnant
+			value = 8
+			if = { #More if there are no children
+				limit = { 
+					scope:harem_liege = {  
+						any_child = { 
+							count = 0
+						}
+					}
+				}
+				add = 4
+			}
+			if = { #More if there are few children
+				limit = { 
+					scope:harem_liege = {  
+						any_child = { 
+							is_alive = yes
+							count <= 4
+						}
+					}
+				}
+				add = 2
+			}
+			if = { #More if there are no children who can inherit
+				limit = { 
+					scope:harem_liege = {  
+						any_child = { 
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+							count = 0
+						}
+					}
+				}
+				add = 4
+			}
+			if = { #More if there are few children who can inherit
+				limit = { 
+					scope:harem_liege = {  
+						any_child = { 
+							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+							count <= 2
+						}
+					}
+				}
+				add = 2
+			}
 		}
 	}
 	#Friendly children
 	if = {
 		limit = { 
-			any_child = { 
-				is_child_of = scope:harem_master
-				is_alive = yes
-				OR = {	
-					has_relation_friend = scope:harem_master
-					has_relation_best_friend = scope:harem_master
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					OR = {	
+						has_relation_friend = scope:harem_liege
+						has_relation_best_friend = scope:harem_liege
+					}
+					count > 0
 				}
-				count > 0
 			}
 		}
 		add = {
-			desc = favor_addition_friendly_children
+			#desc = favor_addition_friendly_children
 			value = {
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_friend = scope:harem_master
-							count >= 1
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_friend = scope:harem_liege
+								count >= 1
+							}
+						}
+					}
+					add = 4
+				}
+				if = {
+					limit = { 
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_friend = scope:harem_liege
+								count >= 2
+							}
 						}
 					}
 					add = 2
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_friend = scope:harem_master
-							count >= 2
-						}
-					}
-					add = 2
-				}
-				if = {
-					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_best_friend = scope:harem_master
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_best_friend = scope:harem_liege
+							}
 						}
 					}
 					add = 4
@@ -519,41 +755,153 @@ favor_points = {
 	#Friends
 	if = {
 		limit = { 
-			has_relation_friend = scope:harem_master
+			root = {  
+				has_relation_friend = scope:harem_liege
+			}
 		}
 		add = {
-			desc = favor_addition_friend
-			value = 2
+			#desc = favor_addition_friend
+			value = 8
+			if = { #Forgotten
+				limit = { 
+					root = {  
+						var:favor < unfavored_consort_lower_limit
+					}
+				}
+				add = 34
+			}
+			if = { #Neutral
+				limit = { 
+					root = {  
+						var:favor >= unfavored_consort_lower_limit
+						var:favor < neutral_consort_lower_limit
+					}
+				}
+				add = 98
+			}
+			if = { #Not favored or beloved
+				limit = { 
+					root = {  
+						var:favor >= neutral_consort_lower_limit
+						var:favor < favorite_consort_lower_limit
+					}
+				}
+				add = 118
+			}
 		}
 	}
 	#BFF
 	if = {
 		limit = { 
-			has_relation_best_friend = scope:harem_master
+			root = {  
+				has_relation_best_friend = scope:harem_liege
+			}
 		}
 		add = {
-			desc = favor_addition_bff
-			value = 4
+			#desc = favor_addition_bff
+			value = 12
+			if = { #Forgotten
+				limit = { 
+					root = {  
+						var:favor < unfavored_consort_lower_limit
+					}
+				}
+				add = 40
+			}
+			if = { #Unfavored
+				limit = { 
+					root = {  
+						var:favor >= unfavored_consort_lower_limit
+						var:favor < neutral_consort_lower_limit
+					}
+				}
+				add = 98
+			}
+			if = { #Not favored or beloved
+				limit = { 
+					root = {  
+						var:favor >= neutral_consort_lower_limit
+						var:favor < favorite_consort_lower_limit
+					}
+				}
+				add = 100
+			}
 		}
 	}
 	#Lover
 	if = {
 		limit = { 
-			has_relation_lover = scope:harem_master
+			root = {  
+				has_relation_lover = scope:harem_liege
+			}
 		}
 		add = {
-			desc = favor_addition_lover
-			value = 4
+			#desc = favor_addition_soulmate
+			value = 12
+			if = { #Forgotten
+				limit = { 
+					root = {  
+						var:favor < unfavored_consort_lower_limit
+					}
+				}
+				add = 40
+			}
+			if = { #Unfavored
+				limit = { 
+					root = {  
+						var:favor >= unfavored_consort_lower_limit
+						var:favor < neutral_consort_lower_limit
+					}
+				}
+				add = 98
+			}
+			if = { #Not favored or beloved
+				limit = { 
+					root = {  
+						var:favor >= neutral_consort_lower_limit
+						var:favor < favorite_consort_lower_limit
+					}
+				}
+				add = 90
+			}
 		}
 	}
 	#Soulmate
 	if = {
 		limit = { 
-			has_relation_soulmate = scope:harem_master
+			root = {  
+				has_relation_soulmate = scope:harem_liege
+			}
 		}
 		add = {
-			desc = favor_addition_soulmate
-			value = 6
+			#desc = favor_addition_soulmate
+			value = 16
+			if = { #Forgotten
+				limit = { 
+					root = {  
+						var:favor < unfavored_consort_lower_limit
+					}
+				}
+				add = 34
+			}
+			if = { #Neutral
+				limit = { 
+					root = {  
+						var:favor >= unfavored_consort_lower_limit
+						var:favor < neutral_consort_lower_limit
+					}
+				}
+				add = 98
+			}
+			if = { #Not favored or beloved
+				limit = { 
+					root = {  
+						var:favor >= neutral_consort_lower_limit
+						var:favor < favorite_consort_lower_limit
+					}
+				}
+				add = 108
+			}
 		}
 	}
 
@@ -561,31 +909,127 @@ favor_points = {
 	#Comely
 	if = {
 		limit = { 
-			has_trait = beauty_good_1
+			root = {  
+				has_trait = beauty_good_1
+				age <= 45
+			}
 		}
 		add = {
-			desc = favor_addition_comely
-			value = 2
+			#desc = favor_addition_comely
+			value = 8
 		}
 	}
 	#Handsome
 	if = {
 		limit = { 
-			has_trait = beauty_good_2
+			root = {  
+				has_trait = beauty_good_2
+				age <= 45
+			}
 		}
 		add = {
-			desc = favor_addition_handsome
-			value = 4
+			#desc = favor_addition_handsome
+			value = 10
 		}
 	}
 	#Beautiful
 	if = {
 		limit = { 
-			has_trait = beauty_good_3
+			root = {  
+				has_trait = beauty_good_3
+				age <= 45
+			}
 		}
 		add = {
-			desc = favor_addition_beautiful
+			#desc = favor_addition_beautiful
+			value = 12
+		}
+	}
+	#########Intelligence, physique and pure_blooded#########
+	#Quick
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_good_1
+			}
+		}
+		add = {
+			#desc = favor_addition_quick
 			value = 6
+		}
+	}
+	#Intelligent
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_good_2
+			}
+		}
+		add = {
+			#desc = favor_addition_intelligent
+			value = 7
+		}
+	}
+	#Genius
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_good_3
+			}
+		}
+		add = {
+			#desc = favor_addition_genius
+			value = 8
+		}
+	}
+
+	#Hale
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_good_1
+			}
+		}
+		add = {
+			#desc = favor_addition_hale
+			value = 6
+		}
+	}
+	#Robust
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_good_2
+			}
+		}
+		add = {
+			#desc = favor_addition_robust
+			value = 7
+		}
+	}
+	#Amazonian
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_good_3
+			}
+		}
+		add = {
+			#desc = favor_addition_amazonian
+			value = 8
+		}
+	}
+
+	#Pure_blooded
+	if = {
+		limit = { 
+			root = {  
+				has_trait = pure_blooded
+			}
+		}
+		add = {
+			#desc = favor_addition_pure_blooded
+			value = 12
 		}
 	}
 
@@ -593,47 +1037,52 @@ favor_points = {
 	#Noble background
 	if = {
 		limit = { 
-			is_lowborn = no
+			root = {  
+				is_lowborn = no
+			}
 		}
 		add = {
-			desc = favor_addition_noble
+			#desc = favor_addition_noble
 			value = 2
 		}
 	}
 	#Child of vassals
 	if = {
 		limit = { 
-			any_close_family_member = {
-				is_vassal_of = scope:harem_master
-				OR = {
-					highest_held_title_tier >= tier_county
-					is_powerful_vassal_of = scope:harem_master
-					is_councillor_of = scope:harem_master
+			root = {  
+				any_close_family_member = {
+					is_vassal_of = scope:harem_liege
+					max_military_strength < scope:harem_liege.max_military_strength
 				}
-				max_military_strength < scope:harem_master.max_military_strength
 			}
 		}
 		add = {
-			desc = favor_addition_good_lineage
+			value = 2
+			#desc = favor_addition_good_lineage
 			value = {
 				if = {
 					limit = { 
-						any_close_family_member = {
-							is_vassal_of = scope:harem_master
-							highest_held_title_tier >= tier_county
-							max_military_strength < scope:harem_master.max_military_strength
+						root = {  
+							any_close_family_member = {
+								is_vassal_of = scope:harem_liege
+								highest_held_title_tier >= tier_county
+								max_military_strength < scope:harem_liege.max_military_strength
+								count > 1
+							}
 						}
 					}
 					add = 2
 				}
 				if = {
 					limit = { 
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = scope:harem_master
-								is_councillor_of = scope:harem_master
+						root = {  
+							any_close_family_member = {
+								OR = {
+									is_powerful_vassal_of = scope:harem_liege
+									is_councillor_of = scope:harem_liege
+								}
+								max_military_strength < scope:harem_liege.max_military_strength
 							}
-							max_military_strength < scope:harem_master.max_military_strength
 						}
 					}
 					add = 4
@@ -644,34 +1093,31 @@ favor_points = {
 	#Powerful lineage
 	if = {
 		limit = { 
-			any_close_family_member = {
-				OR = {
-					is_liege_or_above_of = scope:harem_master
-					highest_held_title_tier >= tier_kingdom
-					max_military_strength >= scope:harem_master.max_military_strength
+			root = {  
+				any_close_family_member = {
+					OR = {
+						is_liege_or_above_of = scope:harem_liege
+						highest_held_title_tier >= tier_kingdom
+						max_military_strength >= scope:harem_liege.max_military_strength
+					}
 				}
 			}
 		}
 		add = {
-			desc = favor_addition_powerful_lineage
-			value = {
-				if = {
-					limit = { 
-						OR = {
-							is_liege_or_above_of = scope:harem_master
-							max_military_strength >= scope:harem_master.max_military_strength
-						}
-					}
-					add = 4
-				}
-				if = {
-					limit = { 
+			#desc = favor_addition_powerful_lineage
+			value = 4
+			if = {
+				limit = { 
+					root = {  
 						any_close_family_member = {
-							highest_held_title_tier >= tier_kingdom
+							OR = {
+								is_liege_or_above_of = scope:harem_liege
+								max_military_strength >= scope:harem_liege.max_military_strength
+							}
 						}
 					}
-					add = 2
 				}
+				add = 8
 			}
 		}
 	}
@@ -679,60 +1125,306 @@ favor_points = {
 	#########Diplomacy#########
 	if = {
 		limit = { 
-			diplomacy >= 12
+			root = {  
+				diplomacy >= 12
+			}
 		}
 		add = {
-			desc = favor_diplomacy
+			#desc = favor_diplomacy
 			value = {
+				add = 3
 				if = {
 					limit = { 
-						diplomacy >= 13
+						root = {
+							diplomacy >= 15
+						}
 					}
-					add = 2
+					add = 4
 				}
 				if = {
 					limit = { 
-						diplomacy >= 17
+						root = {
+							diplomacy >= 17
+						}
 					}
-					add = 1
+					add = 4
 				}
 				if = {
 					limit = { 
-						diplomacy >= 17
+						root = {
+							diplomacy >= 21
+						}
 					}
-					add = 2
+					add = 4
 				}
+			}
+		}
+	}
+
+	#########Modifiers#########
+	if = { #For the one who has, more will be given...
+		limit = { 
+			root = {
+				has_character_modifier = beloved_consort_modifier
+			}
+			scope:harem_liege = {
+				any_consort = {
+					has_character_modifier = beloved_consort_modifier
+					count = 1
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_beloved
+			value = 6
+			if = {
+				limit = { 
+					root = {
+						NOR = { 
+							has_relation_lover = scope:harem_liege
+							has_relation_soulmate = scope:harem_liege 
+						}
+					}
+				}
+				add = 2
+			}
+		}
+	}
+	else_if = { #For the one who has, more will be given...
+		limit = { 
+			root = {
+				has_character_modifier = favored_consort_modifier
+			}
+			scope:harem_liege = {
+				OR = {
+					AND = { #There's a max of 1 favorite if liege has 6 consorts or less
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							count <= 6
+						}
+						any_consort = {
+							has_character_modifier = favored_consort_modifier
+							count <= 1
+						}
+					}
+					AND = { #There's a max of 1 favorite if liege has 6 consorts or less
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							count > 6
+						}
+						any_consort = {
+							has_character_modifier = favored_consort_modifier
+							count <= 2
+						}
+					}
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_favorite
+			value = 3
+			if = {
+				limit = { 
+					root = {
+						NOR = { 
+							has_relation_lover = scope:harem_liege
+							has_relation_soulmate = scope:harem_liege 
+						}
+					}
+				}
+				add = 3
+			}
+		}
+	}
+
+	#########Traits#########
+	#root traits
+	if = {
+		limit = { 
+			root = {
+				has_trait = lustful
+			}
+			scope:harem_liege = {
+				has_trait = lustful
+			}
+		}
+		add = 3
+	}
+	if = {
+		limit = { 
+			root = {
+				has_trait = gregarious
+			}
+			scope:harem_liege = {
+				has_trait = gregarious
+			}
+		}
+		add = 3
+	}
+	if = { #Chaste
+		limit = { 
+			root = {
+				has_trait = chaste
+			}
+			scope:harem_liege = {
+				has_trait = chaste
+			}
+		}
+		add = 3
+	}
+	if = { #Good genetics
+		limit = { 
+			root = {
+				num_of_good_genetic_traits > 1
+			}
+		}
+		add = {
+			#desc = favor_addition_good_genetics
+			value = {
+				add = 3
 				if = {
 					limit = { 
-						diplomacy >= 21
+						root = {
+							num_of_good_genetic_traits > 2
+						}
 					}
 					add = 2
 				}
 			}
 		}
 	}
+	#harem_liege traits
+	if = { #If the liege is lustful, they will visit their consorts quite often
+		limit = { 
+			scope:harem_liege = {
+				has_trait = lustful
+			}
+		}
+		multiply = 1.20
+	}
+	if = { #If the liege is gregarious, they will visit their consorts quite often
+		limit = { 
+			scope:harem_liege = {
+				has_trait = gregarious
+			}
+		}
+		multiply = 1.10
+	}
+	if = { #If the liege is chaste, consorts will lose favore more quickly
+		limit = { 
+			scope:harem_liege = {
+				has_trait = chaste
+			}
+		}
+		multiply = 0.80
+	}
+	if = { #If the liege is shy, consorts will lose favore more quickly
+		limit = { 
+			scope:harem_liege = {
+				has_trait = shy
+			}
+		}
+		multiply = 0.80
+	}
+	if = { #If the liege is craven, consorts will lose favore more quickly
+		limit = { 
+			scope:harem_liege = {
+				has_trait = craven
+			}
+		}
+		multiply = 0.80
+	}
+	if = { #If the liege is paranoid, consorts will lose favore more quickly
+		limit = { 
+			scope:harem_liege = {
+				has_trait = paranoid
+			}
+		}
+		multiply = 0.90
+	}
+	if = { #If the liege is reclusive, consorts will lose favore more quickly
+		limit = { 
+			scope:harem_liege = {
+				has_trait = reclusive
+			}
+		}
+		multiply = 0.80
+	}
 
+	#Stress levels
+	#Root#
+	if = { #Level 1
+		limit = { 
+			root = {
+				stress_level = 1
+			}
+		}
+		multiply = 0.933
+	}
+	if = { #Level 2
+		limit = { 
+			root = {
+				stress_level = 2
+			}
+		}
+		multiply = 0.767
+	}
+	if = { #Level 3
+		limit = { 
+			root = {
+				stress_level = 2
+			}
+		}
+		multiply = 0.60
+	}
+	#Liege#
+	if = { #Level 1
+		limit = { 
+			scope:harem_liege = {
+				stress_level = 1
+			}
+		}
+		multiply = 0.833
+	}
+	if = { #Level 2
+		limit = { 
+			scope:harem_liege = {
+				stress_level = 2
+			}
+		}
+		multiply = 0.667
+	}
+	if = { #Level 3
+		limit = { 
+			scope:harem_liege = {
+				stress_level = 2
+			}
+		}
+		multiply = 0.50
+	}
+	
 	##Subtractions##
+
+	subtract = 6 #Base favor loss
 
 	#########Demoted consorts#########
 	if = {
 		limit = { 
-			is_demoted_consort_trigger = yes
+			root = {
+				is_demoted_consort_trigger = yes
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_demoted_consort
+			#desc = favor_subtraction_demoted_consort
 			value = {
+				add = 8
 				if = {
 					limit = { 
-						has_character_modifier = demoted_spouse_modifier
+						root = {
+							has_character_modifier = demoted_primary_spouse_modifier
+						}
 					}
-					subtract = 4
-				}
-				if = {
-					limit = { 
-						has_character_modifier = demoted_primary_spouse_modifier
-					}
-					subtract = 8
+					add = 6
 				}
 			}
 		}
@@ -742,21 +1434,25 @@ favor_points = {
 	#Rivals
 	if = {
 		limit = { 
-			has_relation_rival = scope:harem_master
+			root = {
+				has_relation_rival = scope:harem_liege
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_rival
-			value = 4
+			#desc = favor_subtraction_rival
+			value = 12
 		}
 	}
 	#Nemesis
 	if = {
 		limit = { 
-			has_relation_nemesis = scope:harem_master
+			root = {
+				has_relation_nemesis = scope:harem_liege
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_nemesis
-			value = 8
+			#desc = favor_subtraction_nemesis
+			value = 24
 		}
 	}
 
@@ -764,42 +1460,252 @@ favor_points = {
 	#Homely
 	if = {
 		limit = { 
-			has_trait = beauty_bad_1
+			root = {
+				has_trait = beauty_bad_1
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_homely
-			value = 2
+			#desc = favor_subtraction_homely
+			value = 4
 		}
 	}
 	#Ugly
 	if = {
 		limit = { 
-			has_trait = beauty_bad_2
+			root = {
+				has_trait = beauty_bad_2
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_ugly
-			value = 4
+			#desc = favor_subtraction_ugly
+			value = 6
 		}
 	}
 	#Horrendous
 	if = {
 		limit = { 
-			has_trait = beauty_bad_3
+			root = {
+				has_trait = beauty_bad_3
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_horrendous
+			#desc = favor_subtraction_horrendous
+			value = 8
+		}
+	}
+
+	#########Beautiful rival consorts#########
+	#Comely
+	if = {
+		limit = { 
+			root = {
+				var:favor >= neutral_consort_lower_limit
+			}
+			scope:harem_liege = {
+				any_consort = { 
+					NOT = { this = root } 
+					has_trait = beauty_good_1
+					age <= 45
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_comely
+			value = 2
+		}
+	}
+	#Handsome
+	if = {
+		limit = { 
+			root = {
+				var:favor >= favorite_consort_lower_limit
+			}
+			scope:harem_liege = {
+				any_consort = { 
+					NOT = { this = root } 
+					has_trait = beauty_good_2
+					age <= 45
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_handsome
+			value = 4
+		}
+	}
+	#Beautiful
+	if = {
+		limit = { 
+			root = {
+				var:favor >= favorite_consort_lower_limit
+			}
+			scope:harem_liege = {
+				any_consort = { 
+					NOT = { this = root } 
+					has_trait = beauty_good_3
+					age <= 45
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_handsome
 			value = 6
+		}
+	}
+
+	#########Intelligence and physique#########
+	#Slow
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_bad_1
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_slow
+			value = 2
+		}
+	}
+	#Stupid
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_bad_2
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_stupid
+			value = 3
+		}
+	}
+	#Imbecile
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_bad_3
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_imbecile
+			value = 4
+		}
+	}
+
+	#Delicate
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_bad_1
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_delicate
+			value = 2
+		}
+	}
+	#Frail
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_bad_2
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_frail
+			value = 3
+		}
+	}
+	#Feeble
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_bad_3
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_feeble
+			value = 4
 		}
 	}
 
 	#########Diplomacy#########
 	if = {
 		limit = { 
-			diplomacy < 7
+			root = {
+				diplomacy < 7
+			}
 		}
 		subtract = {
-			desc = favor_diplomacy
+			#desc = favor_diplomacy
 			value = 2
+			if = {
+				limit = { 
+					root = {
+						diplomacy < 3
+					}
+				}
+				add = 2
+			}
+		}
+	}
+
+	#########Rival consorts' diplomacy#########
+	if = {
+		limit = { 
+			root = {
+				var:favor >= neutral_consort_lower_limit
+			}
+			scope:harem_liege = {
+				any_consort = { 
+					NOT = { this = root } 
+					diplomacy >= 12
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_diplomacy
+			value = {
+				add = 1
+				if = {
+					limit = { 
+						root = {
+							var:favor >= favorite_consort_lower_limit
+						}
+						scope:harem_liege = {
+							any_consort = { 
+								NOT = { this = root } 
+								diplomacy >= 15
+							}
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							any_consort = { 
+								NOT = { this = root } 
+								diplomacy >= 17
+							}
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = { 
+						root = {
+							var:favor >= favorite_consort_lower_limit
+						}
+						scope:harem_liege = {
+							any_consort = { 
+								NOT = { this = root } 
+								diplomacy >= 21
+							}
+						}
+					}
+					add = 2
+				}
+			}
 		}
 	}
 	
@@ -807,106 +1713,326 @@ favor_points = {
 	#Number of consorts
 	if = {
 		limit = { 
-			scope:harem_master = { 
+			scope:harem_liege = { 
 				any_consort = { 
-					is_courtier_of = scope:harem_master
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
 					count >= 5
 				}
 			}
 		}
 		subtract = {
-			desc = favor_subtraction_many_consorts
+			#desc = favor_subtraction_many_consorts
 			value = 2
 		}
 	}
 	#New consorts
 	if = {
 		limit = { 
-			NOT = { 
-				has_character_flag = flag_new_consort
+			root = {
+				NOT = { 
+					has_character_flag = flag_new_consort
+				}
 			}
-			scope:harem_master = { 
+			scope:harem_liege = { 
 				any_consort = { 
-					is_courtier_of = scope:harem_master
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					is_imprisoned = no
 					has_character_flag = flag_new_consort
 					count >= 1
 				}
 			}
 		}
 		subtract = {
-			desc = favor_subtraction_new_consorts
+			#desc = favor_subtraction_new_consorts
 			value = {
+				add = 2
 				if = {
 					limit = { 
-						scope:harem_master = { 
+						scope:harem_liege = { 
 							any_consort = { 
-								is_courtier_of = scope:harem_master
-								has_character_flag = flag_new_consort
-								count >= 1
-							}
-						}
-					}
-					subtract = 2
-				}
-				if = {
-					limit = { 
-						scope:harem_master = { 
-							any_consort = { 
-								is_courtier_of = scope:harem_master
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								is_imprisoned = no
 								has_character_flag = flag_new_consort
 								count >= 2
 							}
 						}
 					}
-					subtract = 4
+					add = 1
 				}
 				if = {
 					limit = { 
-						scope:harem_master = { 
+						scope:harem_liege = { 
 							any_consort = { 
-								is_courtier_of = scope:harem_master
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								is_imprisoned = no
 								has_character_flag = flag_new_consort
 								count >= 3
 							}
 						}
 					}
-					subtract = 6
+					add = 1
 				}
 			}
+		}
+	}
+	#Pregnant consorts
+	if = { 
+		limit = { 
+			root = {
+				NOT = { 
+					has_trait = pregnant
+				}
+			}
+			scope:harem_liege = { 
+				any_consort = { 
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					has_trait = pregnant
+					count >= 1
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_pregnant_consorts
+			value = 2
+			if = {
+				limit = { 
+					scope:harem_liege = { 
+						any_consort = { 
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							has_trait = pregnant
+							count >= 2
+						}
+					}
+				}
+				add = 1
+			}
+		}
+	}
+	#########Favored consorts#########
+	if = { 
+		limit = { 
+			scope:harem_liege = {
+				any_consort = {
+					NOT = { this = root }
+					OR = {
+						has_character_modifier = beloved_consort_modifier
+						has_character_modifier = favored_consort_modifier
+						has_relation_soulmate = scope:harem_liege
+						has_relation_lover = scope:harem_liege
+					}
+				}
+			}
+			root = {
+				var:favor >= neutral_consort_lower_limit
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_favored_consorts
+			value = 2
+			#Favorites' effects on each other
+			if = { #If root is a favorite, they will be more affected
+				limit = { 
+					root = {
+						OR = {
+							has_character_modifier = favored_consort_modifier
+							has_relation_lover = scope:harem_liege
+						}
+					}
+				}
+				add = 2
+				if = { #If liege hare less than 7 consorts and 2 favorites, they will be even more penalized
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								count <= 6
+							}
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = scope:harem_liege
+								}
+								count >= 2
+							}
+						}
+					}
+					add = 4
+				}
+				if = { #There can only be a max of 2 favorites
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = scope:harem_liege
+								}
+								count >= 3
+							}
+						}
+					}
+					add = 4
+				}
+				if = { #There can only be a max of 2 favorites
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = scope:harem_liege
+								}
+								count >= 4
+							}
+						}
+					}
+					add = 8
+				}
+				if = { #There can only be a max of 2 favorites
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_relation_lover = scope:harem_liege
+								}
+								count >= 5
+							}
+						}
+					}
+					add = 16
+				}
+			}
+			#Beloved effects on each other
+			if = { #Beloved consorts will take more favor from everyone
+				limit = { 
+					scope:harem_liege = {
+						any_consort = {
+							NOT = { this = root }
+							OR = {
+								has_character_modifier = beloved_consort_modifier
+								has_relation_soulmate = scope:harem_liege
+							}
+							count >= 1
+						}
+					}
+				}
+				add = 4
+				if = { #More if root is favored
+					limit = { 
+						root = {
+							OR = {
+								has_character_modifier = favored_consort_modifier
+								has_relation_lover = scope:harem_liege
+							}
+						}
+					}
+					add = 1
+				}
+				if = { #There can only be one beloved consort
+					limit = { 
+						root = {
+							OR = {
+								has_character_modifier = beloved_consort_modifier
+								has_relation_soulmate = scope:harem_liege
+							}
+						}
+					}
+					add = 8
+					if = { #There can only be one beloved consort
+						limit = { 
+							scope:harem_liege = {
+								any_consort = {
+									NOT = { this = root }
+									OR = {
+										has_character_modifier = beloved_consort_modifier
+										has_relation_soulmate = scope:harem_liege
+									}
+									count >= 2
+								}
+							}
+						}
+						add = 16
+					}
+					if = { #There can only be one beloved consort
+						limit = { 
+							scope:harem_liege = {
+								any_consort = {
+									NOT = { this = root }
+									OR = {
+										has_character_modifier = beloved_consort_modifier
+										has_relation_soulmate = scope:harem_liege
+									}
+									count >= 3
+								}
+							}
+						}
+						add = 24
+					}
+				}
+			}
+
 		}
 	}
 
 	#########Ageism#########
 	if = {
 		limit = { 
-			age >= 27
+			root = {
+				age >= 27
+			}
 		}
 		subtract = {
-			desc = favor_subtraction_age
+			#desc = favor_subtraction_age
 			value = {
+				add = 1
 				if = {
 					limit = { 
-						age >= 27
+						root = {
+							age >= 37
+						}
 					}
-					subtract = 1
+					add = 1
 				}
 				if = {
 					limit = { 
-						age >= 37
+						root = {
+							age >= 45
+						}
 					}
-					subtract = 1
+					add = 2
 				}
 				if = {
 					limit = { 
-						age >= 45
+						root = {
+							age >= 50
+						}
 					}
-					subtract = 2
+					add = 2
 				}
 				if = {
 					limit = { 
-						age >= 50
+						scope:harem_liege = {
+							any_consort = {
+								NOT = { this = root }
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								age <= 23
+								count >= 1
+							}
+						}
 					}
-					subtract = 2
+					add = 1
+				}
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								NOT = { this = root }
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								age <= 23
+								count >= 3
+							}
+						}
+					}
+					add = 1
 				}
 			}
 		}
@@ -915,51 +2041,47 @@ favor_points = {
 	#########Unfavored children#########
 	if = {
 		limit = { 
-			any_child = { 
-				is_child_of = scope:harem_master
-				is_alive = yes
-				OR = {	
-					has_relation_rival = scope:harem_master
-					has_relation_nemesis = scope:harem_master
+			root = {
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					OR = {	
+						has_relation_rival = scope:harem_liege
+						has_relation_nemesis = scope:harem_liege
+					}
+					count > 0
 				}
-				count > 0
 			}
 		}
 		subtract = {
-			desc = favor_subtraction_unfriendly_children
+			#desc = favor_subtraction_unfriendly_children
 			value = {
+				add = 3
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_rival = scope:harem_master
-							count >= 1
+						root = {
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_rival = scope:harem_liege
+								count >= 2
+							}
 						}
 					}
-					subtract = 2
+					add = 2
 				}
 				if = {
 					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_rival = scope:harem_master
-							count >= 2
+						root = {
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_nemesis = scope:harem_liege
+								count >= 1
+							}
 						}
 					}
-					subtract = 2
-				}
-				if = {
-					limit = { 
-						any_child = { 
-							is_child_of = scope:harem_master
-							is_alive = yes
-							has_relation_nemesis = scope:harem_master
-							count >= 1
-						}
-					}
-					subtract = 4
+					add = 4
 				}
 			}
 		}
@@ -968,38 +2090,1761 @@ favor_points = {
 	#########Arrested#########
 	if = {
 		limit = { 
-			is_imprisoned_by = scope:harem_master
-			OR = { 
-				is_in_prison_type = house_arrest
-				is_in_prison_type = dungeon
+			root = {
+				is_imprisoned_by = scope:harem_liege
+				OR = { 
+					is_in_prison_type = house_arrest
+					is_in_prison_type = dungeon
+				}
 			}
 		}
 		subtract = {
-			desc = favor_subtraction_arrest
+			#desc = favor_subtraction_arrest
 			value = {
 				if = {
 					limit = { 
-						is_in_prison_type = house_arrest
+						root = {
+							is_in_prison_type = house_arrest
+						}
 					}
-					subtract = 16
+					add = 12
 				}
-				if = {
+				else_if = {
 					limit = { 
-						is_in_prison_type = dungeon
+						root = {
+							is_in_prison_type = dungeon
+						}
 					}
-					subtract = 32
+					add = 24
 				}
 			}
 		}
 	}
 
-	min = 0
-	max = 964
+	#########Modifiers#########
+	if = { #... for the one who has not, even what he has will be taken away
+		limit = { 
+			root = {
+				has_character_modifier = forgotten_consort_modifier
+			}
+		}
+		subtract = { #A month
+			#desc = favor_subtraction_forgotten
+			value = 4
+		}
+	}
+	else_if = { #... for the one who has not, even what he has will be taken away
+		limit = { 
+			root = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+		}
+		subtract = { #Half a month
+			#desc = favor_subtraction_unfavored
+			value = 2
+		}
+	}
+	else_if = { #... for the one who has not, even what he has will be taken away
+		limit = { 
+			root = {
+				has_character_modifier = rejected_from_marriage_bed_modifier
+			}
+		}
+		subtract = { #Half a month
+			#desc = favor_subtraction_rejected_from_bed
+			value = 2
+		}
+	}
+
+	#########Traits#########
+	#root traits
+	if = { #Chaste
+		limit = { 
+			root = {
+				has_trait = chaste
+			}
+			scope:harem_liege = {
+				NOT = {
+					has_trait = chaste
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_chaste
+			value = {
+				add = 2
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = lustful
+						}
+					}
+					add = 2
+				}
+			}
+		}
+	}
+	if = { #Shy and craven
+		limit = { 
+			root = {
+				OR = {
+					has_trait = shy
+					has_trait = craven
+				}
+			}
+			scope:harem_liege = {
+				NOR = {
+					has_trait = shy
+					has_trait = craven
+				}
+			}
+		}
+		subtract = 2
+	}
+	if = { #Paranoid
+		limit = { 
+			root = {
+				has_trait = paranoid
+			}
+		}
+		subtract = 2
+	}
+	if = { #reclusive
+		limit = { 
+			root = {
+				has_trait = reclusive
+			}
+		}
+		subtract = 2
+	}
+	if = { #Wounded
+		limit = { 
+			root = {
+				has_trait = wounded
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_wounded
+			value = {
+				add = 2
+				if = {
+					limit = { 
+						root = {
+							has_trait = wounded_2
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = { 
+						root = {
+							has_trait = wounded_3
+						}
+					}
+					add = 2
+				}
+			}
+		}
+	}
+	if = { #Bad genetics
+		limit = { 
+			root = {
+				num_of_bad_genetic_traits > 1
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_bad_genetics
+			value = {
+				add = 2
+				if = {
+					limit = { 
+						root = {
+							num_of_bad_genetic_traits > 2
+						}
+					}
+					add = 2
+				}
+			}
+		}
+	}
+	if = { #Bad health
+		limit = { 
+			root = {
+				OR = {
+					has_trait = lunatic_1
+					has_trait = possessed_1
+					has_trait = one_eyed
+					has_trait = one_legged
+					has_trait = disfigured
+					has_trait = eunuch
+					has_trait = sickly
+					has_trait = infirm
+					has_trait = incapable
+					has_trait = maimed
+					has_trait = blind
+					has_trait = ill
+					has_trait = bubonic_plague
+					has_trait = cancer
+					has_trait = consumption
+					has_trait = great_pox
+					has_trait = gout_ridden
+					has_trait = leper
+					has_trait = lovers_pox
+					has_trait = pneumonic
+					has_trait = smallpox
+					has_trait = typhus
+					has_trait = dysentery
+					has_trait = ergotism
+					has_trait = measles
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_bad_traits
+			value = {
+				add = 3
+				if = { #lunatic_1
+					limit = { 
+						root = {
+							has_trait = lunatic_1
+						}
+					}
+					add = 2
+				}
+				if = { #possessed_1
+					limit = { 
+						root = {
+							has_trait = possessed_1
+						}
+					}
+					add = 2
+				}
+				if = { #one_legged
+					limit = { 
+						root = {
+							has_trait = one_legged
+						}
+					}
+					add = 2
+				}
+				if = { #disfigured
+					limit = { 
+						root = {
+							has_trait = disfigured
+						}
+					}
+					add = 4
+				}
+				if = { #maimed
+					limit = { 
+						root = {
+							has_trait = maimed
+						}
+					}
+					add = 4
+				}
+				if = { #blind
+					limit = { 
+						root = {
+							has_trait = blind
+						}
+					}
+					add = 2
+				}
+				if = { #bubonic_plague
+					limit = { 
+						root = {
+							has_trait = bubonic_plague
+						}
+					}
+					add = 8
+				}
+				if = { #consumption
+					limit = { 
+						root = {
+							has_trait = consumption
+						}
+					}
+					add = 2
+				}
+				if = { #great_pox
+					limit = { 
+						root = {
+							has_trait = great_pox
+						}
+					}
+					add = 8
+				}
+				if = { #gout_ridden
+					limit = { 
+						root = {
+							has_trait = gout_ridden
+						}
+					}
+					add = 3
+				}
+				if = { #leper
+					limit = { 
+						root = {
+							has_trait = leper
+						}
+					}
+					add = 8
+				}
+				if = { #lovers_pox
+					limit = { 
+						root = {
+							has_trait = lovers_pox
+						}
+					}
+					add = 4
+				}
+				if = { #smallpox
+					limit = { 
+						root = {
+							has_trait = smallpox
+						}
+					}
+					add = 6
+				}
+				if = { #typhus
+					limit = { 
+						root = {
+							has_trait = typhus
+						}
+					}
+					add = 6
+				}
+				if = { #dysentery
+					limit = { 
+						root = {
+							has_trait = dysentery
+						}
+					}
+					add = 6
+				}
+				if = { #ergotism
+					limit = { 
+						root = {
+							has_trait = ergotism
+						}
+					}
+					add = 4
+				}
+				if = { #measles
+					limit = { 
+						root = {
+							has_trait = measles
+						}
+					}
+					add = 4
+				}
+				if = { #Incapable
+					limit = { 
+						root = {
+							has_trait = incapable
+						}
+					}
+					add = 10
+				}
+				if = { #Eunuch
+					limit = { 
+						root = {
+							has_trait = eunuch
+						}
+					}
+					add = 6
+				}
+			}
+		}
+	}
+
+	#Harem_liege traits#
+	if = { #Bad health
+		limit = { 
+			scope:harem_liege = {
+				OR = {
+					has_trait = lunatic_1
+					has_trait = possessed_1
+					has_trait = one_eyed
+					has_trait = one_legged
+					has_trait = disfigured
+					has_trait = eunuch
+					has_trait = sickly
+					has_trait = infirm
+					has_trait = incapable
+					has_trait = maimed
+					has_trait = blind
+					has_trait = ill
+					has_trait = bubonic_plague
+					has_trait = cancer
+					has_trait = consumption
+					has_trait = great_pox
+					has_trait = gout_ridden
+					has_trait = leper
+					has_trait = lovers_pox
+					has_trait = pneumonic
+					has_trait = smallpox
+					has_trait = typhus
+					has_trait = dysentery
+					has_trait = ergotism
+					has_trait = measles
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_bad_traits
+			value = {
+				add = 3
+				if = { #lunatic_1
+					limit = { 
+						scope:harem_liege = {
+							has_trait = lunatic_1
+						}
+					}
+					add = 1
+				}
+				if = { #possessed_1
+					limit = { 
+						scope:harem_liege = {
+							has_trait = possessed_1
+						}
+					}
+					add = 1
+				}
+				if = { #maimed
+					limit = { 
+						scope:harem_liege = {
+							has_trait = maimed
+						}
+					}
+					add = 2
+				}
+				if = { #blind
+					limit = { 
+						scope:harem_liege = {
+							has_trait = blind
+						}
+					}
+					add = 2
+				}
+				if = { #bubonic_plague
+					limit = { 
+						scope:harem_liege = {
+							has_trait = bubonic_plague
+						}
+					}
+					add = 4
+				}
+				if = { #consumption
+					limit = { 
+						scope:harem_liege = {
+							has_trait = consumption
+						}
+					}
+					add = 1
+				}
+				if = { #great_pox
+					limit = { 
+						scope:harem_liege = {
+							has_trait = great_pox
+						}
+					}
+					add = 4
+				}
+				if = { #gout_ridden
+					limit = { 
+						scope:harem_liege = {
+							has_trait = gout_ridden
+						}
+					}
+					add = 2
+				}
+				if = { #leper
+					limit = { 
+						scope:harem_liege = {
+							has_trait = leper
+						}
+					}
+					add = 4
+				}
+				if = { #lovers_pox
+					limit = { 
+						scope:harem_liege = {
+							has_trait = lovers_pox
+						}
+					}
+					add = 1
+				}
+				if = { #smallpox
+					limit = { 
+						scope:harem_liege = {
+							has_trait = smallpox
+						}
+					}
+					add = 2
+				}
+				if = { #typhus
+					limit = { 
+						scope:harem_liege = {
+							has_trait = typhus
+						}
+					}
+					add = 3
+				}
+				if = { #dysentery
+					limit = { 
+						scope:harem_liege = {
+							has_trait = dysentery
+						}
+					}
+					add = 3
+				}
+				if = { #ergotism
+					limit = { 
+						scope:harem_liege = {
+							has_trait = ergotism
+						}
+					}
+					add = 2
+				}
+				if = { #measles
+					limit = { 
+						scope:harem_liege = {
+							has_trait = measles
+						}
+					}
+					add = 2
+				}
+				if = { #Incapable
+					limit = { 
+						scope:harem_liege = {
+							has_trait = incapable
+						}
+					}
+					add = 8
+				}
+				if = { #Eunuch
+					limit = { 
+						scope:harem_liege = {
+							has_trait = eunuch
+						}
+					}
+					add = 3
+				}
+			}
+		}
+	}
+
+	#########Travel#########
+	#If you're able to travel and harem liege traveled without you, you're unfavored
+	if = { #Bad health
+		limit = { 
+			scope:harem_liege = {
+				is_travelling = yes
+			}
+			root = {
+				is_travelling = no
+				is_diarch = no
+				NOR = {
+					has_trait = pregnant
+					has_trait = ill
+					has_trait = wounded
+					has_trait = infirm
+					has_trait = incapable
+					has_trait = maimed
+					has_trait = blind
+					has_trait = bubonic_plague
+					has_trait = cancer
+					has_trait = consumption
+					has_trait = great_pox
+					has_trait = gout_ridden
+					has_trait = leper
+					has_trait = lovers_pox
+					has_trait = pneumonic
+					has_trait = smallpox
+					has_trait = typhus
+					has_trait = dysentery
+					has_trait = ergotism
+					has_trait = measles
+				}
+				age <= 50
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_uninvited_consort
+			value = 2
+		}
+	}
+
+	#########Update to frequency#########
+	if = {
+		limit = { has_game_rule = consort_favor_bimonthly_on }
+		multiply = 2
+	}
+	else_if = {
+		limit = { has_game_rule = consort_favor_quarterly_on }
+		multiply = 3
+	}
+	else_if = {
+		limit = { has_game_rule = consort_favor_quadrimestral_on }
+		multiply = 4
+	}
 }
 
-# Levels of favor:
-# Beloved consort: 317 - 386
-# Favorite: 247 - 316
-# Neutral: 107 - 246
-# Unfavored: 37 - 106
-# Forgotten: 0 - 36
+# Levels of favor #
+beloved_consort_upper_limit = 964
+beloved_consort_lower_limit = 868
+favorite_consort_upper_limit = 867
+favorite_consort_lower_limit = 675
+neutral_consort_upper_limit = 674
+neutral_consort_lower_limit = 290
+unfavored_consort_upper_limit = 289
+unfavored_consort_lower_limit = 97
+forgotten_consort_upper_limit = 96
+forgotten_consort_lower_limit = 0
+
+initial_favor_valuation = { 
+	value = 482
+
+	####New consorts catch the master's attention####
+	if = {
+		limit = {
+			root = {
+				has_character_flag = flag_new_consort
+			}
+		}
+		add = favor_minor_value_gain
+	}
+
+	#########Youth#########
+	if = {
+		limit = { 
+			root = { 	
+				age <= 23
+			}
+		}
+		add = favor_medium_value_gain
+	}
+
+	####Ranking####
+	if = { #The PS will have 6 additional months of favor
+		limit = {
+			exists = scope:harem_liege.primary_spouse
+			root = {
+				this = scope:harem_liege.primary_spouse
+			}
+		}
+		add = favor_ps_bonus
+	}
+	else_if = { #The GC will have 3 additional months of favor
+		limit = {
+			root = {
+				is_demoted_consort_trigger = no
+				has_court_position = grand_consort_court_position
+			}
+		}
+		add = favor_gc_bonus
+	}
+	else_if = { #SSs will have 1 additional month of favor
+		limit = {
+			root = {
+				is_demoted_consort_trigger = no
+				is_married = yes
+			}
+		}
+		add = favor_ss_bonus
+	}
+
+	####Children####
+	#Number of children
+	if = {
+		limit = { 
+			root = { 
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					count > 0
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_children
+			value = {
+				add = favor_minor_value_gain
+				if = {
+					limit = { 
+						root = { 
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count >= 3
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	#Eligible children
+	if = {
+		limit = { 
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+					count > 0
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_eligible_heirs
+			value = {
+				if = {
+					limit = { 
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 1
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+				if = {
+					limit = { 
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								count >= 3
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	#Player heir
+	if = {
+		limit = { 
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_player_heir_of = scope:harem_liege
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_player_heir
+			value = favor_miniscule_value_gain
+		}
+	}
+	#Pregnant consorts
+	if = {
+		limit = { 
+			root = {  
+				has_trait = pregnant
+			}
+		}
+		add = {
+			#desc = favor_addition_pregnant
+			value = favor_high_value_gain
+		}
+	}
+	#Friendly children
+	if = {
+		limit = { 
+			root = {  
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					OR = {	
+						has_relation_friend = scope:harem_liege
+						has_relation_best_friend = scope:harem_liege
+					}
+					count > 0
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_friendly_children
+			value = {
+				add = favor_minor_value_gain
+				if = {
+					limit = { 
+						root = {  
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_best_friend = scope:harem_liege
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+
+	#########Beauty#########
+	#Comely
+	if = {
+		limit = { 
+			root = {  
+				has_trait = beauty_good_1
+				age <= 45
+			}
+		}
+		add = favor_medium_value_gain
+	}
+	#Handsome
+	if = {
+		limit = { 
+			root = {  
+				has_trait = beauty_good_2
+				age <= 45
+			}
+		}
+		add = favor_high_value_gain
+	}
+	#Beautiful
+	if = {
+		limit = { 
+			root = {  
+				has_trait = beauty_good_3
+				age <= 45
+			}
+		}
+		add = favor_ultra_high_value_gain
+	}
+
+	#########Intelligence, physique and pure_blooded#########
+	#Quick
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_good_1
+			}
+		}
+		add = favor_minor_value_gain
+	}
+	#Intelligent or Genius
+	if = {
+		limit = { 
+			root = {  
+				OR = { 
+					has_trait = intellect_good_2
+					has_trait = intellect_good_3
+				}
+			}
+		}
+		add = favor_medium_value_gain
+	}
+
+	#Hale or Robust
+	if = {
+		limit = { 
+			root = {
+				OR = {  
+					has_trait = physique_good_1
+					has_trait = physique_good_2
+				}
+			}
+		}
+		add = favor_minor_value_gain
+	}
+	#Amazonian
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_good_3
+			}
+		}
+		add = favor_medium_value_gain
+	}
+
+	#Pure_blooded
+	if = {
+		limit = { 
+			root = {  
+				has_trait = pure_blooded
+			}
+		}
+		add = favor_ultra_high_value_gain
+	}
+
+	#########Lineage#########
+	#Noble background
+	if = {
+		limit = { 
+			root = {  
+				is_lowborn = no
+			}
+		}
+		add = favor_minor_value_gain
+	}
+	#Child of vassals
+	if = {
+		limit = { 
+			root = {  
+				any_close_family_member = {
+					is_vassal_of = scope:harem_liege
+					OR = {
+						highest_held_title_tier >= tier_county
+						is_powerful_vassal_of = scope:harem_liege
+						is_councillor_of = scope:harem_liege
+					}
+					max_military_strength < scope:harem_liege.max_military_strength
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_good_lineage
+			value = {
+				if = {
+					limit = { 
+						root = {  
+							any_close_family_member = {
+								is_vassal_of = scope:harem_liege
+								highest_held_title_tier >= tier_county
+								max_military_strength < scope:harem_liege.max_military_strength
+							}
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+				if = {
+					limit = { 
+						root = {  
+							any_close_family_member = {
+								OR = {
+									is_powerful_vassal_of = scope:harem_liege
+									is_councillor_of = scope:harem_liege
+								}
+								max_military_strength < scope:harem_liege.max_military_strength
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	#Powerful lineage
+	if = {
+		limit = { 
+			root = {  
+				any_close_family_member = {
+					OR = {
+						is_liege_or_above_of = scope:harem_liege
+						highest_held_title_tier >= tier_kingdom
+						max_military_strength >= scope:harem_liege.max_military_strength
+					}
+				}
+			}
+		}
+		add = {
+			#desc = favor_addition_powerful_lineage
+			value = {
+				if = {
+					limit = { 
+						root = {  
+							any_close_family_member = {
+								OR = {
+									is_liege_or_above_of = scope:harem_liege
+									max_military_strength >= scope:harem_liege.max_military_strength
+								}
+							}
+						}
+					}
+					add = favor_medium_value_gain
+				}
+				else_if = {
+					limit = { 
+						root = {  
+							any_close_family_member = {
+								highest_held_title_tier >= tier_kingdom
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+
+	#########Diplomacy#########
+	if = {
+		limit = { 
+			root = {  
+				diplomacy >= 13
+			}
+		}
+		add = {
+			#desc = favor_diplomacy
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							diplomacy >= 15
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+				if = {
+					limit = { 
+						root = {
+							diplomacy >= 20
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+
+	####Demoted consorts####
+	if = {
+		limit = {
+			root = {
+				is_demoted_consort_trigger = yes
+			}
+		}
+		if = { #The PS will start really low
+			limit = {
+				root = {
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
+			}
+			subtract = 289
+		}
+		else = {
+			subtract = 241
+		}
+	}
+
+	####They already have a favor modifier####
+	if = { #They're beloved
+		limit = {
+			root = {
+				OR = {
+					has_character_modifier = beloved_consort_modifier
+					has_relation_soulmate = scope:harem_liege
+					has_relation_best_friend = scope:harem_liege
+				}
+			}
+		}
+		add = 434
+	}
+	else_if = { #They're favored
+		limit = {
+			root = {
+				OR = {
+					has_character_modifier = favored_consort_modifier
+					has_relation_lover = scope:harem_liege
+					has_relation_friend = scope:harem_liege
+				}
+			}
+		}
+		add = 289
+	}
+	else_if = { #They're unfavored
+		limit = {
+			root = {
+				OR = {
+					has_character_modifier = unfavored_consort_modifier
+					has_relation_rival = scope:harem_liege
+				}
+			}
+		}
+		subtract = 289
+	}
+	else_if = { #They're forgotten
+		limit = {
+			root = {
+				OR = {
+					has_character_modifier = forgotten_consort_modifier
+					has_relation_nemesis = scope:harem_liege
+				}
+			}
+		}
+		subtract = 434
+	}
+
+	#########Beauty#########
+	#Homely
+	if = {
+		limit = { 
+			root = {
+				has_trait = beauty_bad_1
+			}
+		}
+		add = favor_medium_value_loss
+	}
+	#Ugly
+	if = {
+		limit = { 
+			root = {
+				has_trait = beauty_bad_2
+			}
+		}
+		add = favor_high_value_loss
+	}
+	#Horrendous
+	if = {
+		limit = { 
+			root = {
+				has_trait = beauty_bad_3
+			}
+		}
+		add = favor_ultra_high_value_loss
+	}
+
+	#########Intelligence and physique#########
+	#Slow
+	if = {
+		limit = { 
+			root = {  
+				has_trait = intellect_bad_1
+			}
+		}
+		add = favor_minor_value_loss
+	}
+	#Stupid or Imbecile
+	if = {
+		limit = { 
+			root = {  
+				OR = {	
+					has_trait = intellect_bad_2
+					has_trait = intellect_bad_3
+				}
+			}
+		}
+		add = favor_medium_value_loss
+	}
+
+	#Delicate
+	if = {
+		limit = { 
+			root = {  
+				has_trait = physique_bad_1
+			}
+		}
+		add = favor_minor_value_loss
+	}
+	#Frail or Feeble
+	if = {
+		limit = { 
+			root = {  
+				OR = {
+					has_trait = physique_bad_2
+					has_trait = physique_bad_3
+				}
+			}
+		}
+		add = favor_medium_value_loss
+	}
+
+	#########Diplomacy#########
+	if = {
+		limit = { 
+			root = {
+				diplomacy < 6
+			}
+		}
+		subtract= {
+			#desc = favor_diplomacy
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							diplomacy < 3
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	
+	#########Competition#########
+	#Number of consorts
+	if = {
+		limit = { 
+			scope:harem_liege = { 
+				any_consort = { 
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					count >= 5
+				}
+			}
+		}
+		add = favor_minor_value_loss
+	}
+	#New consorts
+	if = {
+		limit = { 
+			root = {
+				NOT = { 
+					has_character_flag = flag_new_consort
+				}
+			}
+			scope:harem_liege = { 
+				any_consort = { 
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					is_imprisoned = no
+					has_character_flag = flag_new_consort
+					count >= 1
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_new_consorts
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						scope:harem_liege = { 
+							any_consort = { 
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								is_imprisoned = no
+								has_character_flag = flag_new_consort
+								count >= 3
+							}
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+			}
+		}
+	}
+
+	#########Ageism#########
+	if = {
+		limit = { 
+			root = {
+				age >= 27
+			}
+			scope:harem_liege = {
+				any_consort = {
+					NOT = { this = root }
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					is_imprisoned = no
+					age <= 23
+					count >= 1
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_age
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							age >= 37
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+				if = {
+					limit = { 
+						root = {
+							age >= 45
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								NOT = { this = root }
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								is_imprisoned = no
+								age <= 23
+								count >= 2
+							}
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+			}
+		}
+	}
+
+	#########Unfavored children#########
+	if = {
+		limit = { 
+			root = {
+				any_child = { 
+					is_child_of = scope:harem_liege
+					is_alive = yes
+					OR = {	
+						has_relation_rival = scope:harem_liege
+						has_relation_nemesis = scope:harem_liege
+					}
+					count > 0
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_unfriendly_children
+			value = {
+				add = favor_minor_value_gain
+				if = {
+					limit = { 
+						root = {
+							any_child = { 
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								has_relation_nemesis = scope:harem_liege
+								count >= 1
+							}
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+
+	#########Arrested#########
+	if = {
+		limit = { 
+			root = {
+				is_imprisoned_by = scope:harem_liege
+				OR = { 
+					is_in_prison_type = house_arrest
+					is_in_prison_type = dungeon
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_arrest
+			value = {
+				if = {
+					limit = { 
+						root = {
+							is_in_prison_type = house_arrest
+						}
+					}
+					add = favor_high_value_gain
+				}
+				else_if = {
+					limit = { 
+						root = {
+							is_in_prison_type = dungeon
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+			}
+		}
+	}
+
+	#########Traits#########
+	#root traits
+	if = { #Chaste
+		limit = { 
+			root = {
+				has_trait = chaste
+			}
+			scope:harem_liege = {
+				NOT = {
+					has_trait = chaste
+				}
+			}
+		}
+		subtract = {
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = lustful
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	if = { #Shy and craven
+		limit = { 
+			root = {
+				OR = {
+					has_trait = shy
+					has_trait = craven
+				}
+			}
+			scope:harem_liege = {
+				NOR = {
+					has_trait = shy
+					has_trait = craven
+				}
+			}
+		}
+		subtract = favor_minor_value_gain
+	}
+	if = { #Paranoid
+		limit = { 
+			root = {
+				has_trait = paranoid
+			}
+		}
+		subtract = favor_miniscule_value_gain
+	}
+	if = { #reclusive
+		limit = { 
+			root = {
+				has_trait = reclusive
+			}
+		}
+		subtract = favor_minor_value_gain
+	}
+	if = { #Wounded
+		limit = { 
+			root = {
+				has_trait = wounded
+			}
+		}
+		subtract = {
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							has_trait = wounded_2
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+				if = {
+					limit = { 
+						root = {
+							has_trait = wounded_3
+						}
+					}
+					add = favor_miniscule_value_gain
+				}
+			}
+		}
+	}
+	if = { #Bad genetics
+		limit = { 
+			root = {
+				num_of_bad_genetic_traits > 1
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_bad_genetics
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							num_of_bad_genetic_traits > 2
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	if = { #Good genetics
+		limit = { 
+			root = {
+				num_of_good_genetic_traits > 1
+			}
+		}
+		add = {
+			#desc = favor_addition_good_genetics
+			value = {
+				add = favor_miniscule_value_gain
+				if = {
+					limit = { 
+						root = {
+							num_of_good_genetic_traits > 2
+						}
+					}
+					add = favor_minor_value_gain
+				}
+			}
+		}
+	}
+	if = { #Bad health
+		limit = { 
+			root = {
+				OR = {
+					has_trait = lunatic_1
+					has_trait = possessed_1
+					has_trait = one_eyed
+					has_trait = one_legged
+					has_trait = disfigured
+					has_trait = eunuch
+					has_trait = adulterer
+					has_trait = fornicator
+					has_trait = murderer
+					has_trait = kinslayer_1
+					has_trait = kinslayer_2
+					has_trait = kinslayer_3
+					has_trait = incestuous
+					has_trait = excommunicated
+					has_trait = drunkard
+					has_trait = hashishiyah
+					has_trait = sickly
+					has_trait = infirm
+					has_trait = incapable
+					has_trait = maimed
+					has_trait = blind
+					has_trait = ill
+					has_trait = bubonic_plague
+					has_trait = cancer
+					has_trait = consumption
+					has_trait = great_pox
+					has_trait = gout_ridden
+					has_trait = leper
+					has_trait = lovers_pox
+					has_trait = pneumonic
+					has_trait = smallpox
+					has_trait = typhus
+					has_trait = dysentery
+					has_trait = ergotism
+					has_trait = measles
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_bad_traits
+			value = {
+				add = favor_minor_value_gain
+				if = { #lunatic_1
+					limit = { 
+						root = {
+							has_trait = lunatic_1
+						}
+					}
+					add = favor_minor_value_gain
+				}
+				if = { #possessed_1
+					limit = { 
+						root = {
+							has_trait = possessed_1
+						}
+					}
+					add = favor_minor_value_gain
+				}
+				if = { #one_legged
+					limit = { 
+						root = {
+							has_trait = one_legged
+						}
+					}
+					add = favor_medium_value_gain
+				}
+				if = { #disfigured
+					limit = { 
+						root = {
+							has_trait = disfigured
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+				if = { #maimed
+					limit = { 
+						root = {
+							has_trait = maimed
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+				if = { #blind
+					limit = { 
+						root = {
+							has_trait = blind
+						}
+					}
+					add = favor_medium_value_gain
+				}
+				if = { #bubonic_plague
+					limit = { 
+						root = {
+							has_trait = bubonic_plague
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+				if = { #consumption
+					limit = { 
+						root = {
+							has_trait = consumption
+						}
+					}
+					add = favor_medium_value_gain
+				}
+				if = { #great_pox
+					limit = { 
+						root = {
+							has_trait = great_pox
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+				if = { #gout_ridden
+					limit = { 
+						root = {
+							has_trait = gout_ridden
+						}
+					}
+					add = favor_medium_value_gain
+				}
+				if = { #leper
+					limit = { 
+						root = {
+							has_trait = leper
+						}
+					}
+					add = favor_ultra_high_value_gain
+				}
+				if = { #lovers_pox
+					limit = { 
+						root = {
+							has_trait = lovers_pox
+						}
+					}
+					add = favor_high_value_gain
+				}
+				if = { #smallpox
+					limit = { 
+						root = {
+							has_trait = smallpox
+						}
+					}
+					add = favor_high_value_gain
+				}
+				if = { #typhus
+					limit = { 
+						root = {
+							has_trait = typhus
+						}
+					}
+					add = favor_high_value_gain
+				}
+				if = { #dysentery
+					limit = { 
+						root = {
+							has_trait = dysentery
+						}
+					}
+					add = favor_high_value_gain
+				}
+				if = { #ergotism
+					limit = { 
+						root = {
+							has_trait = ergotism
+						}
+					}
+					add = favor_high_value_gain
+				}
+				if = { #measles
+					limit = { 
+						root = {
+							has_trait = measles
+						}
+					}
+					add = favor_high_value_gain
+				}
+			}
+		}
+	}
+
+	#########Travel#########
+	#If you're able to travel and harem liege traveled without you, you're unfavored
+	if = { #Bad health
+		limit = { 
+			scope:harem_liege = {
+				is_travelling = yes
+			}
+			root = {
+				is_travelling = no
+				is_diarch = no
+				NOR = {
+					has_trait = pregnant
+					has_trait = ill
+					has_trait = wounded
+					has_trait = infirm
+					has_trait = incapable
+					has_trait = maimed
+					has_trait = blind
+					has_trait = bubonic_plague
+					has_trait = cancer
+					has_trait = consumption
+					has_trait = great_pox
+					has_trait = gout_ridden
+					has_trait = leper
+					has_trait = lovers_pox
+					has_trait = pneumonic
+					has_trait = smallpox
+					has_trait = typhus
+					has_trait = dysentery
+					has_trait = ergotism
+					has_trait = measles
+				}
+				age <= 50
+			}
+		}
+		subtract = favor_medium_value_gain
+	}
+
+	min = forgotten_consort_lower_limit
+	max = beloved_consort_upper_limit
+}
+
+meddling_relative_parent_age = {
+	value = scope:meddling_relative.age
+	add = {
+		integer_range = {
+			min = 16
+			max = 20
+		}
+	}
+}
+
+meddling_relative_sibling_age = {
+	value = 0
+	if = {
+		limit = {
+			exists = scope:meddling_relative_mother
+		}
+		add = scope:meddling_relative_mother.age
+		subtract = {
+			integer_range = {
+				min = 16
+				max = 20
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = {	
+				exists = scope:meddling_relative_mother
+			}
+		}
+		add = scope:meddling_relative.age
+		add = {
+			integer_range = {
+				min = -5
+				max = 10
+			}
+		}
+	}
+}
