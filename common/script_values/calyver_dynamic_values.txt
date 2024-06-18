@@ -1186,7 +1186,7 @@ favor_points = {
 						}
 					}
 				}
-				add = 2
+				add = 8
 			}
 		}
 	}
@@ -1222,7 +1222,7 @@ favor_points = {
 		}
 		add = {
 			#desc = favor_addition_favorite
-			value = 3
+			value = 4
 			if = {
 				limit = { 
 					root = {
@@ -1232,8 +1232,28 @@ favor_points = {
 						}
 					}
 				}
-				add = 3
+				add = 6
 			}
+		}
+	}
+
+	#########Travel#########
+	#You're invited to travel
+	if = {
+		limit = { 
+			scope:harem_liege = {
+				is_travelling = yes
+			}
+			root = {
+				is_travelling = yes
+				current_travel_plan ={
+					travel_plan_owner = scope:harem_liege
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_addition_invited_consort
+			value = 2
 		}
 	}
 
@@ -3244,12 +3264,109 @@ favor_points = {
 		}
 	}
 
+	if = { #Zealous
+		limit = { 
+			root = {
+				has_trait = cynical
+			}
+			scope:harem_liege = {
+				has_trait = zealous
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_cynical
+			value = 1
+		}
+	}
+	if = { #Infidel
+		limit = { 
+			scope:harem_liege = {
+				OR = {
+					AND = {
+						has_trait = zealous
+						faith = {
+							faith_hostility_level = {
+								target = root.faith
+								value >= faith_astray_level
+							}
+						}
+					}
+					AND = {
+						NOT = { has_trait = cynical }
+						faith = {
+							faith_hostility_level = {
+								target = root.faith
+								value >= faith_hostile_level
+							}
+						}
+					}
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_infidel
+			value = 1
+		}
+	}
+
+	#########Cultural acceptance#########
+	if = { #Foreigner
+		limit = { 
+			scope:harem_liege = {
+				culture = {
+					cultural_acceptance = { target = root.culture value < 50 }
+				}
+				NOR = {
+					has_trait = compassionate
+					has_trait = forgiving
+					has_trait = eccentric
+					has_trait = scholar
+				}
+			}
+		}
+		subtract = {
+			#desc = favor_subtraction_foreigner
+			value = 1
+			if = {
+				limit = {
+					scope:harem_liege.culture = {
+						cultural_acceptance = { target = root.culture value < 26 }
+					}
+				}
+				add = 1
+			}
+			if = {
+				limit = {
+					scope:harem_liege.culture = {
+						cultural_acceptance = { target = root.culture value < 11 }
+					}
+				}
+				add = 1
+			}
+			if = {
+				limit = {
+					scope:harem_liege = {
+						has_trait = paranoid
+					}
+				}
+				add = 1
+			}
+		}
+	}
+
 	#########Travel#########
 	#If you're able to travel and harem liege traveled without you, you're unfavored
 	if = {
 		limit = { 
 			scope:harem_liege = {
 				is_travelling = yes
+				any_consort = {
+					is_travelling = yes
+					current_travel_plan ={
+						travel_plan_owner = scope:harem_liege
+					}
+					count > 0
+				}
 			}
 			root = {
 				is_travelling = no
