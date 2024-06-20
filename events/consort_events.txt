@@ -14807,3 +14807,429 @@ consort_events.0027 = {
 	}
 	
 }
+
+###########################
+##Consorts acquire traits##
+###########################
+
+#A consort becomes a poet#
+consort_events.0028 = {
+	hidden = yes
+	
+	trigger = {
+		is_landed = yes
+		highest_held_title_tier >= tier_duchy
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			accepts_harems = yes
+			diplomacy >= 15
+			learning >= 9
+			OR = { #Proper education
+				has_trait = education_learning
+				has_trait = education_diplomacy
+				has_trait = education_intrigue
+			}
+			NOR = { 
+				has_trait = poet 
+				has_relation_rival = root
+				has_relation_nemesis = root
+			}
+		}
+		NOR = {
+			has_character_flag = consort_poet_gain
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				has_trait = poet
+			}
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = { #Many consorts
+			add = 0.2
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = {
+			add = 0.1
+			highest_held_title_tier >= tier_kingdom
+		}
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				accepts_harems = yes
+				diplomacy >= 15
+				learning >= 9
+				OR = { #Proper education
+					has_trait = education_learning
+					has_trait = education_diplomacy
+					has_trait = education_intrigue
+				}
+				NOT = { has_trait = poet }
+			}
+			weight = {
+				base = 10
+				modifier = { #Concubines will learn poetry just to be noticed
+					is_concubine = yes
+					add = 10
+				}
+				modifier = { #Lowborns too
+					is_lowborn = yes
+					add = 10
+				}
+				modifier = { #And unfavored consorts
+					has_variable = favor
+					var:favor < neutral_consort_lower_limit
+					add = 10
+				}
+				modifier = { #... and forgotten consorts
+					has_variable = favor
+					var:favor < unfavored_consort_lower_limit
+					add = 10
+				}
+				modifier = { #Var:favor doesn't exist
+					NOT = { has_variable = favor }
+					has_character_modifier = unfavored_consort_modifier
+					add = 10
+				}
+				modifier = { #Var:favor doesn't exist
+					NOT = { has_variable = favor }
+					has_character_modifier = forgotten_consort_modifier
+					add = 20
+				}
+
+				modifier = { #Diplomacy
+					add = diplomacy
+					multiply = 1.5
+				}
+				modifier = { #Learning
+					add = learning
+					multiply = 1.25
+				}
+				modifier = { #Intrigue
+					add = learning
+				}
+
+				modifier = { #Diplomacy
+					add = 5
+					has_trait = education_diplomacy_1
+				}
+				modifier = { #Diplomacy
+					add = 5
+					has_trait = education_diplomacy_2
+				}
+				modifier = { #Diplomacy
+					add = 5
+					has_trait = education_diplomacy_3
+				}
+				modifier = { #Diplomacy
+					add = 10
+					has_trait = education_diplomacy_4
+				}
+				modifier = { #Diplomacy
+					add = 10
+					has_trait = education_diplomacy_5
+				}
+
+				modifier = { #Learning
+					add = 5
+					has_trait = education_learning_1
+				}
+				modifier = { #Learning
+					add = 5
+					has_trait = education_learning_2
+				}
+				modifier = { #Learning
+					add = 5
+					has_trait = education_learning_3
+				}
+				modifier = { #Learning
+					add = 5
+					has_trait = education_learning_4
+				}
+				modifier = { #Learning
+					add = 5
+					has_trait = education_learning_5
+				}
+
+				modifier = { #Intrigue
+					add = 5
+					has_trait = education_intrigue_3
+				}
+				modifier = { #Intrigue
+					add = 10
+					has_trait = education_intrigue_4
+				}
+				modifier = { #Intrigue
+					add = 5
+					has_trait = education_intrigue_5
+				}
+				
+				modifier = { #Beautiful poets
+					add = 10
+					has_trait = beauty_good
+				}
+				modifier = { #Beautiful poets
+					add = 5
+					has_trait = beauty_good_2
+				}
+				modifier = { #Beautiful poets
+					add = 10
+					has_trait = beauty_good_3
+				}
+
+				modifier = { #Intelligent seducers
+					add = 5
+					has_trait = intellect_good
+				}
+				modifier = { #Intelligent seducers
+					add = 10
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent seducers
+					add = 15
+					has_trait = intellect_good_3
+				}
+
+				modifier = { #Diplomatic consorts
+					add = 10
+					has_character_modifier = diplomatic_consort_modifier
+				}
+			}
+			save_scope_as = poet_consort
+		}
+		if = {
+			limit = {
+				exists = scope:poet_consort
+			}
+			scope:poet_consort = {
+				add_trait = poet
+			}
+			add_character_flag = {
+				flag = consort_poet_gain
+				years = 7
+			}
+			if = {
+				limit = {
+					debug_only = yes
+				}
+				root = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = success_miscarriage_event_t
+						left_icon = scope:poet_consort
+						custom_tooltip = successful_hidden_event_desc
+					}
+				}
+			}
+		}
+	}
+	
+}
+
+#A consort becomes a seducer#
+consort_events.0029 = {
+	hidden = yes
+	
+	trigger = {
+		is_landed = yes
+		highest_held_title_tier >= tier_duchy
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			accepts_harems = yes
+			intrigue >= 13
+			OR = { #Proper education
+				has_trait = education_intrigue_2
+				has_trait = education_intrigue_3
+				has_trait = education_intrigue_4
+				has_trait = education_intrigue_5
+			}
+			NOR = { 
+				has_trait = seducer 
+				has_relation_rival = root
+				has_relation_nemesis = root
+				has_trait = beauty_bad
+			}
+		}
+		NOT = {
+			has_character_flag = consort_seducer_gain
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = { #Many consorts
+			add = 0.2
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = { #Many seducers
+			add = -0.1
+			any_consort = {
+				has_trait = seducer 
+			}
+		}
+		modifier = {
+			add = 0.1
+			highest_held_title_tier >= tier_kingdom
+		}
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				accepts_harems = yes
+				intrigue >= 13
+				OR = { #Proper education
+					has_trait = education_intrigue_2
+					has_trait = education_intrigue_3
+					has_trait = education_intrigue_4
+					has_trait = education_intrigue_5
+				}
+				NOR = { 
+					has_trait = seducer 
+					has_relation_rival = root
+					has_relation_nemesis = root
+					has_trait = beauty_bad
+				}
+			}
+			weight = {
+				base = 10
+				modifier = { #Concubines will learn poetry just to be noticed
+					is_concubine = yes
+					add = 10
+				}
+				modifier = { #Lowborns too
+					is_lowborn = yes
+					add = 10
+				}
+				modifier = { #And unfavored consorts
+					has_variable = favor
+					var:favor < neutral_consort_lower_limit
+					add = 10
+				}
+				modifier = { #... and forgotten consorts
+					has_variable = favor
+					var:favor < unfavored_consort_lower_limit
+					add = 10
+				}
+				modifier = { #Var:favor doesn't exist
+					NOT = { has_variable = favor }
+					has_character_modifier = unfavored_consort_modifier
+					add = 10
+				}
+				modifier = { #Var:favor doesn't exist
+					NOT = { has_variable = favor }
+					has_character_modifier = forgotten_consort_modifier
+					add = 10
+				}
+
+				modifier = { #Intrigue
+					add = learning
+					multiply = 1.5
+				}
+
+				modifier = { #Intrigue
+					add = 5
+					has_trait = education_intrigue_3
+				}
+				modifier = { #Intrigue
+					add = 10
+					has_trait = education_intrigue_4
+				}
+				modifier = { #Intrigue
+					add = 10
+					has_trait = education_intrigue_5
+				}
+				
+				modifier = { #Beautiful seducers
+					add = 10
+					has_trait = beauty_good
+				}
+				modifier = { #Beautiful seducers
+					add = 5
+					has_trait = beauty_good_2
+				}
+				modifier = { #Beautiful seducers
+					add = 10
+					has_trait = beauty_good_3
+				}
+
+				modifier = { #Intelligent seducers
+					add = 5
+					has_trait = intellect_good
+				}
+				modifier = { #Intelligent seducers
+					add = 5
+					has_trait = intellect_good_2
+				}
+				modifier = { #Intelligent seducers
+					add = 10
+					has_trait = intellect_good_3
+				}
+
+				modifier = { #Honest consorts wouldn't dare
+					add = 10
+					NOT = {	
+						has_trait = honest
+					}
+				}
+
+				modifier = { #Scheming consorts
+					add = 10
+					has_character_modifier = scheming_consort_modifier
+				}
+
+				modifier = { #Age
+					add = 5
+					age <= 25
+				}
+				modifier = { #Age
+					add = 5
+					age <= 22
+				}
+			}
+			save_scope_as = seducer_consort
+		}
+		if = {
+			limit = {
+				exists = scope:seducer_consort
+			}
+			scope:seducer_consort = {
+				add_trait = seducer
+			}
+			add_character_flag = {
+				flag = consort_seducer_gain
+				years = 3
+			}
+			if = {
+				limit = {
+					debug_only = yes
+				}
+				root = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = success_miscarriage_event_t
+						left_icon = scope:seducer_consort
+						custom_tooltip = successful_hidden_event_desc
+					}
+				}
+			}
+		}
+	}	
+}
