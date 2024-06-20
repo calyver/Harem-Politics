@@ -4,5 +4,5 @@ tags={
 	"Gameplay"
 	"Historical"
 }
-name="Test Harem Politics"
+name="Test Wives and Concubines"
 supported_version="1.12.5"

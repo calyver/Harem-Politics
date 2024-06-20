@@ -163,54 +163,11 @@ consort_favor_valuation.0003 = {
 				name = favor
 				value = initial_favor_valuation
 			}
-			#if = {
-			#	limit = {
-			#		is_ai = no
-			#	}
-			#	#trigger_event = 
-			#}
 		}
 		else_if = {
 			limit = {
 				has_variable = favor
 			}
-			if = { #Beloved
-				limit = {
-					var:favor >= beloved_consort_lower_limit
-					is_ai = no
-				}
-				add_character_flag = beloved_consort_flag
-			}
-			else_if = { #Favorite
-				limit = {
-					var:favor >= favorite_consort_lower_limit
-					is_ai = no
-				}
-				add_character_flag = favored_consort_flag
-			}
-			else_if = { #Neutral
-				limit = {
-					var:favor >= neutral_consort_lower_limit
-					is_ai = no
-				}
-				add_character_flag = neutral_consort_flag
-			}
-			else_if = { #Unfavored
-				limit = {
-					var:favor >= unfavored_consort_lower_limit
-					is_ai = no
-				}
-				add_character_flag = unfavored_consort_flag
-			}
-			else_if = { #Forgotten
-				limit = { 
-					var:favor < unfavored_consort_lower_limit
-					is_ai = no
-				}
-				add_character_flag = forgotten_consort_flag
-			}
-
-			#Actual change
 			change_variable = {
 				name = favor
 				add = favor_points
@@ -242,246 +199,28 @@ consort_favor_valuation.0003 = {
 				}
 			}
 
-			#Notify changes
-			if = { #Becoming beloved
-				limit = {
-					is_ai = no
-					NOT = {
-						has_character_flag = beloved_consort_flag
-					}
-					var:favor >= beloved_consort_lower_limit
-				}
-				trigger_event = consort_favor_valuation.0004				
-			}
-			if = { #Becoming forgotten
-				limit = {
-					is_ai = no
-					NOT = {
-						has_character_flag = forgotten_consort_flag
-					}
-					var:favor < unfavored_consort_lower_limit
-				}
-				trigger_event = consort_favor_valuation.0005			
-			}
-			if = { #Beloved
-				limit = {
-					is_ai = no
-					has_character_flag = beloved_consort_flag
-				}
-				if = { #Negative change
-					limit = { 
-						var:favor < beloved_consort_lower_limit
-						var:favor >= unfavored_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_bad
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.negative.t
-						desc = consort_favor_valuation.negative_beloved.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-				remove_character_flag = beloved_consort_flag
-			}
-			if = { #Favorite
-				limit = {
-					is_ai = no
-					has_character_flag = favored_consort_flag
-				}
-				if = { #Negative change
-					limit = { 
-						var:favor < favorite_consort_lower_limit
-						var:favor >= unfavored_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_bad
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.negative.t
-						desc = consort_favor_valuation.negative_favorite.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-				remove_character_flag = favored_consort_flag
-			}
-			if = { #Neutral
-				limit = {
-					is_ai = no
-					has_character_flag = neutral_consort_flag
-				}
-				if = { #Positive change
-					limit = { 
-						var:favor < beloved_consort_lower_limit
-						var:favor >= favorite_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_good
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.positive.t
-						desc = consort_favor_valuation.positive_neutral.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-				else_if = { #Negative change
-					limit = { 
-						var:favor < neutral_consort_lower_limit
-						var:favor >= unfavored_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_bad
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.negative.t
-						desc = consort_favor_valuation.negative_neutral.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-				remove_character_flag = neutral_consort_flag
-			}
-			if = { #Unfavored
-				limit = {
-					is_ai = no
-					has_character_flag = unfavored_consort_flag
-				}
-				if = { #Positive change
-					limit = { 
-						var:favor < beloved_consort_lower_limit
-						var:favor >= neutral_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_good
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.positive.t
-						desc = consort_favor_valuation.positive_unfavored.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-			}
-			if = { #Forgotten
-				limit = {
-					is_ai = no
-					has_character_flag = forgotten_consort_flag
-				}
-				if = { #Positive change
-					limit = { 
-						var:favor >= unfavored_consort_lower_limit
-						var:favor < beloved_consort_lower_limit
-					}
-					send_interface_toast = {
-						type = event_generic_good
-						right_icon = scope:harem_liege
-						title = consort_favor_valuation.positive.t
-						desc = consort_favor_valuation.positive_forgotten.desc
-						
-						clear_favor_modifiers_effect = yes
-						add_favor_modifiers_effect = yes
-					}
-				}
-				remove_character_flag = forgotten_consort_flag
-			}
+			#The PS can't be forgotten - unless they're in prison
 			if = {
 				limit = {
-					is_ai = yes
+					var:favor <= forgotten_consort_upper_limit
+					NOT = {
+						is_imprisoned_by = scope:harem_liege
+					}
 				}
-				clear_favor_modifiers_effect = yes
-				add_favor_modifiers_effect = yes
+				save_scope_value_as = {
+					name = favor_shortage
+					value = {
+						value = 289
+						subtract = 97
+					}
+				}
+				change_variable = {
+					name = favor
+					add = favor_shortage
+				}
 			}
-		}
-	}
-}
-
-##################
-###I'm beloved!###
-##################
-consort_favor_valuation.0004 = {
-	type = character_event
-	title = consort_favor_valuation.0004.t
-	desc = consort_favor_valuation.0004.desc
-	theme = family
-	override_background = {
-		reference = corridor_day
-	}
-	
-	left_portrait = { 	
-		character = root
-		animation = ecstasy
-	}
-	right_portrait = { 	
-		character = scope:harem_liege
-		animation = flirtation
-	}
-	
-	trigger = {
-		has_variable = favor
-		var:favor >= beloved_consort_lower_limit
-	}
-	
-	immediate = {
-		clear_favor_modifiers_effect = yes
-		add_favor_modifiers_effect = yes
-		add_opinion = {
-			target = scope:harem_liege
-			modifier = grateful_opinion
-			opinion = 15
-		}
-	}
-	
-	option = {
-		name = consort_favor_valuation.0004.a
-		ai_chance = {
-			base = 10
-		}
-	}
-}
-
-###################
-###I'm forgotten###
-###################
-consort_favor_valuation.0005 = {
-	type = character_event
-	title = consort_favor_valuation.0005.t
-	desc = consort_favor_valuation.0005.desc
-	theme = family
-	override_background = {
-		reference = corridor_night
-	}
-	
-	left_portrait = { 	
-		character = root
-		animation = grief
-	}
-	right_portrait = { 	
-		character = scope:harem_liege
-		animation = dismissal
-	}
-	
-	trigger = {
-		has_variable = favor
-		var:favor < unfavored_consort_lower_limit
-	}
-	
-	immediate = {
-		clear_favor_modifiers_effect = yes
-		add_favor_modifiers_effect = yes
-		add_opinion = {
-			target = scope:harem_liege
-			modifier = ignored_consort_opinion
-			opinion = -15
-		}
-	}
-	
-	option = {
-		name = consort_favor_valuation.0005.a
-		ai_chance = {
-			base = 10
+			clear_favor_modifiers_effect = yes
+			add_favor_modifiers_effect = yes
 		}
 	}
 }
@@ -534,7 +273,7 @@ consort_favor_valuation.0006 = {
 		modifier = {
 			add = 0.5
 			exists = primary_spouse
-			primary_spouse =  = {
+			primary_spouse = {
 				has_variable = favor
 				var:favor < neutral_consort_lower_limit
 			}
