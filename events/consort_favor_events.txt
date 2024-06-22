@@ -202,21 +202,23 @@ consort_favor_valuation.0003 = {
 			#The PS can't be forgotten - unless they're in prison
 			if = {
 				limit = {
-					var:favor <= forgotten_consort_upper_limit
-					NOT = {
-						is_imprisoned_by = scope:harem_liege
-					}
+					exists = scope:harem_liege.primary_spouse
+					this = scope:harem_liege.primary_spouse
+					var:favor < unfavored_consort_lower_limit
 				}
 				save_scope_value_as = {
-					name = favor_shortage
+					name = favor_addition_ps
 					value = {
-						value = 289
-						subtract = 97
+						value = unfavored_consort_lower_limit
+						subtract = var:favor
 					}
 				}
 				change_variable = {
 					name = favor
-					add = favor_shortage
+					add = {
+						value = scope:favor_addition_ps
+						add = 96
+					}
 				}
 			}
 			clear_favor_modifiers_effect = yes
@@ -281,6 +283,7 @@ consort_favor_valuation.0006 = {
 	}
 	
 	immediate = {
+		save_scope_as = harem_liege
 		random_consort = {
 			limit = {
 				has_variable = favor

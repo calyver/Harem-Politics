@@ -8996,6 +8996,9 @@ scripted_trigger harem_politics_ambitious_consort_trigger = {
 		}
 		has_trait = ill
 		has_trait = wounded
+		has_trait = shy
+		has_trait = craven
+
 		has_character_modifier = recently_tortured
 		has_character_flag = flag_scolded_consort
 		has_character_modifier = unfavored_consort_modifier
@@ -9022,7 +9025,9 @@ scripted_trigger harem_politics_ambitious_consort_trigger = {
 	OR = {
 		AND = {
 			any_close_or_extended_family_member = {
-				harem_politics_valid_relative_trigger = yes
+				NOT = {
+					is_child_of = root
+				}
 				count = 0 
 			}
 			age <= 34
@@ -9173,7 +9178,9 @@ harem_politics.0008 = {
 			if = {
 				limit = {
 					any_close_or_extended_family_member = {
-						harem_politics_valid_relative_trigger = yes
+						NOT = {
+							is_child_of = root
+						}
 						count = 0 
 					}
 					age <= 34
@@ -9250,69 +9257,92 @@ harem_politics.0008 = {
 					add_courtier = scope:meddling_relative_father
 					add_courtier = scope:meddling_relative_mother
 				}
-			}
-			every_close_or_extended_family_member = {
-				limit = {
-					harem_politics_valid_relative_trigger = yes
+				if = {
+					limit = {
+						root = {
+							faith_dominant_gender_female_or_equal = yes
+						}
+					}
+					scope:meddling_relative_mother = {
+						save_scope_as = consort_relative
+					}
 				}
-				add_to_list = valid_relative_list
+				else = {
+					scope:meddling_relative_father = {
+						save_scope_as = consort_relative
+					}
+				}
+			}
+			else = {
+				every_close_or_extended_family_member = {
+					limit = {
+						harem_politics_valid_relative_trigger = yes
+					}
+					add_to_list = valid_relative_list
+				}
+				random_in_list = {
+					list = valid_relative_list
+					weight = {
+						base = 10
+						modifier = { #Siblings are priority
+							any_close_family_member = { this = scope:meddling_relative }
+							add = 25
+						}
+						modifier = { #Parents event more
+							any_child = {
+								this = scope:meddling_relative
+							}
+							add = 15
+						}
+						modifier = { #Same dynasty
+							exists = dynasty
+							exists = scope:meddling_relative.dynasty
+							dynasty = scope:meddling_relative.dynasty
+							add = 20
+						}
+						modifier = { #Same house
+							exists = house
+							exists = scope:meddling_relative.house
+							house = scope:meddling_relative.house
+							add = 15
+						}
+						modifier = { #Opinion
+							opinion = {
+								target = scope:meddling_relative
+								value >= low_positive_opinion
+							}
+							add = 20
+						}
+						modifier = { #Martial
+							martial >= very_high_skill_rating
+							add = 25
+						}
+						modifier = { #Stewardship
+							stewardship >= very_high_skill_rating
+							add = 25
+						}
+						modifier = { #Martial
+							martial >= high_skill_rating
+							add = 15
+						}
+						modifier = { #Stewardship
+							stewardship >= high_skill_rating
+							add = 15
+						}
+						modifier = { #Martial
+							martial >= decent_skill_rating
+							add = 5
+						}
+						modifier = { #stewardship
+							stewardship >= decent_skill_rating
+							add = 5
+						}
+					}
+					save_scope_as = consort_relative
+				}
 			}
 		}
 		
-		random_in_list = {
-			list = valid_relative_list
-			weight = {
-				base = 10
-				modifier = { #Siblings are priority
-					any_close_family_member = { this = scope:meddling_relative }
-					add = 25
-				}
-				modifier = { #Same dynasty
-					exists = dynasty
-					exists = scope:meddling_relative.dynasty
-					dynasty = scope:meddling_relative.dynasty
-					add = 20
-				}
-				modifier = { #Same house
-					exists = house
-					exists = scope:meddling_relative.house
-					house = scope:meddling_relative.house
-					add = 15
-				}
-				modifier = { #Opinion
-					opinion = {
-						target = scope:meddling_relative
-						value >= low_positive_opinion
-					}
-					add = 20
-				}
-				modifier = { #Martial
-					martial >= very_high_skill_rating
-					add = 25
-				}
-				modifier = { #Stewardship
-					stewardship >= very_high_skill_rating
-					add = 25
-				}
-				modifier = { #Martial
-					martial >= high_skill_rating
-					add = 15
-				}
-				modifier = { #Stewardship
-					stewardship >= high_skill_rating
-					add = 15
-				}
-				modifier = { #Martial
-					martial >= decent_skill_rating
-					add = 5
-				}
-				modifier = { #stewardship
-					stewardship >= decent_skill_rating
-					add = 5
-				}
-			}
-			save_scope_as = consort_relative
-		}
 		if = { # Find a valid barony to give away
         	limit = {
         		any_held_title = {
@@ -22821,40 +22851,42 @@ harem_politics.0024 = {
 				harem_politics_valid_performer_summoning_trigger = yes
 			}
 			weight = {
-				base = 10
-				modifier = { #Concubines will learn poetry just to be noticed
+				base = 20
+				modifier = {
 					is_concubine = yes
-					add = 10
+					add = 15
 				}
-				modifier = { #Lowborns too
+				modifier = {
 					is_lowborn = yes
 					add = 10
 				}
 
-				modifier = { #And unfavored consorts
+				modifier = {
 					has_variable = favor
 					var:favor >= favorite_consort_lower_limit
 					add = 10
 				}
-				modifier = { #... and forgotten consorts
+				modifier = {
 					has_variable = favor
 					var:favor >= beloved_consort_lower_limit
 					add = 10
 				}
-				modifier = { #Var:favor doesn't exist
+				modifier = {
 					NOT = { has_variable = favor }
 					has_character_modifier = favored_consort_modifier
 					add = 10
 				}
-				modifier = { #Var:favor doesn't exist
+				modifier = {
 					NOT = { has_variable = favor }
 					has_character_modifier = beloved_consort_modifier
 					add = 20
 				}
 
 				modifier = { #Diplomacy
-					add = diplomacy
-					multiplier = 1.5
+					add = {
+						value = diplomacy
+						multiply = 1.5
+					}
 				}
 
 				modifier = { #Diplomacy
@@ -22901,9 +22933,18 @@ harem_politics.0024 = {
 					has_character_modifier = diplomatic_consort_modifier
 				}
 
-				modifier = { #Intelligent
-					add = 25
+				modifier = { #Poet
+					add = 100
 					has_trait = poet
+				}
+
+				modifier = { #Shy
+					add = -10
+					has_trait = shy
+				}
+				modifier = { #Craven
+					add = -10
+					has_trait = craven
 				}
 			}
 			save_scope_as = performer_1
@@ -22917,40 +22958,42 @@ harem_politics.0024 = {
 				}
 			}
 			weight = {
-				base = 10
-				modifier = { #Concubines will learn poetry just to be noticed
+				base = 20
+				modifier = {
 					is_concubine = yes
-					add = 10
+					add = 15
 				}
-				modifier = { #Lowborns too
+				modifier = {
 					is_lowborn = yes
 					add = 10
 				}
 
-				modifier = { #And unfavored consorts
+				modifier = {
 					has_variable = favor
 					var:favor >= favorite_consort_lower_limit
 					add = 10
 				}
-				modifier = { #... and forgotten consorts
+				modifier = {
 					has_variable = favor
 					var:favor >= beloved_consort_lower_limit
 					add = 10
 				}
-				modifier = { #Var:favor doesn't exist
+				modifier = {
 					NOT = { has_variable = favor }
 					has_character_modifier = favored_consort_modifier
 					add = 10
 				}
-				modifier = { #Var:favor doesn't exist
+				modifier = {
 					NOT = { has_variable = favor }
 					has_character_modifier = beloved_consort_modifier
 					add = 20
 				}
 
 				modifier = { #Diplomacy
-					add = diplomacy
-					multiplier = 1.5
+					add = {
+						value = diplomacy
+						multiply = 1.5
+					}
 				}
 
 				modifier = { #Diplomacy
@@ -22997,9 +23040,18 @@ harem_politics.0024 = {
 					has_character_modifier = diplomatic_consort_modifier
 				}
 
-				modifier = { #Intelligent
-					add = 25
+				modifier = { #Poet
+					add = 100
 					has_trait = poet
+				}
+
+				modifier = { #Shy
+					add = -10
+					has_trait = shy
+				}
+				modifier = { #Craven
+					add = -10
+					has_trait = craven
 				}
 			}
 			save_scope_as = performer_2
@@ -23021,42 +23073,44 @@ harem_politics.0024 = {
 					}
 				}
 				weight = {
-					base = 10
-					modifier = { #Concubines will learn poetry just to be noticed
+					base = 20
+					modifier = {
 						is_concubine = yes
-						add = 10
+						add = 15
 					}
-					modifier = { #Lowborns too
+					modifier = {
 						is_lowborn = yes
 						add = 10
 					}
-	
-					modifier = { #And unfavored consorts
+
+					modifier = {
 						has_variable = favor
 						var:favor >= favorite_consort_lower_limit
 						add = 10
 					}
-					modifier = { #... and forgotten consorts
+					modifier = {
 						has_variable = favor
 						var:favor >= beloved_consort_lower_limit
 						add = 10
 					}
-					modifier = { #Var:favor doesn't exist
+					modifier = {
 						NOT = { has_variable = favor }
 						has_character_modifier = favored_consort_modifier
 						add = 10
 					}
-					modifier = { #Var:favor doesn't exist
+					modifier = {
 						NOT = { has_variable = favor }
 						has_character_modifier = beloved_consort_modifier
 						add = 20
 					}
-	
+
 					modifier = { #Diplomacy
-						add = diplomacy
-						multiplier = 1.5
+						add = {
+							value = diplomacy
+							multiply = 1.5
+						}
 					}
-	
+
 					modifier = { #Diplomacy
 						add = 5
 						has_trait = education_diplomacy_3
@@ -23069,7 +23123,7 @@ harem_politics.0024 = {
 						add = 10
 						has_trait = education_diplomacy_5
 					}
-	
+
 					modifier = { #Beautiful
 						add = 10
 						has_trait = beauty_good
@@ -23082,7 +23136,7 @@ harem_politics.0024 = {
 						add = 10
 						has_trait = beauty_good_3
 					}
-	
+
 					modifier = { #Intelligent
 						add = 5
 						has_trait = intellect_good
@@ -23095,15 +23149,24 @@ harem_politics.0024 = {
 						add = 15
 						has_trait = intellect_good_3
 					}
-	
+
 					modifier = { #Diplomatic consorts
 						add = 10
 						has_character_modifier = diplomatic_consort_modifier
 					}
-	
-					modifier = { #Intelligent
-						add = 25
+
+					modifier = { #Poet
+						add = 100
 						has_trait = poet
+					}
+
+					modifier = { #Shy
+						add = -10
+						has_trait = shy
+					}
+					modifier = { #Craven
+						add = -10
+						has_trait = craven
 					}
 				}
 				save_scope_as = performer_3
