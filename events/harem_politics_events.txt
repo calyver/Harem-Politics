@@ -3,6 +3,30 @@
 #################
 ##Begging event##
 #################
+scripted_trigger harem_politics_favored_consort_trigger = {
+	OR = {
+		has_character_modifier = favored_consort_modifier
+		has_character_modifier = beloved_consort_modifier
+	}
+}
+
+scripted_trigger harem_politics_unfavored_consort_trigger = {
+	OR = {
+		has_character_modifier = unfavored_consort_modifier
+		has_character_modifier = forgotten_consort_modifier
+	}
+}
+
+scripted_trigger harem_politics_punished_consort_trigger = {
+	OR = {
+		has_character_flag = flag_scolded_consort
+		has_character_modifier = sleep_deprived_modifier
+		has_character_modifier = intrigue_starved_and_deprived_modifier
+		has_character_modifier = recently_tortured
+		has_character_modifier = hunt_tasted_the_belt_modifier
+	}
+}
+
 scripted_trigger harem_politics_demoted_consort_trigger = {
 	is_physically_able_ai_adult = yes
 	is_demoted_consort_trigger = yes
@@ -1217,12 +1241,6 @@ harem_politics.0001 = {
 					}
 				}
 			}
-			modifier = { #Demoted consorts
-				scope:beggar = {
-					is_demoted_consort_trigger = yes
-				}
-				add = -15
-			}
 		}
 	}
 	
@@ -1852,14 +1870,13 @@ scripted_trigger harem_politics_hailan_trigger = {
 		has_relation_friend = root
 		has_relation_soulmate = root
 		has_relation_lover = root
-		has_character_modifier = favored_consort_modifier
-		has_character_modifier = beloved_consort_modifier
+
 		has_trait = pregnant
 		has_trait = wounded
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = demoted_primary_spouse_modifier
-		has_character_modifier = demoted_spouse_modifier
 	}
+	harem_politics_punished_consort_trigger = no
+	harem_politics_favored_consort_trigger = no
+	is_demoted_consort_trigger = no
 	is_courtier_of = root
 	OR = {
 		AND = {
@@ -1875,32 +1892,41 @@ scripted_trigger harem_politics_hailan_trigger = {
 			}
 		}
 	}
+	OR = { #Hailan is unfavored
+		AND = {
+			has_variable = favor
+			var:favor < favorite_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
 }
 
 scripted_trigger harem_politics_ruyi_trigger = {
 	is_physically_able_ai_adult = yes
 	opinion = {
 		target = $HAI$
-		value > -16
+		value > -12
 	}
 	NOR = {
 		this = root.primary_spouse
 		this = $HAI$
+		
 		has_relation_nemesis = $HAI$
 		has_relation_rival = $HAI$
 		has_relation_potential_rival = $HAI$
+
 		has_relation_nemesis = root
 		has_relation_rival = root
 		has_relation_potential_rival = root
+
 		has_trait = pregnant
 		has_trait = ill
 		has_trait = wounded
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
-		has_character_modifier = recently_tortured
-		has_character_modifier = demoted_primary_spouse_modifier
-		has_character_modifier = demoted_spouse_modifier
 	}
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
 	is_grand_consort_trigger = no
 	is_courtier_of = root
 	OR = {
@@ -1925,32 +1951,30 @@ scripted_trigger harem_politics_hui_trigger = {
 		this = root.primary_spouse
 		this = $XIAN$
 		this = $HAI$
+		
 		has_relation_best_friend = $HAI$
 		has_relation_friend = $HAI$
 		has_relation_soulmate = $HAI$
 		has_relation_lover = $HAI$
 		has_relation_potential_friend = $HAI$
 		has_relation_potential_lover = $HAI$
+
 		has_relation_best_friend = $XIAN$
 		has_relation_friend = $XIAN$
 		has_relation_soulmate = $XIAN$
 		has_relation_lover = $XIAN$
 		has_relation_potential_friend = $XIAN$
 		has_relation_potential_lover = $XIAN$
+
 		has_trait = calm
 		has_trait = shy
 		has_trait = craven
 		has_trait = pregnant
 		has_trait = wounded
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
-		has_character_modifier = recently_tortured
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = unfavored_consort_modifier
-		has_character_modifier = forgotten_consort_modifier
-		has_character_modifier = demoted_primary_spouse_modifier
-		has_character_modifier = demoted_spouse_modifier
 	}
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	is_demoted_consort_trigger = no
 	harem_politics_evil_consort_trigger = yes
 	is_courtier_of = root
 	OR = {
@@ -1965,6 +1989,15 @@ scripted_trigger harem_politics_hui_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Hui isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -3720,7 +3753,8 @@ scripted_trigger harem_politics_valid_promotion_consort_trigger = {
 		}
 		has_relation_rival = root
 		has_relation_nemesis = root
-		has_court_position = grand_consort_court_position
+
+		has_character_modifier = forgotten_consort_modifier
 	}
 	OR = {
 		any_child = {
@@ -3805,6 +3839,15 @@ scripted_trigger harem_politics_valid_promotion_consort_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't forgotten
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -5077,6 +5120,7 @@ scripted_trigger harem_politics_valid_demotion_consort_trigger = {
 	is_physically_able_ai_adult = yes
 	NOR = {
 		has_character_flag = flag_considered_consort
+		
 		has_strong_hook = root
 		has_character_flag = flag_pleaded_for
 		has_relation_best_friend = root
@@ -5086,6 +5130,8 @@ scripted_trigger harem_politics_valid_demotion_consort_trigger = {
 		any_close_family_member = {
 			is_liege_or_above_of = root
 		}
+
+		has_character_modifier = beloved_consort_modifier
 	}
 	is_courtier_of = root
 	save_temporary_scope_as = criminal_consort
@@ -5143,6 +5189,15 @@ scripted_trigger harem_politics_valid_demotion_consort_trigger = {
 		AND = {
 			has_trait = cannibal
 			trait_is_criminal_in_faith_trigger = { TRAIT = cannibal FAITH = root.faith GENDER_CHARACTER = scope:criminal_consort }
+		}
+	}
+	OR = { #Isn't beloved
+		AND = {
+			has_variable = favor
+			var:favor < beloved_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -6364,12 +6419,15 @@ scripted_trigger harem_politics_valid_orphan_child_trigger = {
 scripted_trigger harem_politics_valid_mother_trigger = {
 	is_physically_able_ai_adult = yes
 	is_courtier_of = root
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
+	age <= 50
 	NOR = {
 		sex_same_as = root 
+		
 		has_trait = ill
 		has_trait = wounded
-		has_character_modifier = recently_tortured
-		has_character_flag = flag_scolded_consort
 	}
 	OR = {
 		AND = {
@@ -6383,6 +6441,15 @@ scripted_trigger harem_politics_valid_mother_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -9255,6 +9322,7 @@ scripted_trigger harem_politics_valid_relative_trigger = {
 		any_consort = {
 			this = root
 		}
+		is_child_of = root
 	}
 	trigger_if = {
 		limit = { is_female = yes }
@@ -9274,32 +9342,28 @@ scripted_trigger harem_politics_ambitious_consort_trigger = {
 		has_relation_friend = root
 		has_relation_lover = root
 		has_relation_soulmate = root
+		
 		is_spouse_of = root
+		has_court_position = grand_consort_court_position
 		is_parent_of = root
 	}
 	is_demoted_consort_trigger = no
 	is_physically_able_ai = yes
-	is_at_war = no
 	NOR = { 
 		has_character_flag = requested_favor_flag
+
 		has_opinion_modifier = {
 			target = root
 			modifier = forced_me_concubine_marriage_opinion
 		}
+		
 		has_trait = ill
 		has_trait = wounded
 		has_trait = shy
 		has_trait = craven
-
-		has_character_modifier = recently_tortured
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = unfavored_consort_modifier
-		has_character_modifier = forgotten_consort_modifier
-		AND = {
-			has_variable = favor
-			var:favor < neutral_consort_lower_limit
-		}
 	}
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -9327,6 +9391,15 @@ scripted_trigger harem_politics_ambitious_consort_trigger = {
 		any_close_or_extended_family_member = {
 			harem_politics_valid_relative_trigger = yes
 			count >= 1
+		}
+	}
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -10113,6 +10186,70 @@ harem_politics.0008 = {
 ########################
 
 ##Through Consort Chun##
+
+scripted_trigger chun_fei_trigger = {
+	OR = {
+		is_married = yes
+		is_grand_consort_trigger = yes
+	}
+	any_child = {
+		is_physically_able_ai = yes
+		is_adult = no
+		is_courtier_of = root
+		is_child_of = root
+		age >= 9
+		OR = {
+			AND = {
+				is_travelling = yes
+				current_travel_plan ={
+					travel_plan_owner = root
+				}
+			}
+			AND = {
+				is_travelling = no
+				root = {
+					is_travelling = no
+				}
+			}
+		}
+		is_hostage = no
+		count >= 1
+	}
+	is_demoted_consort_trigger = no
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+
+		has_character_modifier = forgotten_consort_modifier
+	}
+	harem_politics_punished_consort_trigger = no
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+	OR = { #Isn't forgotten
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
 harem_politics.0009 = {
 	type = character_event
 	title = harem_politics.0009.t
@@ -10133,56 +10270,7 @@ harem_politics.0009 = {
 	
 	trigger = {
 		any_consort = {
-			OR = {
-				is_married = yes
-				is_grand_consort_trigger = yes
-			}
-			any_child = {
-				is_physically_able_ai = yes
-				is_adult = no
-				is_courtier_of = root
-				is_child_of = root
-				age >= 9
-				OR = {
-					AND = {
-						is_travelling = yes
-						current_travel_plan ={
-							travel_plan_owner = root
-						}
-					}
-					AND = {
-						is_travelling = no
-						root = {
-							is_travelling = no
-						}
-					}
-				}
-				is_hostage = no
-				count >= 1
-			}
-			is_demoted_consort_trigger = no
-			is_courtier_of = root
-			is_physically_able_ai_adult = yes
-			NOR = {
-				has_trait = ill
-				has_trait = wounded
-				has_character_modifier = recently_tortured
-				has_character_flag = flag_scolded_consort
-			}
-			OR = {
-				AND = {
-					is_travelling = yes
-					current_travel_plan ={
-						travel_plan_owner = root
-					}
-				}
-				AND = {
-					is_travelling = no
-					root = {
-						is_travelling = no
-					}
-				}
-			}
+			chun_fei_trigger = yes
 		}
 		NOR = {
         	any_consort = {
@@ -10200,57 +10288,7 @@ harem_politics.0009 = {
 		save_scope_as = harem_liege
 		every_consort = { #Find Consort Chun
 			limit = {
-				AND = {
-					OR = {
-						is_married = yes
-						is_grand_consort_trigger = yes
-					}
-					any_child = {
-						is_physically_able_ai = yes
-						is_adult = no
-						is_courtier_of = root
-						is_child_of = root
-						age >= 9
-						OR = {
-							AND = {
-								is_travelling = yes
-								current_travel_plan ={
-									travel_plan_owner = root
-								}
-							}
-							AND = {
-								is_travelling = no
-								root = {
-									is_travelling = no
-								}
-							}
-						}
-						is_hostage = no
-					}
-					is_demoted_consort_trigger = no
-					is_courtier_of = root
-					is_physically_able_ai_adult = yes
-					NOR = {
-						has_trait = ill
-						has_trait = wounded
-						has_character_modifier = recently_tortured
-						has_character_flag = flag_scolded_consort
-					}
-					OR = {
-						AND = {
-							is_travelling = yes
-							current_travel_plan ={
-								travel_plan_owner = root
-							}
-						}
-						AND = {
-							is_travelling = no
-							root = {
-								is_travelling = no
-							}
-						}
-					}
-				}
+				chun_fei_trigger = yes
 			}
 			add_to_list = chun_fei_list
 		}
@@ -10572,6 +10610,48 @@ harem_politics.0009 = {
 }
 
 ##Through Consort Jia##
+
+scripted_trigger jia_fei_trigger = {
+	OR = {
+		is_married = yes
+		is_grand_consort_trigger = yes
+	}
+	is_demoted_consort_trigger = no
+	harem_politics_evil_consort_trigger = yes
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+
+		has_character_modifier = forgotten_consort_modifier
+	}
+	harem_politics_punished_consort_trigger = no
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+	OR = { #Isn't forgotten
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
 harem_politics.0010 = {
 	type = character_event
 	title = harem_politics.0010.t
@@ -10595,34 +10675,7 @@ harem_politics.0010 = {
 	
 	trigger = {
 		any_consort = {
-			OR = {
-				is_married = yes
-				is_grand_consort_trigger = yes
-			}
-			is_demoted_consort_trigger = no
-			harem_politics_evil_consort_trigger = yes
-			is_courtier_of = root
-			is_physically_able_ai_adult = yes
-			NOR = {
-				has_trait = ill
-				has_trait = wounded
-				has_character_modifier = recently_tortured
-				has_character_flag = flag_scolded_consort
-			}
-			OR = {
-				AND = {
-					is_travelling = yes
-					current_travel_plan ={
-						travel_plan_owner = root
-					}
-				}
-				AND = {
-					is_travelling = no
-					root = {
-						is_travelling = no
-					}
-				}
-			}
+			jia_fei_trigger = yes
 		}
 		NOR = {
         	any_consort = {
@@ -10640,36 +10693,7 @@ harem_politics.0010 = {
 		save_scope_as = harem_liege
 		every_consort = { #Find Consort Jia
 			limit = {
-				AND = {
-					OR = {
-						is_married = yes
-						is_grand_consort_trigger = yes
-					}
-					is_demoted_consort_trigger = no
-					harem_politics_evil_consort_trigger = yes
-					is_courtier_of = root
-					is_physically_able_ai_adult = yes
-					NOR = {
-						has_trait = ill
-						has_trait = wounded
-						has_character_modifier = recently_tortured
-						has_character_flag = flag_scolded_consort
-					}
-					OR = {
-						AND = {
-							is_travelling = yes
-							current_travel_plan ={
-								travel_plan_owner = root
-							}
-						}
-						AND = {
-							is_travelling = no
-							root = {
-								is_travelling = no
-							}
-						}
-					}
-				}
+				jia_fei_trigger = yes
 			}
 			add_to_list = jia_fei_list
 		}
@@ -11016,12 +11040,11 @@ harem_politics.0010 = {
 scripted_trigger valid_consort_trigger = {
 	is_courtier_of = root
 	is_physically_able_ai_adult = yes
+	harem_politics_punished_consort_trigger = no
 	NOR = {
 		has_trait = pregnant
 		has_trait = ill
 		has_trait = wounded
-		has_character_modifier = recently_tortured
-		has_character_flag = flag_scolded_consort
 		has_trait = eunuch
 		has_trait = celibate
 	}
@@ -12455,10 +12478,19 @@ scripted_trigger unwanted_consort_trigger = {
 	age <= 44
 	is_courtier_of = root
 	is_physically_able_ai_adult = yes
+	is_demoted_consort_trigger = no
+	is_female = yes
 	NOR = {
 		has_trait = pregnant
+		
 		has_character_modifier = hua_fei_fragrance
 		has_character_modifier = shu_fei_conception_medicine
+		has_character_modifier = rejected_from_marriage_bed_modifier
+		has_character_modifier = langhua_bracelet
+		has_character_modifier = lingrong_ointment
+
+		has_character_modifier = forgotten_consort_modifier
+		has_character_modifier = beloved_consort_modifier
 	}
 	OR = {
 		AND = {
@@ -12472,6 +12504,16 @@ scripted_trigger unwanted_consort_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't forgotten or beloved
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+			var:favor < beloved_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -12556,6 +12598,8 @@ harem_politics.0012 = {
 		is_physically_able_adult = yes
 		is_at_war = no
 		is_landed = yes
+		highest_held_title_tier >= tier_county
+		is_female = no
 	}
 	weight_multiplier = {
 		base = 1
@@ -13589,35 +13633,31 @@ harem_politics.0012 = {
 ########################
 scripted_trigger harem_politics_xin_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+
+	is_demoted_consort_trigger = no
+	harem_politics_favored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+
+	accepts_harems = yes
+
 	opinion = {
 		target = root
-		value > -1
+		value > -11
 	}
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
-	}
-	is_courtier_of = root
+
 	NOR = {
 		AND = {
 			exists = root.primary_spouse
 			this = root.primary_spouse
 		}
+		has_court_position = grand_consort_court_position
+		
 		has_trait = pregnant
 		has_trait = ill
 		has_trait = wounded
 	}
-	NOR = {
-		any_close_or_extended_family_member = {
-			OR = {
-				is_powerful_vassal_of = root
-				is_councillor_of = root
-				is_parent_of = root
-				is_liege_or_above_of = root
-			}
-		}
-		has_character_modifier = favored_consort_modifier
-	}
+
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -13630,57 +13670,60 @@ scripted_trigger harem_politics_xin_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't favored
+		AND = {
+			has_variable = favor
+			var:favor < favorite_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
 
 scripted_trigger harem_politics_qi_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+
+	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_evil_consort_trigger = yes
+
+	accepts_harems = yes
+
 	opinion = {
 		target = root
-		value > -1
+		value > -11
 	}
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
-	}
-	OR = {
-		any_close_or_extended_family_member = {
-			OR = {
-				is_powerful_vassal_of = root
-				is_councillor_of = root
-				is_parent_of = root
-				is_liege_or_above_of = root
-			}
-		}
-		has_character_modifier = favored_consort_modifier
-	}
+
 	NOR = {
 		this = $XIN$
-		AND = {
-			exists = root.primary_spouse
-			this = root.primary_spouse
-		}
-		has_trait = pregnant
-		has_trait = ill
-		has_trait = wounded
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = unfavored_consort_modifier
-		has_character_modifier = demoted_primary_spouse_modifier
-		has_character_modifier = demoted_spouse_modifier
-		has_trait = honest
-		has_trait = craven
-		has_trait = shy
-		has_court_position = grand_consort_court_position
+
 		has_relation_best_friend = $XIN$
 		has_relation_friend = $XIN$
 		has_relation_potential_friend = $XIN$
 		has_relation_soulmate = $XIN$
 		has_relation_lover = $XIN$
 		has_relation_potential_lover = $XIN$
+
+		AND = {
+			exists = root.primary_spouse
+			this = root.primary_spouse
+		}
+		has_court_position = grand_consort_court_position
+		
+		has_trait = pregnant
+		has_trait = ill
+		has_trait = wounded
+
+		has_trait = calm
+		has_trait = craven
+		has_trait = shy
+		has_trait = temperate
 	}
-	harem_politics_evil_consort_trigger = yes
-	is_courtier_of = root
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -13693,6 +13736,15 @@ scripted_trigger harem_politics_qi_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -16196,7 +16248,12 @@ harem_politics.0015 = {
 ##################################
 scripted_trigger harem_politics_valid_harem_head_trigger = {
 	is_physically_able_ai_adult = yes
-	is_alive = yes
+	is_courtier_of = root
+	is_knight = no
+
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	
 	OR = {
 		AND = {
 			exists = root.primary_spouse
@@ -16207,20 +16264,13 @@ scripted_trigger harem_politics_valid_harem_head_trigger = {
 		}
 		has_court_position = grand_consort_court_position
 	}
-	is_knight = no
+	
 	NOR = {
 		has_trait = ill
 		has_trait = wounded
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = unfavored_consort_modifier
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
-		has_character_modifier = demoted_primary_spouse_modifier
-		has_character_modifier = demoted_spouse_modifier
+		has_character_modifier = forgotten_consort_modifier
 	}
-	is_courtier_of = root
+
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -16235,24 +16285,38 @@ scripted_trigger harem_politics_valid_harem_head_trigger = {
 			}
 		}
 	}
+	OR = { #Concubines won't listen to forgotten consorts
+		AND = {
+			has_variable = favor
+			var:favor > forgotten_consort_upper_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
 }
 
 scripted_trigger harem_politics_valid_performer_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_knight = no
+
+	harem_politics_punished_consort_trigger = no
+	
 	has_character_flag = flag_new_consort
-	age <= 21
+	age <= 23
+
 	NOR = {
 		AND = {
 			exists = root.primary_spouse
 			this = root.primary_spouse
 		}
+		
 		has_trait = lunatic_1
 		has_trait = lunatic_genetic
 		has_trait = possessed_1
 		has_trait = possessed_genetic
-		has_trait = lisping
-		has_trait = stuttering
-		has_trait = scaly
+
 		has_trait = clubfooted
 		has_trait = hunchbacked
 		has_trait = wheezing
@@ -16260,6 +16324,12 @@ scripted_trigger harem_politics_valid_performer_trigger = {
 		has_trait = one_eyed
 		has_trait = one_legged
 		has_trait = disfigured
+
+		has_trait = wounded
+
+		has_trait = infirm
+		has_trait = incapable
+
 		has_trait = maimed
 		has_trait = blind
 		has_trait = ill
@@ -16273,18 +16343,15 @@ scripted_trigger harem_politics_valid_performer_trigger = {
 		has_trait = pneumonic
 		has_trait = smallpox
 		has_trait = typhus
+		has_trait = physique_bad_3
 		
-		has_trait = beauty_bad
-		has_trait = pregnant
-		has_trait = ill
-		has_trait = wounded
+		has_trait = dysentery
+		has_trait = ergotism
+		has_trait = measles
 
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
+		has_trait = pregnant
+
 	}
-	is_courtier_of = root
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -18383,22 +18450,22 @@ harem_politics.0018 = {
 
 scripted_trigger harem_politics_yu_daying_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
 	is_healthy = yes
+
 	harem_politics_evil_consort_trigger = yes
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	accepts_harems = yes
 	
 	has_character_flag = flag_new_consort
-	age <= 21
-	is_demoted_consort_trigger = no
+	age <= 23
 	
 	any_child = {
-		count =0
+		count = 0
 	}
-	
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
-	}
-	
+
 	NOR = {
 		AND = {	
 			exists = root.primary_spouse
@@ -18412,38 +18479,34 @@ scripted_trigger harem_politics_yu_daying_trigger = {
 		has_trait = possessed_genetic
 		
 		has_trait = beauty_bad
-		has_trait = pregnant
 		
+		has_trait = calm
 		has_trait = craven
 		has_trait = shy
+		has_trait = temperate
+
+		has_trait = pregnant		
 		has_trait = wounded
 		has_trait = ill
-
-		has_character_modifier = unfavored_consort_modifier
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
-		
-		any_close_or_extended_family_member = {
-			OR = {
-				AND = {	
-					exists = root.primary_spouse
-					this = root.primary_spouse
-				}
-				is_powerful_vassal_of = root
-				is_councillor_of = root
-				is_parent_of = root
-				is_liege_or_above_of = root
-			}
-		}
 		
 		has_relation_nemesis = root
 		has_relation_rival = root
 		has_relation_potential_rival = root
 	}
+
+	any_close_or_extended_family_member = {
+		NOR = {
+			AND = {	
+				exists = root.primary_spouse
+				this = root.primary_spouse
+			}
+			is_powerful_vassal_of = root
+			is_councillor_of = root
+			is_parent_of = root
+			is_liege_or_above_of = root
+		}
+	}
 	
-	is_courtier_of = root
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -18458,22 +18521,33 @@ scripted_trigger harem_politics_yu_daying_trigger = {
 			}
 		}
 	}
+
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
 }
 
 scripted_trigger harem_politics_wan_changzai_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
 	is_healthy = yes
+
 	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_favored_consort_trigger = no
+	accepts_harems = yes
 	
-	age <= 21
+	has_character_flag = flag_new_consort
+	age <= 23
 	
 	any_child = {
-		count =0
-	}
-	
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
+		count = 0
 	}
 	
 	NOR = {
@@ -18481,6 +18555,8 @@ scripted_trigger harem_politics_wan_changzai_trigger = {
 			exists = root.primary_spouse
 			this = root.primary_spouse
 		}
+		has_court_position = grand_consort_court_position
+
 		this = $YU_DAYING$
 		
 		has_relation_best_friend = $YU_DAYING$
@@ -18489,11 +18565,7 @@ scripted_trigger harem_politics_wan_changzai_trigger = {
 		
 		has_relation_soulmate = $YU_DAYING$
 		has_relation_lover = $YU_DAYING$
-		has_relation_soulmate = $YU_DAYING$
-	
-		has_court_position = grand_consort_court_position
-		
-		has_character_modifier = favored_consort_modifier
+		has_relation_potential_lover = $YU_DAYING$
 		
 		has_trait = lunatic_1
 		has_trait = lunatic_genetic
@@ -18501,31 +18573,15 @@ scripted_trigger harem_politics_wan_changzai_trigger = {
 		has_trait = possessed_genetic
 		
 		has_trait = beauty_bad
-		has_trait = pregnant
+
+		has_trait = pregnant		
 		has_trait = wounded
 		has_trait = ill
 
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
-		
-		any_close_or_extended_family_member = {
-			OR = {
-				AND = {	
-					exists = root.primary_spouse
-					this = root.primary_spouse
-				}
-				is_powerful_vassal_of = root
-				is_councillor_of = root
-				is_parent_of = root
-				is_liege_or_above_of = root
-			}
-		}
 		has_relation_best_friend = root
 		has_relation_friend = root
-		
+		has_relation_potential_friend = root
+
 		has_relation_soulmate = root
 		has_relation_lover = root
 		has_relation_potential_lover = root
@@ -18535,7 +18591,6 @@ scripted_trigger harem_politics_wan_changzai_trigger = {
 		has_relation_potential_rival = root
 	}
 	
-	is_courtier_of = root
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -18548,6 +18603,16 @@ scripted_trigger harem_politics_wan_changzai_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+
+	OR = { #Isn't favored
+		AND = {
+			has_variable = favor
+			var:favor < favorite_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -19691,37 +19756,31 @@ harem_politics.0019 = {
 
 scripted_trigger harem_politics_walking_consort_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
 	is_healthy = yes
+
 	is_demoted_consort_trigger = no
-	
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
-	}
-	
+	harem_politics_punished_consort_trigger = no
+	accepts_harems = yes
+
 	NOR = {
 		
-		has_trait = pregnant
 		has_trait = lunatic_1
 		has_trait = lunatic_genetic
 		has_trait = possessed_1
 		has_trait = possessed_genetic
-		
+
+		has_trait = shy
+
+		has_trait = pregnant		
 		has_trait = wounded
 		has_trait = ill
-
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
 		
 		has_relation_nemesis = root
 		has_relation_rival = root
 		has_relation_potential_rival = root
 	}
 	
-	is_courtier_of = root
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -19768,6 +19827,10 @@ scripted_effect harem_politics_consort_scope_effect = {
 			modifier = {
 				has_character_modifier = favored_consort_modifier
 				add = 20
+			}
+			modifier = {
+				has_character_modifier = beloved_consort_modifier
+				add = 30
 			}
 			modifier = {
 				OR = {
@@ -21335,10 +21398,13 @@ harem_politics.0021 = {
 ##############################################
 
 scripted_trigger harem_politics_zhen_huan_trigger = {
+	is_physically_able_ai_adult = yes
 	is_courtier_of = root
-	is_physically_able_adult = yes
-	
-	is_pregnant = yes
+
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
+
 	has_trait = pregnant
 	pregnancy_month <= 6
 	exists = pregnancy_assumed_father
@@ -21349,17 +21415,14 @@ scripted_trigger harem_politics_zhen_huan_trigger = {
 	NOR = {
 		exists = scope:is_being_divorced
 		exists = scope:is_being_set_aside
+		
 		has_character_flag = attempted_miscarriage_flag
-		has_character_modifier = unfavored_consort_modifier
 		has_court_position = grand_consort_court_position
-	}
-	
-	OR = {
-		is_concubine = yes
+
 		AND = {
-			is_married = yes
+			exists = root.primary_spouse
 			NOT = { this = root.primary_spouse }
-		}
+		}		
 	}
 	
 	OR = {
@@ -21374,53 +21437,52 @@ scripted_trigger harem_politics_zhen_huan_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
 
 scripted_trigger harem_politics_hua_gui_fei_trigger = {
+	is_physically_able_ai_adult = yes
 	is_courtier_of = root
-	is_physically_able_adult = yes
+
 	harem_politics_evil_consort_trigger = yes
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
 	
 	NOR = {
 		this = $ZHEN_HUAN$
-		exists = scope:is_being_divorced
-		exists = scope:is_being_set_aside
-		
-		
+
 		has_relation_friend = $ZHEN_HUAN$
 		has_relation_best_friend = $ZHEN_HUAN$
 		has_relation_lover = $ZHEN_HUAN$
 		has_relation_soulmate = $ZHEN_HUAN$
-		has_character_modifier = unfavored_consort_modifier
-		has_character_flag = flag_scolded_consort
+
+		exists = scope:is_being_divorced
+		exists = scope:is_being_set_aside
 
 		has_trait = calm
 		has_trait = shy
 		has_trait = craven
+		has_trait = temperate
 
+		has_trait = ill
 		has_trait = wounded
 		has_trait = pregnant
 	}
 	opinion = {
 		target = $ZHEN_HUAN$
-		value <= 15
-	}
-	
-	OR = {
-		AND = {
-			is_travelling = yes
-			current_travel_plan ={
-				travel_plan_owner = root
-			}
-		}
-		AND = {
-			is_travelling = no
-			root = {
-				is_travelling = no
-			}
-		}
+		value <= 10
 	}
 	
 	OR = {
@@ -21430,16 +21492,25 @@ scripted_trigger harem_politics_hua_gui_fei_trigger = {
 			}
 			#Then Hua is either a spouse or the GC
 			OR = {
-				AND = { #If she isn't the GC, she's the PS or a SS without any GC
-					is_married = yes
+				AND = { #If a GC is employed, Hua is either the GC or PS
+					root = {
+						employs_court_position = grand_consort_court_position
+					}
 					OR = {
-						root = {
-							NOT = { employs_court_position = grand_consort_court_position }
+						AND = {
+							exists = root.primary_spouse
+							this = root.primary_spouse
 						}
-						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
 					}
 				}
-				has_court_position = grand_consort_court_position
+				#Else, Hua is any spouse
+				AND = {
+					root = {
+						NOT = { employs_court_position = grand_consort_court_position }
+					}
+					is_married = yes
+				}
 			}
 		}
 		AND = { #Zhen Huan is a spouse
@@ -21454,6 +21525,37 @@ scripted_trigger harem_politics_hua_gui_fei_trigger = {
 				}
 				has_court_position = grand_consort_court_position
 			}
+		}
+	}
+	OR = { #Traits
+		has_trait = sadistic
+		has_trait = callous
+		has_trait = wrathful
+		has_trait = vengeful
+	}
+
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+	
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -22828,14 +22930,18 @@ harem_politics.0023 = {
 
 scripted_trigger harem_politics_valid_performer_summoning_trigger = {
 	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_knight = no
+
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
+	
 	NOR = {
 		has_trait = lunatic_1
 		has_trait = lunatic_genetic
 		has_trait = possessed_1
 		has_trait = possessed_genetic
-		has_trait = lisping
-		has_trait = stuttering
-		has_trait = scaly
+
 		has_trait = clubfooted
 		has_trait = hunchbacked
 		has_trait = wheezing
@@ -22843,6 +22949,12 @@ scripted_trigger harem_politics_valid_performer_summoning_trigger = {
 		has_trait = one_eyed
 		has_trait = one_legged
 		has_trait = disfigured
+
+		has_trait = wounded
+
+		has_trait = infirm
+		has_trait = incapable
+
 		has_trait = maimed
 		has_trait = blind
 		has_trait = ill
@@ -22856,18 +22968,24 @@ scripted_trigger harem_politics_valid_performer_summoning_trigger = {
 		has_trait = pneumonic
 		has_trait = smallpox
 		has_trait = typhus
+		has_trait = physique_bad_3
 		
-		has_trait = beauty_bad
-		has_trait = pregnant
-		has_trait = ill
-		has_trait = wounded
+		has_trait = dysentery
+		has_trait = ergotism
+		has_trait = measles
 
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
+		has_trait = beauty_bad
+
+		has_trait = pregnant
+
+		has_character_modifier = forgotten_consort_modifier
 	}
-	is_courtier_of = root
+
+	OR = { #They must be good at something
+		diplomacy >= 9
+		has_trait = poet
+	}
+
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -22882,9 +23000,15 @@ scripted_trigger harem_politics_valid_performer_summoning_trigger = {
 			}
 		}
 	}
-	OR = { #They must be good at something
-		diplomacy >= 9
-		has_trait = poet
+	
+	OR = { #Isn't forgotten
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
 	}
 }
 
@@ -22946,7 +23070,7 @@ scripted_effect consort_performance_effect = {
 				}
 			}
 			modifier = { #Poet
-				add = 20
+				add = 25
 				$CONSORT$ = {	
 					has_trait = poet
 				}
@@ -22978,6 +23102,16 @@ scripted_effect consort_performance_effect = {
 				add = 5
 			}
 
+			modifier = { #Gregarious
+				add = 10
+				$CONSORT$ = {	
+					has_trait = gregarious
+				}
+			}
+			modifier = { #Gregarious
+				add = 10
+				has_trait = gregarious
+			}
 			modifier = {
 				NOT = { $CONSORT$ = { is_attracted_to_gender_of = root } }
 				factor = 0
@@ -23029,23 +23163,21 @@ scripted_effect consort_performance_effect = {
 			modifier = { #diplomacy
 				add = 5
 				$CONSORT$ = {	
-					diplomacy = 9
-				}
-			}
-			
-			modifier = { #Diplomat
-				add = 10
-				$CONSORT$ = {	
-					has_trait = education_diplomacy_1
-				}
-			}
-			modifier = { #Diplomat
-				add = 5
-				$CONSORT$ = {	
-					has_trait = education_diplomacy_2
+					diplomacy <= 5
 				}
 			}
 
+
+			modifier = { #Shy
+				add = 10
+				$CONSORT$ = {	
+					has_trait = shy
+				}
+			}
+			modifier = { #Shy
+				add = 10
+				has_trait = shy
+			}
 			modifier = {
 				NOT = { $CONSORT$ = { is_attracted_to_gender_of = root } }
 				add = 20
@@ -24058,7 +24190,7 @@ harem_politics.0025 = {
 	immediate = {
 		
 		random_list = {
-			50 = { #Play an instrument
+			50 = { #Playing an instrument
 				modifier = {
 					add = {
 						value = scope:chosen_performer.diplomacy
@@ -24096,7 +24228,7 @@ harem_politics.0025 = {
 				}
 			}
 			
-			50 = { #Sing
+			50 = { #Singing
 				modifier = {
 					add = {
 						value = scope:chosen_performer.diplomacy
@@ -24133,7 +24265,7 @@ harem_politics.0025 = {
 					value = yes
 				}
 			}
-			50 = { #Dance
+			50 = { #Dancing
 				modifier = {
 					add = {
 						value = scope:chosen_performer.diplomacy
@@ -24165,7 +24297,7 @@ harem_politics.0025 = {
 				}
 			}
 			
-			50 = { #Read poetry
+			50 = { #Reading poetry
 				modifier = {
 					add = {
 						value = scope:chosen_performer.learning
@@ -24232,6 +24364,13 @@ harem_politics.0025 = {
 			target = scope:chosen_performer
 			modifier = admiration_opinion
 			opinion = 10
+		}
+		scope:chosen_performer = {
+			add_opinion = {
+				target = root
+				modifier = flattered_opinion
+				opinion = 10
+			}
 		}
 	}
 	
