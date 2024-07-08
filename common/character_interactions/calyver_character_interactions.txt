@@ -149,3 +149,317 @@ revoke_grand_consort_interaction = {
 		}
 	}
 }
+
+
+#Favor modifiers
+boost_favor_consort_interaction = {
+	category = interaction_category_diplomacy
+	desc = boost_favor_consort_interaction_desc
+	icon = icon_personal
+
+	cost = {
+		prestige = {
+			value = 0
+			#Costly if recipient is forgotten or already favored
+			if = {
+				limit = {
+					scope:recipient = {
+						OR = {	
+							var:favor < unfavored_consort_lower_limit
+							var:favor >= favorite_consort_lower_limit
+						}
+					}
+				}
+				add = major_prestige_value
+			}
+			#Cheaper if unfavored
+			else_if = {
+				limit = {
+					scope:recipient = {
+						var:favor < neutral_consort_lower_limit
+					}
+				}
+				add = minor_prestige_value
+			}
+			#A bit cheaper if neutral
+			else = {
+				add = medium_prestige_value
+			}
+		}
+	}
+
+	auto_accept = yes
+
+	is_shown = {
+		scope:actor = {
+			is_ai = no
+			is_physically_able = yes
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+				count >= 3
+			}
+		}
+		scope:recipient: = {
+			is_consort_of = scope:actor
+			is_courtier_of = scope:actor
+			has_variable = favor
+			is_demoted_consort_trigger = no
+		}
+	}
+	is_valid_showing_failures_only = {
+		scope:recipient = { 
+			is_busy_in_events_localised = yes
+			is_available = yes
+		}
+		#Is not already favored
+		custom_description = {
+			text = already_favored_recipient
+			object = scope:recipient
+			scope:recipient = {
+				NOR = {
+					has_character_modifier = beloved_consort_modifier
+					has_character_modifier = favor_boost_modifier
+				}
+			}
+		}
+		#Has not favored someone already
+		custom_description = {
+			text = already_favored_consort
+			object = scope:actor
+			scope:actor = {
+				NOT = {
+					has_character_flag = already_favored_consort_flag
+				}
+			}
+		}
+	}
+
+	on_accept = {
+		scope:recipient = {
+			add_character_modifier = {
+				modifier = favor_boost_modifier
+				years = 3
+			}
+		}
+		scope:actor = {
+			add_character_flag = {
+				flag = already_favored_consort_flag
+				years = 3
+			}
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_generic_good
+					title = boosed_consort_favor_t
+					left_icon = scope:actor
+
+					if = {
+						limit = {
+							scope:recipient = {
+								accepts_harems = yes
+								NOT = {
+									has_opinion_modifier = {
+										modifier = forced_me_concubine_marriage_opinion
+										target = scope:actor
+									}
+								}
+							}
+						}
+						if = {
+							limit = { 
+								scope:recipient = {
+									OR = {
+										has_trait = arrogant
+										has_trait = greedy
+										has_trait = ambitious
+									}
+								}
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = grateful_opinion
+								opinion = 20
+							}
+						}
+						else_if = {
+							limit = { 
+								scope:recipient = {
+									harem_politics_evil_consort_trigger = yes
+								}
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = grateful_opinion
+								opinion = 15
+							}
+						}
+						else = {
+							add_opinion = {
+								target = scope:actor
+								modifier = grateful_opinion
+								opinion = 10
+							}
+						}
+					}
+				}
+				#Other consorts will get jealous
+				every_consort = {
+					limit = {
+						NOT = {
+							this = scope:recipient
+						}
+						accepts_harems = yes
+						NOR = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = scope:actor
+							}
+							has_sexuality = homosexual
+							has_sexuality = asexual
+
+							has_relation_rival = scope:actor
+							has_relation_nemesis = scope:actor
+						}
+						is_courtier_of = root
+						is_available = yes
+					}
+					#Beloved ones will feel threatened
+					if = {
+						limit = {
+							has_character_modifier = beloved_consort_modifier
+						}
+						add_opinion = {
+							target = scope:recipient
+							modifier = jealousy_opinion
+							opinion = -10
+						}
+					}
+					#Favored ones too
+					else_if = {
+						limit = {
+							OR = {	
+								has_character_modifier = favored_consort_modifier
+								has_trait = arrogant
+								has_trait = greedy
+								has_trait = ambitious
+							}
+						}
+						add_opinion = {
+							target = scope:recipient
+							modifier = jealousy_opinion
+							opinion = -5
+						}
+					}
+					#Evil ones are resentful, and just consorts know that favor monopoly isn't fair
+					if = {
+						limit = {
+							OR = {	
+								harem_politics_evil_consort_trigger = yes
+								has_trait = just
+							}
+						}
+						add_opinion = {
+							target = scope:recipient
+							modifier = jealousy_opinion
+							opinion = -5
+						}
+					}
+					if = {
+						limit = {
+							OR = {	
+								has_character_flag = recently_unfavored_consort
+								has_character_modifier = unfavored_consort_modifier
+								has_character_modifier = forgotten_consort_modifier
+							}
+						}
+						add_opinion = {
+							target = scope:recipient
+							modifier = jealousy_opinion
+							opinion = -5
+						}
+					}
+					if = {
+						limit = { 
+							NOR = {
+								has_trait = content
+								has_trait = temperate
+								has_trait = calm
+								has_trait = forgiving
+								has_trait = compassionate
+							}
+						}
+						add_opinion = {
+							target = scope:recipient
+							modifier = jealousy_opinion
+							opinion = -5
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+stop_favor_boost_consort_interaction = {
+	category = interaction_category_diplomacy
+	desc = stop_favor_boost_consort_interaction_desc
+	icon = icon_personal
+
+	auto_accept = yes
+
+	is_shown = {
+		scope:recipient: = {
+			has_character_modifier = favor_boost_modifier
+		}
+	}
+
+	on_accept = {
+		scope:recipient = {
+			remove_character_modifier = favor_boost_modifier
+			if = {
+				limit = {
+					accepts_harems = yes
+					NOT = {
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = scope:actor
+						}
+					}
+				}
+				if = {
+					limit = { 
+						OR = {
+							has_trait = arrogant
+							has_trait = greedy
+							has_trait = ambitious
+						}
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = disappointed_opinion
+						opinion = -30
+					}
+				}
+				else_if = {
+					limit = { 
+						harem_politics_evil_consort_trigger = yes
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = disappointed_opinion
+						opinion = -20
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:actor
+						modifier = disappointed_opinion
+						opinion = -15
+					}
+				}
+			}
+		}
+		scope:actor = {
+			remove_character_flag = already_favored_consort_flag
+		}
+	}
+}

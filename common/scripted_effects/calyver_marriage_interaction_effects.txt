@@ -4044,3 +4044,167 @@ consort_reinstatement_effect = {
 		REVERSE_NON_HOUSE_TARGET = no
 	}
 }
+
+calyver_dismiss_concubine_effect = {
+	scope:recipient = {
+		#Add appropriate flags	
+
+		if = { #Flag for the Primary spouse
+			limit = {
+				has_character_modifier = demoted_primary_spouse_modifier
+			}
+			add_character_flag = {
+				flag = flag_divorced_primary_spouse
+			}
+		}
+		#Grand Consort#
+		if = { #First demote the Grand Consort
+			limit = {
+				is_grand_consort_trigger = yes
+			}
+			save_scope_as = employee
+			scope:actor = {
+				save_scope_as = liege
+			}
+			grand_consort_revoked_court_position_effect = yes
+		}
+		if = { #Grand Consort
+			limit = {
+				has_character_flag = flag_demoted_grand_consort
+			}
+			add_character_flag = {
+				flag = flag_divorced_grand_consort
+			}
+		}
+		if = {
+			limit = {
+				has_character_flag = flag_demoted_spouse
+			}
+			add_character_flag = {
+				flag = flag_divorced_spouse
+			}
+		}
+
+		#Removing demoted modifiers and flags
+		if = { #If for whatever reason, they have another modifier
+			limit = {
+				has_character_modifier = demoted_spouse_modifier
+			}
+			remove_character_modifier = demoted_spouse_modifier
+		}
+		if = { #If for whatever reason, they have another modifier
+			limit = {
+				has_character_modifier = demoted_primary_spouse_modifier
+			}
+			remove_character_modifier = demoted_primary_spouse_modifier
+		}
+		if = { #Flags
+			limit = {
+				has_character_flag = flag_demoted_grand_consort
+			}
+			remove_character_flag = flag_demoted_grand_consort
+		}
+		if = { #Flags
+			limit = {
+				has_character_flag = flag_demoted_spouse
+			}
+			remove_character_flag = flag_demoted_spouse
+		}
+		if = {
+			limit = { has_character_flag = flag_new_consort }
+			remove_character_flag = flag_new_consort
+		}
+		
+		hidden_effect = {
+			if = { #Favored
+				limit = {
+					has_character_modifier = favored_consort_modifier
+				}
+				remove_character_modifier = favored_consort_modifier
+			}
+			if = { #Unfavored
+				limit = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+				remove_character_modifier = unfavored_consort_modifier
+			}
+			if = { #Mourner
+				limit = {
+					has_character_modifier = mourner_modifier
+				}
+				remove_character_modifier = mourner_modifier
+			}
+			if = { #Scolded
+				limit = { has_character_flag = flag_scolded_consort }
+				remove_character_flag = flag_scolded_consort
+			}
+		}
+		
+		if = { #Event
+			limit = {
+				is_ai = no
+			}
+			trigger_event = marriage_interaction.0050
+		}
+
+		# Being thrown aside is humiliating, even if you didn't want to be a concubine in the first place.
+		add_opinion = {
+			modifier = set_me_aside_opinion
+			target = scope:actor
+		}
+
+		# Figure out where we should go now that we're no longer a concubine.
+		if = {
+			limit = {
+				is_councillor_of = scope:actor
+			}
+			# Then they should remain in court
+		}
+		else_if = { #Dismiss to relevant court, or to pool
+			limit = {
+				any_close_family_member = {
+					is_landed = yes
+				}
+			}
+			random_close_family_member = {
+				limit = {
+					is_child_of = scope:recipient
+					is_landed = yes
+				}
+				alternative_limit = {
+					is_parent_of = scope:recipient
+					is_landed = yes
+				}
+				alternative_limit = {
+					is_landed = yes
+				}
+				add_courtier = scope:recipient
+			}
+		}
+		else = {
+			move_to_pool = yes
+		}
+	}		
+	scope:actor = {
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+		}
+		hidden_effect = {
+			send_interface_toast = {
+				type = event_generic_neutral
+				title = msg_concubine_dismissed_title
+				right_icon = scope:recipient
+				remove_concubine = scope:recipient
+			}
+		}
+	}
+	# If we're a clan this interaction affects unity
+	add_clan_unity_interaction_effect = {
+		CHARACTER = scope:actor
+		TARGET = scope:recipient
+		VALUE = medium_unity_loss
+		DESC = clan_unity_concubinage_dismissal.desc
+		REVERSE_NON_HOUSE_TARGET = no
+	}
+}

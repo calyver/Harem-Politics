@@ -855,39 +855,9 @@ harem_politics.0001 = {
 				}
 			}
 			calyver_favor_huge_gain_effect = yes
-			if = { #No longer forgotten
-				limit = {
-					has_character_modifier = forgotten_consort_modifier
-				}
-				remove_character_modifier = forgotten_consort_modifier
-			}
-			if = { #No longer unfavored
-				limit = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-				remove_character_modifier = unfavored_consort_modifier
-			}
-			if = { #Becoming beloved
-				limit = {
-					has_character_modifier = favored_consort_modifier
-				}
-				remove_character_modifier = favored_consort_modifier
-				add_character_modifier = {
-					modifier = beloved_consort_modifier
-					years = 5
-				}
-			}
-			if = { #Becoming favored
-				limit = {
-					NOT = {
-						has_character_modifier = beloved_consort_modifier
-					}
-				}
-				add_character_modifier = {
-					modifier = favored_consort_modifier
-					years = 5
-				}
-			}
+			clear_negative_consort_modifiers_effect = yes
+			#Increase a favor modifier
+			increase_favor_modifier_effect = { TIME = 60 }
 		}
 		hidden_effect = {
 			if = { # Former primary spouse is a secondary spouse
@@ -1286,7 +1256,6 @@ harem_politics.0001 = {
 							AND = {	
 								is_concubine_of = root
 								root = {
-									highest_held_title_tier >= tier_kingdom
 									OR = {	
 										AND = {
 											accepts_polygamy = yes
@@ -1315,7 +1284,10 @@ harem_politics.0001 = {
 												}
 											}
 										}
-										accepts_polygamy = no
+										AND = {
+											accepts_polygamy = no
+											highest_held_title_tier >= tier_kingdom
+										}
 									}
 								}
 							}
@@ -1396,7 +1368,7 @@ harem_politics.0001 = {
 			add_character_flag = {
 				flag = flag_pleaded_for
 			}
-			calyver_favor_moderate_gain_effect = yes
+			calyver_favor_minor_gain_effect = yes
 		}
 		hidden_effect = {
 			#A compromise for a former PS is to remarry them
@@ -2566,28 +2538,6 @@ harem_politics.0002 = {
 					} 
 				}
 			}
-		}
-	}
-	
-	option = { # I go to see what's happening
-		name = harem_politics.0002.a
-		custom_tooltip = harem_politics.0002.a.tt
-		trigger_event = harem_politics.0003
-		if = { #If the character is lazy, paranoid or craven, add stress.
-			limit = {
-				OR = {
-					has_trait = lazy
-					has_trait = paranoid
-					has_trait = craven
-				}
-			}
-			stress_impact = {
-				lazy = minor_stress_impact_gain
-				paranoid = minor_stress_impact_gain
-				craven = minor_stress_impact_gain
-			}
-		}
-		hidden_effect = {
 			scope:hailan = {
 				add_opinion = {
 					target = scope:hui
@@ -2602,6 +2552,17 @@ harem_politics.0002 = {
 					opinion = -20
 				}
 			}
+		}
+	}
+	
+	option = { # I go to see what's happening
+		name = harem_politics.0002.a
+		custom_tooltip = harem_politics.0002.a.tt
+		trigger_event = harem_politics.0003
+		stress_impact = {
+			lazy = minor_stress_impact_gain
+			paranoid = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
 		}
 		ai_chance = {
 			base = 5
@@ -2653,11 +2614,6 @@ harem_politics.0002 = {
 				modifier = cruelty_opinion
 				opinion = -30
 			}
-			add_opinion = {
-				target = scope:hui
-				modifier = cruelty_opinion
-				opinion = -30
-			}
 			if = {
 				limit = { 
 					NOR = {
@@ -2687,36 +2643,12 @@ harem_politics.0002 = {
 				}
 			}
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = beloved_consort_modifier
-					}
-					remove_character_modifier = beloved_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-					add_character_modifier = {
-						modifier = forgotten_consort_modifier
-						years = 5
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = unfavored_consort_modifier
-						years = 5
-					}
-				}
+				calyver_favor_moderate_loss_effect = yes
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
 			}
-			calyver_favor_big_loss_effect = yes
 			if = {
 				limit = {
 					NOR = {
@@ -2763,40 +2695,17 @@ harem_politics.0002 = {
 			scope:hui = {
 				save_scope_as = secondary_actor
 				hidden_effect = {
-					if = {
-						limit = { 
-							has_character_modifier = unfavored_consort_modifier
-						}
-						remove_character_modifier = unfavored_consort_modifier
-					}
-					if = {
-						limit = { 
-							has_character_modifier = forgotten_consort_modifier
-						}
-						remove_character_modifier = forgotten_consort_modifier
-					}
-					if = {
-						limit = {
-							has_character_modifier = favored_consort_modifier
-						}
-						remove_character_modifier = favored_consort_modifier
-						add_character_modifier = {
-							modifier = beloved_consort_modifier
-							months = 1
-						}
-					}
-					else = {
-						add_character_modifier = {
-							modifier = favored_consort_modifier
-							months = 1
-						}
-					}
+					calyver_favor_minor_gain_effect = yes
+					#Clear unfavored effect
+					clear_negative_consort_modifiers_effect = yes
+					#Increase favor effect
+					increase_favor_modifier_effect = { TIME = 6 }
+
 					add_character_modifier = { 
 						modifier = safe_disease_treatment_success_high_modifier 
 						days = disease_treatment_short_duration 
 					}
 				}
-				calyver_favor_minor_gain_effect = yes
 			}
 		}
 		send_interface_toast = {
@@ -2899,72 +2808,25 @@ harem_politics.0003 = {
 					target = scope:ruyi 
 				}
 			}
+			calyver_favor_minor_gain_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = forgotten_consort_modifier
-					}
-					remove_character_modifier = forgotten_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-					add_character_modifier = {
-						modifier = beloved_consort_modifier
-						months = 1
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = favored_consort_modifier
-						months = 1
-					}
-				}
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 3 }
 				add_character_modifier = { 
 					modifier = safe_disease_treatment_success_high_modifier 
 					days = disease_treatment_short_duration 
 				}
 			}
-			calyver_favor_minor_gain_effect = yes
 		}
 		scope:ruyi = {
+			calyver_favor_moderate_gain_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = forgotten_consort_modifier
-					}
-					remove_character_modifier = forgotten_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-					add_character_modifier = {
-						modifier = beloved_consort_modifier
-						months = 3
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = favored_consort_modifier
-						months = 3
-					}
-				}
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 6 }
 			}
 			add_opinion = {
 				target = root
@@ -2980,7 +2842,6 @@ harem_politics.0003 = {
 				}
 				set_relation_potential_lover = root
 			}
-			calyver_favor_moderate_gain_effect = yes
 		}
 		scope:hui = {
 			if = {
@@ -3015,41 +2876,17 @@ harem_politics.0003 = {
 				modifier = ignored_consort_opinion
 				opinion = -10
 			}
+			calyver_favor_medium_loss_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = beloved_consort_modifier
-					}
-					remove_character_modifier = beloved_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-					add_character_modifier = {
-						modifier = forgotten_consort_modifier
-						years = 3
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = unfavored_consort_modifier
-						years = 3
-					}
-				}
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
 				add_character_modifier = { 
 					modifier = safe_disease_treatment_success_high_modifier 
 					days = disease_treatment_short_duration 
 				}
 			}
-			calyver_favor_medium_loss_effect = yes
 		}
 		hidden_effect = {
 			add_opinion = {
@@ -3178,35 +3015,12 @@ harem_politics.0003 = {
 			close_relations_opinion_effect = { VICTIM = scope:hailan EXECUTIONER = root }
 		}
 		scope:hui = {
+			calyver_favor_big_gain_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = forgotten_consort_modifier
-					}
-					remove_character_modifier = forgotten_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-					add_character_modifier = {
-						modifier = beloved_consort_modifier
-						years = 1
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = favored_consort_modifier
-						years = 1
-					}
-				}
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 18 }
 				add_character_modifier = { 
 					modifier = safe_disease_treatment_success_high_modifier 
 					days = disease_treatment_short_duration 
@@ -3216,7 +3030,6 @@ harem_politics.0003 = {
 				target = root
 				modifier = thankful_consort_opinion
 			}
-			calyver_favor_big_gain_effect = yes
 			if = {
 				limit = { 
 					NOR = { 
@@ -3263,37 +3076,13 @@ harem_politics.0003 = {
 					reason = killed_friend_harem_reason
 				}
 			}
-			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = beloved_consort_modifier
-					}
-					remove_character_modifier = beloved_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-					add_character_modifier = {
-						modifier = forgotten_consort_modifier
-						years = 5
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = unfavored_consort_modifier
-						years = 5
-					}
-				}
-			}
 			calyver_favor_big_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
+			}
 			if = {
 				limit = {
 					NOR = {
@@ -3436,18 +3225,6 @@ harem_politics.0003 = {
 	option = { # Arrest Hui
 		name = harem_politics.0003.c
 		scope:hailan = {
-			hidden_effect  = { 
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				add_character_modifier = { 
-					modifier = safe_disease_treatment_success_high_modifier 
-					days = disease_treatment_short_duration 
-				}
-			}
 			add_opinion = {
 				target = root
 				modifier = thankful_consort_opinion
@@ -3479,115 +3256,44 @@ harem_politics.0003 = {
 					target = scope:ruyi 
 				}
 			}
+			calyver_favor_big_gain_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = forgotten_consort_modifier
-					}
-					remove_character_modifier = forgotten_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-					add_character_modifier = {
-						modifier = beloved_consort_modifier
-						years = 1
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = favored_consort_modifier
-						years = 1
-					}
-				}
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 18 }
+				
 				add_character_modifier = { 
 					modifier = safe_disease_treatment_success_high_modifier 
 					days = disease_treatment_short_duration 
 				}
 			}
-			calyver_favor_big_gain_effect = yes
 		}
 		scope:ruyi = {
 			add_opinion = {
 				target = root
 				modifier = thankful_consort_opinion
 			}
+			calyver_favor_moderate_gain_effect = yes
 			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = forgotten_consort_modifier
-					}
-					remove_character_modifier = forgotten_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-					add_character_modifier = {
-						modifier = beloved_consort_modifier
-						years = 1
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = favored_consort_modifier
-						years = 1
-					}
-				}
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 6 }
+			}
+		}
+		scope:hui = {
+			calyver_favor_big_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
 				add_character_modifier = { 
-					modifier = safe_disease_treatment_success_high_modifier 
+					modifier = safe_disease_treatment_success_low_modifier 
 					days = disease_treatment_short_duration 
 				}
 			}
-			calyver_favor_big_gain_effect = yes
-		}
-		scope:hui = {
-			hidden_effect = {
-				if = {
-					limit = { 
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				if = {
-					limit = { 
-						has_character_modifier = beloved_consort_modifier
-					}
-					remove_character_modifier = beloved_consort_modifier
-				}
-				if = {
-					limit = {
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-					add_character_modifier = {
-						modifier = forgotten_consort_modifier
-						years = 5
-					}
-				}
-				else = {
-					add_character_modifier = {
-						modifier = unfavored_consort_modifier
-						years = 5
-					}
-				}
-			}
-			calyver_favor_big_loss_effect = yes
 			if = {
 				limit = {
 					can_set_relation_rival_trigger = { CHARACTER = scope:ruyi }
@@ -4495,50 +4201,14 @@ harem_politics.0004 = {
 			marry = scope:loved_consort
 		}
 		scope:loved_consort = {
-			calyver_favor_medium_gain_effect = yes
+			calyver_favor_big_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 18 }
+			}
 			save_scope_as = secondary_recipient
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
-			if = { #No longer forgotten
-				limit = {
-					has_character_modifier = forgotten_consort_modifier
-					NOT = { has add_character_modifier = demoted_primary_spouse_modifier }
-				}
-				remove_character_modifier = forgotten_consort_modifier
-			}
-			if = { #No longer unfavored
-				limit = {
-					has_character_modifier = unfavored_consort_modifier
-					NOT = { has add_character_modifier = demoted_primary_spouse_modifier }
-				}
-				remove_character_modifier = unfavored_consort_modifier
-			}
-			if = { #Beloved
-				limit = {
-					has_character_modifier = favored_consort_modifier
-					NOT = { has add_character_modifier = demoted_primary_spouse_modifier }
-				}
-				remove_character_modifier = favored_consort_modifier
-				add_character_modifier = {
-					modifier = beloved_consort_modifier
-					years = 1
-				}
-			}
-			if = { #Or just favored
-				limit = {
-					NOR = {
-						has_character_modifier = favored_consort_modifier
-						has_character_modifier = beloved_consort_modifier
-						has_character_modifier = demoted_primary_spouse_modifier
-					}
-				}
-				add_character_modifier = {
-					modifier = favored_consort_modifier
-					years = 1
-				}
-			}
 		}
 		save_scope_as = actor
 		save_scope_as = secondary_actor
@@ -4731,7 +4401,7 @@ harem_politics.0004 = {
 	option = { # Promote them to Grand Consort
 		name = harem_politics.0004.b
 		trigger = {
-			gold >= minor_gold_value
+			gold > 0
 			highest_held_title_tier >= tier_kingdom
 			OR = {	
 				AND = { #If polygamy is not accepted, consort must be a conc
@@ -4752,13 +4422,6 @@ harem_politics.0004 = {
 		appoint_court_position = {
 			recipient = scope:loved_consort
 			court_position = grand_consort_court_position
-		}
-		scope:loved_consort = {
-			calyver_favor_medium_gain_effect = yes
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
 		}
 		if = {
 			limit = {
@@ -5017,12 +4680,6 @@ harem_politics.0004 = {
 				}
 			}
 		}
-		scope:loved_consort = {
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
-		}
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
@@ -5115,7 +4772,13 @@ harem_politics.0004 = {
 	after = {
 		add_character_flag = {
 			flag = flag_had_promote_consort_event
-			days = 540
+			months = 18
+		}
+		scope:loved_consort = {
+			add_character_flag = {
+				flag = flag_considered_consort
+				years = 5
+			}
 		}
 	}
 }
@@ -5458,13 +5121,6 @@ harem_politics.0005 = {
 			recipient = scope:sinful_spouse
 			court_position = grand_consort_court_position
 		}
-		scope:sinful_spouse = {
-			calyver_favor_medium_loss_effect = yes
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
-		}
 		if = {
 			limit = {
 				AND = {
@@ -5484,10 +5140,6 @@ harem_politics.0005 = {
 		stress_impact = {
 			vengeful = minor_stress_impact_loss
 			callous = minor_stress_impact_loss
-		}
-		add_character_flag = {
-			flag = flag_had_demote_consort_event
-			days = 540
 		}
 		
 		ai_chance = {
@@ -5683,13 +5335,8 @@ harem_politics.0005 = {
 			save_scope_as = secondary_actor
 		}
 		scope:sinful_spouse = {
-			calyver_favor_medium_loss_effect = yes
 			save_scope_as = recipient
 			save_scope_as = secondary_recipient
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
 		}
 		spouse_demotion_effect = yes
 		stress_impact = {
@@ -5697,10 +5344,6 @@ harem_politics.0005 = {
 			compassionate = minor_stress_impact_gain
 			vengeful = minor_stress_impact_loss
 			callous = minor_stress_impact_loss
-		}
-		add_character_flag = {
-			flag = flag_had_demote_consort_event
-			days = 540
 		}
 		
 		ai_chance = {
@@ -5890,7 +5533,6 @@ harem_politics.0005 = {
 			imprison = { target = scope:sinful_spouse type = house_arrest }
 		}
 		scope:sinful_spouse = {
-			calyver_favor_big_loss_effect = yes
 			if = {
 				limit = { 
 					NOR = { 
@@ -5906,18 +5548,6 @@ harem_politics.0005 = {
 				modifier = cruelty_opinion
 				opinion = -20
 			}
-			hidden_effect = {
-				if = {
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-			}
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
 			if = { #If they're a GC, demote them
 				limit = {
 					has_court_position = grand_consort_court_position
@@ -5932,9 +5562,12 @@ harem_politics.0005 = {
 				limit = {
 					NOT = { has_court_position = grand_consort_court_position }
 				}
-				add_character_modifier = {
-					modifier = unfavored_consort_modifier
-					years = 3
+				calyver_favor_big_loss_effect = yes
+				hidden_effect = {
+					#Clear favored effect
+					clear_positive_consort_modifiers_effect = yes
+					#Decrease favor effect
+					decrease_favor_modifier_effect = { TIME = 12 }
 				}
 				root = {
 					if = {
@@ -5986,10 +5619,6 @@ harem_politics.0005 = {
 		stress_impact = {
 			vengeful = minor_stress_impact_loss
 			callous = minor_stress_impact_loss
-		}
-		add_character_flag = {
-			flag = flag_had_demote_consort_event
-			days = 540
 		}
 		ai_chance = {
 			base = 10
@@ -6200,19 +5829,9 @@ harem_politics.0005 = {
 				zealous = minor_stress_impact_gain
 			}
 		}
-		scope:sinful_spouse = {
-			add_character_flag = {
-				flag = flag_considered_consort
-				days = 1825
-			}
-		}
 		stress_impact = {
 			vengeful = minor_stress_impact_gain
 			callous = minor_stress_impact_gain
-		}
-		add_character_flag = {
-			flag = flag_had_demote_consort_event
-			days = 540
 		}
 		ai_chance = {
 			base = 10
@@ -6388,6 +6007,19 @@ harem_politics.0005 = {
 			}
 		}
 	}
+
+	after = {
+		scope:sinful_spouse = {
+			add_character_flag = {
+				flag = flag_considered_consort
+				years = 5
+			}
+		}
+		add_character_flag = {
+			flag = flag_had_demote_consort_event
+			months = 18
+		}
+	}
 }
 
 ################
@@ -6403,13 +6035,13 @@ scripted_trigger harem_politics_valid_orphan_child_trigger = {
 		father = {
 			is_alive = no
 		}
-		has_any_bastard_trait_trigger = yes
 	}
 	is_landed = no
 	is_courtier_of = root
 	is_physically_able = yes
 	is_adult = no
-	age >= 9
+	age >= 7
+	age <= 14
 	NOR = { 
 		has_character_flag = considered_child_flag
 		has_relation_guardian = root
@@ -6434,7 +6066,6 @@ scripted_trigger harem_politics_valid_orphan_child_trigger = {
 scripted_trigger harem_politics_valid_mother_trigger = {
 	is_physically_able_ai_adult = yes
 	is_courtier_of = root
-	harem_politics_unfavored_consort_trigger = no
 	harem_politics_punished_consort_trigger = no
 	is_demoted_consort_trigger = no
 	age <= 50
@@ -6456,15 +6087,6 @@ scripted_trigger harem_politics_valid_mother_trigger = {
 			root = {
 				is_travelling = no
 			}
-		}
-	}
-	OR = { #Isn't unfavored
-		AND = {
-			has_variable = favor
-			var:favor >= neutral_consort_lower_limit
-		}
-		NOT = {
-			has_variable = favor
 		}
 	}
 }
@@ -6614,10 +6236,6 @@ scripted_effect set_mother_consort_effect = {
 			modifier = thankful_consort_opinion
 			target = root
 		}
-		add_character_modifier = { 
-			modifier = safe_disease_treatment_success_high_modifier 
-			days = disease_treatment_short_duration 
-		}
 		if = {
 			limit = { 
 				NOR = { 
@@ -6635,6 +6253,10 @@ scripted_effect set_mother_consort_effect = {
 				} 
 			}
 			set_relation_potential_friend = scope:new_parent
+		}
+		add_character_modifier = { 
+			modifier = safe_disease_treatment_success_high_modifier 
+			days = disease_treatment_short_duration 
 		}
 		hidden_effect = {
 			change_current_weight = 15
@@ -6691,7 +6313,6 @@ scripted_effect set_mother_consort_effect = {
 		}
 	}
 	scope:new_parent = {
-		calyver_favor_medium_gain_effect = yes
 		add_opinion = {
 			target = root
 			modifier = thankful_consort_opinion
@@ -6706,33 +6327,18 @@ scripted_effect set_mother_consort_effect = {
 			}
 			set_relation_potential_lover = root
 		}
+		calyver_favor_medium_gain_effect = yes
 		hidden_effect = {
-			if = {
-				limit = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-				remove_character_modifier = unfavored_consort_modifier
+			#Clear unfavored effect
+			clear_negative_consort_modifiers_effect = yes
+			#Increase favor effect
+			increase_favor_modifier_effect = { TIME = 12 }
+			scope:non_parent_1 = {
+				non_parent_effect = yes
 			}
-			if = {
-				limit = {
-					NOR = {	
-						has_character_modifier = demoted_primary_spouse_modifier
-						has_character_modifier = demoted_spouse_modifier
-					}
-				}
-				add_character_modifier = {
-					modifier = favored_consort_modifier
-					years = 3
-				}
+			scope:non_parent_2 = {
+				non_parent_effect = yes
 			}
-		}
-	}
-	hidden_effect = {
-		scope:non_parent_1 = {
-			non_parent_effect = yes
-		}
-		scope:non_parent_2 = {
-			non_parent_effect = yes
 		}
 	}
 }
@@ -9249,14 +8855,6 @@ harem_politics.0007 = {
 								modifier = favored_child_modifier
 								years = 3
 							}
-							add_character_modifier = { 
-								modifier = safe_disease_treatment_success_high_modifier 
-								days = disease_treatment_short_duration 
-							}
-							add_character_modifier = {
-								modifier = filial_opinion_modifier
-								years = 5
-							}
 						}
 					}
 				}
@@ -9770,17 +9368,19 @@ harem_politics.0008 = {
         name = harem_politics.0008.a
 		scope:meddling_relative = {
 			calyver_favor_big_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 18 }
+			}
         	add_opinion = {
         		target = ROOT
         		modifier = thankful_consort_opinion
         	}
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
-			}
 			add_character_flag = {
 				flag = requested_favor_flag
-				years = 2
+				years = 3
 			}
         }
 		hidden_effect = {
@@ -10425,8 +10025,10 @@ harem_politics.0009 = {
 					name = favor
 					value = initial_favor_valuation
 				}
+				hidden_effect = {
+					calyver_favor_medium_gain_effect = yes
+				}
 			}
-			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
 				target = root
 				modifier = grateful_opinion
@@ -10436,7 +10038,6 @@ harem_politics.0009 = {
         	save_scope_as = recipient
         }
 		scope:chun_fei = {
-			calyver_favor_minor_loss_effect = yes
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
@@ -10446,6 +10047,7 @@ harem_politics.0009 = {
 				target = scope:yanwan
 				modifier = hatred_spouse_opinion
 			}
+			set_relation_potential_rival = scope:yanwan
 		}
 		calyver_concubine_on_accept_effect = yes
 		make_concubine = scope:recipient
@@ -10478,7 +10080,6 @@ harem_politics.0009 = {
 			chaste = minor_stress_impact_gain 
 			arrogant = minor_stress_impact_gain 
 			paranoid = minor_stress_impact_gain 
-			temperate = minor_stress_impact_gain 
 			shy = minor_stress_impact_gain 
 		}
         ai_chance = {
@@ -10511,7 +10112,7 @@ harem_politics.0009 = {
 				multiplier = 2
 			}
 
-            modifier = {	#Weight down for stress.
+            modifier = {	#Weight up for stress.
 				add = 15
 				has_trait = lustful
 			}
@@ -10529,10 +10130,6 @@ harem_politics.0009 = {
 			}
 			modifier = {	#Weight down for stress.
 				add = -25
-				has_trait = temperate
-			}
-			modifier = {	#Weight down for stress.
-				add = -25
 				has_trait = shy
 			}
 			modifier = {
@@ -10546,20 +10143,26 @@ harem_politics.0009 = {
         name = harem_politics.0009.b
         scope:chun_fei = {
 			calyver_favor_minor_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 3 }
+			}
         	add_opinion = {
-        		target = ROOT
-        		modifier = grateful_opinion
-        		opinion = 15
-        	}
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
 			if = {
 				limit = {
-					has_character_modifier = unfavored_consort_modifier
+					NOR = {
+						has_relation_lover = root
+						has_relation_soulmate = root
+						has_relation_potential_lover = root
+					}
 				}
-				remove_character_modifier = unfavored_consort_modifier
-			}
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
+				set_relation_potential_lover = root
 			}
         }
 		hidden_effect = {
@@ -10618,11 +10221,7 @@ harem_politics.0009 = {
 				add = -25
 				has_trait = lustful
 			}
-			modifier = {
-				add = 15
-				has_trait = temperate
-			}
-			modifier = {	#Weight down for stress.
+			modifier = {	#Weight up for stress.
 				add = 15
 				has_trait = chaste
 			}
@@ -10665,12 +10264,6 @@ scripted_trigger jia_fei_trigger = {
 				is_travelling = no
 			}
 		}
-	}
-	OR = { #Correct traits
-		has_trait = wrathful
-		has_trait = callous
-		has_trait = sadistic
-		has_trait = arrogant
 	}
 	OR = { #Isn't forgotten
 		AND = {
@@ -10798,6 +10391,7 @@ harem_politics.0010 = {
 		trigger = {
 			allowed_more_concubines = yes
 		}
+
 		save_scope_as = actor
 		save_scope_as = secondary_actor
 		scope:yanwan = {
@@ -10814,8 +10408,10 @@ harem_politics.0010 = {
 					name = favor
 					value = initial_favor_valuation
 				}
+				hidden_effect = {
+					calyver_favor_medium_gain_effect = yes
+				}
 			}
-			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
 				target = root
 				modifier = grateful_opinion
@@ -10826,6 +10422,12 @@ harem_politics.0010 = {
         }
 		scope:jia_fei = {
 			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
@@ -10835,11 +10437,11 @@ harem_politics.0010 = {
 				target = scope:yanwan
 				modifier = hatred_spouse_opinion
 			}
+			set_relation_potential_rival = scope:yanwan
 			add_character_flag = {
-			flag = flag_scolded_consort
+				flag = flag_scolded_consort
 				years = 1
 			}
-			set_relation_potential_rival = scope:yanwan
 		}
 		calyver_concubine_on_accept_effect = yes
 		make_concubine = scope:recipient
@@ -10847,8 +10449,8 @@ harem_politics.0010 = {
 			chaste = minor_stress_impact_gain 
 			arrogant = minor_stress_impact_gain 
 			paranoid = minor_stress_impact_gain 
-			temperate = minor_stress_impact_gain 
 			shy = minor_stress_impact_gain 
+			craven = minor_stress_impact_gain
 		}
         ai_chance = {
             base = 100
@@ -10880,10 +10482,10 @@ harem_politics.0010 = {
 				multiplier = 2
 			}
 			modifier = {	#Traits
-				add = 15
+				add = 10
 				has_trait = generous
 			}
-            modifier = {	#Weight down for stress.
+            modifier = {	#Weight up for stress.
 				add = 15
 				has_trait = lustful
 			}
@@ -10901,7 +10503,7 @@ harem_politics.0010 = {
 			}
 			modifier = {	#Weight down for stress.
 				add = -25
-				has_trait = temperate
+				has_trait = craven
 			}
 			modifier = {	#Weight down for stress.
 				add = -25
@@ -10917,22 +10519,21 @@ harem_politics.0010 = {
 	option = { #Reprimand Jia
         name = harem_politics.0010.b
 		scope:jia_fei = {
-			calyver_favor_moderate_loss_effect = yes
+			calyver_favor_minor_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 3 }
+			}
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
 				opinion = -15
 			}
 			add_character_flag = {
-			flag = flag_scolded_consort
+				flag = flag_scolded_consort
 				years = 1
-			}
-		}
-		hidden_effect = {
-			scope:yanwan = {
-				death = {
-					death_reason = death_vanished
-				}
 			}
 		}
 		stress_impact = {
@@ -10974,7 +10575,7 @@ harem_politics.0010 = {
 				has_trait = lustful
 			}
 			modifier = {
-				add = 15
+				add = 10
 				has_trait = temperate
 			}
         }
@@ -10982,15 +10583,29 @@ harem_politics.0010 = {
 	
 	option = { # Consort Jia is within her rights
         name = harem_politics.0010.c
-		hidden_effect = {
-			scope:yanwan = {
-				death = {
-					death_reason = death_vanished
-				}
-			}
-		}
 		scope:jia_fei = {
 			calyver_favor_minor_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 3 }
+			}
+        	add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_relation_lover = root
+						has_relation_soulmate = root
+						has_relation_potential_lover = root
+					}
+				}
+				set_relation_potential_lover = root
+			}
 		}
         stress_impact = {
         	lustful = minor_stress_impact_gain
@@ -11041,30 +10656,44 @@ harem_politics.0010 = {
 				add = -25
 				has_trait = lustful
 			}
-			modifier = {	#Weight down for stress.
+			modifier = {	#Weight up for stress.
 				add = 15
 				has_trait = chaste
 			}
 			modifier = {	#Weight down for stress.
-				add = 15
-				has_trait = vengeful
-			}
-			modifier = {	#Weight down for stress.
-				add = 15
+				add = 10
 				has_trait = callous
 			}
 			modifier = {	#Weight down for stress.
-				add = 15
+				add = 10
 				has_trait = sadistic
 			}
-			modifier = {	#Weight down for stress.
-				add = 15
-				has_trait = cynical
+			modifier = {	#Weight up
+				add = 10
+				has_trait = forgiving
+			}
+			modifier = {	#Weight up
+				add = 5
+				has_trait = compassionate
 			}
         }
     }
 	after = {
 		add_character_flag = met_yanwan_jia_fei
+		if = {
+			limit ={
+				scope:yanwan = {
+					NOT = {
+						is_consort_of = root
+					}
+				}
+			}
+			scope:yanwan = {
+				death = {
+					death_reason = death_vanished
+				}
+			}
+		}
 	}
 }
 
@@ -11106,20 +10735,26 @@ scripted_effect rejected_consort_effect = {
 				target = scope:chosen_consort
 				value <= 15
 			}
-			harem_politics_evil_consort_trigger = yes
 			opinion = {
 				target = root
-				value >= -25
+				value >= -15
 			}
+			harem_politics_evil_consort_trigger = yes
 			OR = {
 				accepts_concubinage = yes
 				accepts_polygamy = yes
+			}
+			NOT = {
+				has_opinion_modifier = {
+					modifier = forced_me_concubine_marriage_opinion
+					target = root
+				}
 			}
 		}				
 		add_opinion = {
 			target = scope:chosen_consort
 			modifier = jealousy_opinion
-			opinion = -10
+			opinion = -5
 		}
 		if = {
 			limit = {
@@ -11143,7 +10778,7 @@ scripted_effect chosen_consort_effect = {
 	}
 	scope:chosen_consort = {
 		random_list = {
-			50 = { #Progress towards lovers
+			25 = { #Progress towards lovers - root loved the consort
 				simple_attraction_modifier = {
 					WHO = scope:chosen_consort
 					TARGET = root
@@ -11152,16 +10787,44 @@ scripted_effect chosen_consort_effect = {
 				}
 				opinion_modifier = {
 					opinion_target = root
-					min = -50
-					max = 50
-					multiplier = 0.5
+					min = -100
+					max = 100
+					multiplier = 1
 				}
 				opinion_modifier = {
 					who = root
 					opinion_target = scope:chosen_consort
-					min = -50
-					max = 50
-					multiplier = 0.5
+					min = -100
+					max = 100
+					multiplier = 1
+				}
+				modifier = {
+					has_trait = beauty_good_1
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_good_2
+					add = 10
+				}
+				modifier = {
+					has_trait = beauty_good_3
+					add = 15
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 5
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 10
+				}
+				modifier = {
+					OR = {
+						has_relation_lover = root
+						has_relation_soulmate = root
+						has_relation_potential_lover = root
+					}
+					add = 5
 				}
 				modifier = {
 					NOT = { root = { is_attracted_to_gender_of = scope:chosen_consort } }
@@ -11184,12 +10847,156 @@ scripted_effect chosen_consort_effect = {
 				add_opinion = {
 					target = root
 					modifier = romance_opinion
+					opinion = 10
+				}
+				calyver_favor_medium_gain_effect = yes
+				hidden_effect = {
+					#Clear unfavored effect
+					clear_negative_consort_modifiers_effect = yes
+					#Increase favor effect
+					increase_favor_modifier_effect = { TIME = 12 }
+				}
+			}
+			50 = { #Progress towards lovers - root liked the consort
+				simple_attraction_modifier = {
+					WHO = scope:chosen_consort
+					TARGET = root
+					MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+					MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+				}
+				opinion_modifier = {
+					opinion_target = root
+					min = -50
+					max = 50
+					multiplier = 0.5
+				}
+				opinion_modifier = {
+					who = root
+					opinion_target = scope:chosen_consort
+					min = -50
+					max = 50
+					multiplier = 0.5
+				}
+				modifier = {
+					has_trait = beauty_good_1
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_good_2
+					add = 10
+				}
+				modifier = {
+					has_trait = beauty_good_3
+					add = 15
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 5
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 10
+				}
+				modifier = {
+					OR = {
+						has_relation_lover = root
+						has_relation_soulmate = root
+						has_relation_potential_lover = root
+					}
+					add = 5
+				}
+				modifier = {
+					NOT = { root = { is_attracted_to_gender_of = scope:chosen_consort } }
+					factor = 0
+				}
+				modifier = {
+					NOT = { is_attracted_to_gender_of = root }
+					factor = 0
+				}
+				add_opinion = {
+					target = root
+					modifier = romance_opinion
 					opinion = 5
 				}
 				calyver_favor_minor_gain_effect = yes
+				hidden_effect = {
+					#Clear unfavored effect
+					clear_negative_consort_modifiers_effect = yes
+					#Increase favor effect
+					increase_favor_modifier_effect = { TIME = 3 }
+				}
 			}
-			50 = { #Nothing
-				
+			50 = { #Nothing	
+			}
+			50 = { #Root didn't like the consort
+				opinion_modifier = {
+					opinion_target = root
+					min = -50
+					max = 50
+					multiplier = -0.5
+				}
+				opinion_modifier = {
+					who = root
+					opinion_target = scope:chosen_consort
+					min = -50
+					max = 50
+					multiplier = -0.5
+				}
+				modifier = {
+					has_trait = beauty_bad_1
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_bad_2
+					add = 10
+				}
+				modifier = {
+					has_trait = beauty_bad_3
+					add = 15
+				}
+				modifier = {
+					has_character_modifier = unfavored_consort_modifier
+					add = 5
+				}
+				modifier = {
+					has_character_modifier = forgotten_consort_modifier
+					add = 10
+				}
+				modifier = {
+					OR = {
+						has_relation_potential_rival = root
+						has_relation_rival =  root
+						has_relation_nemesis = root
+					}
+					add = 5
+				}
+				modifier = {
+					NOT = { root = { is_attracted_to_gender_of = scope:chosen_consort } }
+					add = 30
+				}
+				modifier = {
+					NOT = { is_attracted_to_gender_of = root }
+					add = 30
+				}
+				add_opinion = {
+					target = root
+					modifier = disappointed_opinion
+					opinion = -10
+				}
+				root = {
+					add_opinion = {
+						target = scope:chosen_consort
+						modifier = disappointed_opinion
+						opinion = -10
+					}	
+				}
+				calyver_favor_minor_loss_effect = yes
+				hidden_effect = {
+					#Clear favored effect
+					clear_positive_consort_modifiers_effect = yes
+					#Decrease favor effect
+					decrease_favor_modifier_effect = { TIME = 3 }
+				}
 			}
 		}
 	}
@@ -11224,6 +11031,10 @@ scripted_effect chosen_consort_effect = {
 }
 
 scripted_effect deviant_consort_effect = {
+	had_sex_with_effect = {
+		CHARACTER = root
+		PREGNANCY_CHANCE = pregnancy_chance
+	}
 	random_list = {
 		50 = { #Progress towards lovers
 			simple_attraction_modifier = {
@@ -12330,27 +12141,7 @@ harem_politics.0011 = {
 		trigger = {
 			has_trait = deviant
 		}
-		had_sex_with_effect = {
-			CHARACTER = scope:new_consort_1
-			PREGNANCY_CHANCE = pregnancy_chance
-		}
-		had_sex_with_effect = {
-			CHARACTER = scope:new_consort_2
-			PREGNANCY_CHANCE = pregnancy_chance
-		}
-		had_sex_with_effect = {
-			CHARACTER = scope:new_consort_3
-			PREGNANCY_CHANCE = pregnancy_chance
-		}
-		if = {
-			limit = {
-				exists = scope:old_consort
-			}
-			had_sex_with_effect = {
-				CHARACTER = scope:old_consort
-				PREGNANCY_CHANCE = pregnancy_chance
-			}
-		}
+		
 		hidden_effect = {
 			scope:new_consort_1 = {
 				deviant_consort_effect = yes
@@ -12564,11 +12355,11 @@ scripted_trigger unwanted_consort_trigger = {
 	NOR = {
 		has_trait = pregnant
 		
-		has_character_modifier = hua_fei_fragrance
-		has_character_modifier = shu_fei_conception_medicine
+		has_character_modifier = hua_fei_fragrance_modifier
+		has_character_modifier = shu_fei_conception_medicine_modifier
 		has_character_modifier = rejected_from_marriage_bed_modifier
-		has_character_modifier = langhua_bracelet
-		has_character_modifier = lingrong_ointment
+		has_character_modifier = langhua_bracelet_modifier
+		has_character_modifier = lingrong_ointment_modifier
 
 		has_character_modifier = forgotten_consort_modifier
 		has_character_modifier = beloved_consort_modifier
@@ -12782,15 +12573,28 @@ harem_politics.0012 = {
 		duel = {
 			target = scope:unwanted_consort
 			skill = intrigue
-			60 = {
+			80 = {
 				compare_modifier = {
 					value = scope:duel_value
 				}
+				opinion_modifier = {
+					who = scope:unwanted_consort
+					opinion_target = root
+					min = -10
+					max = 10
+					multiplier = 0.1
+				}
 				scope:unwanted_consort = {
-					calyver_favor_medium_gain_effect = yes
+					calyver_favor_huge_gain_effect = yes
+					hidden_effect = {
+						#Clear unfavored effect
+						clear_negative_consort_modifiers_effect = yes
+						#Increase favor effect
+						increase_favor_modifier_effect = { TIME = 60 }
+					}
 					add_character_modifier = {
-						modifier = shu_fei_conception_medicine
-						years = 4
+						modifier = shu_fei_conception_medicine_modifier
+						years = 5
 					}
 					if = {
 						limit = {
@@ -12811,60 +12615,35 @@ harem_politics.0012 = {
 					}
 				}
 				hidden_effect = {
-					if = {
+					every_consort = {
 						limit = {
-							any_consort = {
-								AND = {
-									NOR = {
-										has_trait = forgiving
-										has_trait = content
-										has_trait = compassionate
-										this = scope:unwanted_consort
-									}
-									OR = {
-										accepts_concubinage = yes
-										accepts_polygamy = yes
-									}
-									opinion = {
-										target = root
-										value >= -10
-									}
-									opinion = {
-										target = scope:unwanted_consort
-										value <= 20
-									}
+							NOT = {
+								this = scope:unwanted_consort
+							}
+							OR = {
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							NOT = {
+								has_opinion_modifier = {
+									modifier = forced_me_concubine_marriage_opinion
+									target = root
 								}
-								count >= 1
+							}
+							harem_politics_evil_consort_trigger = yes
+							opinion = {
+								target = root
+								value >= -10
+							}
+							opinion = {
+								target = scope:unwanted_consort
+								value <= 15
 							}
 						}
-						every_consort = {
-							limit = {
-								AND = {
-									NOR = {
-										has_trait = forgiving
-										has_trait = content
-										has_trait = compassionate
-										this = scope:unwanted_consort
-									}
-									OR = {
-										accepts_concubinage = yes
-										accepts_polygamy = yes
-									}
-									opinion = {
-										target = root
-										value >= -10
-									}
-									opinion = {
-										target = scope:unwanted_consort
-										value <= 20
-									}
-								}
-							}
-							add_opinion = {
-								target = scope:unwanted_consort
-								modifier = jealousy_opinion
-								opinion = -5
-							}
+						add_opinion = {
+							target = scope:unwanted_consort
+							modifier = jealousy_opinion
+							opinion = -5
 						}
 					}
 				}
@@ -12880,44 +12659,50 @@ harem_politics.0012 = {
 						has_trait = lifestyle_herbalist
 					}
 				}
+				opinion_modifier = {
+					who = scope:unwanted_consort
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = -0.2
+				}
 				scope:unwanted_consort = {
 					calyver_favor_medium_loss_effect = yes
+					hidden_effect = {
+						#Clear favored effect
+						clear_positive_consort_modifiers_effect = yes
+						#Decrease favor effect
+						decrease_favor_modifier_effect = { TIME = 12 }
+						if = {
+							limit = {
+								any_close_family_member = {
+									NOR = { 
+										this = scope:unwanted_consort
+										this = root
+									}
+									count >= 1
+								}
+							}
+							every_close_family_member = {
+								limit = { 
+									NOR = { 
+										this = scope:unwanted_consort
+										this = root
+									} 
+								}
+								add_opinion = {
+									target = root
+									modifier = suspicion_opinion
+									opinion = -10
+								}
+							}
+						}
+					}
 					add_opinion = {
 						target = root
 						modifier = suspicion_opinion
 						opinion = -15
 					}
-					if = {
-						limit = {
-							any_close_family_member = {
-								NOR = { 
-									this = scope:unwanted_consort
-									this = root
-								}
-								count >= 1
-							}
-						}
-						every_close_family_member = {
-							limit = { 
-								NOR = { 
-									this = scope:unwanted_consort
-									this = root
-								} 
-							}
-							custom = all_family_members
-							add_opinion = {
-								target = root
-								modifier = suspicion_opinion
-								opinion = -10
-							}
-						}
-					}
-				}
-			}
-			20 = {
-				desc = harem_politics.0012.a.defeat_1
-				compare_modifier = {
-					value = scope:duel_value
 				}
 			}
 		}
@@ -13077,15 +12862,28 @@ harem_politics.0012 = {
 		duel = {
 			target = scope:unwanted_consort
 			skill = intrigue
-			150 = {
+			80 = {
 				compare_modifier = {
 					value = scope:duel_value
 				}
+				opinion_modifier = {
+					who = scope:unwanted_consort
+					opinion_target = root
+					min = -10
+					max = 10
+					multiplier = 0.1
+				}
 				scope:unwanted_consort = {
 					calyver_favor_huge_gain_effect = yes
+					hidden_effect = {
+						#Clear unfavored effect
+						clear_negative_consort_modifiers_effect = yes
+						#Increase favor effect
+						increase_favor_modifier_effect = { TIME = 60 }
+					}
 					add_character_modifier = {
-						modifier = hua_fei_fragrance
-						years = 4
+						modifier = hua_fei_fragrance_modifier
+						years = 5
 					}
 					if = {
 						limit = {
@@ -13106,110 +12904,97 @@ harem_politics.0012 = {
 					}
 				}
 				hidden_effect = {
-					if = {
+					every_consort = {
 						limit = {
-							any_consort = {
-								AND = {
-									NOR = {
-										has_trait = forgiving
-										has_trait = content
-										has_trait = compassionate
-										this = scope:unwanted_consort
-									}
-									OR = {
-										accepts_concubinage = yes
-										accepts_polygamy = yes
-									}
-									opinion = {
-										target = root
-										value >= -10
-									}
-									opinion = {
-										target = scope:unwanted_consort
-										value <= 20
-									}
+							NOT = {
+								this = scope:unwanted_consort
+							}
+							OR = {
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+							NOT = {
+								has_opinion_modifier = {
+									modifier = forced_me_concubine_marriage_opinion
+									target = root
 								}
-								count >= 1
+							}
+							harem_politics_evil_consort_trigger = yes
+							opinion = {
+								target = root
+								value >= -10
+							}
+							opinion = {
+								target = scope:unwanted_consort
+								value <= 15
 							}
 						}
-						every_consort = {
-							limit = {
-								AND = {
-									NOR = {
-										has_trait = forgiving
-										has_trait = content
-										has_trait = compassionate
-										this = scope:unwanted_consort
-									}
-									OR = {
-										accepts_concubinage = yes
-										accepts_polygamy = yes
-									}
-									opinion = {
-										target = root
-										value >= -10
-									}
-									opinion = {
-										target = scope:unwanted_consort
-										value <= 20
-									}
-								}
-							}
-							add_opinion = {
-								target = scope:unwanted_consort
-								modifier = jealousy_opinion
-								opinion = -10
-							}
+						add_opinion = {
+							target = scope:unwanted_consort
+							modifier = jealousy_opinion
+							opinion = -5
 						}
 					}
 				}
 			}
-			40 = {
-				desc = harem_politics.0012.b.defeat
+			20 = {
+				desc = harem_politics.0012.a.defeat
 				compare_modifier = {
 					value = scope:duel_value
 				}
 				modifier = { #Traits
-					add = 100
+					add = 50
 					scope:unwanted_consort = {
 						has_trait = lifestyle_herbalist
 					}
 				}
+				opinion_modifier = {
+					who = scope:unwanted_consort
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = -0.2
+				}
 				scope:unwanted_consort = {
 					calyver_favor_medium_loss_effect = yes
+					hidden_effect = {
+						#Clear favored effect
+						clear_positive_consort_modifiers_effect = yes
+						#Decrease favor effect
+						decrease_favor_modifier_effect = { TIME = 12 }
+						if = {
+							limit = {
+								any_close_family_member = {
+									NOR = { 
+										this = scope:unwanted_consort
+										this = root
+									}
+									count >= 1
+								}
+							}
+							every_close_family_member = {
+								limit = { 
+									NOR = { 
+										this = scope:unwanted_consort
+										this = root
+									} 
+								}
+								add_opinion = {
+									target = root
+									modifier = suspicion_opinion
+									opinion = -10
+								}
+							}
+						}
+					}
 					add_opinion = {
 						target = root
 						modifier = suspicion_opinion
 						opinion = -15
 					}
-					if = {
-						limit = {
-							any_close_family_member = {
-								NOR = { 
-									this = scope:unwanted_consort
-									this = root
-								}
-								count >= 1
-							}
-						}
-						every_close_family_member = {
-							limit = { 
-								NOR = { 
-									this = scope:unwanted_consort
-									this = root
-								} 
-							}
-							custom = all_family_members
-							add_opinion = {
-								target = root
-								modifier = suspicion_opinion
-								opinion = -10
-							}
-						}
-					}
 				}
 			}
-			40 = {
+			10 = {
 				show_as_tooltip = { #we wanna show this
 					scope:unwanted_consort = {
 						death = { death_reason = death_mysterious }
@@ -13225,12 +13010,6 @@ harem_politics.0012 = {
 						MURDERER = root
 						REASON = death_mysterious
 					}
-				}
-			}
-			40 = {
-				desc = harem_politics.0012.b.defeat_1
-				compare_modifier = {
-					value = scope:duel_value
 				}
 			}
 		}
@@ -13392,22 +13171,38 @@ harem_politics.0012 = {
 	option = { # I'll just stop seeing them
         name = harem_politics.0012.c
 		scope:unwanted_consort = {
-			calyver_favor_huge_loss_effect = yes
+			calyver_favor_big_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 18 }
+			}
 			add_character_modifier = {
 				modifier = rejected_from_marriage_bed_modifier
 				years = 10
 			}
 			if = {
 				limit = {
+					OR = {
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+					NOT = {
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
+						}
+					}
 					opinion = {
 						target = root
-						value >= 0
+						value >= -10
 					}
 				}
 				add_opinion = {
 					target = root
 					modifier = insult_opinion
-					opinion = -15
+					opinion = -20
 				}
 			}
 		}
@@ -13704,7 +13499,7 @@ harem_politics.0012 = {
 	after = {
 		add_character_flag = {
 			flag = poisoned_a_consort_flag
-			years = 3
+			years = 4
 		}
 	}
 }
@@ -13863,6 +13658,7 @@ harem_politics.0013 = {
 			has_character_flag = flag_qi_pin_xin_guiren_event
 			has_trait = eunuch
 			has_trait = celibate
+			has_trait = chaste
 	    }
 		is_physically_able_adult = yes
 		is_at_war = no
@@ -14017,10 +13813,16 @@ harem_politics.0013 = {
         name = harem_politics.0013.a
 		add_character_flag = {
 			flag = flag_qi_pin_xin_guiren_event
-			years = 4
+			years = 5
 		}
 		scope:xin_guiren = {
 			calyver_favor_moderate_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 6 }
+			}
 			add_opinion = {
 				target = root
 				modifier = romance_opinion
@@ -14036,15 +13838,15 @@ harem_politics.0013 = {
 				}
 				set_relation_potential_lover = root
 			}
-			if = {
-				limit = { 
-					has_character_modifier = unfavored_consort_modifier
-				}
-				remove_character_modifier = unfavored_consort_modifier
-			}
 		}
 		scope:qi_pin = {
 			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
 			add_opinion = {
 				target = root
 				modifier = ignored_consort_opinion
@@ -14065,21 +13867,15 @@ harem_politics.0013 = {
 				}
 				set_relation_potential_rival = scope:xin_guiren
 			}
-			if = {
-				limit = { 
-					has_character_modifier = favored_consort_modifier
-				}
-				remove_character_modifier = favored_consort_modifier
-			}
 			add_character_flag = {
-			flag = flag_scolded_consort
+				flag = flag_scolded_consort
 				years = 2
 			}
 		}
 		add_opinion = {
 			target = scope:qi_pin
 			modifier = insolent_consort_opinion
-			opinion = -5
+			opinion = -10
 		}
 		stress_impact = {
 			lustful = minor_stress_impact_gain
@@ -14134,9 +13930,11 @@ harem_politics.0013 = {
 		}
 		scope:qi_pin = {
 			calyver_favor_moderate_gain_effect = yes
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 1
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 6 }
 			}
 			add_opinion = {
 				target = root
@@ -14156,6 +13954,12 @@ harem_politics.0013 = {
 		}
 		scope:xin_guiren = {
 			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
@@ -14281,15 +14085,12 @@ scripted_effect punishment_consort_opinion_mild_effect = {
 		}
 	}
 	
-	if = {
-		limit = {
-			has_character_modifier = unfavored_consort_modifier
-		}
-		remove_character_modifier = unfavored_consort_modifier
-	}
-	add_character_modifier = {
-		modifier = favored_consort_modifier
-		years = 1
+	calyver_favor_medium_gain_effect = yes
+	hidden_effect = {
+		#Clear unfavored effect
+		clear_negative_consort_modifiers_effect = yes
+		#Increase favor effect
+		increase_favor_modifier_effect = { TIME = 12 }
 	}
 }
 
@@ -14330,16 +14131,12 @@ scripted_effect punishment_consort_opinion_big_effect = {
 			opinion = -15
 		}
 	}
-	
-	if = {
-		limit = {
-			has_character_modifier = unfavored_consort_modifier
-		}
-		remove_character_modifier = unfavored_consort_modifier
-	}
-	add_character_modifier = {
-		modifier = favored_consort_modifier
-		years = 1
+	calyver_favor_big_gain_effect = yes
+	hidden_effect = {
+		#Clear unfavored effect
+		clear_negative_consort_modifiers_effect = yes
+		#Increase favor effect
+		increase_favor_modifier_effect = { TIME = 18 }
 	}
 }
 
@@ -14528,6 +14325,12 @@ harem_politics.0014 = {
 		}
 		scope:recipient = {
 			calyver_favor_minor_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 3 }
+			}
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
@@ -14538,12 +14341,6 @@ harem_politics.0014 = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
 				}
-			}
-			if = {
-				limit = {
-					has_character_modifier = favored_consort_modifier
-				}
-				remove_character_modifier = favored_consort_modifier
 			}
 			if = {
 				limit = {
@@ -14587,12 +14384,12 @@ harem_politics.0014 = {
 					opinion = -10
 				}
 			}
-			
-			if = {
-				limit = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-				remove_character_modifier = unfavored_consort_modifier
+			calyver_favor_minor_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 3 }
 			}
 		}
 		
@@ -14792,21 +14589,19 @@ harem_politics.0014 = {
 
 		scope:recipient = {
 			calyver_favor_medium_loss_effect = yes
-			add_character_flag = {
-				flag = is_being_tortured
-				months = 6 # Players in MP can keep the event window open...
-			}
 			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
 				add_opinion = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
 				}
 			}
-			if = {
-				limit = {
-					has_character_modifier = favored_consort_modifier
-				}
-				remove_character_modifier = favored_consort_modifier
+			add_character_flag = {
+				flag = is_being_tortured
+				months = 6 # Players in MP can keep the event window open...
 			}
 			if = {
 				limit = {
@@ -14839,7 +14634,6 @@ harem_politics.0014 = {
 			}
 		}
 		scope:beggar = {
-			calyver_favor_big_gain_effect = yes
 			punishment_consort_opinion_big_effect = yes
 		}
 
@@ -15139,6 +14933,11 @@ harem_politics.0014 = {
 		scope:recipient = {
 			calyver_favor_moderate_loss_effect = yes
 			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+
 				add_opinion = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
@@ -15197,7 +14996,6 @@ harem_politics.0014 = {
 			}
 		}
 		scope:beggar = {
-			calyver_favor_medium_gain_effect = yes
 			punishment_consort_opinion_mild_effect = yes
 		}
 		stress_impact = {
@@ -15467,6 +15265,11 @@ harem_politics.0014 = {
 		scope:recipient = {
 			calyver_favor_moderate_loss_effect = yes
 			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+
 				add_opinion = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
@@ -15522,7 +15325,6 @@ harem_politics.0014 = {
 		}
 		
 		scope:beggar = {
-			calyver_favor_big_gain_effect = yes
 			punishment_consort_opinion_mild_effect = yes
 		}
 		stress_impact = {
@@ -15730,6 +15532,12 @@ harem_politics.0014 = {
 		}
 		scope:beggar = {
 			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
 			if = {
 				limit = {
 					has_trait = vengeful
@@ -15750,10 +15558,6 @@ harem_politics.0014 = {
 					modifier = disappointed_opinion
 					opinion = -10
 				}
-			}
-			add_character_modifier = {
-				modifier = unfavored_consort_modifier
-				years = 1
 			}
 		}
 		scope:recipient = {
@@ -16038,14 +15842,11 @@ harem_politics.0015 = {
 			is_betrothed = no
 			AND = {
 				is_betrothed = yes
-				betrothed = {
-					OR = {
-						age <=14
-						AND = {	
-							root.age <= 14
-							age >=16
-						}
+				OR = {
+					betrothed = {
+						age <= 14
 					}
+					age <= 14
 				}
 			}
 		}
@@ -17649,13 +17450,17 @@ harem_politics.0017 = {
         	any_consort = {
 	        	has_character_flag = flag_yanwan
 	        }
-			has_character_flag = met_yanwan_maid_servant
+			has_character_flag = met_yanwan_maid_flag
 	    }
 		allowed_more_concubines = yes
 		is_physically_able_adult = yes
 		is_at_war = no
 		highest_held_title_tier >= tier_kingdom
 		is_travelling = no
+		any_consort = {
+			is_courtier_of = root
+			count >= 3
+		}
 	}
 	
 	immediate = {
@@ -17689,6 +17494,7 @@ harem_politics.0017 = {
 		trigger = {
 			allowed_more_concubines = yes
 		}
+
 		save_scope_as = actor
 		save_scope_as = secondary_actor
 		scope:yanwan = {
@@ -17705,8 +17511,10 @@ harem_politics.0017 = {
 					name = favor
 					value = initial_favor_valuation
 				}
+				hidden_effect = {
+					calyver_favor_medium_gain_effect = yes
+				}
 			}
-			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
 				target = root
 				modifier = grateful_opinion
@@ -17724,18 +17532,23 @@ harem_politics.0017 = {
 		hidden_effect = {
 			every_consort = {
 				limit = {
-					AND = {
-						NOR = {
-							this = scope:yanwan
-							has_relation_best_friend = root
-							has_relation_soulmate = root
-						}
-						harem_politics_evil_consort_trigger = yes
-						OR = {
-							accepts_concubinage = yes
-							accepts_polygamy = yes
+					NOR = {
+						this = scope:yanwan
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
 						}
 					}
+					harem_politics_evil_consort_trigger = yes
+					OR = {
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+					opinion = {
+						target = root
+						value >= -15
+					}
+					is_courtier_of = root
 				}
 				add_opinion = {
 					target = scope:yanwan
@@ -17856,7 +17669,7 @@ harem_politics.0017 = {
         }
     }
 	after = {
-		add_character_flag = met_yanwan_maid_servant
+		add_character_flag = met_yanwan_maid_flag
 	}
 }
 
@@ -17938,54 +17751,11 @@ harem_politics.0018 = {
 		
 		scope:yanwan = {
 			calyver_favor_minor_gain_effect = yes
-			random_list = {
-				50 = { #Progress towards lovers
-					simple_attraction_modifier = {
-						WHO = scope:yanwan
-						TARGET = root
-						MAX_PERSONALITY = 60 # -60 at low trait combatibility, +150 at high trait combatibility.
-						MAX_PHYSICAL = 60 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
-					}
-					opinion_modifier = {
-						opinion_target = root
-						min = -50
-						max = 50
-						multiplier = 0.5
-					}
-					opinion_modifier = {
-						who = root
-						opinion_target = scope:yanwan
-						min = -50
-						max = 50
-						multiplier = 0.5
-					}
-					modifier = {
-						NOT = { root = { is_attracted_to_gender_of = scope:yanwan } }
-						factor = 0
-					}
-					modifier = {
-						NOT = { is_attracted_to_gender_of = root }
-						factor = 0
-					}
-					if = {
-						limit = {
-							NOR = {
-								has_relation_lover = root
-								has_relation_soulmate = root
-								has_relation_potential_lover = root
-							}
-						}
-						set_relation_potential_lover = root
-					}
-					add_opinion = {
-						target = root
-						modifier = romance_opinion
-						opinion = 5
-					}
-				}
-				50 = { #Nothing
-					
-				}
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 3 }
 			}
 		}
 		
@@ -17994,16 +17764,26 @@ harem_politics.0018 = {
 				limit = {
 					NOR = {
 						this = scope:yanwan
-						has_relation_best_friend = scope:yanwan
-						has_relation_friend = scope:yanwan
-						has_relation_soulmate = scope:yanwan
-						has_relation_lover = scope:yanwan
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
+						}
 					}
+					accepts_harems = yes
+					opinion = {
+						target = root
+						value >= -10
+					}
+					opinion = {
+						target = scope:yanwan
+						value <= 5
+					}
+					is_courtier_of = root
 				}
 				add_opinion = {
 					target = scope:yanwan
 					modifier = insolent_consort_opinion
-					opinion = -5
+					opinion = -10
 				}
 			}
 		}
@@ -18094,9 +17874,14 @@ harem_politics.0018 = {
 		
 		add_dread = minor_dread_gain
 		
-		save_scope_as = secondary_actor
 		scope:yanwan = {
 			calyver_favor_medium_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 12 }
+			}
 			if = {
 				limit = {
 					NOR = {
@@ -18115,24 +17900,6 @@ harem_politics.0018 = {
 				target = root
 				modifier = cruelty_opinion
 				opinion = -20
-			}
-			save_scope_as = secondary_recipient
-		}
-		
-		hidden_effect = {
-			every_consort = {
-				limit = {
-					NOT = {
-						this = scope:yanwan
-					}
-				}
-				send_interface_toast = {
-					type = event_generic_bad
-					title = punished_consort_t
-					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
-					custom_tooltip = punished_consort_severe_desc
-				}
 			}
 		}
 		
@@ -18254,9 +18021,14 @@ harem_politics.0018 = {
 			calm = miniscule_stress_impact_gain
 		}
 		
-		save_scope_as = secondary_actor
-		scope:valid_target_consort = {
+		scope:yanwan = {
 			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
 			if = {
 				limit = {
 					NOR = {
@@ -18274,25 +18046,7 @@ harem_politics.0018 = {
 			add_opinion = {
 				target = root
 				modifier = cruelty_opinion
-				opinion = -10
-			}
-			save_scope_as = secondary_recipient
-		}
-		
-		hidden_effect = {
-			every_consort = {
-				limit = {
-					NOT = {
-						this = scope:yanwan
-					}
-				}
-				send_interface_toast = {
-					type = event_generic_bad
-					title = punished_consort_t
-					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
-					custom_tooltip = punished_consort_desc
-				}
+				opinion = -20
 			}
 		}
 		
@@ -18353,7 +18107,7 @@ harem_politics.0018 = {
 			modifier = { #Mothers are important
 				scope:yanwan = {
 					any_child = {
-						is_child_of = scope:partner
+						is_child_of = root
 						count >= 1
 					}
 				}
@@ -18364,11 +18118,11 @@ harem_politics.0018 = {
 				scope:yanwan = {
 					any_close_or_extended_family_member = {
 						NOR = {
-							is_powerful_vassal_of = scope:partner
-							is_councillor_of = scope:partner
-							is_parent_of = scope:partner
-							is_liege_or_above_of = scope:partner
-							this = scope:partner
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							is_parent_of = root
+							is_liege_or_above_of = root
+							this = root
 						}
 					}
 				}
@@ -18423,13 +18177,19 @@ harem_politics.0018 = {
 		}
 		scope:valid_target_consort = {
 			calyver_favor_minor_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 3 }
+			}
 			add_opinion = {
 				target = root
 				modifier = scolded_me_opinion
 				opinion = -5
 			}
 			add_character_flag = {
-			flag = flag_scolded_consort
+				flag = flag_scolded_consort
 				years = 1
 			}
 		}
@@ -18926,22 +18686,14 @@ harem_politics.0019 = {
 				}
 				set_relation_potential_rival = scope:zhen_huan
 			}
-			if = {
-				limit = { 
-					harem_politics_favored_consort_trigger = no
-				}
-				add_character_modifier = {
-					modifier = favored_consort_modifier
-					years = 2
-				}
-			}
+			increase_favor_modifier_effect = { TIME = 6 }
 			if = {
 				limit = {
 					has_variable = var:favor
 				}
 				change_variable = {
 					name = favor
-					add = 50
+					add = 97
 				}
 			}
 			hidden_effect = {
@@ -18953,22 +18705,14 @@ harem_politics.0019 = {
 			}
 		}
 		scope:zhen_huan = {
-			if = {
-				limit = { 
-					harem_politics_unfavored_consort_trigger = no
-				}
-				add_character_modifier = {
-					modifier = unfavored_consort_modifier
-					years = 2
-				}
-			}
+			decrease_favor_modifier_effect = { TIME = 12 }
 			if = {
 				limit = {
 					has_variable = var:favor
 				}
 				change_variable = {
 					name = favor
-					subtract = 50
+					subtract = 97
 				}
 			}
 			hidden_effect = {
@@ -18992,77 +18736,6 @@ harem_politics.0019 = {
 		save_scope_as = actor
 		scope:yu_daying = {
 			save_scope_as = recipient
-			if = {
-				limit = { has_character_flag = flag_new_consort }
-				remove_character_flag = flag_new_consort
-			}
-			#Dismissed consorts
-			hidden_effect = {
-				if = { #Favored
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				if = { #Unfavored
-					limit = {
-						has_character_modifier = unfavored_consort_modifier
-					}
-					remove_character_modifier = unfavored_consort_modifier
-				}
-				if = { #Mourner
-					limit = {
-						has_character_modifier = mourner_modifier
-					}
-					remove_character_modifier = mourner_modifier
-				}
-				if = { #Scolded
-					limit = { has_character_flag = flag_scolded_consort }
-					remove_character_flag = flag_scolded_consort
-				}
-				
-				# Being thrown aside is humiliating, even if you didn't want to be a concubine in the first place.
-				add_opinion = {
-					modifier = set_me_aside_opinion
-					target = scope:actor
-				}
-				add_opinion = {
-					modifier = hatred_spouse_opinion
-					target = scope:zhen_huan
-				}
-
-				# Figure out where we should go now that we're no longer a concubine.
-				if = {
-					limit = {
-						is_councillor_of = scope:actor
-					}
-					# Then they should remain in court
-				}
-				else_if = { #Dismiss to relevant court, or to pool
-					limit = {
-						any_close_family_member = {
-							is_landed = yes
-						}
-					}
-					random_close_family_member = {
-						limit = {
-							is_child_of = scope:recipient
-							is_landed = yes
-						}
-						alternative_limit = {
-							is_parent_of = scope:recipient
-							is_landed = yes
-						}
-						alternative_limit = {
-							is_landed = yes
-						}
-						add_courtier = scope:recipient
-					}
-				}
-				else = {
-					move_to_pool = yes
-				}
-			}
 			
 			#Yu becomes rivals with Zhen Huan
 			if = {
@@ -19075,21 +18748,16 @@ harem_politics.0019 = {
 				}
 			}
 		}
-		hidden_effect = {
-			send_interface_toast = {
-				type = event_generic_neutral
-				title = msg_concubine_dismissed_title
-				right_icon = scope:recipient
-				remove_concubine = scope:recipient
-			}
-		}
+		#Dismissing Yu
+		calyver_dismiss_concubine_effect = yes
 		
 		scope:zhen_huan = {
-			calyver_favor_medium_gain_effect = yes
-			remove_character_modifier = unfavored_consort_modifier
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
+			calyver_favor_huge_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 24 }
 			}
 			add_opinion = {
 				target = root
@@ -19110,10 +18778,7 @@ harem_politics.0019 = {
 		
 		
 		stress_impact = {
-			forgiving = minor_stress_impact_gain 
-			compassionate = minor_stress_impact_gain 
 			calm = minor_stress_impact_gain
-			vengeful = minor_stress_impact_loss
 		}
 		
         ai_chance = {
@@ -19151,16 +18816,16 @@ harem_politics.0019 = {
 			}
 			modifier = { #Stress management
 				has_trait = vengeful
-				add = 25
+				add = 15
 			}
 			modifier = { #Stress management
 				has_trait = just
-				add = 25
+				add = 15
 			}
 			
 			modifier = { #Harem size
 				number_of_concubines <= number_of_desired_concubines
-				add = -20
+				add = -15
 			}
 			
         }
@@ -19201,6 +18866,7 @@ harem_politics.0019 = {
 		scope:yu_daying = {
 			save_scope_as = recipient
 		}
+		#Divorcing Yu
 		divorce_effect = {
 			DIVORCER = scope:actor
 			DIVORCEE = scope:recipient
@@ -19219,11 +18885,12 @@ harem_politics.0019 = {
 			}
 		}
 		scope:zhen_huan = {
-			calyver_favor_medium_gain_effect = yes
-			remove_character_modifier = unfavored_consort_modifier
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
+			calyver_favor_huge_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 24 }
 			}
 			add_opinion = {
 				target = root
@@ -19242,10 +18909,7 @@ harem_politics.0019 = {
 		}
 		
 		stress_impact = {
-			forgiving = minor_stress_impact_gain 
-			compassionate = minor_stress_impact_gain 
 			calm = minor_stress_impact_gain
-			vengeful = minor_stress_impact_loss
 		}
 		
         ai_chance = {
@@ -19283,7 +18947,7 @@ harem_politics.0019 = {
 			}
 			modifier = { #Stress management
 				has_trait = vengeful
-				add = 25
+				add = 15
 			}
 			modifier = { #Stress management
 				has_trait = just
@@ -19302,22 +18966,13 @@ harem_politics.0019 = {
 		}
 		
 		scope:yu_daying = {
+			#Favor effect
 			calyver_favor_big_loss_effect = yes
 			hidden_effect = {
-				if = { #Favored
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				add_opinion = {
-					modifier = hatred_spouse_opinion
-					target = scope:zhen_huan
-				}
-			}
-			add_character_modifier = {
-				modifier = unfavored_consort_modifier
-				years = 3
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 18 }
 			}
 			add_opinion = {
 				target = root
@@ -19337,11 +18992,13 @@ harem_politics.0019 = {
 		}
 		
 		scope:zhen_huan = {
-			calyver_favor_medium_gain_effect = yes
-			remove_character_modifier = unfavored_consort_modifier
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
+			#Favor effect
+			calyver_favor_huge_gain_effect = yes
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+				#Increase favor effect
+				increase_favor_modifier_effect = { TIME = 24 }
 			}
 			
 			if = {
@@ -19381,7 +19038,6 @@ harem_politics.0019 = {
 			forgiving = minor_stress_impact_gain 
 			compassionate = minor_stress_impact_gain 
 			calm = minor_stress_impact_gain
-			vengeful = minor_stress_impact_loss
 		}
 		
 		ai_chance = {
@@ -19419,7 +19075,7 @@ harem_politics.0019 = {
 			}
 			modifier = { #Stress management
 				has_trait = vengeful
-				add = 25
+				add = 15
 			}
 			modifier = { #Stress management
 				has_trait = just
@@ -19442,215 +19098,20 @@ harem_politics.0019 = {
         }
 	}
 	
-	#Torture Yu
-	option = {
-		name = harem_politics.0019.d
-		trait = callous
-		trait = vengeful
-		trait = sadistic
-		trait = wrathful
-		trigger = {
-			OR = {
-				has_trait = callous
-				has_trait = vengeful
-				has_trait = sadistic
-				has_trait = wrathful
-			}
-		}
-		
-		stress_impact = {
-			compassionate = minor_stress_impact_gain
-			forgiving = minor_stress_impact_gain
-			calm = minor_stress_impact_gain
-			sadistic = minor_stress_impact_loss
-			callous = minor_stress_impact_loss
-			wrathful = minor_stress_impact_loss
-			vengeful = minor_stress_impact_loss
-		}
-		
-		add_dread = minor_dread_gain
-		
-		save_scope_as = secondary_actor
-		scope:yu_daying = {
-			calyver_favor_big_loss_effect = yes
-			if = {
-				limit = {
-					NOR = {
-						has_relation_rival = root
-						has_relation_potential_rival = root
-						has_relation_nemesis = root
-					}
-				}
-				set_relation_potential_rival = root
-			}
-			add_character_modifier = {
-				modifier = hunt_tasted_the_belt_modifier
-				years = 5
-			}
-			add_opinion = {
-				target = root
-				modifier = cruelty_opinion
-				opinion = -20
-			}
-			save_scope_as = secondary_recipient
-			hidden_effect = {
-				if = { #Favored
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				add_character_modifier = {
-					modifier = unfavored_consort_modifier
-					years = 3
-				}
-				add_opinion = {
-					modifier = hatred_spouse_opinion
-					target = scope:zhen_huan
-				}
-			}
-			#Yu becomes rivals with Zhen Huan
-			if = {
-				limit = {
-					can_set_relation_rival_trigger = { CHARACTER = scope:zhen_huan }
-				}
-				set_relation_rival = { 
-					reason = consort_rival_reason
-					target = scope:zhen_huan
-				}
-			}
-		}
-		
-		scope:zhen_huan = {
-			calyver_favor_medium_gain_effect = yes
-			remove_character_modifier = unfavored_consort_modifier
-			add_character_modifier = {
-				modifier = favored_consort_modifier
-				years = 2
-			}
-			
-			if = {
-				limit = {
-					NOR = {
-						has_trait = compassionate
-						has_trait = forgiving
-					}
-				}
-				add_opinion = {
-					target = root
-					modifier = thankful_consort_opinion
-				}
-				if = {
-					limit = {
-						NOT = {
-							has_relation_soulmate = root
-							has_relation_lover = root
-							has_relation_potential_lover = root
-						}
-					}
-					set_relation_potential_lover = root
-				}
-			}
-			else = {
-				add_opinion = {
-					target = root
-					modifier = cruelty_opinion
-					opinion = -10
-				}
-			}
-		}
-		
-		hidden_effect = {
-			every_consort = {
-				limit = {
-					NOT = {
-						this = scope:yu_daying
-					}
-				}
-				send_interface_toast = {
-					type = event_generic_bad
-					title = punished_consort_t
-					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
-					custom_tooltip = punished_consort_severe_desc
-				}
-			}
-		}
-		
-		ai_chance = {
-			base = 10
-			ai_value_modifier = {
-				ai_compassion = -0.25
-				ai_honor = -0.15
-			}
-
-			opinion_modifier = { #Opinion
-				opinion_target = scope:yu_daying
-				min = -40
-				max = 40
-				multiplier = -1
-			}
-			
-			opinion_modifier = { #Opinion
-				opinion_target = scope:zhen_huan
-				min = -20
-				max = 20
-				multiplier = 1
-			}
-			
-			modifier = { #Stress management
-				has_trait = calm
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = forgiving
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = compassionate
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = sadistic
-				add = 25
-			}
-			modifier = { #Stress management
-				has_trait = callous
-				add = 25
-			}
-			modifier = { #Stress management
-				has_trait = wrathful
-				add = 25
-			}
-			modifier = { #Stress management
-				has_trait = vengeful
-				add = 25
-			}
-
-			
-			modifier = { #Mothers are important
-				scope:yu_daying = {
-					any_child = {
-						is_child_of = root
-						count >= 1
-					}
-				}
-				add = -15
-			}			
-		}
-	}
-	
 	#Lecture them
 	option = {
 		name = consort_events.0001.c
 		stress_impact = {
-			sadistic = minor_stress_impact_gain
-			callous = minor_stress_impact_gain
-			wrathful = minor_stress_impact_gain
 			vengeful = minor_stress_gain
 		}
 		scope:yu_daying = {
 			calyver_favor_minor_loss_effect = yes
+			hidden_effect = {
+				#Clear favored effect
+				clear_positive_consort_modifiers_effect = yes
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 3 }
+			}
 			add_opinion = {
 				target = root
 				modifier = scolded_me_opinion
@@ -19661,29 +19122,23 @@ harem_politics.0019 = {
 				years = 1
 			}
 			hidden_effect = {
-				if = { #Favored
-					limit = {
-						has_character_modifier = favored_consort_modifier
-					}
-					remove_character_modifier = favored_consort_modifier
-				}
-				add_character_modifier = {
-					modifier = unfavored_consort_modifier
-					years = 1
-				}
 				add_opinion = {
 					target = scope:zhen_huan
 					modifier = unfriendly_opinion
 					opinion = -10
 				}
 			}
-			
 		}
 		
 		scope:zhen_huan = {
+			#Favor effects
 			calyver_favor_minor_gain_effect = yes
-			remove_character_modifier = unfavored_consort_modifier
+			hidden_effect = {
+				#Clear unfavored effect
+				clear_negative_consort_modifiers_effect = yes
+			}
 			
+			#Opinion gains/losses
 			if = {
 				limit = {
 					harem_politics_evil_consort_trigger = yes
@@ -19697,7 +19152,8 @@ harem_politics.0019 = {
 			else = {
 				add_opinion = {
 					target = root
-					modifier = thankful_consort_opinion
+					modifier = grateful_opinion
+					opinion = 5
 				}
 			}
 		}
@@ -19777,21 +19233,37 @@ harem_politics.0019 = {
 		name = harem_politics.0019.f
 		
 		stress_impact = {
-			lazy = minor_stress_impact_loss
-			forgiving = minor_stress_impact_gain
-			calm = minor_stress_impact_gain
-			compassionate = minor_stress_impact_gain
+			humble = minor_stress_impact_gain
+			just = minor_stress_impact_gain
 		}
 		scope:zhen_huan = {
-			calyver_favor_minor_loss_effect = yes
+			#Favor effects
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				custom_tooltip = favor_medium_loss_tooltip
+			}
+			calyver_favor_moderate_loss_effect = yes
+			hidden_effect = {
+				#Decrease favor effect
+				decrease_favor_modifier_effect = { TIME = 6 }
+			}
+			#Opinion
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
-				opinion = -10
+				opinion = -15
 			}
 		}
 		
 		scope:yu_daying = {
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				custom_tooltip = favor_small_gain_tooltip
+			}
 			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
 				target = root
@@ -19832,40 +19304,18 @@ harem_politics.0019 = {
 			}
 			
 			modifier = { #Stress management
-				has_trait = calm
+				has_trait = humble
 				add = -25
 			}
-			modifier = { #Stress management
-				has_trait = forgiving
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = compassionate
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = sadistic
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = callous
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = wrathful
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = vengeful
-				add = -25
-			}
-			modifier = { #Stress management
-				has_trait = zealous
-				add = -25
-			}
+			
 			modifier = { #Traits
 				has_trait = just
-				add = -10
+				add = -25
+			}
+
+			modifier = { #Traits
+				has_trait = arrogant
+				add = 20
 			}
 			
 			modifier = { #Mothers are important
