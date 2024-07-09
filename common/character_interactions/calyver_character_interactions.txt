@@ -195,11 +195,19 @@ boost_favor_consort_interaction = {
 			is_ai = no
 			is_physically_able = yes
 			any_consort = {
-				is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
-				count >= 3
+				is_courtier_of = scope:actor
+				is_alive = yes
+				is_incapable = no
+				OR = {
+					is_imprisoned_by = scope:actor
+					is_imprisoned = no
+				}
+				has_variable = favor
+				count >= 4
 			}
 		}
 		scope:recipient: = {
+			has_variable = favor
 			is_consort_of = scope:actor
 			is_courtier_of = scope:actor
 			has_variable = favor
@@ -212,9 +220,8 @@ boost_favor_consort_interaction = {
 			is_available = yes
 		}
 		#Is not already favored
-		custom_description = {
+		custom_tooltip = {
 			text = already_favored_recipient
-			object = scope:recipient
 			scope:recipient = {
 				NOR = {
 					has_character_modifier = beloved_consort_modifier
@@ -223,9 +230,8 @@ boost_favor_consort_interaction = {
 			}
 		}
 		#Has not favored someone already
-		custom_description = {
+		custom_tooltip = {
 			text = already_favored_consort
-			object = scope:actor
 			scope:actor = {
 				NOT = {
 					has_character_flag = already_favored_consort_flag
@@ -240,6 +246,55 @@ boost_favor_consort_interaction = {
 				modifier = favor_boost_modifier
 				years = 3
 			}
+			if = {
+				limit = {
+					scope:recipient = {
+						accepts_harems = yes
+						NOT = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = scope:actor
+							}
+						}
+					}
+				}
+				if = {
+					limit = { 
+						scope:recipient = {
+							OR = {
+								has_trait = arrogant
+								has_trait = greedy
+								has_trait = ambitious
+							}
+						}
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = grateful_opinion
+						opinion = 20
+					}
+				}
+				else_if = {
+					limit = { 
+						scope:recipient = {
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+					add_opinion = {
+						target = scope:actor
+						modifier = grateful_opinion
+						opinion = 15
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:actor
+						modifier = grateful_opinion
+						opinion = 10
+					}
+				}
+			}
+			custom_tooltip = jealous_consort_tooltip
 		}
 		scope:actor = {
 			add_character_flag = {
@@ -249,54 +304,62 @@ boost_favor_consort_interaction = {
 			hidden_effect = {
 				send_interface_toast = {
 					type = event_generic_good
-					title = boosed_consort_favor_t
-					left_icon = scope:actor
+					title = boosted_consort_favor_t
+					left_icon = scope:recipient
 
-					if = {
-						limit = {
-							scope:recipient = {
-								accepts_harems = yes
-								NOT = {
-									has_opinion_modifier = {
-										modifier = forced_me_concubine_marriage_opinion
+					show_as_tooltip = {
+						scope:recipient = {
+							add_character_modifier = {
+								modifier = favor_boost_modifier
+								years = 3
+							}
+							if = {
+								limit = {
+									scope:recipient = {
+										accepts_harems = yes
+										NOT = {
+											has_opinion_modifier = {
+												modifier = forced_me_concubine_marriage_opinion
+												target = scope:actor
+											}
+										}
+									}
+								}
+								if = {
+									limit = { 
+										scope:recipient = {
+											OR = {
+												has_trait = arrogant
+												has_trait = greedy
+												has_trait = ambitious
+											}
+										}
+									}
+									add_opinion = {
 										target = scope:actor
+										modifier = grateful_opinion
+										opinion = 20
 									}
 								}
-							}
-						}
-						if = {
-							limit = { 
-								scope:recipient = {
-									OR = {
-										has_trait = arrogant
-										has_trait = greedy
-										has_trait = ambitious
+								else_if = {
+									limit = { 
+										scope:recipient = {
+											harem_politics_evil_consort_trigger = yes
+										}
+									}
+									add_opinion = {
+										target = scope:actor
+										modifier = grateful_opinion
+										opinion = 15
 									}
 								}
-							}
-							add_opinion = {
-								target = scope:actor
-								modifier = grateful_opinion
-								opinion = 20
-							}
-						}
-						else_if = {
-							limit = { 
-								scope:recipient = {
-									harem_politics_evil_consort_trigger = yes
+								else = {
+									add_opinion = {
+										target = scope:actor
+										modifier = grateful_opinion
+										opinion = 10
+									}
 								}
-							}
-							add_opinion = {
-								target = scope:actor
-								modifier = grateful_opinion
-								opinion = 15
-							}
-						}
-						else = {
-							add_opinion = {
-								target = scope:actor
-								modifier = grateful_opinion
-								opinion = 10
 							}
 						}
 					}
@@ -319,7 +382,7 @@ boost_favor_consort_interaction = {
 							has_relation_rival = scope:actor
 							has_relation_nemesis = scope:actor
 						}
-						is_courtier_of = root
+						is_courtier_of = scope:actor
 						is_available = yes
 					}
 					#Beloved ones will feel threatened
@@ -407,8 +470,11 @@ stop_favor_boost_consort_interaction = {
 	auto_accept = yes
 
 	is_shown = {
-		scope:recipient: = {
+		scope:recipient = {
 			has_character_modifier = favor_boost_modifier
+		}
+		scope:actor = {
+			is_ai = no
 		}
 	}
 
@@ -436,7 +502,7 @@ stop_favor_boost_consort_interaction = {
 					add_opinion = {
 						target = scope:actor
 						modifier = disappointed_opinion
-						opinion = -30
+						opinion = -35
 					}
 				}
 				else_if = {
@@ -446,16 +512,20 @@ stop_favor_boost_consort_interaction = {
 					add_opinion = {
 						target = scope:actor
 						modifier = disappointed_opinion
-						opinion = -20
+						opinion = -25
 					}
 				}
 				else = {
 					add_opinion = {
 						target = scope:actor
 						modifier = disappointed_opinion
-						opinion = -15
+						opinion = -20
 					}
 				}
+			}
+			add_character_flag = {
+				flag = recently_unfavored_consort
+				years = 1
 			}
 		}
 		scope:actor = {
