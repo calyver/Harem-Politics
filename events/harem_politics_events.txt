@@ -1036,22 +1036,20 @@ harem_politics.0001 = {
 			}
 		}
 		
-		if = {
+		if = { #If you are just, you won't forgive a criminal
 			limit = {
-				OR = {
-					AND = {
-						has_imprisonment_reason = scope:demoted_consort
-						has_trait = just
-					}
-					AND = {
-						scope:demoted_consort.num_virtuous_traits = 0
-						scope:demoted_consort.num_sinful_traits >= 1
-						has_trait = zealous
-					}
-				}
+				has_imprisonment_reason = scope:demoted_consort
 			}
 			stress_impact = {
 				just = minor_stress_impact_gain
+			}
+		}
+		if = { #If you are zealous, you won't forgive a sinner
+			limit = {
+				scope:demoted_consort.num_virtuous_traits = 0
+				scope:demoted_consort.num_sinful_traits >= 1
+			}
+			stress_impact = {
 				zealous = minor_stress_impact_gain
 			}
 		}
@@ -1111,6 +1109,9 @@ harem_politics.0001 = {
 						}
 						is_lowborn = yes
 					}
+				}
+				scope:demoted_consort = {
+					has_character_modifier = demoted_primary_spouse_modifier
 				}
 			}
 			modifier = { #More likely if beggar comes from a prominent family
@@ -1179,6 +1180,9 @@ harem_politics.0001 = {
 			}
 			modifier = { #More likely if low opinion of primary spouse
 				add = 15
+				scope:demoted_consort = {
+					has_character_modifier = demoted_primary_spouse_modifier
+				}
 				exists = primary_spouse
 				opinion = {
 					target = root.primary_spouse
@@ -1209,6 +1213,24 @@ harem_politics.0001 = {
 					any_child = {
 						this = root.player_heir
 					}
+				}
+			}
+			modifier = { #Favored consorts
+				add = 10
+				scope:demoted_consort = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { #Favored consorts
+				add = 20
+				scope:demoted_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { #Favored consorts
+				add = 15
+				scope:demoted_consort = {
+					has_character_modifier = favor_boost_modifier
 				}
 			}
 		}
@@ -1551,21 +1573,8 @@ harem_politics.0001 = {
 					}
 				}
 			}
-			modifier = { #More likely if primary spouse comes from a prominent family
-				add = 10
-				exists = primary_spouse
-				primary_spouse = {
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_close_family_of = root
-						}
-					}
-				}
-			}
 			modifier = { #More likely if zealous
-				add = 15
+				add = 10
 				AND = {
 					scope:demoted_consort.num_virtuous_traits >= 1
 					scope:demoted_consort.num_sinful_traits = 0
@@ -1573,18 +1582,10 @@ harem_politics.0001 = {
 				}
 			}
 			modifier = { #More likely if just
-				add = 15
+				add = 10
 				AND = {
 					has_trait = just
 					has_imprisonment_reason = scope:demoted_consort
-				}
-			}
-			modifier = { #More likely if high opinion of primary spouse
-				add = 15
-				exists = primary_spouse
-				opinion = {
-					target = primary_spouse
-					value >= medium_positive_opinion
 				}
 			}
 			modifier = { #More likely if high opinion of recipient
@@ -1627,14 +1628,17 @@ harem_politics.0001 = {
 					}
 				}
 			}
-			modifier = { #Demoted consorts
-				scope:beggar = {
-					OR = {
-						has_character_modifier = demoted_primary_spouse_modifier
-						has_character_flag = flag_demoted_spouse
-					}
+			modifier = { #Favored consorts
+				add = 10
+				scope:demoted_consort = {
+					has_character_modifier = favored_consort_modifier
 				}
-				add = -15
+			}
+			modifier = { #Favored consorts
+				add = 10
+				scope:demoted_consort = {
+					has_character_modifier = favor_boost_modifier
+				}
 			}
 		}
 	}
@@ -1660,28 +1664,19 @@ harem_politics.0001 = {
 				modifier = plead_for_me_opinion
 			}
 		}
-		if = {
+		if = { #You should forgive non-criminals
 			limit = {
-				OR = {
-					AND = {
-						NOT = { has_imprisonment_reason = scope:demoted_consort }
-						has_trait = just
-					}
-					AND = {
-						scope:demoted_consort.num_virtuous_traits > 0
-						scope:demoted_consort.num_sinful_traits < 1
-						has_trait = zealous
-					}
-					has_trait = forgiving
-					has_trait = compassionate
-				}
+				NOT = { has_imprisonment_reason = scope:demoted_consort }
+				has_trait = just
 			}
 			stress_impact = {
-				forgiving = minor_stress_impact_gain
-				compassionate = minor_stress_impact_gain
 				just = minor_stress_impact_gain
-				zealous = minor_stress_impact_gain
 			}
+		}
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			fickle = minor_stress_impact_gain
 		}
 		if = {
 			limit = {
@@ -1700,9 +1695,6 @@ harem_politics.0001 = {
 				years = 3
 			}
 		}
-		stress_impact = {
-			fickle = minor_stress_impact_gain
-		}
 		ai_chance = {
 			base = 10
 			modifier = { #Less likely if fickle
@@ -1719,20 +1711,11 @@ harem_politics.0001 = {
 			}
 			modifier = { #Stress management
 				add = -30
-				OR = {
-					AND = {
-						NOT = { has_imprisonment_reason = scope:demoted_consort }
-						has_trait = just
-					}
-					AND = {
-						scope:demoted_consort.num_virtuous_traits > 0
-						scope:demoted_consort.num_sinful_traits < 1
-						has_trait = zealous
-					}
-				}
+				NOT = { has_imprisonment_reason = scope:demoted_consort }
+				has_trait = just
 			}
 			modifier = { #More likely if spouse is lowborn
-				add = 20
+				add = 15
 				scope:demoted_consort = {
 					is_lowborn = yes
 				}
@@ -1743,21 +1726,6 @@ harem_politics.0001 = {
 					is_lowborn = yes
 				}
 			}
-			modifier = { #More likely if zealous
-				add = 10
-				AND = {
-					scope:demoted_consort.num_virtuous_traits = 0
-					scope:demoted_consort.num_sinful_traits >= 1
-					has_trait = zealous
-				}
-			}
-			modifier = { #More likely if just
-				add = 20
-				AND = {
-					has_trait = just
-					has_imprisonment_reason = scope:demoted_consort
-				}
-			}
 			modifier = { #More likely if low opinion of recipient
 				add = 10
 				opinion = {
@@ -1785,33 +1753,6 @@ harem_politics.0001 = {
 					target = scope:beggar
 					value <= medium_negative_opinion
 				}
-			}
-			modifier = { #More likely if they have few children
-				add = 5
-				scope:demoted_consort = {
-					any_child = {
-						even_if_dead = yes
-						count <= 2
-					}
-				}
-			}
-			modifier = { #More likely if they have no children
-				add = 15
-				scope:demoted_consort = {
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-				}
-			}
-			modifier = { #Demoted consorts
-				scope:beggar = {
-					OR = {
-						has_character_modifier = demoted_primary_spouse_modifier
-						has_character_flag = flag_demoted_spouse
-					}
-				}
-				add = -15
 			}
 		}
 	}
@@ -2599,6 +2540,24 @@ harem_politics.0002 = {
 					value >= medium_positive_opinion
 				}
 			}
+			modifier = { #Ruyi is favored
+				add = 10
+				scope:ruyi = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { #Ruyi is favored
+				add = 20
+				scope:ruyi = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { #Ruyi is favored
+				add = 15
+				scope:ruyi = {
+					has_character_modifier = favor_boost_modifier
+				}
+			}
 		}
 	}
 	option = { # I stay in bed
@@ -2751,6 +2710,19 @@ harem_politics.0002 = {
 					value <= medium_negative_opinion
 				}
 			}
+
+			modifier = { #Ruyi is unfavored
+				add = 10
+				scope:ruyi = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+			}
+			modifier = { #Ruyi is unfavored
+				add = 20
+				scope:ruyi = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+			}
 		}
 	}
 	after = {
@@ -2895,9 +2867,6 @@ harem_politics.0003 = {
 				opinion = -20
 			}
 		}
-		stress_impact = {
-			temperate = minor_stress_impact_loss
-		}
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
@@ -2980,17 +2949,23 @@ harem_politics.0003 = {
 					}
 				}
 			}
-			modifier = { #More likely if Hailan is a powerful vassal's relative
+
+			modifier = { #Ruyi's favored
+				add = 10
+				scope:ruyi = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { #Ruyi's favored
 				add = 20
-				scope:hailan = {
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-							is_liege_or_above_of = root
-						}
-					}
+				scope:ruyi = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { #Ruyi's favored
+				add = 15
+				scope:ruyi = {
+					has_character_modifier = favor_boost_modifier
 				}
 			}
 		}
@@ -3188,36 +3163,23 @@ harem_politics.0003 = {
 					}
 				}
 			}
-			modifier = { #More likely if Hailan is not powerful vassal's relative
+
+			modifier = { #Hui's favored
 				add = 10
-				scope:hailan = {
-					OR = {
-						is_lowborn = yes
-						any_close_family_member = {
-							NOR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_parent_of = root
-								is_liege_or_above_of = root
-							}
-						}
-					}
+				scope:hui = {
+					has_character_modifier = favored_consort_modifier
 				}
 			}
-			modifier = { #More likely if Ruyi not a powerful vassal's relative
-				add = 10
-				scope:ruyi = {
-					OR = {
-						is_lowborn = yes
-						any_close_family_member = {
-							NOR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_parent_of = root
-								is_liege_or_above_of = root
-							}
-						}
-					}
+			modifier = { #Hui's favored
+				add = 20
+				scope:hui = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { #Hui's favored
+				add = 15
+				scope:hui = {
+					has_character_modifier = favor_boost_modifier
 				}
 			}
 		}
@@ -3364,7 +3326,6 @@ harem_politics.0003 = {
 				add = 20
 				OR = {
 					has_trait = just
-					has_trait = diligent
 					has_trait = vengeful
 				}
 			}
@@ -3403,35 +3364,7 @@ harem_politics.0003 = {
 					value >= medium_positive_opinion
 				}
 			}
-			modifier = { #More likely if Hui is not a powerful vassal's relative
-				add = 15
-				scope:hui = {
-					OR = {
-						is_lowborn = yes
-						any_close_family_member = {
-							NOR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								is_parent_of = root
-								is_liege_or_above_of = root
-							}
-						}
-					}
-				}
-			}
-			modifier = { #More likely if Hailan is a powerful vassal's relative
-				add = 15
-				scope:hailan = {
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-							is_liege_or_above_of = root
-						}
-					}
-				}
-			}
+
 			modifier = { #More likely if Ruyi is a powerful vassal's relative
 				add = 15
 				scope:ruyi = {
@@ -3443,6 +3376,25 @@ harem_politics.0003 = {
 							is_liege_or_above_of = root
 						}
 					}
+				}
+			}
+
+			modifier = { #Ruyi's favored
+				add = 10
+				scope:ruyi = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { #Ruyi's favored
+				add = 20
+				scope:ruyi = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { #Ruyi's favored
+				add = 15
+				scope:ruyi = {
+					has_character_modifier = favor_boost_modifier
 				}
 			}
 		}
@@ -3904,13 +3856,11 @@ harem_politics.0004 = {
 		save_scope_as = harem_liege
 		if = {
 			limit = {
-				AND = {
-					highest_held_title_tier >= tier_kingdom
-					NOT = { employs_court_position = grand_consort_court_position }
-					accepts_polygamy = yes
-					any_spouse = {
-						harem_politics_valid_promotion_consort_trigger = yes
-					}
+				gold >= minor_gold_value
+				highest_held_title_tier >= tier_kingdom
+				NOT = { employs_court_position = grand_consort_court_position }
+				any_spouse = {
+					harem_politics_valid_promotion_consort_trigger = yes
 				}
 			}
 			every_spouse = {
@@ -3923,10 +3873,10 @@ harem_politics.0004 = {
 		
 		if = {
 			limit = {
-				gold >= minor_gold_value
 				OR = {
 					allowed_more_spouses = yes
 					AND = {
+						gold >= minor_gold_value
 						highest_held_title_tier >= tier_kingdom
 						NOT = { employs_court_position = grand_consort_court_position }
 						accepts_polygamy = no
@@ -4161,34 +4111,20 @@ harem_politics.0004 = {
 		}
 		if = {
 			limit = {
+				has_trait = just
 				OR = {
-					AND = {
-						has_trait = just
-						OR = {
-							has_imprisonment_reason = scope:loved_consort
-							scope:loved_consort = {
-								any_secret = {
-									exists = secret_owner
-									is_known_by = root
-									is_criminal_for = secret_owner
-								}
-							}
-						}
-					}
-					AND = {
-						has_trait = zealous
-						scope:loved_consort = {
-							AND = {
-								num_sinful_traits >= 1
-								num_virtuous_traits = 0
-							}
+					has_imprisonment_reason = scope:loved_consort
+					scope:loved_consort = {
+						any_secret = {
+							exists = secret_owner
+							is_known_by = root
+							is_criminal_for = secret_owner
 						}
 					}
 				}
 			}
 			stress_impact = {
 				just = minor_stress_impact_gain
-				zealous = minor_stress_impact_gain
 			}
 		}
 		if = {
@@ -4332,11 +4268,23 @@ harem_politics.0004 = {
 				}
 				add = 10
 			}
+			modifier = { #Favored consort
+				scope:loved_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
+			}
+			modifier = { #Favored consort
+				scope:loved_consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
+			}
 			modifier = { #Lowborns
 				scope:loved_consort = {
-					is_lowborn = yes
+					is_lowborn = no
 				}
-				add = -10
+				add = 10
 			}
 			modifier = { #Less likely if the candidate is lowborn and low legitimacy
 				add = -35
@@ -4401,7 +4349,7 @@ harem_politics.0004 = {
 	option = { # Promote them to Grand Consort
 		name = harem_politics.0004.b
 		trigger = {
-			gold > 0
+			gold >= minor_gold_value
 			highest_held_title_tier >= tier_kingdom
 			OR = {	
 				AND = { #If polygamy is not accepted, consort must be a conc
@@ -4425,34 +4373,20 @@ harem_politics.0004 = {
 		}
 		if = {
 			limit = {
+				has_trait = just
 				OR = {
-					AND = {
-						has_trait = just
-						OR = {
-							has_imprisonment_reason = scope:loved_consort
-							scope:loved_consort = {
-								any_secret = {
-									exists = secret_owner
-									is_known_by = root
-									is_criminal_for = secret_owner
-								}
-							}
-						}
-					}
-					AND = {
-						has_trait = zealous
-						scope:loved_consort = {
-							AND = {
-								num_sinful_traits >= 1
-								num_virtuous_traits = 0
-							}
+					has_imprisonment_reason = scope:loved_consort
+					scope:loved_consort = {
+						any_secret = {
+							exists = secret_owner
+							is_known_by = root
+							is_criminal_for = secret_owner
 						}
 					}
 				}
 			}
 			stress_impact = {
 				just = minor_stress_impact_gain
-				zealous = minor_stress_impact_gain
 			}
 		}
 		ai_chance = {
@@ -4568,8 +4502,22 @@ harem_politics.0004 = {
 				add = 20
 			}
 			modifier = { #Favored consort
-				has_character_modifier = favored_consort_modifier
-				add = 5
+				scope:loved_consort = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Favored consort
+				scope:loved_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
+			}
+			modifier = { #Favored consort
+				scope:loved_consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
 			}
 			modifier = { #Culture
 				culture = scope:loved_consort.culture
@@ -4581,7 +4529,7 @@ harem_politics.0004 = {
 			}
 			modifier = { #Aptitude
 				scope:loved_consort.aptitude:grand_consort_court_position >= 4
-				add = 10
+				add = 5
 			}
 			modifier = { #Aptitude
 				scope:loved_consort.aptitude:grand_consort_court_position <= 2
@@ -4632,34 +4580,20 @@ harem_politics.0004 = {
 		}
 		if = {
 			limit = {
-				OR = {
-					AND = {
-						has_trait = just
-						NOR = {
-							has_imprisonment_reason = scope:loved_consort
-							scope:loved_consort = {
-								any_secret = {
-									exists = secret_owner
-									is_known_by = root
-									is_criminal_for = secret_owner
-								}
-							}
-						}
-					}
-					AND = {
-						has_trait = zealous
-						scope:loved_consort = {
-							AND = {
-								num_sinful_traits = 0
-								num_virtuous_traits >= 1
-							}
+				has_trait = just
+				NOR = {
+					has_imprisonment_reason = scope:loved_consort
+					scope:loved_consort = {
+						any_secret = {
+							exists = secret_owner
+							is_known_by = root
+							is_criminal_for = secret_owner
 						}
 					}
 				}
 			}
 			stress_impact = {
 				just = minor_stress_impact_gain
-				zealous = minor_stress_impact_gain
 			}
 		}
 		if = {
@@ -4670,6 +4604,13 @@ harem_politics.0004 = {
 						has_trait = arrogant
 						has_trait = greedy
 						has_trait = impatient
+					}
+					accepts_harems = yes
+					NOT = {
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
+						}
 					}
 				}
 			}
@@ -4686,7 +4627,7 @@ harem_politics.0004 = {
 				ai_honor = -0.2
 			}
 			modifier = { #More likely if they have sinful traits
-				add = 20
+				add = 10
 				AND = {
 					scope:loved_consort = {
 						num_virtuous_traits = 0
@@ -4702,7 +4643,7 @@ harem_politics.0004 = {
 					has_imprisonment_reason = scope:loved_consort
 				}
 			}
-			modifier = { #More likely if generous
+			modifier = { #Less likely if generous
 				add = -30
 				OR = {
 					has_trait = generous
@@ -4728,44 +4669,11 @@ harem_politics.0004 = {
 				scope:loved_consort = {
 					is_lowborn = yes
 				}
-				add = 15
+				add = 5
 			}
-			modifier = { #Faith considerations
+			modifier = { # Faith considerations
 				NOT = { faith = scope:loved_consort.faith }				
 				add = 20
-			}
-			modifier = { #Valuable heir
-				OR = {
-					AND = {
-						OR = {
-							has_realm_law = female_only_law
-							has_realm_law = female_preference_law
-						}
-						scope:loved_consort = {
-							any_child = {
-								AND = {
-									is_male = no
-									is_child_of = root
-								}
-							}
-						}
-					}
-					AND = {
-						OR = {
-							has_realm_law = male_only_law
-							has_realm_law = male_preference_law
-						}
-						scope:loved_consort = {
-							any_child = {
-								AND = {
-									is_male = yes
-									is_child_of = root
-								}
-							}
-						}
-					}
-				}
-				add = -10
 			}
 		}
 	}
@@ -4802,6 +4710,7 @@ scripted_trigger harem_politics_valid_demotion_consort_trigger = {
 		}
 
 		has_character_modifier = beloved_consort_modifier
+		has_character_modifier = favor_boost_modifier
 	}
 	is_courtier_of = root
 	save_temporary_scope_as = criminal_consort
@@ -4984,9 +4893,17 @@ harem_politics.0005 = {
 					}
 					add = 15
 				}
+				modifier = { #Favored consort
+					has_character_modifier = favored_consort_modifier
+					add = -15
+				}
 				modifier = { #Unfavored consort
 					has_character_modifier = unfavored_consort_modifier
 					add = 10
+				}
+				modifier = { #Unfavored consort
+					has_character_modifier = forgotten_consort_modifier
+					add = 20
 				}
 				modifier = { #No kids
 					any_child = {
@@ -5096,14 +5013,6 @@ harem_politics.0005 = {
 					}
 					add = 20
 				}
-				modifier = { #Unfavored consorts
-					has_character_modifier = unfavored_consort_modifier
-					add = 20
-				}
-				modifier = { #Unfavored consorts
-					has_character_modifier = forgotten_consort_modifier
-					add = 30
-				}
 			}
 			save_scope_as = sinful_spouse
 		}
@@ -5120,26 +5029,6 @@ harem_politics.0005 = {
 		revoke_court_position = {
 			recipient = scope:sinful_spouse
 			court_position = grand_consort_court_position
-		}
-		if = {
-			limit = {
-				AND = {
-					has_trait = zealous
-					scope:sinful_spouse = {
-						AND = {
-							num_sinful_traits >= 2
-							num_virtuous_traits = 0
-						}
-					}
-				}
-			}
-			stress_impact = {
-				zealous = minor_stress_impact_loss
-			}
-		}
-		stress_impact = {
-			vengeful = minor_stress_impact_loss
-			callous = minor_stress_impact_loss
 		}
 		
 		ai_chance = {
@@ -5215,7 +5104,7 @@ harem_politics.0005 = {
 					any_secret = {
 						exists = secret_owner
 						is_known_by = root
-						is_criminal_for = secret_owner
+						is_criminal_for = root
 					}
 				}
 				add = 20
@@ -5224,7 +5113,19 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					has_character_modifier = unfavored_consort_modifier
 				}
-				add = 15
+				add = 10
+			}
+			modifier = { #Unfavored consort
+				scope:sinful_spouse = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 20
+			}
+			modifier = { #Favored consort
+				scope:sinful_spouse = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -15
 			}
 			
 			modifier = { #No kids
@@ -5234,7 +5135,7 @@ harem_politics.0005 = {
 						count = 0
 					}
 				}
-				add = 15
+				add = 10
 			}
 			modifier = { #No connections
 				any_close_family_member = {
@@ -5248,7 +5149,7 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					is_lowborn = yes
 				}
-				add = 10
+				add = 5
 			}
 			modifier = { #Scolded consort
 				scope:sinful_spouse = {
@@ -5266,7 +5167,7 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = -30
+				add = -20
 			}
 			modifier = { #Aptitude
 				scope:sinful_spouse.aptitude:grand_consort_court_position >= 3
@@ -5283,8 +5184,9 @@ harem_politics.0005 = {
 			modifier = { #Alliances
 				any_close_family_member = {
 					is_landed = yes
+					highest_held_title_tier = tier_county
 				}
-				add = -25
+				add = -15
 			}
 			modifier = { #Valuable heir
 				OR = {
@@ -5343,28 +5245,32 @@ harem_politics.0005 = {
 			forgiving = minor_stress_impact_gain
 			compassionate = minor_stress_impact_gain
 			vengeful = minor_stress_impact_loss
-			callous = minor_stress_impact_loss
 		}
 		
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
-				ai_honor = -0.1
+				ai_honor = 0.1
 			}
-			modifier = { #Alliance
+			modifier = { #More likely if criminal
+				add = 30
+				has_imprisonment_reason = scope:sinful_spouse
+			}
+			modifier = { #They were already demoted
 				scope:sinful_spouse = {
-					any_close_family_member = {
-						is_allied_to = root
+					OR = {
+						has_character_modifier = demoted_primary_spouse_modifier
+						has_character_modifier = demoted_spouse_modifier
 					}
 				}
-				add = -30
+				add = -10
 			}
 			modifier = { #Just and criminal
 				AND = {
 					has_trait = just
 					has_imprisonment_reason = scope:sinful_spouse
 				}
-				add = 25
+				add = 15
 			}
 			modifier = { #Zealous
 				AND = {
@@ -5376,7 +5282,7 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = 25
+				add = 15
 			}
 			modifier = { #Stress management
 				add = -30
@@ -5386,10 +5292,10 @@ harem_politics.0005 = {
 				}
 			}
 			modifier = { #More likely if low opinion
-				add = 25
+				add = 15
 				opinion = {
 					target = scope:sinful_spouse
-					value <= medium_negative_opinion
+					value <= low_negative_opinion
 				}
 			}
 			modifier = { #Culture
@@ -5410,15 +5316,12 @@ harem_politics.0005 = {
 				add = 60
 			}
 			modifier = { #Secret
-				AND = {
-					scope:sinful_spouse = {
-						any_secret = {
-							exists = secret_owner
-							is_known_by = root
-							is_criminal_for = secret_owner
-						}
+				scope:sinful_spouse = {
+					any_secret = {
+						exists = secret_owner
+						is_known_by = root
+						is_criminal_for = root
 					}
-					has_trait = just
 				}
 				add = 20
 			}
@@ -5426,7 +5329,19 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					has_character_modifier = unfavored_consort_modifier
 				}
-				add = 15
+				add = 10
+			}
+			modifier = { #Unfavored consort
+				scope:sinful_spouse = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 20
+			}
+			modifier = { #Favored consort
+				scope:sinful_spouse = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -15
 			}
 			
 			modifier = { #No kids
@@ -5436,7 +5351,7 @@ harem_politics.0005 = {
 						count = 0
 					}
 				}
-				add = 15
+				add = 10
 			}
 			modifier = { #No connections
 				any_close_family_member = {
@@ -5450,6 +5365,12 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					is_lowborn = yes
 				}
+				add = 5
+			}
+			modifier = { #Scolded consort
+				scope:sinful_spouse = {
+					has_character_flag = flag_scolded_consort
+				}
 				add = 10
 			}
 			modifier = { #Less if they come from a prominent family and innocent
@@ -5462,34 +5383,15 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = -40
+				add = -20
 			}
-			modifier = { #Primary spouse considerations
-				scope:sinful_spouse = {
-					this = root.primary_spouse
+			
+			modifier = { #Alliances
+				any_close_family_member = {
+					is_landed = yes
+					highest_held_title_tier = tier_county
 				}
-				add = -50
-			}
-			modifier = { #GC considerations
-				scope:sinful_spouse = {
-					has_court_position = grand_consort_court_position
-				}
-				add = -25
-			}
-			modifier = { #They were already demoted
-				scope:sinful_spouse = {
-					OR = {
-						has_character_modifier = demoted_primary_spouse_modifier
-						has_character_modifier = demoted_spouse_modifier
-					}
-				}
-				add = -10
-			}
-			modifier = { #Scolded consort
-				scope:sinful_spouse = {
-					has_character_flag = flag_scolded_consort
-				}
-				add = 10
+				add = -15
 			}
 			modifier = { #Valuable heir
 				OR = {
@@ -5572,34 +5474,20 @@ harem_politics.0005 = {
 				root = {
 					if = {
 						limit = {
+							has_trait = just
 							OR = {
-								AND = {
-									has_trait = just
-									OR = {
-										has_imprisonment_reason = scope:sinful_spouse
-										scope:sinful_spouse = {
-											any_secret = {
-												exists = secret_owner
-												is_known_by = root
-												is_criminal_for = secret_owner
-											}
-										}
-									}
-								}
-								AND = {
-									has_trait = zealous
-									scope:sinful_spouse = {
-										AND = {
-											num_sinful_traits >= 2
-											num_virtuous_traits = 0
-										}
+								has_imprisonment_reason = scope:sinful_spouse
+								scope:sinful_spouse = {
+									any_secret = {
+										exists = secret_owner
+										is_known_by = root
+										is_criminal_for = secret_owner
 									}
 								}
 							}
 						}
 						stress_impact = {
 							just = minor_stress_impact_loss
-							zealous = minor_stress_impact_loss
 						}
 					}
 					stress_impact = {
@@ -5616,131 +5504,14 @@ harem_politics.0005 = {
 				IMPRISONER = root
 			}
 		}
-		stress_impact = {
-			vengeful = minor_stress_impact_loss
-			callous = minor_stress_impact_loss
-		}
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
-				ai_honor = -0.1
+				ai_honor = 0.1
 			}
 			modifier = { #More likely if criminal
-				add = 15
-				has_imprisonment_reason = scope:sinful_spouse
-			}
-			modifier = { #GC considerations
-				scope:sinful_spouse = {
-					has_court_position = grand_consort_court_position
-				}
-				add = -15
-			}
-			modifier = { #More likely if vengeful
-				add = 20
-				OR = {
-					has_trait = vengeful
-					has_trait = callous
-				}
-			}
-			modifier = { #Known criminal
-				AND = {
-					has_trait = just
-					has_imprisonment_reason = scope:sinful_spouse
-				}
-				add = 20
-			}
-			
-			modifier = { #Zealous
-				AND = {
-					has_trait = zealous
-					scope:sinful_spouse = {
-						AND = {
-							num_sinful_traits >= 2
-							num_virtuous_traits = 0
-						}
-					}
-				}
-				add = 20
-			}
-			modifier = { #Stress management
-				add = -30
-				OR = {
-					has_trait = forgiving
-					has_trait = compassionate
-				}
-			}
-			
-			modifier = { #More if they come from a prominent family and are criminals
-				scope:sinful_spouse = {
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							highest_held_title_tier >= tier_kingdom
-						}
-					}
-				}
 				add = 30
-			}
-			modifier = { #Less if they come from a prominent family and innocent
-				AND = {
-					scope:sinful_spouse = {
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								highest_held_title_tier >= tier_kingdom
-							}
-						}
-					}
-					NOR = {
-						has_imprisonment_reason = scope:sinful_spouse
-						has_relation_rival = scope:sinful_spouse
-						has_relation_nemesis = scope:sinful_spouse
-						scope:sinful_spouse = {
-							OR = {
-								any_child = {
-									even_if_dead = yes
-									count >= 4
-								}
-								AND = {
-									num_sinful_traits >= 2
-									num_virtuous_traits = 0
-								}
-								any_child = {
-									this = root.player_heir
-								}
-								any_secret = {
-									exists = secret_owner
-									is_known_by = root
-									is_criminal_for = secret_owner
-								}
-							}
-						}
-					}
-				}
-				add = -30
-			}
-			modifier = { #More likely if low opinion
-				add = 15
-				opinion = {
-					target = scope:sinful_spouse
-					value <= low_negative_opinion
-				}
-			}
-			modifier = { #Culture
-				culture = scope:sinful_spouse.culture
-				add = 10
-			}
-			modifier = { #Faith
-				faith = scope:sinful_spouse.faith
-				add = 15
-			}
-			modifier = { #Primary spouse considerations
-				scope:sinful_spouse = {
-					this = root.primary_spouse
-				}
-				add = -20
+				has_imprisonment_reason = scope:sinful_spouse
 			}
 			modifier = { #They were already demoted
 				scope:sinful_spouse = {
@@ -5751,11 +5522,120 @@ harem_politics.0005 = {
 				}
 				add = -10
 			}
+			modifier = { #Just and criminal
+				AND = {
+					has_trait = just
+					has_imprisonment_reason = scope:sinful_spouse
+				}
+				add = 15
+			}
+			modifier = { #Stress management
+				add = -30
+				OR = {
+					has_trait = forgiving
+					has_trait = compassionate
+				}
+			}
+			modifier = { #More likely if low opinion
+				add = 15
+				opinion = {
+					target = scope:sinful_spouse
+					value <= low_negative_opinion
+				}
+			}
+			modifier = { #Culture
+				NOT = { culture = scope:sinful_spouse.culture }
+				add = 10
+			}
+			modifier = { #Faith
+				NOT = { faith = scope:sinful_spouse.faith }
+				add = 15
+			}
+			
+			modifier = { #Rival
+				has_relation_rival = scope:sinful_spouse
+				add = 30
+			}
+			modifier = { #Nemesis
+				has_relation_nemesis = scope:sinful_spouse
+				add = 60
+			}
+			modifier = { #Secret
+				scope:sinful_spouse = {
+					any_secret = {
+						exists = secret_owner
+						is_known_by = root
+						is_criminal_for = root
+					}
+				}
+				add = 20
+			}
+			modifier = { #Unfavored consort
+				scope:sinful_spouse = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Unfavored consort
+				scope:sinful_spouse = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 20
+			}
+			modifier = { #Favored consort
+				scope:sinful_spouse = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -15
+			}
+			
+			modifier = { #No kids
+				scope:sinful_spouse = {
+					any_child = {
+						even_if_dead = yes
+						count = 0
+					}
+				}
+				add = 10
+			}
+			modifier = { #No connections
+				any_close_family_member = {
+					NOT = {
+						is_vassal_of = root
+					}
+				}
+				add = 10
+			}
+			modifier = { #Lowborn
+				scope:sinful_spouse = {
+					is_lowborn = yes
+				}
+				add = 5
+			}
 			modifier = { #Scolded consort
 				scope:sinful_spouse = {
 					has_character_flag = flag_scolded_consort
 				}
 				add = 10
+			}
+			modifier = { #Less if they come from a prominent family and innocent
+				scope:sinful_spouse = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							highest_held_title_tier >= tier_kingdom
+						}
+					}
+				}
+				add = -20
+			}
+			modifier = { #Alliances
+				any_close_family_member = {
+					is_landed = yes
+					highest_held_title_tier = tier_county
+				}
+				add = -15
 			}
 			modifier = { #Valuable heir
 				OR = {
@@ -5788,9 +5668,8 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = -10
+				add = -20
 			}
-			
 		}
 		trigger_event = char_interaction.0231
 	}
@@ -5799,39 +5678,24 @@ harem_politics.0005 = {
 		name = harem_politics.0004.c
 		if = {
 			limit = {
+				has_trait = just
 				OR = {
-					AND = {
-						has_trait = just
-						OR = {
-							has_imprisonment_reason = scope:sinful_spouse
-							scope:sinful_spouse = {
-								any_secret = {
-									exists = secret_owner
-									is_known_by = root
-									is_criminal_for = secret_owner
-								}
-							}
-						}
-					}
-					AND = {
-						has_trait = zealous
-						scope:sinful_spouse = {
-							AND = {
-								num_sinful_traits >= 2
-								num_virtuous_traits = 0
-							}
+					has_imprisonment_reason = scope:sinful_spouse
+					scope:sinful_spouse = {
+						any_secret = {
+							exists = secret_owner
+							is_known_by = root
+							is_criminal_for = secret_owner
 						}
 					}
 				}
 			}
 			stress_impact = {
 				just = minor_stress_impact_gain
-				zealous = minor_stress_impact_gain
 			}
 		}
 		stress_impact = {
 			vengeful = minor_stress_impact_gain
-			callous = minor_stress_impact_gain
 		}
 		ai_chance = {
 			base = 10
@@ -5841,6 +5705,7 @@ harem_politics.0005 = {
 			modifier = { #Alliances
 				any_close_family_member = {
 					is_landed = yes
+					highest_held_title_tier = tier_county
 				}
 				add = 15
 			}
@@ -5857,7 +5722,7 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					has_character_modifier = favored_consort_modifier
 				}
-				add = 15
+				add = 20
 			}
 			modifier = { #Compassionate
 				OR = {
@@ -5867,10 +5732,7 @@ harem_politics.0005 = {
 				add = 20
 			}
 			modifier = { #Vengeful
-				OR = {
-					has_trait = vengeful
-					has_trait = callous
-				}
+				has_trait = vengeful
 				add = -20
 			}
 			modifier = { #Known criminal
@@ -5891,10 +5753,10 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = -15
+				add = -5
 			}
 			modifier = { #More likely if not criminal
-				add = 20
+				add = 15
 				NOT = {
 					has_imprisonment_reason = scope:sinful_spouse
 				}
@@ -5934,7 +5796,7 @@ harem_politics.0005 = {
 						}
 					}
 				}
-				add = 25
+				add = 20
 			}
 			modifier = { #Connections
 				scope:sinful_spouse = {
@@ -5948,7 +5810,7 @@ harem_politics.0005 = {
 				scope:sinful_spouse = {
 					this = root.primary_spouse
 				}
-				add = 25
+				add = 20
 			}
 			modifier = { #GC
 				scope:sinful_spouse = {
