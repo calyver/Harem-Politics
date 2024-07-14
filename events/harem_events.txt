@@ -1857,12 +1857,12 @@ harem_events.0003 = {
 scripted_trigger consort_events_ying_pin_trigger = {
 	is_physically_able_ai_adult = yes
 	is_healthy = yes
+
 	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
 	
-	OR = {
-		accepts_concubinage = yes
-		accepts_polygamy = yes
-	}
+	accepts_harems = yes
 	
 	NOR = {
 		
@@ -1874,16 +1874,20 @@ scripted_trigger consort_events_ying_pin_trigger = {
 		
 		has_trait = wounded
 		has_trait = ill
-
-		has_character_flag = flag_scolded_consort
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
 		
 		has_relation_nemesis = root
 		has_relation_rival = root
 		has_relation_potential_rival = root
+
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+	}
+
+	opinion = {
+		target = root
+		value >= -15
 	}
 	
 	is_courtier_of = root
@@ -1899,6 +1903,15 @@ scripted_trigger consort_events_ying_pin_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -2050,30 +2063,39 @@ harem_events.0004 = {
 					add = 20
 				}
 
-				modifier = {
+				modifier = { #Favor
 					has_character_modifier = favored_consort_modifier
-					add = 20
+					add = 5
 				}
+				modifier = { #Favor
+					has_character_modifier = favor_boost_modifier
+					add = 10
+				}
+				modifier = { #Favor
+					has_character_modifier = beloved_consort_modifier
+					add = 15
+				}
+
 				modifier = {
 					OR = {
 						has_relation_potential_friend = root
 						has_relation_potential_lover = root
 					}
-					add = 10
+					add = 5
 				}
 				modifier = {
 					OR = {
 						has_relation_lover = root
 						has_relation_friend = root
 					}
-					add = 15
+					add = 10
 				}
 				modifier = {
 					OR = {
 						has_relation_soulmate = root
 						has_relation_best_friend = root
 					}
-					add = 20
+					add = 15
 				}
 			}
 			save_scope_as = first_consort
@@ -2495,7 +2517,7 @@ harem_events.0004 = {
 				}
 			}
 			
-			75 = { #Training for knights
+			75 = { #Training for knight-consorts
 				modifier = {
 					add = {
 						value = scope:first_consort.martial
@@ -2614,7 +2636,7 @@ harem_events.0004 = {
 		}
 	}
 	
-	option = { #Spend time with Ying Pin
+	option = { #Spend time with Ying Pin - check
         name = harem_politics.0020.a
 		
 		#Possible outcomes
@@ -2639,6 +2661,26 @@ harem_events.0004 = {
 					max = 50
 					multiplier = 0.5
 				}
+
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = favored_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 15
+				}
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 20
+				}
+
 				modifier = {
 					NOT = { scope:first_consort = { is_attracted_to_gender_of = root } }
 					factor = 0
@@ -2658,6 +2700,7 @@ harem_events.0004 = {
 					set_relation_potential_lover = scope:first_consort
 				}
 				scope:first_consort = {
+					calyver_favor_minor_gain_effect = yes
 					add_opinion = {
 						target = root
 						modifier = romance_opinion
@@ -2698,6 +2741,26 @@ harem_events.0004 = {
 					}
 					add = 15
 				}
+
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = favored_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 15
+				}
+				modifier = { #Favor
+					scope:first_consort = {
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 20
+				}
+
 				modifier = {
 					NOT = { scope:first_consort = { is_attracted_to_gender_of = root } }
 					factor = 0
@@ -2711,6 +2774,7 @@ harem_events.0004 = {
 					PREGNANCY_CHANCE = pregnancy_chance
 				}
 				scope:first_consort = {
+					calyver_favor_moderate_gain_effect = yes
 					add_opinion = {
 						target = root
 						modifier = romance_opinion
@@ -2800,7 +2864,19 @@ harem_events.0004 = {
 				scope:first_consort = { 
 					has_character_modifier = favored_consort_modifier
 				}
+				add = 10
+			}
+			modifier = {
+				scope:first_consort = { 
+					has_character_modifier = favor_boost_modifier
+				}
 				add = 15
+			}
+			modifier = {
+				scope:first_consort = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
 			}
         }
     }
@@ -2892,7 +2968,7 @@ harem_events.0004 = {
 			}	
 			modifier = {
 				NOT = { is_attracted_to_gender_of = scope:first_consort }
-				add = 15
+				add = 20
 			}
         }
     }
