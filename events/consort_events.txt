@@ -11,7 +11,20 @@ namespace = consort_events
 scripted_trigger mei_daying_trigger = {
 	is_physically_able_ai_adult = yes
 	is_concubine = yes
+
+	harem_politics_evil_consort_trigger = yes
+	harem_politics_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+
 	age <= 21
+
+	has_character_flag = flag_new_consort
+	opinion = {
+		target = root
+		value <= 10
+	}
+
 	exists = court_owner
 	court_owner = {
 		any_consort = {
@@ -22,27 +35,33 @@ scripted_trigger mei_daying_trigger = {
 		this = root
 		has_court_position = grand_consort_court_position
 		has_character_modifier = unfavored_consort_modifier
+		
 		has_trait = pregnant
 		has_trait = craven
 		has_trait = shy
 		has_trait = wounded
 		has_trait = ill
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
+
 		has_relation_best_friend = root
 		has_relation_friend = root
 		has_relation_lover = root
 		has_relation_soulmate = root
 		has_hook = root
 		has_strong_hook = root
+
+		any_close_or_extended_family_member = {
+			is_liege_or_above_of = scope:temporary_partner
+		}
 	}
-	harem_politics_evil_consort_trigger = yes
-	has_character_flag = flag_new_consort
-	opinion = {
-		target = root
-		value <= 10
+	
+	OR = { #Mei isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
 	}
 }
 
@@ -788,6 +807,10 @@ scripted_effect begging_punished_consort_effect = {
 				}
 				modifier = { #Traits
 					$BEGGAR$ = { has_trait = callous }
+					add = 10
+				}
+				modifier = { #Traits
+					$BEGGAR$ = { has_trait = arrogant }
 					add = 15
 				}
 				modifier = { #Traits
@@ -800,21 +823,48 @@ scripted_effect begging_punished_consort_effect = {
 				}
 				modifier = { #Harem consorts wouldn't see it as worth it
 					$BEGGAR$ = { 
-						NOR = { 	
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
+						accepts_harems = no
 					}
-					add = -30
+					add = -20
 				}
+
 				modifier = { #Evil consorts won't take punishment really well
 					$BEGGAR$ = { harem_politics_evil_consort_trigger = yes }
 					add = 10
 				}
+
 				modifier = { #Favored consort
-					$BEGGAR$ = { has_character_modifier = favored_consort_modifier }
+					$BEGGAR$ = { 
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 20
+				}
+				modifier = { #Favored consort
+					$BEGGAR$ = { 
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 15
+				}
+				modifier = { #Favored consort
+					$BEGGAR$ = { 
+						has_character_modifier = favored_consort_modifier 
+					}
 					add = 10
 				}
+
+				modifier = { #Unfavored consort
+					$BEGGAR$ = { 
+						has_character_modifier = unfavored_consort_modifier
+					}
+					add = -10
+				}
+				modifier = { #Unfavored consort
+					$BEGGAR$ = { 
+						has_character_modifier = forgotten_consort_modifier
+					}
+					add = -20
+				}
+
 				modifier = { #Arrogant consorts won't take disrespect lightly
 					$BEGGAR$ = { 
 						OR = {
@@ -937,10 +987,39 @@ scripted_effect begging_punished_consort_effect = {
 					}
 					add = 10
 				}
+
 				modifier = { #scope:secondary_actor is favored
-					scope:secondary_actor = { has_character_modifier = favored_consort_modifier }
+					scope:secondary_actor = { 
+						has_character_modifier = beloved_consort_modifier 
+					}
+					add = 20
+				}
+				modifier = { #scope:secondary_actor is favored
+					scope:secondary_actor = { 
+						has_character_modifier = favor_boost_modifier 
+					}
 					add = 15
 				}
+				modifier = { #scope:secondary_actor is favored
+					scope:secondary_actor = { 
+						has_character_modifier = favored_consort_modifier 
+					}
+					add = 10
+				}
+
+				modifier = { #scope:secondary_actor is unfavored
+					scope:secondary_actor = { 
+						has_character_modifier = unfavored_consort_modifier 
+					}
+					add = -10
+				}
+				modifier = { #scope:secondary_actor is unfavored
+					scope:secondary_actor = { 
+						has_character_modifier = forgotten_consort_modifier 
+					}
+					add = -20
+				}
+
 				modifier = { #scope:secondary_actor is influential
 					scope:secondary_actor = { 
 						any_close_family_member = {
@@ -1825,7 +1904,7 @@ consort_events.0001 = {
 			is_physically_able_adult = yes
 			any_consort = {
 				is_physically_able_adult = yes
-				count >= 2
+				count >= 3
 			}
 			save_temporary_scope_as = temporary_partner
 			any_concubine = {
@@ -1873,6 +1952,42 @@ consort_events.0001 = {
 		is_physically_able_adult = yes
 	}
 	
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = -0.1
+			has_trait = shy
+		}
+		modifier = {
+			add = -0.1
+			has_trait = craven
+		}
+		modifier = {
+			add = 0.2
+			has_character_modifier = beloved_consort_modifier
+		}
+		modifier = {
+			add = 0.2
+			harem_politics_favored_consort_trigger = yes
+		}
+		modifier = {
+			add = -0.2
+			has_character_modifier = unfavored_consort_modifier
+		}
+		modifier = {
+			add = -0.3
+			has_character_modifier = forgotten_consort_modifier
+		}
+		modifier = {
+			add = 0.1
+			age >= 30
+		}
+		modifier = {
+			add = 0.1
+			age >= 40
+		}
+	}
+
 	immediate = {
 		random_consort = {
 			limit = {
@@ -1952,13 +2067,18 @@ consort_events.0001 = {
 				weight = {
 					base = 10
 					modifier = {
-						OR = {
-							has_trait = arrogant
-							has_trait = ambitious
-							has_trait = brave
-						}
+						has_trait = arrogant
 						add = 20
 					}
+					modifier = {
+						has_trait = ambitious
+						add = 10
+					}
+					modifier = {
+						has_trait = brave
+						add = 10
+					}
+
 					modifier = {
 						opinion = {
 							target = root
@@ -1966,32 +2086,53 @@ consort_events.0001 = {
 						}
 						add = 20
 					}
+
 					modifier = {
 						is_lowborn = yes
 						add = 20
 					}
 					modifier = {
+						NOT = {
+							any_close_or_extended_family_member = {
+								OR = {
+									this = scope:partner.primary_spouse
+									is_powerful_vassal_of = scope:partner
+									is_councillor_of = scope:partner
+									is_parent_of = scope:partner
+									this = scope:partner
+								}
+							}
+						}
+						add = 10
+					}
+
+					modifier = { #Favor
+						has_character_modifier = beloved_consort_modifier
+						add = 40
+					}
+					modifier = { #Favor
+						has_character_modifier = favor_boost_modifier
+						add = 30
+					}
+					modifier = {
 						has_character_modifier = favored_consort_modifier
 						add = 20
 					}
-					modifier = {
-						any_close_or_extended_family_member = {
-							NOR = {
-								this = scope:partner.primary_spouse
-								is_powerful_vassal_of = scope:partner
-								is_councillor_of = scope:partner
-								is_parent_of = scope:partner
-								is_liege_or_above_of = scope:partner
-								this = scope:partner
-							}
-						}
-						add = 20
+
+					modifier = { #Naive
+						age <= 19
+						add = 10
 					}
 				}
 				save_scope_as = valid_target_consort
 			}
 		}
 		save_scope_as = secondary_actor
+
+		#Mei became favored
+		scope:valid_target_consort = {
+			calyver_favor_minor_gain_effect = yes
+		}
 	}
 	
 	#Torture Mei
@@ -2025,49 +2166,58 @@ consort_events.0001 = {
 			}
 			modifier = { #Scolded consort
 				has_character_flag = flag_scolded_consort
-				add = -30
+				add = -10
 			}
 			modifier = { #Evil consort
 				harem_politics_evil_consort_trigger = yes
-				add = 30
+				add = 20
 			}
-			modifier = { #The Grand Consort
-				scope:valid_target_consort = {
-					has_court_position = grand_consort_court_position
-				}
-				add = -10
-			}
-			modifier = { #More if high target opinion
+			
+			modifier = { #More if low target opinion
 				opinion = {
 					target = scope:valid_target_consort
 					value <= low_negative_opinion
 				}
 				add = 15
 			}
-			modifier = { #More if high target opinion
+			modifier = { #More if low target opinion
 				opinion = {
 					target = scope:valid_target_consort
 					value <= medium_negative_opinion
 				}
 				add = 10
 			}
+
 			modifier = { #Stress management
-				OR = {
-					has_trait = compassionate
-					has_trait = forgiving
-					has_trait = temperate
-					has_trait = calm
-				}
-				add = -50
+				has_trait = compassionate
+				add = -25
 			}
 			modifier = { #Stress management
-				OR = {
-					has_trait = callous
-					has_trait = vengeful
-					has_trait = sadistic
-				}
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = temperate
+				add = -15
+			}
+			modifier = { #Stress management
+				has_trait = calm
+				add = -15
+			}
+
+			modifier = { #Stress management
+				has_trait = callous
 				add = 25
 			}
+			modifier = { #Stress management
+				has_trait = sadistic
+				add = 25
+			}
+			modifier = { #Stress management
+				has_trait = vengeful
+				add = 25
+			}
+
 			modifier = { #More if root is powerful
 				any_close_or_extended_family_member = {
 					OR = {
@@ -2075,12 +2225,28 @@ consort_events.0001 = {
 						is_powerful_vassal_of = scope:partner
 						is_councillor_of = scope:partner
 						is_parent_of = scope:partner
-						is_liege_or_above_of = scope:partner
 						this = scope:partner
 					}
 				}
 				add = 40
 			}
+			modifier = { #More if the consort is not important
+				scope:valid_target_consort = {
+					NOT = {
+						any_close_or_extended_family_member = {
+							OR = {
+								this = scope:partner.primary_spouse
+								is_powerful_vassal_of = scope:partner
+								is_councillor_of = scope:partner
+								is_parent_of = scope:partner
+								this = scope:partner
+							}
+						}
+					}
+				}
+				add = 10
+			}
+
 			modifier = { #Mothers are important
 				scope:valid_target_consort = {
 					any_child = {
@@ -2088,23 +2254,9 @@ consort_events.0001 = {
 						count >= 1
 					}
 				}
-				add = -25
+				add = -15
 			}
-			modifier = { #More if the consort is not important
-				scope:valid_target_consort = {
-					any_close_or_extended_family_member = {
-						NOR = {
-							this = scope:partner.primary_spouse
-							is_powerful_vassal_of = scope:partner
-							is_councillor_of = scope:partner
-							is_parent_of = scope:partner
-							is_liege_or_above_of = scope:partner
-							this = scope:partner
-						}
-					}
-				}
-				add = 25
-			}
+			
 			modifier = { #More if good contacts
 				scope:valid_target_consort = {
 					NOR = {
@@ -2142,52 +2294,59 @@ consort_events.0001 = {
 								has_relation_soulmate = scope:partner.father
 							}
 						}
-						
-						has_character_modifier = favored_consort_modifier
 					}
 				}
 				add = 10
 			}
-			modifier = { #More if good contacts
-				OR = {
-					has_relation_friend = scope:partner
-					has_relation_best_friend = scope:partner
-					has_relation_lover = scope:partner
-					has_relation_soulmate = scope:partner
-					
-					AND = {
-						exists = scope:partner.primary_spouse
-						OR = {
-							has_relation_friend = scope:partner.primary_spouse
-							has_relation_best_friend = scope:partner.primary_spouse
-							has_relation_lover = scope:partner.primary_spouse
-							has_relation_soulmate = scope:partner.primary_spouse
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.mother
-						OR = {
-							has_relation_friend = scope:partner.mother
-							has_relation_best_friend = scope:partner.mother
-							has_relation_lover = scope:partner.mother
-							has_relation_soulmate = scope:partner.mother
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.father
-						OR = {
-							has_relation_friend = scope:partner.father
-							has_relation_best_friend = scope:partner.father
-							has_relation_lover = scope:partner.father
-							has_relation_soulmate = scope:partner.father
-						}
-					}
-					
-					has_character_modifier = favored_consort_modifier
-				}
+
+			modifier = { #The Primary Spouse
+				exists = scope:partner.primary_spouse
+				this = scope:partner.primary_spouse
 				add = 10
+			}
+			modifier = { #The Grand Consort
+				has_court_position = grand_consort_court_position
+				add = 5
+			}
+			modifier = { #Is married
+				is_married = yes
+				add = 5
+			}
+			
+			modifier = { #The Grand Consort
+				scope:valid_target_consort = {
+					has_court_position = grand_consort_court_position
+				}
+				add = -10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = 20
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = 15
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = 10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = -20
+			}
+
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -20
 			}
 		}
 	}
@@ -2202,76 +2361,49 @@ consort_events.0001 = {
 			base = 10
 			ai_value_modifier = {
 				ai_compassion = -0.25
-				ai_honor = 0.15
+				ai_honor = -0.25
 			}
 			modifier = { #Scolded consort
 				has_character_flag = flag_scolded_consort
-				add = -30
+				add = -5
 			}
 			modifier = { #Evil consort
 				harem_politics_evil_consort_trigger = yes
-				add = 30
-			}
-			modifier = { #The Grand Consort
-				scope:valid_target_consort = {
-					has_court_position = grand_consort_court_position
-				}
-				add = 10
-			}
-			modifier = { #More if high target opinion
-				AND = {
-					opinion = {
-						target = scope:valid_target_consort
-						value > low_negative_opinion
-					}
-					opinion = {
-						target = scope:valid_target_consort
-						value <= 10
-					}
-				}
-				add = 10
-			}
-			modifier = { #Stress management
-				OR = {
-					has_trait = compassionate
-					has_trait = forgiving
-					has_trait = calm
-				}
-				add = -25
-			}
-			modifier = { #Stress management
-				OR = {
-					has_trait = temperate
-					has_trait = just
-					has_trait = diligent
-				}
-				add = 25
-			}
-			modifier = { #Mothers are important
-				scope:valid_target_consort = {
-					any_child = {
-						is_child_of = scope:partner
-						count >= 1
-					}
-				}
-				add = -25
-			}
-			
-			modifier = { #More if the consort is not important
-				scope:valid_target_consort = {
-					any_close_or_extended_family_member = {
-						NOR = {
-							this = scope:partner.primary_spouse
-							is_powerful_vassal_of = scope:partner
-							is_councillor_of = scope:partner
-							is_parent_of = scope:partner
-							is_liege_or_above_of = scope:partner
-							this = scope:partner
-						}
-					}
-				}
 				add = 20
 			}
+			
+			modifier = { #More if low target opinion
+				opinion = {
+					target = scope:valid_target_consort
+					value <= low_negative_opinion
+				}
+				add = 15
+			}
+			modifier = { #More if low target opinion
+				opinion = {
+					target = scope:valid_target_consort
+					value <= medium_negative_opinion
+				}
+				add = 10
+			}
+
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = temperate
+				add = -15
+			}
+			modifier = { #Stress management
+				has_trait = calm
+				add = -15
+			}
+
 			modifier = { #More if root is powerful
 				any_close_or_extended_family_member = {
 					OR = {
@@ -2279,12 +2411,38 @@ consort_events.0001 = {
 						is_powerful_vassal_of = scope:partner
 						is_councillor_of = scope:partner
 						is_parent_of = scope:partner
-						is_liege_or_above_of = scope:partner
 						this = scope:partner
 					}
 				}
-				add = 40
+				add = 30
 			}
+			modifier = { #More if the consort is not important
+				scope:valid_target_consort = {
+					NOT = {
+						any_close_or_extended_family_member = {
+							OR = {
+								this = scope:partner.primary_spouse
+								is_powerful_vassal_of = scope:partner
+								is_councillor_of = scope:partner
+								is_parent_of = scope:partner
+								this = scope:partner
+							}
+						}
+					}
+				}
+				add = 10
+			}
+
+			modifier = { #Mothers are important
+				scope:valid_target_consort = {
+					any_child = {
+						is_child_of = scope:partner
+						count >= 1
+					}
+				}
+				add = -10
+			}
+			
 			modifier = { #More if good contacts
 				scope:valid_target_consort = {
 					NOR = {
@@ -2322,52 +2480,59 @@ consort_events.0001 = {
 								has_relation_soulmate = scope:partner.father
 							}
 						}
-						
-						has_character_modifier = favored_consort_modifier
 					}
 				}
 				add = 10
 			}
-			modifier = { #More if good contacts
-				OR = {
-					has_relation_friend = scope:partner
-					has_relation_best_friend = scope:partner
-					has_relation_lover = scope:partner
-					has_relation_soulmate = scope:partner
-					
-					AND = {
-						exists = scope:partner.primary_spouse
-						OR = {
-							has_relation_friend = scope:partner.primary_spouse
-							has_relation_best_friend = scope:partner.primary_spouse
-							has_relation_lover = scope:partner.primary_spouse
-							has_relation_soulmate = scope:partner.primary_spouse
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.mother
-						OR = {
-							has_relation_friend = scope:partner.mother
-							has_relation_best_friend = scope:partner.mother
-							has_relation_lover = scope:partner.mother
-							has_relation_soulmate = scope:partner.mother
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.father
-						OR = {
-							has_relation_friend = scope:partner.father
-							has_relation_best_friend = scope:partner.father
-							has_relation_lover = scope:partner.father
-							has_relation_soulmate = scope:partner.father
-						}
-					}
-					
-					has_character_modifier = favored_consort_modifier
-				}
+
+			modifier = { #The Primary Spouse
+				exists = scope:partner.primary_spouse
+				this = scope:partner.primary_spouse
 				add = 10
+			}
+			modifier = { #The Grand Consort
+				has_court_position = grand_consort_court_position
+				add = 5
+			}
+			modifier = { #Is married
+				is_married = yes
+				add = 5
+			}
+			
+			modifier = { #The Grand Consort
+				scope:valid_target_consort = {
+					has_court_position = grand_consort_court_position
+				}
+				add = -5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = 20
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = 15
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = 10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = -20
+			}
+
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -15
 			}
 		}
 	}
@@ -2381,56 +2546,49 @@ consort_events.0001 = {
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
-				ai_compassion = 0.25
-				ai_honor = -0.15
-			}
-			modifier = { #Scolded consort
-				has_character_flag = flag_scolded_consort
-				add = 10
-			}
-			modifier = { #Evil consort
-				harem_politics_evil_consort_trigger = no
-				add = 10
-			}
-			modifier = { #The Grand Consort
-				scope:valid_target_consort = {
-					has_court_position = grand_consort_court_position
-				}
-				add = 20
-			}
-			modifier = { #More if high target opinion
-				opinion = {
-					target = scope:valid_target_consort
-					value >= medium_positive_opinion
-				}
-				add = 10
-			}
-			modifier = { #Stress management
-				OR = {
-					has_trait = compassionate
-					has_trait = forgiving
-					has_trait = calm
-				}
-				add = 25
-			}
-			modifier = { #Stress management
-				OR = {
-					has_trait = callous
-					has_trait = vengeful
-					has_trait = sadistic
-				}
-				add = -50
-			}
-			modifier = { #Mothers are important
-				scope:valid_target_consort = {
-					any_child = {
-						is_child_of = scope:partner
-						count >= 1
-					}
-				}
-				add = 15
+				ai_compassion = 0.10
+				ai_honor = 0.10
 			}
 			
+			modifier = { #More if low target opinion
+				opinion = {
+					target = scope:valid_target_consort
+					value <= medium_negative_opinion
+				}
+				add = -5
+			}
+
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -15
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = { #Stress management
+				has_trait = temperate
+				add = 5
+			}
+			modifier = { #Stress management
+				has_trait = calm
+				add = 5
+			}
+
+			modifier = { #More if root is not powerful
+				NOT = {
+					any_close_or_extended_family_member = {
+						OR = {
+							this = scope:partner.primary_spouse
+							is_powerful_vassal_of = scope:partner
+							is_councillor_of = scope:partner
+							is_parent_of = scope:partner
+							this = scope:partner
+						}
+					}
+				}
+				add = 10
+			}
 			modifier = { #More if the consort is important
 				scope:valid_target_consort = {
 					any_close_or_extended_family_member = {
@@ -2439,13 +2597,23 @@ consort_events.0001 = {
 							is_powerful_vassal_of = scope:partner
 							is_councillor_of = scope:partner
 							is_parent_of = scope:partner
-							is_liege_or_above_of = scope:partner
 							this = scope:partner
 						}
 					}
 				}
-				add = 40
+				add = 5
 			}
+
+			modifier = { #Mothers are important
+				scope:valid_target_consort = {
+					any_child = {
+						is_child_of = scope:partner
+						count >= 1
+					}
+				}
+				add = 10
+			}
+			
 			modifier = { #More if good contacts
 				scope:valid_target_consort = {
 					OR = {
@@ -2483,56 +2651,50 @@ consort_events.0001 = {
 								has_relation_soulmate = scope:partner.father
 							}
 						}
-						
-						has_character_modifier = favored_consort_modifier
-					}
-				}
-				add = 50
-			}
-			modifier = { #More if bad contacts
-				NOR = {
-					has_relation_friend = scope:partner
-					has_relation_best_friend = scope:partner
-					has_relation_lover = scope:partner
-					has_relation_soulmate = scope:partner
-					
-					AND = {
-						exists = scope:partner.primary_spouse
-						OR = {
-							has_relation_friend = scope:partner.primary_spouse
-							has_relation_best_friend = scope:partner.primary_spouse
-							has_relation_lover = scope:partner.primary_spouse
-							has_relation_soulmate = scope:partner.primary_spouse
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.mother
-						OR = {
-							has_relation_friend = scope:partner.mother
-							has_relation_best_friend = scope:partner.mother
-							has_relation_lover = scope:partner.mother
-							has_relation_soulmate = scope:partner.mother
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.father
-						OR = {
-							has_relation_friend = scope:partner.father
-							has_relation_best_friend = scope:partner.father
-							has_relation_lover = scope:partner.father
-							has_relation_soulmate = scope:partner.father
-						}
-					}
-					
-					has_character_modifier = favored_consort_modifier
-					AND = {	
-						exists = scope:partner.primary_spouse
-						this = scope:partner.primary_spouse
 					}
 				}
 				add = 10
+			}
+
+			modifier = { #Is concubine
+				is_concubine = yes
+				add = 5
+			}
+			
+			modifier = { #The Grand Consort
+				scope:valid_target_consort = {
+					has_court_position = grand_consort_court_position
+				}
+				add = 5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = -15
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = -10
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = -5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = 10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = 15
+			}
+
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -5
 			}
 		}
 	}
@@ -2541,74 +2703,58 @@ consort_events.0001 = {
 	option = {
 		name = consort_events.0001.d
 		stress_impact = {
-			diligent = miniscule_stress_impact_gain
-			just = miniscule_stress_impact_gain
 			sadistic = minor_stress_impact_gain
 			callous = minor_stress_impact_gain
 			vengeful = minor_stress_impact_gain
-			lazy = minor_stress_impact_loss
-			cynical = minor_stress_impact_loss
 		}
 		ai_chance = {
 			base = 10
 			ai_value_modifier = {
-				ai_compassion = 0.25
-				ai_honor = -0.15
+				ai_compassion = 0.15
+				ai_honor = -0.25
 			}
-			modifier = { #Scolded consort
-				has_character_flag = flag_scolded_consort
-				add = 10
-			}
-			modifier = { #Evil consort
-				harem_politics_evil_consort_trigger = no
-				add = 10
-			}
-			modifier = { #The Grand Consort
-				scope:valid_target_consort = {
-					has_court_position = grand_consort_court_position
-				}
-				add = 20
-			}
-			modifier = { #More if high target opinion
-				opinion = {
-					target = scope:valid_target_consort
-					value >= medium_positive_opinion
-				}
-				add = 10
+
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = 15
 			}
 			modifier = { #Stress management
-				OR = {
-					has_trait = lazy
-					has_trait = cynical
-				}
-				add = 25
+				has_trait = forgiving
+				add = 15
 			}
 			modifier = { #Stress management
-				OR = {
-					has_trait = just
-					has_trait = diligent
-				}
+				has_trait = calm
+				add = 5
+			}
+
+			modifier = { #Stress management
+				has_trait = sadistic
 				add = -25
 			}
 			modifier = { #Stress management
-				OR = {
-					has_trait = callous
-					has_trait = vengeful
-					has_trait = sadistic
-				}
-				add = -50
+				has_trait = callous
+				add = -25
 			}
-			modifier = { #Mothers are important
-				scope:valid_target_consort = {
-					any_child = {
-						is_child_of = scope:partner
-						count >= 1
+			modifier = { #Stress management
+				has_trait = vengeful
+				add = -25
+			}
+
+			modifier = { #More if root is not powerful
+				NOT = {
+					any_close_or_extended_family_member = {
+						OR = {
+							this = scope:partner.primary_spouse
+							is_powerful_vassal_of = scope:partner
+							is_councillor_of = scope:partner
+							is_parent_of = scope:partner
+							this = scope:partner
+						}
 					}
 				}
-				add = 15
+				add = 10
 			}
-			
-			modifier = { #More if the consort is not important
+			modifier = { #More if the consort is important
 				scope:valid_target_consort = {
 					any_close_or_extended_family_member = {
 						OR = {
@@ -2616,26 +2762,23 @@ consort_events.0001 = {
 							is_powerful_vassal_of = scope:partner
 							is_councillor_of = scope:partner
 							is_parent_of = scope:partner
-							is_liege_or_above_of = scope:partner
 							this = scope:partner
 						}
 					}
 				}
-				add = 40
-			}
-			modifier = { #More if root is powerful
-				any_close_or_extended_family_member = {
-					NOR = {
-						this = scope:partner.primary_spouse
-						is_powerful_vassal_of = scope:partner
-						is_councillor_of = scope:partner
-						is_parent_of = scope:partner
-						is_liege_or_above_of = scope:partner
-						this = scope:partner
-					}
-				}
 				add = 10
 			}
+
+			modifier = { #Mothers are important
+				scope:valid_target_consort = {
+					any_child = {
+						is_child_of = scope:partner
+						count >= 1
+					}
+				}
+				add = 5
+			}
+			
 			modifier = { #More if good contacts
 				scope:valid_target_consort = {
 					OR = {
@@ -2673,52 +2816,62 @@ consort_events.0001 = {
 								has_relation_soulmate = scope:partner.father
 							}
 						}
-						
-						has_character_modifier = favored_consort_modifier
 					}
-				}
-				add = 50
-			}
-			modifier = { #More if good contacts
-				NOR = {
-					has_relation_friend = scope:partner
-					has_relation_best_friend = scope:partner
-					has_relation_lover = scope:partner
-					has_relation_soulmate = scope:partner
-					
-					AND = {
-						exists = scope:partner.primary_spouse
-						OR = {
-							has_relation_friend = scope:partner.primary_spouse
-							has_relation_best_friend = scope:partner.primary_spouse
-							has_relation_lover = scope:partner.primary_spouse
-							has_relation_soulmate = scope:partner.primary_spouse
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.mother
-						OR = {
-							has_relation_friend = scope:partner.mother
-							has_relation_best_friend = scope:partner.mother
-							has_relation_lover = scope:partner.mother
-							has_relation_soulmate = scope:partner.mother
-						}
-					}
-					
-					AND = {
-						exists = scope:partner.father
-						OR = {
-							has_relation_friend = scope:partner.father
-							has_relation_best_friend = scope:partner.father
-							has_relation_lover = scope:partner.father
-							has_relation_soulmate = scope:partner.father
-						}
-					}
-					
-					has_character_modifier = favored_consort_modifier
 				}
 				add = 10
+			}
+
+			modifier = { #Is concubine
+				is_concubine = yes
+				add = 5
+			}
+			
+			modifier = { #The Grand Consort
+				scope:valid_target_consort = {
+					has_court_position = grand_consort_court_position
+				}
+				add = 5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = -20
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = -15
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = -10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = 10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = 20
+			}
+			
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 15
+			}
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:valid_target_consort = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
 			}
 		}
 	}
