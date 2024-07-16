@@ -34,7 +34,6 @@ scripted_trigger mei_daying_trigger = {
 	NOR = {
 		this = root
 		has_court_position = grand_consort_court_position
-		has_character_modifier = unfavored_consort_modifier
 		
 		has_trait = pregnant
 		has_trait = craven
@@ -66,8 +65,10 @@ scripted_trigger mei_daying_trigger = {
 }
 
 scripted_trigger shen_trigger = {
-	harem_politics_evil_consort_trigger = no
 	is_physically_able_ai_adult = yes
+
+	harem_politics_favored_consort_trigger = no
+
 	is_concubine = yes
 	exists = court_owner
 	court_owner = {
@@ -80,12 +81,15 @@ scripted_trigger shen_trigger = {
 			}
 		}
 	}
+
 	NOR = {
+		this = root
 		has_court_position = grand_consort_court_position
 		has_trait = ill
 		has_trait = wounded
 		has_trait = pregnant
 	}
+
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -106,13 +110,33 @@ scripted_trigger shen_trigger = {
 			}
 		}
 	}
+
+	OR = { #Xia can't bully a favored consort
+		AND = {
+			has_variable = favor
+			var:favor < favorite_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
 }
 
 scripted_trigger xia_changzai_trigger = {
+	is_physically_able_ai_adult = yes
+
+	is_concubine = yes
+
 	harem_politics_evil_consort_trigger = yes
+
+	harem_politics_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+
 	NOR = { 
 		this = root
 		this = $TARGET$
+		
 		has_relation_best_friend = root
 		has_relation_friend = root
 		has_relation_soulmate = root
@@ -124,10 +148,7 @@ scripted_trigger xia_changzai_trigger = {
 		has_relation_lover = $TARGET$
 		
 		has_trait = pregnant
-		has_character_modifier = recently_tortured
-		has_character_modifier = hunt_tasted_the_belt_modifier
-		has_character_modifier = sleep_deprived_modifier
-		has_character_modifier = intrigue_starved_and_deprived_modifier
+
 		has_trait = wounded
 		has_trait = ill
 		
@@ -138,13 +159,14 @@ scripted_trigger xia_changzai_trigger = {
 		
 		has_trait = craven
 		has_trait = shy
+		has_trait = calm
 	}
+
 	opinion = {
 		target = $TARGET$
 		value <= 10
 	}
-	is_concubine = yes
-	is_physically_able_ai_adult = yes
+
 	exists = court_owner
 	court_owner = {
 		OR = {
@@ -156,6 +178,7 @@ scripted_trigger xia_changzai_trigger = {
 			}
 		}
 	}
+	
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -174,6 +197,16 @@ scripted_trigger xia_changzai_trigger = {
 			root = {
 				is_travelling = no
 			}
+		}
+	}
+
+	OR = { #Xia isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
 		}
 	}
 }
@@ -2913,6 +2946,7 @@ consort_events.0002 = {
 				save_scope_as = partner
 			}
 		}
+
 		scope:partner = {
 			add_character_flag = {
 				flag = has_consort_event_flag
@@ -2921,6 +2955,21 @@ consort_events.0002 = {
 			random_consort = {
 				limit = {
 					shen_trigger = { PARTNER = scope:partner }
+				}
+				weight = {
+					base = 10
+					modifier = {
+						has_character_flag = flag_new_consort
+						add = 20
+					}
+					modifier = {
+						has_character_modifier = unfavored_consort_modifier
+						add = 10
+					}
+					modifier = {
+						has_character_modifier = forgotten_consort_modifier
+						add = 20
+					}
 				}
 				save_scope_as = shen 
 			}
@@ -2935,15 +2984,28 @@ consort_events.0002 = {
 				weight = {
 					base = 10
 					modifier = {
-						OR = {
-							has_trait = arrogant
-							has_trait = ambitious
-						}
+						has_trait = arrogant
 						add = 20
+					}
+					modifier = {
+						has_trait = ambitious
+						add = 15
 					}
 					modifier = {
 						has_character_flag = flag_new_consort
 						add = 20
+					}
+					modifier = {
+						has_character_modifier = beloved_consort_modifier
+						add = 20
+					}
+					modifier = {
+						has_character_modifier = favor_boost_modifier
+						add = 15
+					}
+					modifier = {
+						has_character_modifier = favored_consort_modifier
+						add = 10
 					}
 				}
 				save_scope_as = valid_target_consort
