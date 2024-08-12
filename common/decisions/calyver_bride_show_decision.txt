@@ -1,7 +1,7 @@
-﻿bride_show_decision_m = {
+﻿bride_show_decision = {
 	picture = "gfx/interface/illustrations/decisions/decision_recruitment.dds"
-	desc = bride_show_m_decision_desc
-	selection_tooltip = bride_show_decision_m_tooltip
+	desc = consort_selection_decision_desc
+	selection_tooltip = consort_selection_decision_tooltip
 	
 	is_shown = {
 		is_ruler = yes
@@ -15,17 +15,28 @@
 		any_vassal = {
 			count >= 3
 		}
-		is_male = yes
-		OR = {
-			has_realm_law = male_only_law
-			has_realm_law = male_preference_law
+		OR = { #Appropriate dominant sex
+			AND = {
+				is_male = no
+				OR = {
+					has_realm_law = female_only_law
+					has_realm_law = female_preference_law
+				}
+			}
+			AND = {
+				is_male = yes
+				OR = {
+					has_realm_law = male_only_law
+					has_realm_law = male_preference_law
+				}
+			}
 			has_realm_law = equal_law
 		}
 	}
 	
 	is_valid_showing_failures_only = {
 		is_available = yes
-		age >= 14
+		age >= 15
 		is_at_war = no
 		custom_tooltip = {
 			text = not_enough_gold_bride_show
@@ -56,10 +67,16 @@
 				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
 			}
 		}
+		custom_tooltip = {
+			text = seclusion_bride_show
+			NOR = {
+				has_character_modifier = isolating_modifier
+			}
+		}
 	}
 	
 	
-	cooldown = { days = 1825 }
+	cooldown = { years = 5 }
 	
 	cost = {
 		prestige = {
@@ -88,13 +105,13 @@
 						}
 						add_opinion = {
 							target = root
-							modifier = bride_show_m_vassal_opinion
+							modifier = consort_selection_vassal_opinion
 						}
 					}
 					else = {
 						add_opinion = {
 							target = root
-							modifier = bride_show_m_courtly_vassal_opinion
+							modifier = consort_selection_courtly_vassal_opinion
 						}
 					}
 				}
@@ -111,7 +128,7 @@
 					}
 					add_opinion = {
 						target = root
-						modifier = bride_show_m_monogamous_vassal_opinion
+						modifier = consort_selection_monogamous_vassal_opinion
 					}
 				}
 				if = {
@@ -138,15 +155,7 @@
 	ai_will_do = {
 		base = 0
 		modifier = {
-			add = 20
-			has_trait = lustful
-		}
-		modifier = {
-			add = 10
-			NOT = { has_trait = chaste }
-		}
-		modifier = {
-			add = -50
+			add = -20
 			OR = {
 				has_trait = shy
 				has_trait = craven
@@ -155,241 +164,52 @@
 			}
 		}
 		modifier = {
-			add = 20
-			is_attracted_to_women = yes
-		}
-		modifier = {
 			add = 40
-			number_of_concubines < number_of_desired_concubines
-		}
-		modifier = {
-			add = 50
-			is_married = no
-		}
-		modifier = {
-			add = 20
 			OR = {
-				allowed_more_spouses = yes
-				AND = {
-					allowed_concubines = yes
-					allowed_more_concubines = yes
-				}
-			}
-		}
-		modifier = {
-			add = 15
-			exists = player_heir
-			player_heir = {
-				AND = {
-					is_male = yes
-					age >= 16
-					is_married = no
-					NOT = {
-						exists = betrothed
-					}
-					is_courtier_of = root
-				}
-			}
-		}
-		modifier = {
-			add = 10
-			any_child = {
-				AND = {
-					is_male = yes
-					age >= 16
-					is_married = no
-					NOR = {
-						exists = betrothed
-						has_trait = incapable
-						has_trait = devoted
-						has_trait = eunuch
-						has_trait = bastard
-					}
-				}
-			}
-		}
-		modifier = {
-			add = 50
-			any_child = {
-				count = 0
-			}
-		}
-		modifier = {
-			add = -30
-			any_consort = {
-				count >= 4
-			}
-		}
-	}
-}
-
-bride_show_decision_f = {
-	picture = "gfx/interface/illustrations/decisions/decision_recruitment.dds"
-	desc = bride_show_f_decision_desc
-	selection_tooltip = bride_show_decision_f_tooltip
-	
-	is_shown = {
-		is_ruler = yes
-		OR = {
-			culture = { has_cultural_pillar = heritage_east_slavic }
-			culture = { has_cultural_pillar = heritage_byzantine }
-			accepts_concubinage = yes
-			accepts_polygamy = yes
-		}
-		highest_held_title_tier >= tier_duchy
-		any_vassal = {
-			count >= 3
-		}
-		is_male = no
-		OR = {
-			has_realm_law = female_only_law
-			has_realm_law = female_preference_law
-			has_realm_law = equal_law
-		}
-	}
-	
-	is_valid_showing_failures_only = {
-		is_available = yes
-		age >= 14
-		is_at_war = no
-		custom_tooltip = {
-			text = not_enough_gold_bride_show
-			gold >= minor_gold_value
-		}
-		custom_tooltip = {
-			text = mourning_bride_show
-			NOT = { has_character_modifier = mourner_modifier }
-		}
-		custom_tooltip = {
-			text = crown_authority_bride_show
-			NOR = {
-				has_realm_law = crown_authority_0
-				has_realm_law = tribal_authority_0
-			}
-		}
-		custom_tooltip = {
-			text = contagious_disease_bride_show
-			has_epidemic_disease_trigger = no
-		}
-		custom_tooltip = {
-			text = epidemic_bride_show
-			NOR = {
-				realm_has_any_epidemic = {
-					SIZE = 1
-					INTENSITY = minor
-				}
-				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
-			}
-		}
-	}
-	
-	
-	cooldown = { days = 1825 }
-	
-	cost = {
-		prestige = {
-			value = medium_prestige_value
-		}
-	}
-
-	effect = {
-		custom_tooltip = bride_show_effect_tooltip
-		custom_tooltip = bride_show_opinion_effect_tooltip
-		hidden_effect = {
-			save_scope_as = liege
-			every_vassal = {
-				if = {
-					limit = { 
-						OR = { 
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_pillar = heritage_byzantine }
-						}
-					}
-					if = {
-						limit = { 
-							NOT = { has_vassal_stance = courtly }
-						}
-						add_opinion = {
-							target = root
-							modifier = bride_show_f_vassal_opinion
-						}
-					}
-					else = {
-						add_opinion = {
-							target = root
-							modifier = bride_show_f_courtly_vassal_opinion
-						}
-					}
-				}
-				if = {
-					limit = { 
-						AND = { 
-							accepts_concubinage = no
-							accepts_polygamy = no
-							NOR = { 
-								culture = { has_cultural_pillar = heritage_east_slavic }
-								culture = { has_cultural_pillar = heritage_byzantine }
-							}
-						}
-					}
-					add_opinion = {
-						target = root
-						modifier = bride_show_f_monogamous_vassal_opinion
-					}
-				}
-				if = {
+				trigger_if = {
 					limit = {
-						is_ai = no
+						accepts_concubinage = yes
 					}
-					trigger_event = {
-						id = bride_show.0007
-						days = 1 
+					number_of_concubines < number_of_desired_concubines
+				}
+				trigger_if = {
+					limit = {
+						accepts_polygamy = yes
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						accepts_polygamy = yes
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						accepts_polygamy = yes
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+				trigger_else = {
+					any_spouse = {
+						count < 1
 					}
 				}
 			}
-			trigger_event = {
-				id = bride_show.0001
-				days = { 7 10 }
-			}
-		}
-	}
-
-	ai_check_interval = 60
-	
-	ai_potential = { always = yes }
-
-	ai_will_do = {
-		base = 0
-		modifier = {
-			add = 20
-			has_trait = lustful
 		}
 		modifier = {
 			add = 10
-			NOT = { has_trait = chaste }
-		}
-		modifier = {
-			add = -50
-			OR = {
-				has_trait = shy
-				has_trait = craven
-				has_trait = paranoid
-				has_trait = chaste
-			}
-		}
-		modifier = {
-			add = 20
-			is_attracted_to_men = yes
-		}
-		modifier = {
-			add = 40
-			number_of_concubines < number_of_desired_concubines
-		}
-		modifier = {
-			add = 50
 			is_married = no
+			is_betrothed = no
 		}
 		modifier = {
 			add = 20
@@ -399,50 +219,6 @@ bride_show_decision_f = {
 					allowed_concubines = yes
 					allowed_more_concubines = yes
 				}
-			}
-		}
-		modifier = {
-			add = 15
-			exists = player_heir
-			player_heir = {
-				AND = {
-					is_male = no
-					age >= 16
-					is_married = no
-					NOT = {
-						exists = betrothed
-					}
-					is_courtier_of = root
-				}
-			}
-		}
-		modifier = {
-			add = 10
-			any_child = {
-				AND = {
-					is_male = no
-					age >= 16
-					is_married = no
-					NOR = {
-						exists = betrothed
-						has_trait = incapable
-						has_trait = devoted
-						has_trait = eunuch
-						has_trait = bastard
-					}
-				}
-			}
-		}
-		modifier = {
-			add = 50
-			any_child = {
-				count = 0
-			}
-		}
-		modifier = {
-			add = -30
-			any_consort = {
-				count >= 4
 			}
 		}
 	}
