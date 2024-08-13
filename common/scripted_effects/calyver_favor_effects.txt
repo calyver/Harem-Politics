@@ -1042,4 +1042,63 @@ decrease_favor_modifier_effect = {
 	}
 }
 
-#Check if this doesn't create a cascade effect
+calyver_stop_favor_boost_effect = {
+	$CONSORT$ = {
+		calyver_favor_medium_loss_effect = yes
+		remove_character_modifier = favor_boost_modifier
+		if = {
+			limit = {
+				accepts_harems = yes
+				NOT = {
+					has_opinion_modifier = {
+						modifier = forced_me_concubine_marriage_opinion
+						target = $HAREM_LIEGE$
+					}
+				}
+			}
+			if = {
+				limit = { 
+					OR = {
+						has_trait = arrogant
+						has_trait = greedy
+						has_trait = ambitious
+					}
+				}
+				add_opinion = {
+					target = $HAREM_LIEGE$
+					modifier = disappointed_opinion
+					opinion = -25
+				}
+			}
+			else_if = {
+				limit = { 
+					harem_politics_evil_consort_trigger = yes
+				}
+				add_opinion = {
+					target = $HAREM_LIEGE$
+					modifier = disappointed_opinion
+					opinion = -20
+				}
+			}
+			else = {
+				add_opinion = {
+					target = $HAREM_LIEGE$
+					modifier = disappointed_opinion
+					opinion = -15
+				}
+			}
+		}
+		add_character_flag = {
+			flag = recently_unfavored_consort
+			years = 1
+		}
+	}
+	$HAREM_LIEGE$ = {
+		if = {
+			limit = { 
+				has_character_flag = already_favored_consort_flag
+			}
+			remove_character_flag = already_favored_consort_flag
+		}
+	}
+}
