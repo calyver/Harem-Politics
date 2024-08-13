@@ -2175,7 +2175,12 @@ harem_politics.0002 = {
 			limit = {
 				is_landed = no
 				is_physically_able_ai_adult = yes
-				NOT = { this = root.primary_spouse }
+				NOT = { 
+					AND = {
+						exists = root.primary_spouse
+						this = root.primary_spouse 
+					}
+				}
 			}
 			add_to_list = consorts_list
 		}
@@ -21007,7 +21012,7 @@ scripted_trigger harem_politics_zhen_huan_trigger = {
 
 		AND = {
 			exists = root.primary_spouse
-			NOT = { this = root.primary_spouse }
+			this = root.primary_spouse
 		}		
 	}
 	
@@ -24239,12 +24244,10 @@ scripted_trigger harem_politics_rong_fei_trigger = {
 	NOR = {
 		exists = scope:is_being_divorced
 		exists = scope:is_being_set_aside
-		
-		has_court_position = grand_consort_court_position
 
 		AND = {
 			exists = root.primary_spouse
-			NOT = { this = root.primary_spouse }
+			this = root.primary_spouse
 		}	
 		any_relation = {
 			type = friend
@@ -24299,6 +24302,7 @@ harem_politics.0027 = {
 		is_landed = yes
 		any_consort = {
 			is_physically_able_adult = yes
+			#is_available_healthy_ai_adult = yes #Check
 			is_courtier_of = root
 			is_imprisoned = no
 			accepts_harems = yes
@@ -24338,7 +24342,9 @@ harem_politics.0027 = {
 		any_consort = {
 			harem_politics_rong_fei_trigger = yes
 		}
-		
+		NOT = {
+			has_character_flag = had_ying_and_rong_event_flag
+		}
 	}
 
 	weight_multiplier = {
@@ -24830,7 +24836,7 @@ harem_politics.0027 = {
 					NOT = {
 						has_opinion_modifier = {
 							modifier = forced_me_concubine_marriage_opinion
-							target = scope:actor
+							target = root
 						}
 					}
 				}
@@ -24843,7 +24849,7 @@ harem_politics.0027 = {
 						}
 					}
 					add_opinion = {
-						target = scope:actor
+						target = root
 						modifier = disappointed_opinion
 						opinion = -35
 					}
@@ -24853,14 +24859,14 @@ harem_politics.0027 = {
 						harem_politics_evil_consort_trigger = yes
 					}
 					add_opinion = {
-						target = scope:actor
+						target = root
 						modifier = disappointed_opinion
 						opinion = -25
 					}
 				}
 				else = {
 					add_opinion = {
-						target = scope:actor
+						target = root
 						modifier = disappointed_opinion
 						opinion = -20
 					}
@@ -24872,44 +24878,46 @@ harem_politics.0027 = {
 			}
 		}
 
-		every_consort = {
-			limit = {				
-				is_physically_able_adult = yes
-				is_courtier_of = root
-				accepts_harems = yes
-				OR = {
-					AND = {
-						is_travelling = yes
-						current_travel_plan ={
-							travel_plan_owner = root
+		hidden_effect = {
+			every_consort = {
+				limit = {				
+					is_physically_able_adult = yes
+					is_courtier_of = root
+					accepts_harems = yes
+					OR = {
+						AND = {
+							is_travelling = yes
+							current_travel_plan ={
+								travel_plan_owner = root
+							}
 						}
-					}
-					AND = {
-						is_travelling = no
-						root = {
+						AND = {
 							is_travelling = no
+							root = {
+								is_travelling = no
+							}
+						}
+					}
+					NOR = {
+
+						this = scope:rong_fei
+
+						has_trait = forgiving
+						has_trait = compassionate
+						has_trait = content
+						has_trait = humble
+
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
 						}
 					}
 				}
-				NOR = {
-
-					this = scope:rong_fei
-
-					has_trait = forgiving
-					has_trait = compassionate
-					has_trait = content
-					has_trait = humble
-
-					has_opinion_modifier = {
-						modifier = forced_me_concubine_marriage_opinion
-						target = root
-					}
+				add_opinion = {
+					target = root
+					modifier = pleased_opinion
+					opinion = 10
 				}
-			}
-			add_opinion = {
-				target = root
-				modifier = pleased_opinion
-				opinion = 10
 			}
 		}
 		stress_impact = {
