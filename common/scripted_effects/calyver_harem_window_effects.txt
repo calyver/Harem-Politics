@@ -9,6 +9,7 @@
 		clear_variable_list = harem_gc_list
 		clear_variable_list = harem_ss_list
 		clear_variable_list = harem_concubine_list
+		clear_variable_list = harem_consort_list
 		#Remove variables
 		if = { #GC
 			limit = {
@@ -50,90 +51,170 @@ calyver_update_harem_list_effect = {
 	}
 	
 	save_scope_as = harem_master
-	if = { #Is the character married?
-		limit = {
-			is_married = yes
-		}
-		primary_spouse = {
-			save_scope_as = harem_head
-		}
-		add_to_variable_list = {
-			name = harem_ps_list
-			target = scope:harem_head
-		}
-	}
 	
-	if = { #Can you have a Grand Consort?
-		limit = {
-			highest_held_title_tier >= tier_kingdom
-		}
-		set_variable = show_gc
-		if = {
-			limit = {
-				any_consort = {
-					has_court_position = grand_consort_court_position
+	ordered_consort = {
+		order_by = {
+			value = var:favor
+			divide = 50
+
+			#Rank
+			if = {
+				limit = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
 				}
+				add = 400
 			}
-			random_consort = {
+			if = {
 				limit = {
 					has_court_position = grand_consort_court_position
 				}
-				save_scope_as = grand_consort
+				add = 200
 			}
+			if = {
+				limit = {
+					is_married = yes
+				}
+				add = 100
+			}
+
+			#Background
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier >= tier_kingdom
+					}
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_councillor_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_knight_of = root
+						is_acclaimed = yes
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_vassal_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					is_lowborn = no
+				}
+				add = 10
+			}
+
+			#Culture and religion
+			if = {
+				limit = {
+					culture = root.culture
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					faith = root.faith
+				}
+				add = 5
+			}
+
+			#Number of children
+			if = {
+				limit = {
+					any_child = {
+						is_child_of = root
+					}
+				}
+				add = {
+					value = 2
+					if = {
+						lmit = {
+							any_child = {
+								is_child_of = root
+								count >= 2
+							}
+						}
+						add = 2
+					}
+					if = {
+						lmit = {
+							any_child = {
+								is_child_of = root
+								count >= 3
+							}
+						}
+						add = 2
+					}
+					if = {
+						lmit = {
+							any_child = {
+								haracter_gender_can_inherit_from_trigger = { CHARACTER = root }
+								count >= 1
+							}
+						}
+						add = 1
+					}
+					if = {
+						lmit = {
+							any_child = {
+								haracter_gender_can_inherit_from_trigger = { CHARACTER = root }
+								count >= 2
+							}
+						}
+						add = 1
+					}
+					if = {
+						lmit = {
+							any_child = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = root }
+								count >= 3
+							}
+						}
+						add = 1
+					}
+					if = {
+						lmit = {
+							any_child = {
+								is_player_heir_of = root
+							}
+						}
+						add = 2
+					}
+				}
+			}
+		}
+		min = 0
+		root = {
 			add_to_variable_list = {
-				name = harem_gc_list
-				target = scope:grand_consort
+				name = harem_consort_list
+				target = prev
 			}
 		}
 	}
-	
-	if = { #Do you accept polygamy?
-		limit = {
-			accepts_polygamy = yes
-		}
-		set_variable = show_ss_list
-		ordered_consort = {
-			limit = {
-				is_married = yes
-				NOR = {
-					this = root.primary_spouse
-					has_court_position = grand_consort_court_position
-				}
-			}
-			order_by = age
-			min = 0
-			root = {
-				add_to_variable_list = {
-					name = harem_ss_list
-					target = prev
-				}
-			}
-		}
-	}
-	
-	if = { #Do you accept concubinage?
-		limit = {
-			accepts_concubinage = yes
-		}
-		set_variable = show_concubine_list
-		ordered_consort = {
-			limit = {
-				is_concubine = yes
-				NOT = {
-					has_court_position = grand_consort_court_position
-				}
-			}
-			order_by = age
-			min = 0
-			root = {
-				add_to_variable_list = {
-					name = harem_concubine_list
-					target = prev
-				}
-			}
-		}
-	}
-	
+
 	if = { #Can you visit the harem?
 		limit = {
 			OR = {
