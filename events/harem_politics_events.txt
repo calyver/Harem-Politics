@@ -24637,14 +24637,14 @@ harem_politics.0027 = {
 					has_character_modifier = forgotten_consort_modifier
 					add = -10
 				}
-				modifier = { #Unfavored consorts won't be so daring
+				modifier = {
 					NOR = {
 						has_relation_best_friend = root
 						has_relation_friend = root
 					}
 					add = 10
 				}
-				modifier = { #Unfavored consorts won't be so daring
+				modifier = {
 					NOR = {
 						has_relation_soulmate = root
 						has_relation_lover = root
@@ -25192,7 +25192,101 @@ harem_politics.0027 = {
 ######################################
 
 scripted_trigger harem_politics_relaxing_consort_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
 
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+
+	opinion = {
+		target = root
+		value >= 5
+	}
+
+	stress <= normal_baseline_stress
+	
+	NOR = {
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+
+		has_trait = clubfooted
+		has_trait = hunchbacked
+		has_trait = wheezing
+		has_trait = spindly
+		has_trait = one_eyed
+		has_trait = one_legged
+		has_trait = disfigured
+
+		has_trait = wounded
+
+		has_trait = infirm
+		has_trait = incapable
+
+		has_trait = maimed
+		has_trait = blind
+		has_trait = ill
+		has_trait = bubonic_plague
+		has_trait = cancer
+		has_trait = consumption
+		has_trait = great_pox
+		has_trait = gout_ridden
+		has_trait = leper
+		has_trait = lovers_pox
+		has_trait = pneumonic
+		has_trait = smallpox
+		has_trait = typhus
+		has_trait = physique_bad_3
+		
+		has_trait = dysentery
+		has_trait = ergotism
+		has_trait = measles
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+	}
+
+	OR = {
+		#Competent Grand Consort
+		AND = {
+			has_court_position = grand_consort_court_position
+			root = {
+				any_court_position_holder = {
+					type = grand_consort_court_position
+					aptitude:grand_consort_court_position >= 3
+				}
+			}
+		}
+		AND = {
+			OR = {
+				has_relation_lover = root
+				has_relation_soulmate = root
+				has_relation_friend = root
+				has_relation_best_friend = root
+			}
+			trait_compatibility = {
+				target = root
+				value >= medium_positive_trait_compatibility
+			}
+		}
+	}
+
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
 }
 
 harem_politics.0028 = {
@@ -25209,11 +25303,8 @@ harem_politics.0028 = {
 		animation = eyeroll #Check
 	}
 	left_portrait = { 	
-		character = scope:ying_pin
+		character = scope:good_consort
 		animation = disgust #Check
-	}
-	lower_center_portrait = { 	
-		character = scope:rong_fei
 	}
 	
 	trigger = {
@@ -25221,114 +25312,36 @@ harem_politics.0028 = {
 		is_at_war = no
 		is_landed = yes
 		any_consort = {
-			is_physically_able_adult = yes
-			#is_available_healthy_ai_adult = yes #Check
+			is_physically_able_ai_adult = yes
 			is_courtier_of = root
-			is_imprisoned = no
-			accepts_harems = yes
-			has_variable = favor
-			harem_politics_punished_consort_trigger = no
-			OR = {
-				AND = {
-					is_travelling = yes
-					current_travel_plan ={
-						travel_plan_owner = root
-					}
-				}
-				AND = {
-					is_travelling = no
-					root = {
-						is_travelling = no
-					}
-				}
-			}
-			NOR = {
-				AND = {
-					exists = root.primary_spouse
-					this = root.primary_spouse
-				}
-				has_trait = forgiving
-				has_trait = compassionate
-				has_trait = content
-				has_trait = humble
-
-				has_opinion_modifier = {
-					modifier = forced_me_concubine_marriage_opinion
-					target = root
-				}
-			}
-			count >= 2
+			count >= 3
 		}
 		any_consort = {
-			harem_politics_rong_fei_trigger = yes
+			harem_politics_relaxing_consort_trigger = yes
 		}
+		stress >= normal_baseline_stress
 		NOT = {
-			has_character_flag = had_ying_and_rong_event_flag
+			has_character_flag = had_release_stress_consort_event_flag
 		}
 	}
 	
 	immediate = {
 		random_consort = {
 			limit = {
-				has_character_modifier = favor_boost_modifier
+				harem_politics_relaxing_consort_trigger = yes
 			}
-			save_scope_as = rong_fei
+			add_to_list = relaxing_consorts_list
 		}
 
-		every_consort = {
-			limit = {
-				is_physically_able_adult = yes
-				is_courtier_of = root
-				is_imprisoned = no
-				accepts_harems = yes
-				has_variable = favor
-				harem_politics_punished_consort_trigger = no
-				OR = {
-					AND = {
-						is_travelling = yes
-						current_travel_plan ={
-							travel_plan_owner = root
-						}
-					}
-					AND = {
-						is_travelling = no
-						root = {
-							is_travelling = no
-						}
-					}
-				}
-				NOR = {
-
-					this = scope:rong_fei
-
-					AND = {
-						exists = root.primary_spouse
-						this = root.primary_spouse
-					}
-					has_trait = forgiving
-					has_trait = compassionate
-					has_trait = content
-					has_trait = humble
-
-					has_opinion_modifier = {
-						modifier = forced_me_concubine_marriage_opinion
-						target = root
-					}
-				}
-			}
-			add_to_list = ying_pin_list
-			hidden_effect = {
-				add_opinion = {
-					target = scope:rong_fei
-					modifier = jealousy_opinion
-					opinion = -5
-				}
-			}
-		}
 		random_in_list = {
-			list = ying_pin_list
+			list = relaxing_consorts_list
 			weight = {
 				base = 10
+				modifier = { #She is a high-ranking consort
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 30
+				}
 				modifier = { #She is a high-ranking consort
 					has_court_position = grand_consort_court_position
 					add = 20
@@ -25338,573 +25351,51 @@ harem_politics.0028 = {
 					add = 10
 				}
 
-				modifier = { #Evil consorts won't stand another favorite
-					harem_politics_evil_consort_trigger = yes
-					add = 5
-				}
-				modifier = { #Arrogant consorts won't stand another favorite
-					has_trait = arrogant
-					add = 5
-				}
-				modifier = { #Ambitious won't stand another favorite
-					has_trait = ambitious
-					add = 5
-				}
-				
-				modifier = { #Unfavored consorts won't be so daring
-					has_character_modifier = unfavored_consort_modifier
-					add = -5
-				}
-				modifier = { #Unfavored consorts won't be so daring
-					has_character_modifier = forgotten_consort_modifier
-					add = -10
-				}
-				modifier = { #Unfavored consorts won't be so daring
-					NOR = {
-						has_relation_best_friend = root
-						has_relation_friend = root
-					}
+				modifier = { 
+					has_relation_friend = root
 					add = 10
 				}
-				modifier = { #Unfavored consorts won't be so daring
-					NOR = {
-						has_relation_soulmate = root
-						has_relation_lover = root
-					}
+				modifier = { 
+					has_relation_best_friend = root
 					add = 20
 				}
-
-				modifier = { #Having a strong background makes you more daring
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_liege_or_above_of = root
-						}
-						NOT = {
-							is_child_of = root
-						}
-					}
-					add = 10
+				modifier = { 
+					has_relation_lover = root
+					add = 20
+				}
+				modifier = {
+					has_relation_soulmate = root
+					add = 30
 				}
 
 				modifier = { #Diplomatic consorts
 					has_character_modifier = diplomatic_consort_modifier
-					add = -15
-				}
-
-				opinion_modifier = {
-					opinion_target = scope:rong_fei
-					multiplier = -0.10
+					add = 10
 				}
 			}
-			save_scope_as = ying_pin
+			save_scope_as = good_consort
 		}
 	}
 
 	option = { #Scold Ying
-        name = harem_politics.0027.a
-		scope:ying_pin = {
-			calyver_favor_minor_loss_effect = yes
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -15
-			}
-			add_character_flag = {
-				flag = flag_scolded_consort
-				years = 1
-			}
-		}
-		scope:rong_fei = {
-			calyver_favor_minor_gain_effect = yes
-			if = {
-				limit = { 
-					NOT = {
-						has_opinion_modifier = {
-							modifier = forced_me_concubine_marriage_opinion
-							target = root
-						}
-					}
-					accepts_harems = yes
-					opinion = {
-						target = root
-						value >= -10
-					}
-				}
-				add_opinion = {
-					target = root
-					modifier = pleased_opinion
-					opinion = 10
-				}
-			}
-		}
-		
+        name = harem_politics.0028.a		
 		stress_impact = {
-			fickle = minor_stress_impact_gain
+			base = medium_stress_impact_loss
 		}
+
+		#Opinion and relationship increase, plus favor
 
         ai_chance = {
-            base = 100
-			ai_value_modifier = {
-				ai_honor = 0.10
-				ai_vengefulness = -0.2
-   			}
-			opinion_modifier = {
-				opinion_target = scope:rong_fei
-				multiplier = 0.15
-			}
-			opinion_modifier = {
-				opinion_target = scope:ying_pin
-				multiplier = 0.15
-			}
-
-			modifier = {
-				add = 10
-				has_trait = lustful
-			}
-			modifier = {
-				add = 10
-				has_trait = temperate
-			}
-			modifier = {
-				add = 10
-				has_trait = stubborn
-			}
-
-			modifier = {
-				add = -20
-				has_trait = fickle
-			}
-
-			modifier = {
-				add = 5
-				scope:ying_pin = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = 10
-				scope:ying_pin = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = -5
-				scope:ying_pin = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-			}
-			modifier = {
-				add = -10
-				scope:ying_pin = {
-					has_character_modifier = forgotten_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = 10
-				scope:rong_fei = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = 20
-				scope:rong_fei = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
+            base = 10
         }
     }
 
-	option = { #Imprison Ying
-        name = harem_politics.0027.b
-		trigger = {
-			scope:ying_pin = {
-				has_strong_hook = root
-			}
-		}
-
-		scope:ying_pin = {
-			calyver_favor_big_loss_effect = yes
-
-			if = {
-				limit = {
-					can_set_relation_potential_rival_trigger = { CHARACTER = scope:rong_fei }
-				}
-				set_relation_potential_rival = scope:rong_fei
-			}
-			
-			add_opinion = {
-				target = scope:rong_fei
-				modifier = hatred_spouse_opinion
-			}
-			
-			add_opinion = {
-				target = root
-				modifier = cruelty_opinion
-				opinion = -20
-			}
-			if = { #If they're a GC, demote them
-				limit = {
-					has_court_position = grand_consort_court_position
-				}
-				save_scope_as = employee
-				root = {
-					save_scope_as = liege
-				}
-				grand_consort_revoked_court_position_effect = yes
-			}
-			save_scope_as = recipient
-		}
-		hidden_effect = {
-	        rightfully_imprison_character_effect = {
-				TARGET = scope:ying_pin
-				IMPRISONER = root
-			}
-			add_opinion = {
-				target = scope:ying_pin
-				modifier = insolent_consort_opinion
-				opinion = -20
-			}
-		}
-		show_as_tooltip = {
-			imprison = { target = scope:ying_pin type = house_arrest }
-		}
-
-		scope:rong_fei = {
-			calyver_favor_medium_gain_effect = yes
-			if = {
-				limit = { 
-					NOT = {
-						has_opinion_modifier = {
-							modifier = forced_me_concubine_marriage_opinion
-							target = root
-						}
-					}
-					accepts_harems = yes
-					opinion = {
-						target = root
-						value >= -10
-					}
-				}
-				add_opinion = {
-					target = root
-					modifier = pleased_opinion
-					opinion = 15
-				}
-				if = {
-					limit = {
-						can_set_relation_potential_lover_trigger = { CHARACTER = root }
-					}
-					set_relation_potential_lover = root
-				}
-			}
-		}
-
-		stress_impact = {
-			forgiving = minor_stress_impact_gain
-			compassionate = minor_stress_impact_gain
-			fickle = minor_stress_impact_gain
-		}
-
-        ai_chance = {
-            base = 100
-			ai_value_modifier = {
-				ai_honor = -0.10
-				ai_vengefulness = 0.2
-   			}
-			opinion_modifier = {
-				opinion_target = scope:rong_fei
-				multiplier = 0.15
-			}
-			opinion_modifier = {
-				opinion_target = scope:ying_pin
-				multiplier = -0.15
-			}
-
-			modifier = {
-				add = 10
-				has_trait = arbitrary
-			}
-			modifier = {
-				add = 15
-				has_trait = vengeful
-			}
-			modifier = {
-				add = 10
-				has_trait = stubborn
-			}
-
-			modifier = {
-				add = -20
-				has_trait = compassionate
-			}
-			modifier = {
-				add = -20
-				has_trait = forgiving
-			}
-			modifier = {
-				add = -20
-				has_trait = fickle
-			}
-
-			modifier = {
-				add = -10
-				scope:ying_pin = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = -20
-				scope:ying_pin = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = 10
-				scope:ying_pin = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-			}
-			modifier = {
-				add = 15
-				scope:ying_pin = {
-					has_character_modifier = forgotten_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = 10
-				scope:rong_fei = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = 20
-				scope:rong_fei = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-
-			modifier = { #Concubine Ying has a powerful background
-				add = -15
-				scope:ying_pin = {
-					OR = {
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								highest_held_title_tier >= tier_kingdom
-							}
-						}
-						any_child = {
-							is_child_of = root
-							count >= 2
-						}
-					}
-				}
-			}
-        }
-
-		trigger_event = char_interaction.0231
-    }
-
-	option = { #Stop favoring Rong
-        name = harem_politics.0027.c
-
-		add_character_flag = {
-			flag = already_favored_consort_flag
-			years = 3
-		}
-		
-		scope:rong_fei = {
-			calyver_favor_medium_loss_effect = yes
-			remove_character_modifier = favor_boost_modifier
-			if = {
-				limit = {
-					accepts_harems = yes
-					NOT = {
-						has_opinion_modifier = {
-							modifier = forced_me_concubine_marriage_opinion
-							target = root
-						}
-					}
-				}
-				if = {
-					limit = { 
-						OR = {
-							has_trait = arrogant
-							has_trait = greedy
-							has_trait = ambitious
-						}
-					}
-					add_opinion = {
-						target = root
-						modifier = disappointed_opinion
-						opinion = -35
-					}
-				}
-				else_if = {
-					limit = { 
-						harem_politics_evil_consort_trigger = yes
-					}
-					add_opinion = {
-						target = root
-						modifier = disappointed_opinion
-						opinion = -25
-					}
-				}
-				else = {
-					add_opinion = {
-						target = root
-						modifier = disappointed_opinion
-						opinion = -20
-					}
-				}
-			}
-			add_character_flag = {
-				flag = recently_unfavored_consort
-				years = 1
-			}
-		}
-
-		hidden_effect = {
-			every_consort = {
-				limit = {				
-					is_physically_able_adult = yes
-					is_courtier_of = root
-					accepts_harems = yes
-					OR = {
-						AND = {
-							is_travelling = yes
-							current_travel_plan ={
-								travel_plan_owner = root
-							}
-						}
-						AND = {
-							is_travelling = no
-							root = {
-								is_travelling = no
-							}
-						}
-					}
-					NOR = {
-
-						this = scope:rong_fei
-
-						has_trait = forgiving
-						has_trait = compassionate
-						has_trait = content
-						has_trait = humble
-
-						has_opinion_modifier = {
-							modifier = forced_me_concubine_marriage_opinion
-							target = root
-						}
-					}
-				}
-				add_opinion = {
-					target = root
-					modifier = pleased_opinion
-					opinion = 10
-				}
-			}
-		}
-		stress_impact = {
-			stubborn = minor_stress_impact_gain
-		}
-
-        ai_chance = {
-            base = 100
-			ai_value_modifier = {
-				ai_honor = 0.10
-				ai_vengefulness = -0.2
-   			}
-			opinion_modifier = {
-				opinion_target = scope:rong_fei
-				multiplier = -0.15
-			}
-			opinion_modifier = {
-				opinion_target = scope:ying_pin
-				multiplier = 0.15
-			}
-
-			modifier = {
-				add = 10
-				has_trait = fickle
-			}
-			modifier = {
-				add = -20
-				has_trait = stubborn
-			}
-
-			modifier = {
-				add = 10
-				scope:ying_pin = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = 15
-				scope:ying_pin = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = -5
-				scope:ying_pin = {
-					has_character_modifier = unfavored_consort_modifier
-				}
-			}
-			modifier = {
-				add = -10
-				scope:ying_pin = {
-					has_character_modifier = forgotten_consort_modifier
-				}
-			}
-
-			modifier = {
-				add = -5
-				scope:rong_fei = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = {
-				add = -10
-				scope:rong_fei = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-
-			modifier = { #Concubine Rong has a powerful background
-				add = -15
-				scope:rong_fei = {
-					OR = {
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-								highest_held_title_tier >= tier_kingdom
-							}
-						}
-						any_child = {
-							is_child_of = root
-							count >= 2
-						}
-					}
-				}
-			}
-        }
-    }
-
-	after = {
+	after = { #Check
 		add_character_flag = {
 			flag = had_ying_and_rong_event_flag
 			years = 5
 		}
 	}
 }
+
+#Also check favor gains and losses when the GC consort is compromised with a flag to the interaction
