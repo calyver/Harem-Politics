@@ -10994,6 +10994,10 @@ harem_politics.0011 = {
 					add = 20
 				}
 				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 15
+				}
+				modifier = {
 					has_character_modifier = favored_consort_modifier
 					add = 10
 				}
@@ -11091,6 +11095,10 @@ harem_politics.0011 = {
 				modifier = {
 					has_trait = beauty_good_3
 					add = 20
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 15
 				}
 				modifier = {
 					has_character_modifier = favored_consort_modifier
@@ -11191,6 +11199,10 @@ harem_politics.0011 = {
 				modifier = {
 					has_trait = beauty_good_3
 					add = 20
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 15
 				}
 				modifier = {
 					has_character_modifier = favored_consort_modifier
@@ -11307,6 +11319,10 @@ harem_politics.0011 = {
 					modifier = {
 						has_trait = beauty_good_3
 						add = 20
+					}
+					modifier = {
+						has_character_modifier = favor_boost_modifier
+						add = 15
 					}
 					modifier = {
 						has_character_modifier = favored_consort_modifier
@@ -25199,6 +25215,8 @@ scripted_trigger harem_politics_relaxing_consort_trigger = {
 	is_demoted_consort_trigger = no
 	harem_politics_unfavored_consort_trigger = no
 
+	accepts_harems = yes
+
 	opinion = {
 		target = root
 		value >= 5
@@ -25246,17 +25264,20 @@ scripted_trigger harem_politics_relaxing_consort_trigger = {
 
 		has_relation_rival = root
 		has_relation_nemesis = root
+
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
 	}
 
 	OR = {
 		#Competent Grand Consort
 		AND = {
 			has_court_position = grand_consort_court_position
-			root = {
-				any_court_position_holder = {
-					type = grand_consort_court_position
-					aptitude:grand_consort_court_position >= 3
-				}
+			aptitude = {
+				court_position = grand_consort_court_position
+				value >= 3
 			}
 		}
 		AND = {
@@ -25300,11 +25321,11 @@ harem_politics.0028 = {
 	
 	right_portrait = { 	
 		character = root
-		animation = eyeroll #Check
+		animation = happiness
 	}
 	left_portrait = { 	
 		character = scope:good_consort
-		animation = disgust #Check
+		animation = love
 	}
 	
 	trigger = {
@@ -25322,6 +25343,22 @@ harem_politics.0028 = {
 		stress >= normal_baseline_stress
 		NOT = {
 			has_character_flag = had_release_stress_consort_event_flag
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = { #Stress
+			add = 0.1
+			stress_level >= 1
+		}
+		modifier = { #Stress
+			add = 0.1
+			stress_level >= 2
+		}
+		modifier = { #Stress
+			add = 0.5
+			stress_level = 3
 		}
 	}
 	
@@ -25377,23 +25414,43 @@ harem_politics.0028 = {
 		}
 	}
 
-	option = { #Scold Ying
+	option = {
         name = harem_politics.0028.a		
 		stress_impact = {
 			base = medium_stress_impact_loss
 		}
 
 		#Opinion and relationship increase, plus favor
+		add_opinion = {
+			target = scope:good_consort
+			modifier = pleased_opinion
+			opinion = 10
+		}
+		scope:good_consort = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+			calyver_favor_minor_gain_effect = yes
+			if = {
+				limit = {
+					can_set_relation_potential_lover_trigger = { CHARACTER = root }
+				}
+				set_relation_potential_lover = root
+			}
+		}
+
 
         ai_chance = {
             base = 10
         }
     }
 
-	after = { #Check
+	after = {
 		add_character_flag = {
-			flag = had_ying_and_rong_event_flag
-			years = 5
+			flag = had_release_stress_consort_event_flag
+			years = 3
 		}
 	}
 }
