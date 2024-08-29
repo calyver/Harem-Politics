@@ -4129,7 +4129,6 @@ harem_politics.0004 = {
 			marry = scope:loved_consort
 		}
 		scope:loved_consort = {
-			calyver_favor_big_gain_effect = yes
 			save_scope_as = secondary_recipient
 		}
 		save_scope_as = actor
@@ -25356,15 +25355,15 @@ harem_politics.0028 = {
 	weight_multiplier = {
 		base = 1
 		modifier = { #Stress
-			add = 0.1
+			add = 1
 			stress_level >= 1
 		}
 		modifier = { #Stress
-			add = 0.1
+			add = 0.50
 			stress_level >= 2
 		}
 		modifier = { #Stress
-			add = 0.5
+			add = 0.50
 			stress_level = 3
 		}
 	}
@@ -25423,8 +25422,36 @@ harem_politics.0028 = {
 
 	option = {
         name = harem_politics.0028.a		
-		stress_impact = {
-			base = medium_stress_impact_loss
+		if = {
+			limit = {
+				stress_level >= 1
+			}
+			if = {
+				limit = {
+					stress_level = 3
+				}
+				stress_impact = {
+					base = massive_stress_impact_loss
+				}
+			}
+			else_if = {
+				limit = {
+					stress_level = 2
+				}
+				stress_impact = {
+					base = major_stress_impact_loss
+				}
+			}
+			else = {
+				stress_impact = {
+					base = medium_stress_impact_loss
+				}
+			}
+		}
+		else = {
+			stress_impact = {
+				base = minor_stress_impact_loss
+			}
 		}
 
 		#Opinion and relationship increase, plus favor
@@ -25920,6 +25947,11 @@ harem_politics.0029 = {
 				target = root
 				opinion = 15
 			}
+			add_truce_both_ways = {
+				character = root
+				years = 4
+				name = TRUCE_HAREM
+			}
 		}
 		appoint_court_position = {
 			recipient = scope:target_consort
@@ -26209,7 +26241,6 @@ harem_politics.0029 = {
 			marry = scope:target_consort
 		}
 		scope:target_consort = {
-			calyver_favor_big_gain_effect = yes
 			save_scope_as = secondary_recipient
 		}
 		save_scope_as = actor
@@ -26596,6 +26627,990 @@ harem_politics.0029 = {
 			add_character_flag = {
 				flag = flag_considered_consort
 				years = 3
+			}
+		}
+	}
+}
+
+#######################################################
+##Choosing between a vassal's child, or their servant##
+#######################################################
+scripted_trigger harem_politics_valid_vassal_child_trigger = {
+	is_physically_able_ai_adult = yes
+	is_travelling = no
+	OR = {
+		AND = {
+			root = {
+				accepts_concubinage = yes
+			}
+			accepts_concubinage = yes
+		}
+		AND = {
+			root = {
+				accepts_concubinage = no
+			}
+			accepts_concubinage = no
+		}
+	}
+	can_marry_character_trigger = {
+		CHARACTER = root
+	}
+	is_hostage = no
+	
+	age <= 30
+	any_consort = {
+		count = 0
+	}
+
+	exists = court_owner
+	court_owner = {
+		NOT = {
+			this = root
+		}
+		is_vassal_of = root
+	}
+	court_owner.primary_title = {
+		place_in_line_of_succession = {
+			target = prev
+			value >= 3
+		}
+	}
+
+	exists = dynasty
+	NOR = {
+		dynasty = root.dynasty
+
+		any_former_concubinist = {
+			this = root
+		}
+		any_former_spouse = {
+			this = root
+		}
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+		has_relation_friend = root
+		has_relation_best_friend = root
+		has_relation_lover = root
+		has_relation_soulmate = root
+
+		any_child = {
+			is_child_of = root
+		}
+
+		has_trait = pregnant
+		has_trait = eunuch
+		has_trait = bastard
+
+		exists = betrothed
+	}
+
+	num_of_good_genetic_traits = 0
+}
+
+scripted_trigger harem_politics_valid_vassal_trigger = {
+	is_physically_able_ai_adult = yes
+	is_travelling = no
+	is_at_war = no
+
+	OR = {
+		AND = {
+			root = {
+				accepts_concubinage = yes
+			}
+			accepts_concubinage = yes
+		}
+		AND = {
+			root = {
+				accepts_concubinage = no
+			}
+			accepts_concubinage = no
+		}
+	}
+
+	opinion = {
+		target = root
+		value <= 10
+	}
+	
+	exists = dynasty
+	NOR = {
+		dynasty = root.dynasty
+		has_relation_rival = root
+		has_relation_nemesis = root
+		has_relation_friend = root
+		has_relation_best_friend = root
+		has_relation_lover = root
+		has_relation_soulmate = root
+
+		is_allied_to = root
+
+		has_trait = content
+		has_trait = humble
+	}
+
+	any_child = {
+		harem_politics_valid_vassal_child_trigger = yes
+	}
+
+	has_hook = root
+
+	root = {
+		NOT = {
+			has_hook = prev
+		}
+	}
+}
+
+scripted_effect harem_politics_make_concubine_effect = {
+	save_scope_as = actor
+	save_scope_as = secondary_actor
+	$CONSORT$ = {
+		if = {
+			limit = {
+				root = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						count >= 3
+					}
+				}
+			}
+			set_variable = {
+				name = favor
+				value = initial_favor_valuation
+			}
+		}
+		add_opinion = {
+			target = root
+			modifier = grateful_opinion
+			opinion = 10
+		}
+		save_scope_as = recipient
+	}
+	calyver_concubine_on_accept_effect = yes
+	make_concubine = scope:recipient
+}
+
+scripted_effect harem_politics_marriage_effect = {
+	if = {
+		limit = {
+			is_female = yes
+		}
+		marry_matrilineal = $CONSORT$
+	}
+	else = {
+		marry = $CONSORT$
+	}
+	$CONSORT$ = {
+		save_scope_as = secondary_recipient
+	}
+	save_scope_as = actor
+	save_scope_as = secondary_actor
+	save_scope_as = recipient
+	calyver_marriage_interaction_on_accept_effect = yes
+}
+
+harem_politics.0030 = {
+	type = character_event
+	title = harem_politics.0030.t
+	desc = harem_politics.0030.desc
+	theme = realm
+	
+	right_portrait = { 	
+		character = scope:vassal_child
+		animation = flirtation
+	}
+	left_portrait = { 	
+		character = scope:servant
+		animation = personality_coward
+	}
+	lower_center_portrait = {
+		character = scope:vassal
+	}
+	
+	trigger = {
+		is_physically_able_adult = yes
+		is_at_war = no
+		is_landed = yes
+		accepts_harems = yes
+		highest_held_title_tier >= tier_kingdom
+		OR = {
+			AND = {
+				accepts_concubinage = yes
+				allowed_more_concubines = yes
+			}
+			AND = {
+				accepts_concubinage = no
+				allowed_more_spouses = yes
+			}
+		}
+		any_vassal = {
+			count >= 4
+		}
+		any_vassal = {
+			harem_politics_valid_vassal_trigger = yes
+		}
+		NOR = {
+			has_character_flag = had_vassal_consort_event_flag
+			has_character_modifier = mourner_modifier
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = { #Powerful vassals
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				is_powerful_vassal = yes
+			}
+		}
+		modifier = { #Unfriendly vassals
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				opinion = {
+					target = root
+					value = <= -15
+				}
+			}
+		}
+
+		modifier = { #Factions
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				is_a_faction_member = yes
+			}
+		}
+		modifier = { #Factions
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				is_a_faction_leader = yes
+			}
+		}
+		modifier = { #Factions
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				joined_faction = {
+					faction_power >= faction_power_halfway_threshold
+				}
+			}
+		}
+
+		modifier = { #Bad children
+			add = 0.15
+			any_vassal = {
+				harem_politics_valid_vassal_trigger = yes
+				any_child = {
+					harem_politics_valid_vassal_child_trigger = yes
+					num_of_bad_genetic_traits >= 1
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		every_vassal = {
+			limit = {
+				harem_politics_valid_vassal_trigger = yes
+			}
+			add_to_list = vassal_list
+		}
+
+		random_in_list = {
+			list = vassal_list
+			weight = {
+				base = 10
+
+				#Rank
+				modifier = { #King
+					highest_held_title_tier = tier_kingdom
+					add = 15
+				}
+				modifier = { #Duke
+					highest_held_title_tier = tier_duchy
+					add = 10
+				}
+				modifier = { #Count
+					highest_held_title_tier = tier_county
+					add = 5
+				}
+
+				#Power
+				modifier = {
+					is_powerful_vassal = yes
+					add = 10
+				}
+
+				#Opinion
+				opinion_modifier = {
+					opinion_target = root
+					multiplier = -0.15
+				}
+
+				#Factions
+				modifier = { #Member
+					is_a_faction_member = yes
+					add = 10
+				}
+				modifier = { #Leader
+					is_a_faction_leader = yes
+					add = 10
+				}
+				modifier = { #Faction power
+					joined_faction = {
+						faction_power >= faction_power_halfway_threshold
+					}
+					add = 10
+				}
+
+				#Ugly kids
+				modifier = { #One negative trait
+					any_child = {
+						harem_politics_valid_vassal_child_trigger = yes
+						num_of_bad_genetic_traits >= 1
+					}
+					add = 5
+				}
+				modifier = { #Two negative traits
+					any_child = {
+						harem_politics_valid_vassal_child_trigger = yes
+						num_of_bad_genetic_traits >= 2
+					}
+					add = 5
+				}
+			}
+			save_scope_as = vassal
+		}
+
+		scope:vassal = {
+			random_child = {
+				limit = {
+					harem_politics_valid_vassal_child_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = { #One negative trait
+						num_of_bad_genetic_traits >= 1
+						add = 10
+					}
+					modifier = { #One negative trait
+						num_of_bad_genetic_traits >= 2
+						add = 10
+					}
+					modifier = { #One negative trait
+						num_of_bad_genetic_traits = 3
+						add = 5
+					}
+
+					#Bad skills
+					modifier = {
+						diplomacy <= mediocre_skill_rating
+						add = 10
+					}
+					modifier = {
+						martial <= mediocre_skill_rating
+						add = 5
+					}
+					modifier = {
+						stewardship <= mediocre_skill_rating
+						add = 10
+					}
+					modifier = {
+						intrigue >= high_skill_rating
+						add = 10
+					}
+					modifier = {
+						intrigue >= very_high_skill_rating
+						add = 10
+					}
+					modifier = {
+						learning <= mediocre_skill_rating
+						add = 5
+					}
+				}
+				save_scope_as = vassal_child
+			}
+		}
+
+		if = {
+			limit = {
+				is_female = yes
+			}
+			create_character = {
+				location = root.capital_province
+				template = pretty_servant_character
+				gender = male
+				save_scope_as = servant
+			}
+		}
+		else = {
+			create_character = {
+				location = root.capital_province
+				template = pretty_servant_character
+				gender = female
+				save_scope_as = servant
+			}
+		}
+	}
+
+	option = { #Take the vassal's child as a consort
+        name = harem_politics.0030.a	
+		trigger = {
+			OR = {
+				AND = {
+					accepts_concubinage = yes
+					allowed_more_concubines = yes
+				}
+				AND = {
+					accepts_concubinage = no
+					allowed_more_spouses = yes
+				}
+			}
+		}	
+		
+		if = {
+			limit = {
+				allowed_more_concubines = yes
+			}
+			harem_politics_make_concubine_effect = { CONSORT = scope:vassal_child }
+			add_truce_both_ways = {
+				character = scope:vassal
+				years = 4
+				name = TRUCE_HAREM
+			}
+		}
+		else_if = {
+			limit = {
+				allowed_more_spouses = yes
+			}
+			harem_politics_marriage_effect = { CONSORT = scope:vassal_child }
+
+			create_alliance = {
+				target = scope:vassal
+				allied_through_owner = root
+				allied_through_target = scope:vassal_child
+			}
+		}
+
+		scope:vassal = {
+			add_opinion = {
+				modifier = pleased_opinion
+				target = root
+				opinion = 15
+			}
+		}
+
+		stress_impact = {
+			chaste = minor_stress_impact_gain
+		}
+
+
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = 0.10
+				ai_vengefulness = -0.1
+   			}
+			modifier = { #Chaste
+			   has_trait = chaste
+			   add = -25
+			}
+			modifier = { #Consorts
+				OR = {
+					number_of_concubines < number_of_desired_concubines
+					AND = {
+						primary_title.tier >= 5
+						any_spouse = {
+							count < 4
+						}
+					}
+					AND = {
+						primary_title.tier >= 4
+						any_spouse = {
+							count < 3
+						}
+					}
+				}
+			   add = 10
+			}
+
+			modifier = { #Powerful vassal
+				scope:vassal = {
+					is_powerful_vassal = yes
+				}
+				add = 10
+			}
+			modifier = { #Councilor
+				scope:vassal = {
+					is_councillor_of = root
+				}
+				add = 10
+			}
+
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_member = yes
+				}
+				add = 10
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_leader = yes
+				}
+				add = 10
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					joined_faction = {
+						faction_power >= faction_power_halfway_threshold
+					}
+				}
+				add = 10
+			}
+
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 1
+				}
+				add = -5
+			}
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 2
+				}
+				add = -5
+			}
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 3
+				}
+				add = -5
+			}
+
+			modifier = { #Skills
+				scope:vassal_child = {
+					diplomacy >= medium_skill_rating
+				}
+				add = 10
+			}
+			modifier = { #Skills
+				scope:vassal_child = {
+					diplomacy >= high_skill_rating
+				}
+				add = 10
+			}
+			modifier = { #Skills
+				scope:vassal_child = {
+					diplomacy >= very_high_skill_rating
+				}
+				add = 5
+			}
+
+			modifier = { #Skills
+				scope:vassal_child = {
+					diplomacy <= mediocre_skill_rating
+				}
+				add = -10
+			}
+			modifier = { #Skills
+				scope:vassal_child = {
+					stewardship <= mediocre_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Skills
+				scope:vassal_child = {
+					learning <= mediocre_skill_rating
+				}
+				add = -5
+			}
+
+			#Personality
+			compatibility_modifier = {
+				compatibility_target = scope:vassal_child
+				multiplier = 1
+				min = -15
+				max = 15
+			}
+
+			modifier = {
+				is_attracted_to_gender_of = scope:vassal_child
+				add = 10
+			}
+        }
+    }
+
+	option = { #Take the vassal's child's servant as a consort
+        name = harem_politics.0030.b
+		trigger = {
+			OR = {
+				AND = {
+					accepts_concubinage = yes
+					allowed_more_concubines = yes
+				}
+				AND = {
+					accepts_concubinage = no
+					allowed_more_spouses = yes
+				}
+			}
+		}	
+		
+		if = {
+			limit = {
+				allowed_more_concubines = yes
+			}
+			harem_politics_make_concubine_effect = { CONSORT = scope:servant }
+		}
+		else_if = {
+			limit = {
+				allowed_more_spouses = yes
+			}
+			harem_politics_marriage_effect = { CONSORT = scope:servant }
+		}
+
+		scope:vassal = {
+			add_opinion = {
+				target = root
+				modifier = refusal_opinion
+				opinion = -25
+			}
+
+			if = {
+				limit = {
+					is_a_faction_leader = yes
+				}
+				joined_faction = {
+					add_faction_discontent = 20
+				}
+			}
+			else_if = {
+				limit = {
+					is_a_faction_member = yes
+				}
+				joined_faction = {
+					add_faction_discontent = 10
+				}
+			}
+		}
+		
+		scope:vassal_child = {
+			add_opinion = {
+				target = root
+				modifier = rejected_me_opinion
+			}
+		}
+
+		stress_impact = {
+			chaste = minor_stress_impact_gain
+		}
+
+
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = -0.10
+				ai_vengefulness = 0.1
+   			}
+			modifier = { #Chaste
+			   has_trait = chaste
+			   add = -25
+			}
+			modifier = { #Consorts
+				OR = {
+					number_of_concubines < number_of_desired_concubines
+					AND = {
+						primary_title.tier >= 5
+						any_spouse = {
+							count < 4
+						}
+					}
+					AND = {
+						primary_title.tier >= 4
+						any_spouse = {
+							count < 3
+						}
+					}
+				}
+			   add = 10
+			}
+
+			modifier = { #Powerful vassal
+				scope:vassal = {
+					is_powerful_vassal = no
+				}
+				add = 10
+			}
+
+			modifier = { #Rank
+				scope:vassal = {
+					highest_held_title_tier = tier_county
+				}
+				add = 5
+			}
+			modifier = { #Rank
+				scope:vassal = {
+					highest_held_title_tier = tier_barony
+				}
+				add = 10
+			}
+
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_member = yes
+				}
+				add = -5
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_leader = yes
+				}
+				add = -5
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					joined_faction = {
+						faction_power >= faction_power_halfway_threshold
+					}
+				}
+				add = -15
+			}
+
+			#Personality
+			compatibility_modifier = {
+				compatibility_target = scope:servant
+				multiplier = 1
+				min = -15
+				max = 15
+			}
+
+			#Opinion
+			opinion_modifier = {
+				opinion_target = scope:servant
+				multiplier = 0.15
+			}
+
+			#Traits
+			modifier = {
+				scope:servant = {
+					has_trait = beauty_good_2
+				}
+				add = 5
+			}
+			modifier = {
+				scope:servant = {
+					has_trait = beauty_good_3
+				}
+				add = 10
+			}
+			modifier = {
+				scope:servant = {
+					num_of_good_genetic_traits > 1
+				}
+				add = 10
+			}
+			modifier = {
+				is_attracted_to_gender_of = scope:servant
+				add = 10
+			}
+        }
+    }
+
+	option = { #Refuse them both
+        name = harem_politics.0030.c
+
+		scope:vassal = {
+			add_opinion = {
+				target = root
+				modifier = refusal_opinion
+				opinion = -10
+			}
+
+			if = {
+				limit = {
+					is_a_faction_leader = yes
+				}
+				joined_faction = {
+					add_faction_discontent = 10
+				}
+			}
+			else_if = {
+				limit = {
+					is_a_faction_member = yes
+				}
+				joined_faction = {
+					add_faction_discontent = 5
+				}
+			}
+		}
+		
+		scope:vassal_child = {
+			add_opinion = {
+				target = root
+				modifier = rejected_me_opinion
+			}
+		}
+
+		stress_impact = {
+			lustful = minor_stress_impact_gain
+		}
+
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = -0.10
+				ai_vengefulness = 0.1
+   			}
+
+			modifier = { #Lustful
+			   has_trait = lustful
+			   add = -25
+			}
+			modifier = { #Consorts
+				OR = {
+					number_of_concubines < number_of_desired_concubines
+					AND = {
+						primary_title.tier >= 5
+						any_spouse = {
+							count < 4
+						}
+					}
+					AND = {
+						primary_title.tier >= 4
+						any_spouse = {
+							count < 3
+						}
+					}
+				}
+			   add = -10
+			}
+
+			modifier = { #Powerful vassal
+				scope:vassal = {
+					is_powerful_vassal = no
+				}
+				add = 10
+			}
+
+			modifier = { #Rank
+				scope:vassal = {
+					highest_held_title_tier = tier_county
+				}
+				add = 5
+			}
+			modifier = { #Rank
+				scope:vassal = {
+					highest_held_title_tier = tier_barony
+				}
+				add = 10
+			}
+
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_member = yes
+				}
+				add = -5
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					is_a_faction_leader = yes
+				}
+				add = -5
+			}
+			modifier = { #Factions
+				scope:vassal = {
+					joined_faction = {
+						faction_power >= faction_power_halfway_threshold
+					}
+				}
+				add = -15
+			}
+
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 1
+				}
+				add = 5
+			}
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 2
+				}
+				add = 5
+			}
+			modifier = { #Traits
+				scope:vassal_child = {
+					num_of_bad_genetic_traits >= 3
+				}
+				add = 5
+			}
+
+			#Personality
+			compatibility_modifier = {
+				compatibility_target = scope:servant
+				multiplier = 1
+				min = -15
+				max = 15
+			}
+
+			#Opinion
+			opinion_modifier = {
+				opinion_target = scope:servant
+				multiplier = 0.15
+			}
+
+			#Traits
+			modifier = {
+				scope:servant = {
+					has_trait = beauty_good_2
+				}
+				add = 10
+			}
+			modifier = {
+				scope:servant = {
+					has_trait = beauty_good_3
+				}
+				add = 20
+			}
+
+			modifier = {
+				NOT = { is_attracted_to_gender_of = scope:vassal_child }
+				add = 5
+			}
+			modifier = {
+				NOT = { is_attracted_to_gender_of = scope:servant }
+				add = 10
+			}
+
+			modifier = {
+				add = 10
+				has_sexuality = asexual
+			}
+        }
+    }
+
+	after = {
+		add_character_flag = {
+			flag = had_vassal_consort_event_flag
+			years = 5
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					scope:servant = {
+						NOT = {
+							is_consort_of = root
+						}
+					}
+				}
+				scope:servant = {
+					death = {
+						death_reason = death_vanished
+					}
+				}
 			}
 		}
 	}
