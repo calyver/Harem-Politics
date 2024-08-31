@@ -2534,7 +2534,7 @@ harem_politics.0002 = {
 		custom_tooltip = harem_politics.0002.a.tt
 		trigger_event = {
 			id = harem_politics.0003
-			days = 3
+			days = 4
 		}
 		stress_impact = {
 			lazy = minor_stress_impact_gain
@@ -29529,6 +29529,583 @@ harem_politics.0032 = {
 						death_reason = death_vanished
 					}
 				}
+			}
+		}
+	}
+}
+
+#############################################################
+##A consort was caught trying to send sensitive information##
+#############################################################
+harem_politics.0033 = {
+	type = character_event
+	title = consort_events.0033.t
+	desc = {
+		desc = harem_politics.0033.start.desc
+		first_valid = {
+			triggered_desc = { #Is parent of root
+				trigger = {
+					scope:schemer = {
+						is_parent_of = root
+					}
+				}
+				desc = harem_politics.0033.parent.desc
+			}
+			triggered_desc = { #PS
+				trigger = {
+					exists = primary_spouse
+					scope:schemer = {
+						this = root.primary_spouse
+					}
+				}
+				desc = harem_politics.0033.ps.desc
+			}
+			triggered_desc = { #SS
+				trigger = {
+					scope:schemer = {
+						is_spouse_of = root
+					}
+				}
+				desc = harem_politics.0033.ss.desc
+			}
+			triggered_desc = {
+				desc = harem_politics.0033.concubine.desc
+			}
+		}
+		desc = harem_politics.0001.0033.mid.desc
+		first_valid = {
+			triggered_desc = { #About me
+				trigger = {
+					scope:secret_holder = {
+						this = root
+					}
+				}
+				desc = harem_politics.0033.root.desc
+			}
+			triggered_desc = {
+				desc = harem_politics.0033.secret_holder.desc
+			}
+		}
+		desc = harem_politics.0001.0033.end.desc
+	}
+	theme = corruption
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = { 	
+		character = scope:valid_target_consort
+		animation = scheme
+	}
+	left_portrait = { 	
+		character = root
+		animation = schock
+	}
+	
+	trigger = {
+		is_landed = yes
+		this = scope:harem_liege
+		exists = scope:confidant
+		scope:confidant = {
+			is_vassal_of = root
+		}
+	}
+	
+	immediate = {
+		scope:valid_target_consort = {
+			save_scope_as = schemer
+		}
+		if = {
+			limit = {
+				scope:secret_holder = {
+					NOT = {
+						this = root
+					}
+				}
+			}
+			scope:secret_to_reveal = {
+				reveal_to = root
+			}
+		}
+	}
+	
+	option = { #Arrest them!
+        name = harem_politics.0021.a
+		if = {
+			limit = {
+				scope:secret_holder = {
+					this = root
+				}
+			}
+			add_opinion = {
+				target = scope:valid_target_consort
+				modifier = insolent_consort_opinion
+				opinion = -30
+			}
+			add_opinion = {
+				target = scope:confidant
+				modifier = suspicion_opinion
+				opinion = -30
+			}
+		}
+		else = {
+			add_opinion = {
+				target = scope:valid_target_consort
+				modifier = insolent_consort_opinion
+				opinion = -20
+			}
+			add_opinion = {
+				target = scope:confidant
+				modifier = suspicion_opinion
+				opinion = -20
+			}
+		}
+		scope:valid_target_consort = {
+			if = {
+				limit = {
+					is_consort_of = root
+				}
+				if = {
+					limit = {
+						has_character_modifier = favor_boost_modifier
+					}
+					calyver_stop_favor_boost_effect = {
+						HAREM_LIEGE = root
+						CONSORT = scope:valid_target_consort
+					}
+				}
+				calyver_favor_big_loss_effect = yes
+				if = { #If they're a GC, demote them
+					limit = {
+						has_court_position = grand_consort_court_position
+					}
+					save_scope_as = employee
+					root = {
+						save_scope_as = liege
+					}
+					grand_consort_revoked_court_position_effect = yes
+				}
+			}
+		}
+		rightfully_imprison_character_effect = {
+			TARGET = scope:valid_target_consort
+			IMPRISONER = root
+		}
+		
+		stress_impact = {
+			forgiving = minor_stress_impact_gain 
+			compassionate = minor_stress_impact_gain 
+		}
+		
+        ai_chance = {
+            base = 50
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:valid_target_consort
+				min = -20
+				max = 20
+				multiplier = -1
+			}
+			opinion_modifier = { #Opinion of confidant
+				opinion_target = scope:confidant
+				min = -15
+				max = 15
+				multiplier = -1
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -50
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -50
+			}
+				
+			modifier = { #Traits
+				has_trait = just
+				add = 10
+			}
+			modifier = { #Traits
+				has_trait = vengeful
+				add = 15
+			}
+			
+			modifier = { #Favor
+			scope:valid_target_consort = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -5
+			}
+			modifier = { #Favor
+			scope:valid_target_consort = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = -10
+			}
+			modifier = { #Favor
+			scope:valid_target_consort = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -15
+			}
+			modifier = { #Favor
+				scope:valid_target_consort = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Favor
+				scope:valid_target_consort = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 20
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:valid_target_consort = { 
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+						}
+					}
+				}
+				add = -10
+			}
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:valid_target_consort = { 
+					this = root.primary_spouse
+				}
+				add = -15
+			}
+			#Grand consort
+			modifier = {
+				scope:valid_target_consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = -10
+			}
+			#Other spouses
+			modifier = {
+				scope:valid_target_consort = { 
+					is_spouse_of = root
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = -5
+			}
+			#Parents
+			modifier = {
+				scope:schemer = { 
+					any_child = {
+						this = root
+					}
+				}
+				add = -25
+			}
+
+			#Pregnant consort
+			modifier = {
+				scope:valid_target_consort = { 
+					has_trait = pregnant
+				}
+				add = -15
+			}
+        }
+    }
+
+	option = { #Execute them
+        name = harem_politics.0021.b
+		trigger = {
+			NOT = { 
+				scope:schemer = { has_strong_hook = root } 
+			}
+		}
+		scope:schemer = {
+			death = {
+				death_reason = death_punishment
+				killer = root
+			}
+			close_relations_opinion_effect = { VICTIM = scope:schemer EXECUTIONER = root }
+		}
+		
+		stress_impact = {
+			forgiving = medium_stress_impact_gain 
+			compassionate = medium_stress_impact_gain 
+		}
+		
+        ai_chance = {
+            base = 30
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:schemer
+				min = -30
+				max = 30
+				multiplier = -1
+			}
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:confidant
+				min = -30
+				max = 30
+				multiplier = -1
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -50
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -50
+			}
+				
+			modifier = { #Traits
+				has_trait = just
+				add = 10
+			}
+			modifier = { #Traits
+				has_trait = vengeful
+				add = 20
+			}
+
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -15
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = -20
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -25
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 15
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:valid_target_consort = { 
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+						}
+					}
+				}
+				add = -20
+			}
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:valid_target_consort = { 
+					this = root.primary_spouse
+				}
+				add = -25
+			}
+			#Grand consort
+			modifier = {
+				scope:valid_target_consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = -20
+			}
+			#Other spouses
+			modifier = {
+				scope:valid_target_consort = { 
+					is_spouse_of = root
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = -10
+			}
+			#Parents
+			modifier = {
+				scope:schemer = { 
+					any_child = {
+						this = root
+					}
+				}
+				add = -50
+			}
+
+			#Pregnant consort
+			modifier = {
+				scope:valid_target_consort = { 
+					has_trait = pregnant
+				}
+				add = -20
+			}
+        }
+    }
+
+	option = { #Let them go
+        name = consort_events.0001.c
+		
+		scope:schemer = {
+			calyver_favor_medium_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+		}
+
+		stress_impact = {
+			just = medium_stress_impact_gain 
+			vengeful = medium_stress_impact_gain 
+		}
+		
+        ai_chance = {
+            base = 25
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:schemer
+				min = -20
+				max = 20
+				multiplier = 1
+			}
+			opinion_modifier = { #Opinion of pregnant consort
+				opinion_target = scope:confidant
+				min = -15
+				max = 15
+				multiplier = 1
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = 10
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = 10
+			}
+				
+			modifier = { #Traits
+				has_trait = just
+				add = -25
+			}
+			modifier = { #Traits
+				has_trait = vengeful
+				add = -50
+			}
+
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 15
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = -15
+			}
+			modifier = { #Favor
+				scope:schemer = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = -25
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:schemer = { 
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+						}
+					}
+				}
+				add = 10
+			}
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:schemer = { 
+					this = root.primary_spouse
+				}
+				add = 15
+			}
+			#Grand consort
+			modifier = {
+				scope:schemer = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			#Other spouses
+			modifier = {
+				scope:schemer = { 
+					is_spouse_of = root
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = 5
+			}
+			#Parents
+			modifier = {
+				scope:schemer = { 
+					any_child = {
+						this = root
+					}
+				}
+				add = 25
+			}
+			#Pregnant consort
+			modifier = {
+				scope:valid_target_consort = { 
+					has_trait = pregnant
+				}
+				add = 15
+			}
+        }
+    }
+	
+	after = {
+		scope:schemer = {
+			add_character_flag = {
+				flag = flag_caught_revealing_information
+				years = 3
 			}
 		}
 	}
