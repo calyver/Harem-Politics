@@ -16292,7 +16292,6 @@ scripted_trigger consort_events_secret_trigger = {
 		is_shunned_for = secret_owner
 		is_criminal_for = secret_owner
 	}
-	NOT = { is_known_by = $CONSORT$ }
 }
 
 scripted_trigger consort_events_consort_trigger = {
@@ -16310,6 +16309,16 @@ scripted_trigger consort_events_consort_trigger = {
 		has_relation_best_friend = root
 		has_relation_soulmate = root
 	}
+	any_close_family_member = {
+		NOR = {
+			is_child_of = root
+			any_known_secret = {
+				this = $SECRET$
+			}
+		}
+		is_vassal_of = root
+		is_at_war = no
+	}
 }
 
 consort_events.0030 = {
@@ -16321,13 +16330,10 @@ consort_events.0030 = {
 			is_imprisoned = no
 			count >= 3
 		}
-		any_courtier = {
-			consort_events_consort_trigger = yes
-			save_temporary_scope_as = consort
-		}
 		OR = {
 			any_secret = {
-				consort_events_secret_trigger = { CONSORT = scope:consort }
+				consort_events_secret_trigger = yes
+				save_temporary_scope_as = temporary_secret
 			}
 			any_vassal = {
 				highest_held_title_tier >= tier_county
@@ -16335,17 +16341,22 @@ consort_events.0030 = {
 					is_close_family_of = scope:consort
 				}
 				any_secret = {
-					consort_events_secret_trigger = { CONSORT = scope:consort }
+					consort_events_secret_trigger = yes
 				}
+				save_temporary_scope_as = temporary_secret
 			}
 			any_courtier = {
 				NOT = {
 					is_child_of = scope:consort
 				}
 				any_secret = {
-					consort_events_secret_trigger = { CONSORT = scope:consort }
+					consort_events_secret_trigger = yes
 				}
+				save_temporary_scope_as = temporary_secret
 			}
+		}
+		any_courtier = {
+			consort_events_consort_trigger = { SECRET = scope:temporary_secret }
 		}
 	}
 
@@ -16844,13 +16855,15 @@ consort_events.0030 = {
 						}
 					}
 				}
-
-				#Will the consort try to tell someone the secret?
 				if = {
 					limit = {
-						scope:valid_target_consort = {
-							OR = {
-								#To a vassal relative
+						exists = scope:secret_to_reveal
+					}
+					#This is where I'm stuck. Should the secret or the consort or the relative come first?
+					#Choosing a target to reveal
+					scope:valid_target_consort = {
+						if = {
+							limit = {
 								any_close_family_member = {
 									NOR = {
 										is_child_of = root
@@ -16861,754 +16874,482 @@ consort_events.0030 = {
 										NOT = { is_known_by = prev }
 									}
 								}
-								#To a fellow consort or harem member
-								AND = {
-									root = {
-										any_courtier = {
-											NOR = {
-												this = scope:secret_holder
-												has_relation_potential_rival = scope:valid_target_consort
-												has_relation_rival = scope:valid_target_consort
-												has_relation_nemesis = scope:valid_target_consort
-											}
-											OR = {
-												is_consort_of = root
-												is_parent_of = root
-											}
-											is_imprisoned = no
-											scope:secret_to_reveal = {
-												NOT = { is_known_by = prev }
-											}
-											save_temporary_scope_as = temporary_confidant
-										}
+							}
+							every_close_family_member = {
+								limit = {
+									NOR = {
+										is_child_of = root
+										this = scope:secret_holder
 									}
-									opinion = {
-										target = scope:temporary_confidant
-										value >= -10
+									is_vassal_of = root
+									scope:secret_to_reveal = {
+										NOT = { is_known_by = prev }
 									}
 								}
+								add_to_list = secret_target_list
 							}
 						}
 					}
-					random_list = {
-						50 = { #The secret is revealed
-							#Friends
-							modifier = { #A friend in the harem
-								any_courtier = {
-									NOR = {
-										this = scope:secret_holder
-										has_relation_potential_rival = scope:valid_target_consort
-										has_relation_rival = scope:valid_target_consort
-										has_relation_nemesis = scope:valid_target_consort
-									}
-									OR = {
-										is_consort_of = root
-										is_parent_of = root
-									}
-									is_imprisoned = no
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_friend = scope:valid_target_consort
-								}
-								add = 10
-							}
-							modifier = { #A friend in the harem
-								any_courtier = {
-									NOR = {
-										this = scope:secret_holder
-										has_relation_potential_rival = scope:valid_target_consort
-										has_relation_rival = scope:valid_target_consort
-										has_relation_nemesis = scope:valid_target_consort
-									}
-									OR = {
-										is_consort_of = root
-										is_parent_of = root
-									}
-									is_imprisoned = no
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_best_friend = scope:valid_target_consort
-								}
-								add = 20
-							}
-
-							modifier = { #A lover in the harem
-								any_courtier = {
-									NOR = {
-										this = scope:secret_holder
-										has_relation_potential_rival = scope:valid_target_consort
-										has_relation_rival = scope:valid_target_consort
-										has_relation_nemesis = scope:valid_target_consort
-									}
-									OR = {
-										is_consort_of = root
-										is_parent_of = root
-									}
-									is_imprisoned = no
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_lover = scope:valid_target_consort
-								}
-								add = 10
-							}
-							modifier = { #A lover in the harem
-								any_courtier = {
-									NOR = {
-										this = scope:secret_holder
-										has_relation_potential_rival = scope:valid_target_consort
-										has_relation_rival = scope:valid_target_consort
-										has_relation_nemesis = scope:valid_target_consort
-									}
-									OR = {
-										is_consort_of = root
-										is_parent_of = root
-									}
-									is_imprisoned = no
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_soulmate = scope:valid_target_consort
-								}
-								add = 20
-							}
-
-							modifier = { #A vassal friend
-								scope:valid_target_consort = {
-									any_close_family_member = {
+					scope:valid_target_consort = {
+						if = {
+							limit = {
+								root = {
+									any_courtier = {
 										NOR = {
-											is_child_of = root
 											this = scope:secret_holder
+											has_relation_potential_rival = scope:valid_target_consort
+											has_relation_rival = scope:valid_target_consort
+											has_relation_nemesis = scope:valid_target_consort
 										}
-										is_vassal_of = root
+										OR = {
+											is_consort_of = root
+											is_parent_of = root
+										}
+										is_imprisoned = no
+										scope:secret_to_reveal = {
+											NOT = { is_known_by = prev }
+										}
+										save_temporary_scope_as = temporary_confidant
+									}
+								}
+								opinion = {
+									target = scope:temporary_confidant
+									value >= -10
+								}
+							}
+							root = {
+								every_courtier = {
+									limit = {
+										NOR = {
+											this = scope:secret_holder
+											has_relation_potential_rival = scope:valid_target_consort
+											has_relation_rival = scope:valid_target_consort
+											has_relation_nemesis = scope:valid_target_consort
+										}
+										OR = {
+											is_consort_of = root
+											is_parent_of = root
+										}
+										is_imprisoned = no
 										scope:secret_to_reveal = {
 											NOT = { is_known_by = prev }
 										}
 									}
 								}
-								add = 10
-							}
-							modifier = { #A vassal friend
-								any_vassal = {
-									NOR = {
-										is_child_of = root
-										this = scope:secret_holder
-									}
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_friend = scope:valid_target_consort
-								}
-								add = 10
-							}
-							modifier = { #A vassal friend
-								any_vassal = {
-									NOR = {
-										is_child_of = root
-										this = scope:secret_holder
-									}
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_best_friend = scope:valid_target_consort
-								}
-								add = 20
-							}
-
-							modifier = { #A vassal lover
-								any_vassal = {
-									NOR = {
-										is_child_of = root
-										this = scope:secret_holder
-									}
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_lover = scope:valid_target_consort
-								}
-								add = 10
-							}
-							modifier = { #A vassal soulmate
-								any_vassal = {
-									NOR = {
-										is_child_of = root
-										this = scope:secret_holder
-									}
-									scope:secret_to_reveal = {
-										NOT = { is_known_by = prev }
-									}
-									has_relation_soulmate = scope:valid_target_consort
-								}
-								add = 20
-							}
-							
-							#Choosing a target to reveal
-							scope:valid_target_consort = {
-								if = {
-									limit = {
-										any_close_family_member = {
-											NOR = {
-												is_child_of = root
-												this = scope:secret_holder
-											}
-											is_vassal_of = root
-											scope:secret_to_reveal = {
-												NOT = { is_known_by = prev }
-											}
-										}
-									}
-									every_close_family_member = {
-										limit = {
-											NOR = {
-												is_child_of = root
-												this = scope:secret_holder
-											}
-											is_vassal_of = root
-											scope:secret_to_reveal = {
-												NOT = { is_known_by = prev }
-											}
-										}
-										add_to_list = secret_target_list
-									}
-								}
-							}
-							scope:valid_target_consort = {
-								if = {
-									limit = {
-										root = {
-											any_courtier = {
-												NOR = {
-													this = scope:secret_holder
-													has_relation_potential_rival = scope:valid_target_consort
-													has_relation_rival = scope:valid_target_consort
-													has_relation_nemesis = scope:valid_target_consort
-												}
-												OR = {
-													is_consort_of = root
-													is_parent_of = root
-												}
-												is_imprisoned = no
-												scope:secret_to_reveal = {
-													NOT = { is_known_by = prev }
-												}
-												save_temporary_scope_as = temporary_confidant
-											}
-										}
-										opinion = {
-											target = scope:temporary_confidant
-											value >= -10
-										}
-									}
-									root = {
-										every_courtier = {
-											limit = {
-												NOR = {
-													this = scope:secret_holder
-													has_relation_potential_rival = scope:valid_target_consort
-													has_relation_rival = scope:valid_target_consort
-													has_relation_nemesis = scope:valid_target_consort
-												}
-												OR = {
-													is_consort_of = root
-													is_parent_of = root
-												}
-												is_imprisoned = no
-												scope:secret_to_reveal = {
-													NOT = { is_known_by = prev }
-												}
-											}
-										}
-										add_to_list = secret_target_list
-									}
-								}
-							}
-							random_in_list = {
-								list = secret_target_list
-								weight = {
-									base = 10
-									#Scheming consorts
-									modifier = {
-										has_character_modifier = scheming_consort_modifier
-										add = 5
-									}
-
-									#Vassals
-									modifier = {
-										is_vassal_of = root
-										add = 5
-									}
-									modifier = {
-										is_powerful_vassal_of = root
-										add = 5
-									}
-
-									#Councillors
-									modifier = {
-										is_councillor_of = root
-										add = 5
-									}
-									modifier = {
-										has_council_position = councillor_spymaster
-										add = 5
-									}
-
-									#Relatives
-									modifier = {
-										is_close_family_of = scope:valid_target_consort
-										add = 10
-									}
-
-									#Friends
-									modifier = {
-										has_relation_friend = scope:valid_target_consort
-										add = 10
-									}
-									modifier = {
-										has_relation_soulmate = scope:valid_target_consort
-										add = 20
-									}
-
-									#Lovers
-									modifier = {
-										has_relation_lover = scope:valid_target_consort
-										add = 10
-									}
-									modifier = {
-										has_relation_soulmate = scope:valid_target_consort
-										add = 20
-									}
-								}
-								save_scope_as = confidant
-							}
-
-							#Now do the duel to know if the secret will be revealed
-							#Duel for the secret being revealed
-							if = {
-								limit = {
-									exists = scope:confidant
-								}
-								if = {
-									limit = {
-										exists = cp:councillor_spymaster
-									}
-									cp:councillor_spymaster = {
-										save_scope_as = spymaster
-									}
-								}
-								else = {
-									save_scope_as = spymaster
-								}
-								if = {
-									limit = {
-										exists = scope:spymaster
-										scope:spymaster = {
-											NOT = {
-												this = root
-											}
-										}
-									}
-									scope:valid_target_consort = {
-										duel = {
-											skill = intrigue
-											target = scope:spymaster
-											50 = { # Not caught
-												compare_modifier = {
-													value = scope:duel_value
-													multiplier = 2.5
-													min = -50
-												}
-
-												modifier = { #Friends
-													add = 5
-													has_relation_potential_friend = scope:spymaster
-												}
-												modifier = { #Friends
-													add = 10
-													has_relation_friend = scope:spymaster
-												}
-												modifier = { #Friends
-													add = 15
-													has_relation_best_friend = scope:spymaster
-												}
-
-												modifier = { #Lovers
-													add = 5
-													has_relation_potential_lover = scope:spymaster
-												}
-												modifier = { #Lovers
-													add = 10
-													has_relation_lover = scope:spymaster
-												}
-												modifier = { #Lovers
-													add = 15
-													has_relation_soulmate = scope:spymaster
-												}
-
-												modifier = { #Friends
-												add = 5
-													has_relation_potential_friend = root
-												}
-												modifier = { #Friends
-													add = 10
-													has_relation_friend = root
-												}
-												modifier = { #Friends
-													add = 15
-													has_relation_best_friend = root
-												}
-
-												modifier = { #Lovers
-													add = 5
-													has_relation_potential_lover = root
-												}
-												modifier = { #Lovers
-													add = 10
-													has_relation_lover = root
-												}
-												modifier = { #Lovers
-													add = 10
-													has_relation_soulmate = root
-												}
-												
-												modifier = { #Traits
-													add = 5
-													has_trait = deceitful
-												}
-												modifier = { #Scheming consorts
-													add = 5
-													has_character_modifier = scheming_consort_modifier
-												}
-												
-												modifier = { #Favored consorts are harder to target
-													add = 5
-													has_character_modifier = favored_consort_modifier
-												}
-												modifier = { #Favored consorts are harder to target
-													add = 5
-													has_character_modifier = favor_boost_modifier
-												}
-												modifier = { #Favored consorts are harder to target
-													add = 10
-													has_character_modifier = beloved_consort_modifier
-												}
-
-												modifier = { #Spouses have authority
-													add = 15
-													exists = root.primary_spouse
-													this = root.primary_spouse
-												}
-												modifier = { #The GC too
-													add = 10
-													has_court_position = grand_consort_court_position
-												}
-												modifier = {
-													add = 5
-													is_spouse_of = root
-													NOR = {
-														this = root.primary_spouse
-														has_court_position = grand_consort_court_position
-													}
-												}
-												modifier = { #Parents too
-													add = 10
-													is_parent_of = root
-												}
-								
-												modifier = { #Intelligent consorts
-													add = 5
-													has_trait = intellect_good_1
-												}
-												modifier = { #Intelligent consorts
-													add = 7
-													has_trait = intellect_good_2
-												}
-												modifier = { #Intelligent consorts
-													add = 10
-													has_trait = intellect_good_3
-												}
-
-												modifier = { #If this is root's secret, it'll be harder to spread
-													scope:secret_holder = {
-														this = root
-													}
-													add = -10
-												}
-												modifier = { #If this is a vassal's secret, it'll be harder to spread
-													scope:secret_holder = {
-														is_vassal_of = root
-													}
-													add = -5
-												}
-												modifier = { #If this is a vassal's secret, it'll be harder to spread
-													scope:secret_holder = {
-														is_powerful_vassal_of = root
-													}
-													add = -5
-												}
-
-												modifier = { #If this is a big secret, it'll be harder to spread
-													scope:secret_to_reveal = {
-														is_criminal_for = secret_owner
-													}
-													add = -5
-												}
-
-												modifier = { #More if confidant is a vassal
-													scope:confidant = {
-														is_vassal_of = root
-													}
-													add = -10
-												}
-
-												modifier = { #More if the holder is a courtier
-													scope:secret_holder = {
-														is_courtier_of = root
-													}
-													add = 25
-												}
-												modifier = { #More if confidant is a courtier
-													scope:confidant = {
-														is_courtier_of = root
-													}
-													add = 25
-												}
-								
-												#Actual effect
-												if = {
-													limit = {
-														scope:confidant = {
-															is_ai = yes
-														}
-													}
-													scope:secret_to_reveal = {
-														reveal_to = scope:confidant
-													}
-												}
-
-												if = {
-													limit = {
-														scope:confidant = {
-															is_ai = no
-														}
-													}
-													scope:confidant = {
-														trigger_event = {
-															trigger_event = {
-																id = consort_events.0031
-																days = { 10 20 }
-															}
-														}
-													}
-												}
-
-												if = {
-													limit = {
-														debug_only = yes
-													}
-													root = {
-														send_interface_toast = {
-															type = event_generic_neutral
-															title = success_miscarriage_event_t
-															right_icon = scope:valid_target_consort
-															left_icon = scope:confidant
-															custom_tooltip = secret_revealed_debug_desc
-														}
-													}
-												}
-											}
-											0 = { # Caught
-												compare_modifier = {
-													value = scope:duel_value
-													multiplier = -2.5
-													min = -50
-												}
-
-												modifier = { #Less if the holder is a courtier
-													scope:secret_holder = {
-														is_vassal_of = root
-													}
-													add = 10
-												}
-												modifier = { #Less if confidant is a courtier
-													scope:confidant = {
-														is_vassal_of = root
-													}
-													add = 40
-												}
-
-												modifier = { #Rivals
-													add = 5
-													has_relation_potential_rival = scope:spymaster
-												}
-												modifier = { #Rivals
-													add = 10
-													has_relation_rival = scope:spymaster
-												}
-												modifier = { #Friends
-													add = 15
-													has_relation_nemesis = scope:spymaster
-												}
-												
-												modifier = { #Favored consorts are harder to target
-													add = 5
-													has_character_modifier = unfavored_consort_modifier
-												}
-												modifier = { #Favored consorts are harder to target
-													add = 10
-													has_character_modifier = forgotten_consort_modifier
-												}
-								
-												modifier = { #Intelligent consorts
-													add = 5
-													has_trait = intellect_bad_1
-												}
-												modifier = { #Intelligent consorts
-													add = 7
-													has_trait = intellect_bad_2
-												}
-												modifier = { #Intelligent consorts
-													add = 10
-													has_trait = intellect_bad_3
-												}
-
-												modifier = { #If this is root's secret, it'll be harder to spread
-													scope:secret_holder = {
-														this = root
-													}
-													add = 10
-												}
-												modifier = { #If this is a vassal's secret, it'll be harder to spread
-													scope:secret_holder = {
-														is_vassal_of = root
-													}
-													add = 5
-												}
-												modifier = { #If this is a vassal's secret, it'll be harder to spread
-													scope:secret_holder = {
-														is_powerful_vassal_of = root
-													}
-													add = 5
-												}
-
-												modifier = { #If this is a big secret, it'll be harder to spread
-													scope:secret_to_reveal = {
-														is_criminal_for = secret_owner
-													}
-													add = 5
-												}
-
-												modifier = { #More if confidant is a vassal
-													scope:confidant = {
-														is_vassal_of = root
-													}
-													add = 10
-												}
-								
-												#Actual effect
-												root = {
-													trigger_event = {
-														id = harem_politics.0033
-														days = { 10 20 }
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-						50 = { #Nothing happens
-							modifier = { #Loyal
-								scope:valid_target_consort = {
-									has_trait = loyal
-								}
-								add = 20
-							}
-							modifier = { #Trusting
-								scope:valid_target_consort = {
-									has_trait = trusting
-								}
-								add = 15
-							}
-							modifier = { #Fears repercutions
-								scope:valid_target_consort = {
-									has_trait = shy
-								}
-								add = 10
-							}
-							modifier = { #Fears repercutions
-								scope:valid_target_consort = {
-									has_trait = craven
-								}
-								add = 25
-							}
-
-							modifier = { #Low skills
-								intrigue <= 12
-								add = 15
-							}
-							modifier = { #Naive
-								age <= 20
-								add = 10
-							}
-
-							modifier = { #Good opinion
-								opinion = {
-									target = root
-									value >= 10
-								}
-								add = 10
-							}
-							modifier = { #Good opinion
-								opinion = {
-									target = root
-									value >= 20
-								}
-								add = 10
-							}
-
-							#Relation
-							modifier = { #Friends
-								scope:valid_target_consort = {
-									has_relation_potential_friend = root
-								}
-								add = 5
-							}
-							modifier = { #Friends
-								scope:valid_target_consort = {
-									has_relation_friend = root
-								}
-								add = 10
-							}
-							modifier = { #Friends
-								scope:valid_target_consort = {
-									has_relation_best_friend = root
-								}
-								add = 20
-							}
-
-							modifier = { #Lovers
-								scope:valid_target_consort = {
-									has_relation_potential_lover = root
-								}
-								add = 5
-							}
-							modifier = { #Lovers
-								scope:valid_target_consort = {
-									has_relation_lover = root
-								}
-								add = 15
-							}
-							modifier = { #Lovers
-								scope:valid_target_consort = {
-									has_relation_soulmate = root
-								}
-								add = 20
+								add_to_list = secret_target_list
 							}
 						}
 					}
+					random_in_list = {
+						list = secret_target_list
+						weight = {
+							base = 10
+							#Scheming consorts
+							modifier = {
+								has_character_modifier = scheming_consort_modifier
+								add = 5
+							}
+
+							#Vassals
+							modifier = {
+								is_vassal_of = root
+								add = 5
+							}
+							modifier = {
+								is_powerful_vassal_of = root
+								add = 5
+							}
+
+							#Councillors
+							modifier = {
+								is_councillor_of = root
+								add = 5
+							}
+							modifier = {
+								has_council_position = councillor_spymaster
+								add = 5
+							}
+
+							#Relatives
+							modifier = {
+								is_close_family_of = scope:valid_target_consort
+								add = 10
+							}
+
+							#Friends
+							modifier = {
+								has_relation_friend = scope:valid_target_consort
+								add = 10
+							}
+							modifier = {
+								has_relation_soulmate = scope:valid_target_consort
+								add = 20
+							}
+
+							#Lovers
+							modifier = {
+								has_relation_lover = scope:valid_target_consort
+								add = 10
+							}
+							modifier = {
+								has_relation_soulmate = scope:valid_target_consort
+								add = 20
+							}
+						}
+						save_scope_as = confidant
+					}
+				}
+
+				#Now do the duel to know if the secret will be revealed
+				#Duel for the secret being revealed
+				if = {
+					limit = {
+						exists = scope:confidant
+					}
+					if = {
+						limit = {
+							exists = cp:councillor_spymaster
+						}
+						cp:councillor_spymaster = {
+							save_scope_as = spymaster
+						}
+					}
+					else = {
+						save_scope_as = spymaster
+					}
+					if = {
+						limit = {
+							exists = scope:spymaster
+							scope:spymaster = {
+								NOT = {
+									this = root
+								}
+							}
+						}
+						scope:valid_target_consort = {
+							duel = {
+								skill = intrigue
+								target = scope:spymaster
+								50 = { # Not caught
+									compare_modifier = {
+										value = scope:duel_value
+										multiplier = 2.5
+										min = -50
+									}
+
+									modifier = { #Friends
+										add = 5
+										has_relation_potential_friend = scope:spymaster
+									}
+									modifier = { #Friends
+										add = 10
+										has_relation_friend = scope:spymaster
+									}
+									modifier = { #Friends
+										add = 15
+										has_relation_best_friend = scope:spymaster
+									}
+
+									modifier = { #Lovers
+										add = 5
+										has_relation_potential_lover = scope:spymaster
+									}
+									modifier = { #Lovers
+										add = 10
+										has_relation_lover = scope:spymaster
+									}
+									modifier = { #Lovers
+										add = 15
+										has_relation_soulmate = scope:spymaster
+									}
+
+									modifier = { #Friends
+									add = 5
+										has_relation_potential_friend = root
+									}
+									modifier = { #Friends
+										add = 10
+										has_relation_friend = root
+									}
+									modifier = { #Friends
+										add = 15
+										has_relation_best_friend = root
+									}
+
+									modifier = { #Lovers
+										add = 5
+										has_relation_potential_lover = root
+									}
+									modifier = { #Lovers
+										add = 10
+										has_relation_lover = root
+									}
+									modifier = { #Lovers
+										add = 10
+										has_relation_soulmate = root
+									}
+									
+									modifier = { #Traits
+										add = 5
+										has_trait = deceitful
+									}
+									modifier = { #Scheming consorts
+										add = 5
+										has_character_modifier = scheming_consort_modifier
+									}
+									
+									modifier = { #Favored consorts are harder to target
+										add = 5
+										has_character_modifier = favored_consort_modifier
+									}
+									modifier = { #Favored consorts are harder to target
+										add = 5
+										has_character_modifier = favor_boost_modifier
+									}
+									modifier = { #Favored consorts are harder to target
+										add = 10
+										has_character_modifier = beloved_consort_modifier
+									}
+
+									modifier = { #Spouses have authority
+										add = 15
+										exists = root.primary_spouse
+										this = root.primary_spouse
+									}
+									modifier = { #The GC too
+										add = 10
+										has_court_position = grand_consort_court_position
+									}
+									modifier = {
+										add = 5
+										is_spouse_of = root
+										NOR = {
+											this = root.primary_spouse
+											has_court_position = grand_consort_court_position
+										}
+									}
+									modifier = { #Parents too
+										add = 10
+										is_parent_of = root
+									}
+					
+									modifier = { #Intelligent consorts
+										add = 5
+										has_trait = intellect_good_1
+									}
+									modifier = { #Intelligent consorts
+										add = 7
+										has_trait = intellect_good_2
+									}
+									modifier = { #Intelligent consorts
+										add = 10
+										has_trait = intellect_good_3
+									}
+
+									modifier = { #If this is root's secret, it'll be harder to spread
+										scope:secret_holder = {
+											this = root
+										}
+										add = -10
+									}
+									modifier = { #If this is a vassal's secret, it'll be harder to spread
+										scope:secret_holder = {
+											is_vassal_of = root
+										}
+										add = -5
+									}
+									modifier = { #If this is a vassal's secret, it'll be harder to spread
+										scope:secret_holder = {
+											is_powerful_vassal_of = root
+										}
+										add = -5
+									}
+
+									modifier = { #If this is a big secret, it'll be harder to spread
+										scope:secret_to_reveal = {
+											is_criminal_for = secret_owner
+										}
+										add = -5
+									}
+
+									modifier = { #More if confidant is a vassal
+										scope:confidant = {
+											is_vassal_of = root
+										}
+										add = -10
+									}
+
+									modifier = { #More if the holder is a courtier
+										scope:secret_holder = {
+											is_courtier_of = root
+										}
+										add = 25
+									}
+									modifier = { #More if confidant is a courtier
+										scope:confidant = {
+											is_courtier_of = root
+										}
+										add = 25
+									}
+					
+									#Actual effect
+									if = {
+										limit = {
+											scope:confidant = {
+												is_ai = yes
+											}
+										}
+										scope:secret_to_reveal = {
+											reveal_to = scope:confidant
+										}
+									}
+
+									if = {
+										limit = {
+											scope:confidant = {
+												is_ai = no
+											}
+										}
+										scope:confidant = {
+											trigger_event = {
+												trigger_event = {
+													id = consort_events.0031
+													days = { 10 20 }
+												}
+											}
+										}
+									}
+
+									if = {
+										limit = {
+											debug_only = yes
+										}
+										root = {
+											send_interface_toast = {
+												type = event_generic_neutral
+												title = success_miscarriage_event_t
+												right_icon = scope:valid_target_consort
+												left_icon = scope:confidant
+												custom_tooltip = secret_revealed_debug_desc
+											}
+										}
+									}
+								}
+								0 = { # Caught
+									compare_modifier = {
+										value = scope:duel_value
+										multiplier = -2.5
+										min = -50
+									}
+
+									modifier = { #Less if the holder is a courtier
+										scope:secret_holder = {
+											is_vassal_of = root
+										}
+										add = 10
+									}
+									modifier = { #Less if confidant is a courtier
+										scope:confidant = {
+											is_vassal_of = root
+										}
+										add = 40
+									}
+
+									modifier = { #Rivals
+										add = 5
+										has_relation_potential_rival = scope:spymaster
+									}
+									modifier = { #Rivals
+										add = 10
+										has_relation_rival = scope:spymaster
+									}
+									modifier = { #Friends
+										add = 15
+										has_relation_nemesis = scope:spymaster
+									}
+									
+									modifier = { #Favored consorts are harder to target
+										add = 5
+										has_character_modifier = unfavored_consort_modifier
+									}
+									modifier = { #Favored consorts are harder to target
+										add = 10
+										has_character_modifier = forgotten_consort_modifier
+									}
+					
+									modifier = { #Intelligent consorts
+										add = 5
+										has_trait = intellect_bad_1
+									}
+									modifier = { #Intelligent consorts
+										add = 7
+										has_trait = intellect_bad_2
+									}
+									modifier = { #Intelligent consorts
+										add = 10
+										has_trait = intellect_bad_3
+									}
+
+									modifier = { #If this is root's secret, it'll be harder to spread
+										scope:secret_holder = {
+											this = root
+										}
+										add = 10
+									}
+									modifier = { #If this is a vassal's secret, it'll be harder to spread
+										scope:secret_holder = {
+											is_vassal_of = root
+										}
+										add = 5
+									}
+									modifier = { #If this is a vassal's secret, it'll be harder to spread
+										scope:secret_holder = {
+											is_powerful_vassal_of = root
+										}
+										add = 5
+									}
+
+									modifier = { #If this is a big secret, it'll be harder to spread
+										scope:secret_to_reveal = {
+											is_criminal_for = secret_owner
+										}
+										add = 5
+									}
+
+									modifier = { #More if confidant is a vassal
+										scope:confidant = {
+											is_vassal_of = root
+										}
+										add = 10
+									}
+					
+									#Actual effect
+									root = {
+										trigger_event = {
+											id = harem_politics.0033
+											days = { 10 20 }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				any_secret = {
+					consort_events_secret_trigger = yes
+				}
+			}
+			add_to_list = secret_holders_list
+		}
+		if = {
+			limit = {
+				any_courtier = {
+					
 				}
 			}
 		}
