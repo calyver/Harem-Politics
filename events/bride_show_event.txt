@@ -919,27 +919,85 @@ bride_show.0004 = {
 		hidden_effect = {
 			#Set up lists
 			every_vassal = {
-				limit = { 
+				limit = { #Appropriate vassals
 					NOR = { 
 						government_has_flag = government_is_theocracy
 						is_at_war_with = root
 					}
-					OR = {
-						highest_held_title_tier <= tier_county
-						AND = {#Dukes will only participate with limited crown authority
+
+					AND = { #If root is a duke with low crown authority, the vassal isn't powerful
+						root = {
 							highest_held_title_tier = tier_duchy
-							root = {
-								OR = {
-									has_realm_law = crown_authority_1
-									has_realm_law = tribal_authority_1
-								}
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
 							}
 						}
+						is_powerful_vassal = no
+					}
+					AND = { #If root is a duke with limited crown authority, just any vassal
 						root = {
-							has_realm_law = crown_authority_2
-							has_realm_law = crown_authority_3
-							has_realm_law = tribal_authority_2
-							has_realm_law = tribal_authority_3
+							highest_held_title_tier = tier_duchy
+							OR = {
+								has_realm_law = crown_authority_1
+								has_realm_law = tribal_authority_1
+							}
+						}
+					}
+
+					AND = { #If root is a king with low crown authority, only counts
+						root = {
+							highest_held_title_tier = tier_kingdom
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						is_powerful_vassal = no
+						highest_held_title_tier <= tier_county
+					}
+					AND = { #If root is a king with limited crown authority, only non-powerful dukes and below
+						root = {
+							highest_held_title_tier = tier_kingdom
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						is_powerful_vassal = no
+					}
+
+					AND = { #If root is an emperor with low crown authority, only non-powerful counts and below
+						root = {
+							highest_held_title_tier = tier_empire
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						is_powerful_vassal = no
+						highest_held_title_tier <= tier_duchy
+					}
+					AND = { #If root is an emperor with limited crown authority, only non-powerful counts and below
+						root = {
+							highest_held_title_tier = tier_empire
+							OR = {
+								has_realm_law = crown_authority_1
+								has_realm_law = tribal_authority_1
+							}
+						}
+						is_powerful_vassal = no
+					}
+
+					AND = {
+						#Or high crown authority
+						root = {
+							OR = {
+								has_realm_law = crown_authority_2
+								has_realm_law = crown_authority_3
+								has_realm_law = tribal_authority_2
+								has_realm_law = tribal_authority_3
+							}
 						}
 					}
 				}

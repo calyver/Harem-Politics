@@ -57,6 +57,10 @@
 					}
 					any_vassal = {
 						is_powerful_vassal = no
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
@@ -67,6 +71,10 @@
 						has_realm_law = tribal_authority_1
 					}
 					any_vassal = {
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
@@ -80,17 +88,25 @@
 					any_vassal = {
 						is_powerful_vassal = no
 						highest_held_title_tier <= tier_county
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
 				AND = {	#If ruler is a king with low authority, they need at least 3 vassals
-					highest_held_title_tier = tier_duchy
+					highest_held_title_tier = tier_kingdom
 					OR = {
 						has_realm_law = crown_authority_1
 						has_realm_law = tribal_authority_1
 					}
 					any_vassal = {
 						is_powerful_vassal = no
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
@@ -103,7 +119,11 @@
 					}
 					any_vassal = {
 						is_powerful_vassal = no
-						highest_held_title_tier <= tier_county
+						highest_held_title_tier <= tier_duchy
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
@@ -115,16 +135,30 @@
 					}
 					any_vassal = {
 						is_powerful_vassal = no
-						highest_held_title_tier <= tier_duchy
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
 						count >= 3
 					}
 				}
 
-				#Or high crown authority
-				has_realm_law = crown_authority_2
-				has_realm_law = crown_authority_3
-				has_realm_law = tribal_authority_2
-				has_realm_law = tribal_authority_3
+				AND = {
+					#Or high crown authority
+					OR = {
+						has_realm_law = crown_authority_2
+						has_realm_law = crown_authority_3
+						has_realm_law = tribal_authority_2
+						has_realm_law = tribal_authority_3
+					}
+					any_vassal = {
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
+						count >= 3
+					}
+				}
 			}
 		}
 		custom_tooltip = {
@@ -165,53 +199,137 @@
 			save_scope_as = liege
 			every_vassal = {
 				if = {
-					limit = { 
-						OR = { 
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_pillar = heritage_byzantine }
+					limit = { #Appropriate vassals
+						NOR = { 
+							government_has_flag = government_is_theocracy
+							is_at_war_with = root
+						}
+
+						AND = { #If root is a duke with low crown authority, the vassal isn't powerful
+							root = {
+								highest_held_title_tier = tier_duchy
+								OR = {
+									has_realm_law = crown_authority_0
+									has_realm_law = tribal_authority_0
+								}
+							}
+							is_powerful_vassal = no
+						}
+						AND = { #If root is a duke with limited crown authority, just any vassal
+							root = {
+								highest_held_title_tier = tier_duchy
+								OR = {
+									has_realm_law = crown_authority_1
+									has_realm_law = tribal_authority_1
+								}
+							}
+						}
+
+						AND = { #If root is a king with low crown authority, only counts
+							root = {
+								highest_held_title_tier = tier_kingdom
+								OR = {
+									has_realm_law = crown_authority_0
+									has_realm_law = tribal_authority_0
+								}
+							}
+							is_powerful_vassal = no
+							highest_held_title_tier <= tier_county
+						}
+						AND = { #If root is a king with limited crown authority, only non-powerful dukes and below
+							root = {
+								highest_held_title_tier = tier_kingdom
+								OR = {
+									has_realm_law = crown_authority_0
+									has_realm_law = tribal_authority_0
+								}
+							}
+							is_powerful_vassal = no
+						}
+
+						AND = { #If root is an emperor with low crown authority, only non-powerful counts and below
+							root = {
+								highest_held_title_tier = tier_empire
+								OR = {
+									has_realm_law = crown_authority_0
+									has_realm_law = tribal_authority_0
+								}
+							}
+							is_powerful_vassal = no
+							highest_held_title_tier <= tier_duchy
+						}
+						AND = { #If root is an emperor with limited crown authority, only non-powerful counts and below
+							root = {
+								highest_held_title_tier = tier_empire
+								OR = {
+									has_realm_law = crown_authority_1
+									has_realm_law = tribal_authority_1
+								}
+							}
+							is_powerful_vassal = no
+						}
+
+						AND = {
+							#Or high crown authority
+							root = {
+								OR = {
+									has_realm_law = crown_authority_2
+									has_realm_law = crown_authority_3
+									has_realm_law = tribal_authority_2
+									has_realm_law = tribal_authority_3
+								}
+							}
 						}
 					}
 					if = {
 						limit = { 
-							NOT = { has_vassal_stance = courtly }
-						}
-						add_opinion = {
-							target = root
-							modifier = bride_show_vassal_opinion
-						}
-					}
-					else = {
-						add_opinion = {
-							target = root
-							modifier = bride_show_courtly_vassal_opinion
-						}
-					}
-				}
-				if = {
-					limit = { 
-						AND = { 
-							accepts_concubinage = no
-							accepts_polygamy = no
-							NOR = { 
+							OR = { 
+								accepts_concubinage = yes
+								accepts_polygamy = yes
 								culture = { has_cultural_pillar = heritage_east_slavic }
 								culture = { has_cultural_pillar = heritage_byzantine }
 							}
 						}
+						if = {
+							limit = { 
+								NOT = { has_vassal_stance = courtly }
+							}
+							add_opinion = {
+								target = root
+								modifier = bride_show_vassal_opinion
+							}
+						}
+						else = {
+							add_opinion = {
+								target = root
+								modifier = bride_show_courtly_vassal_opinion
+							}
+						}
 					}
-					add_opinion = {
-						target = root
-						modifier = bride_show_monogamous_vassal_opinion
+					if = {
+						limit = { 
+							AND = { 
+								accepts_concubinage = no
+								accepts_polygamy = no
+								NOR = { 
+									culture = { has_cultural_pillar = heritage_east_slavic }
+									culture = { has_cultural_pillar = heritage_byzantine }
+								}
+							}
+						}
+						add_opinion = {
+							target = root
+							modifier = bride_show_monogamous_vassal_opinion
+						}
 					}
-				}
-				if = {
-					limit = {
-						is_ai = no
-					}
-					trigger_event = {
-						id = bride_show.0007
-						days = 1 
+					if = {
+						limit = {
+							is_ai = no
+						}
+						trigger_event = {
+							id = bride_show.0007
+							days = 1 
+						}
 					}
 				}
 			}
