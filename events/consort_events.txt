@@ -2183,6 +2183,10 @@ consort_events.0001 = {
 				weight = {
 					base = 10
 					modifier = {
+						has_character_flag = flag_mei
+						add = 250
+					}
+					modifier = {
 						has_trait = arrogant
 						add = 20
 					}
@@ -2238,6 +2242,19 @@ consort_events.0001 = {
 					modifier = { #Naive
 						age <= 19
 						add = 10
+					}
+
+					modifier = { #Relation
+						has_relation_potential_rival = root
+						add = 10
+					}
+					modifier = { #Relation
+						has_relation_rival = root
+						add = 20
+					}
+					modifier = { #Relation
+						has_relation_nemesis = root
+						add = 30
 					}
 				}
 				save_scope_as = valid_target_consort
@@ -15308,26 +15325,33 @@ consort_events.0022 = {
 	immediate = {
 		if = {
 			limit = {
-				can_set_relation_rival_trigger = { CHARACTER = scope:schemer }
+				scope:schemer = {
+					is_alive = yes
+				}
 			}
-			set_relation_rival = { 
-				target = scope:schemer
-				reason = consort_rival_reason
+			if = {
+				limit = {
+					can_set_relation_rival_trigger = { CHARACTER = scope:schemer }
+				}
+				set_relation_rival = { 
+					target = scope:schemer
+					reason = consort_rival_reason
+				}
 			}
-		}
-		else_if = {
-			limit = {
-				can_set_relation_nemesis_trigger = { CHARACTER = scope:schemer }
+			else_if = {
+				limit = {
+					can_set_relation_nemesis_trigger = { CHARACTER = scope:schemer }
+				}
+				set_relation_nemesis = { 
+					target = scope:schemer
+					reason = consort_rival_reason 
+				}
 			}
-			set_relation_nemesis = { 
-				target = scope:schemer
-				reason = consort_rival_reason 
-			}
-		}
-		show_as_tooltip = {
-			add_opinion = {
-				target = scope:schemer
-				modifier = hatred_spouse_opinion
+			show_as_tooltip = {
+				add_opinion = {
+					target = scope:schemer
+					modifier = hatred_spouse_opinion
+				}
 			}
 		}
 		add_character_modifier = {
@@ -15863,6 +15887,7 @@ consort_events.0028 = {
 		}
 		any_consort = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			age >= 20
 			accepts_harems = yes
 			diplomacy >= 15
 			learning >= 9
@@ -15904,6 +15929,7 @@ consort_events.0028 = {
 		random_consort = {
 			limit = {
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				age >= 20
 				accepts_harems = yes
 				diplomacy >= 15
 				learning >= 9
@@ -16091,6 +16117,7 @@ consort_events.0029 = {
 		}
 		any_consort = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			age >= 20
 			accepts_harems = yes
 			intrigue >= 13
 			OR = { #Proper education
@@ -16135,6 +16162,7 @@ consort_events.0029 = {
 		random_consort = {
 			limit = {
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				age >= 20
 				accepts_harems = yes
 				intrigue >= 13
 				OR = { #Proper education
@@ -16276,4 +16304,1296 @@ consort_events.0029 = {
 			}
 		}
 	}	
+}
+
+############################
+##A Consort learns secrets##
+############################
+scripted_trigger consort_events_secret_trigger = {
+	OR = {	
+		is_shunned_for = secret_owner
+		is_criminal_for = secret_owner
+	}
+	NOT = { is_known_by = scope:consort }
+}
+
+scripted_trigger consort_events_courtier_trigger = {
+	save_temporary_scope_as = secret_holder
+	court_owner = {
+		any_courtier = {
+			NOT = { this = scope:secret_holder }
+			OR = {
+				is_consort_of = root
+				is_parent_of = root
+			}
+			is_imprisoned = no
+			any_close_family_member = {
+				is_vassal_of = root
+				NOT = {
+					is_child_of = root
+				}
+			}
+			save_temporary_scope_as = consort
+		}
+	}
+	any_secret = {
+		consort_events_secret_trigger = yes
+	}
+}
+
+##Consort learns of a courtier's secrets##
+consort_events.0030 = {
+	hidden = yes
+
+	trigger = {
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 3
+		}
+		any_courtier = {
+			consort_events_courtier_trigger = yes
+		}
+		NOT = {
+			has_character_flag = flag_consort_learned_secret
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_mei
+				is_courtier_of = root
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_courtier = {
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_courtier = {
+			limit = {
+				consort_events_courtier_trigger = yes
+			}
+			weight = {
+				base = 10
+				#Juicy secrets
+				modifier = {
+					any_secret = {
+						is_criminal_for = secret_owner
+						NOT = { is_known_by = scope:consort }
+					}
+					add = 2
+				}
+			}
+			save_scope_as = secret_holder
+		}
+		random_courtier = {
+			limit = {
+				NOT = { this = scope:secret_holder }
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				is_imprisoned = no
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+				save_temporary_scope_as = consort
+				scope:secret_holder = {
+					any_secret = {
+						consort_events_secret_trigger = yes
+					}
+				}
+			}
+			weight = {
+				base = 10
+				#Scheming consorts
+				modifier = {
+					has_character_modifier = scheming_consort_modifier
+					add = 2
+				}
+
+				#Scheming consorts
+				modifier = {
+					add = {
+						value = intrigue
+						multiply = 1.5
+					}
+				}
+
+				#PS
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 3
+				}
+				#GC
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 2
+				}
+				#SS
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 1
+				}
+
+				#Mei is a spy
+				modifier = {
+					has_character_flag = flag_mei
+					add = 3
+				}
+
+				#Your vassals' children
+				modifier = {
+					any_close_family_member = {
+						is_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+					add = 10
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:secret_holder = {
+			random_secret = {
+				limit = {
+					consort_events_secret_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_criminal_for = secret_owner
+						add = 5
+					}
+				}
+				reveal_to = scope:consort
+			}
+		}
+		random_list = {
+			4 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 8
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 24
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 36
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 48
+				}
+			}
+		}
+		if = {
+			limit = {
+				debug_only = yes
+				exists = scope:consort
+				exists = scope:secret_holder
+			}
+			root = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = success_miscarriage_event_t
+					right_icon = scope:consort
+					left_icon = scope:secret_holder
+					custom_tooltip = secret_learned_debug_desc
+				}
+			}
+		}
+	}
+}
+
+##Consort learns of one of your known secrets##
+scripted_trigger consort_events_vassal_trigger = {
+	save_temporary_scope_as = secret_holder
+	root = {
+		any_courtier = {
+			NOT = { 
+				is_close_family_of = scope:secret_holder
+			}
+			OR = {
+				is_consort_of = root
+				is_parent_of = root
+			}
+			is_imprisoned = no
+			any_close_family_member = {
+				is_vassal_of = root
+				NOT = {
+					is_child_of = root
+				}
+			}
+			save_temporary_scope_as = consort
+		}
+	}
+	any_secret = {
+		consort_events_secret_trigger = yes
+		is_known_by = root
+	}
+}
+
+consort_events.0031 = {
+	hidden = yes
+
+	trigger = {
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 3
+		}
+		any_vassal = {
+			consort_events_vassal_trigger = yes
+		}
+		NOT = {
+			has_character_flag = flag_consort_learned_secret
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_mei
+				is_courtier_of = root
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_courtier = {
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_vassal = {
+			limit = {
+				consort_events_vassal_trigger = yes
+			}
+			weight = {
+				base = 10
+				#Juicy secrets
+				modifier = {
+					any_secret = {
+						is_criminal_for = secret_owner
+						NOT = { is_known_by = scope:consort }
+					}
+					add = 1
+				}
+				modifier = {
+					is_powerful_vassal_of = root
+					add = 2
+				}
+			}
+			save_scope_as = secret_holder
+		}
+		random_courtier = {
+			limit = {
+				NOT = { 
+					is_close_family_of = scope:secret_holder
+				}
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				is_imprisoned = no
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+				save_temporary_scope_as = consort
+				scope:secret_holder = {
+					any_secret = {
+						consort_events_secret_trigger = yes
+					}
+				}
+			}
+			weight = {
+				base = 10
+				#Scheming consorts
+				modifier = {
+					has_character_modifier = scheming_consort_modifier
+					add = 2
+				}
+
+				#Scheming consorts
+				modifier = {
+					add = {
+						value = intrigue
+						multiply = 1.2
+					}
+				}
+
+				#PS
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 3
+				}
+				#GC
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 2
+				}
+				#SS
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 1
+				}
+
+				#Mei is a spy
+				modifier = {
+					has_character_flag = flag_mei
+					add = 3
+				}
+
+				#Relation
+				modifier = {
+					has_relation_potential_lover = root
+					add = 1
+				}
+				modifier = {
+					has_relation_lover = root
+					add = 2
+				}
+				modifier = {
+					has_relation_soulmate = root
+					add = 3
+				}
+
+				modifier = {
+					has_relation_potential_friend = root
+					add = 1
+				}
+				modifier = {
+					has_relation_friend = root
+					add = 2
+				}
+				modifier = {
+					has_relation_best_friend = root
+					add = 3
+				}
+
+				#Your vassals' children
+				modifier = {
+					any_close_family_member = {
+						is_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+					add = 10
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:secret_holder = {
+			random_secret = {
+				limit = {
+					consort_events_secret_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_criminal_for = secret_owner
+						add = 5
+					}
+				}
+				reveal_to = scope:consort
+			}
+		}
+		random_list = {
+			4 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 8
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 24
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 36
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 48
+				}
+			}
+		}
+		if = {
+			limit = {
+				debug_only = yes
+				exists = scope:consort
+				exists = scope:secret_holder
+			}
+			root = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = success_miscarriage_event_t
+					right_icon = scope:consort
+					left_icon = scope:secret_holder
+					custom_tooltip = secret_learned_debug_desc
+				}
+			}
+		}
+	}
+}
+
+##Consort learns of one of your secrets##
+consort_events.0032 = {
+	hidden = yes
+
+	trigger = {
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 3
+		}
+		any_courtier = {
+			OR = {
+				is_consort_of = root
+				is_parent_of = root
+			}
+			is_imprisoned = no
+			any_close_family_member = {
+				is_vassal_of = root
+				NOT = {
+					is_child_of = root
+				}
+			}
+			save_temporary_scope_as = consort
+		}
+		any_secret = {
+			consort_events_secret_trigger = yes
+		}
+		NOT = {
+			has_character_flag = flag_consort_learned_secret
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_mei
+				is_courtier_of = root
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_courtier = {
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = secret_holder
+		random_courtier = {
+			limit = {
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				is_imprisoned = no
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+				save_temporary_scope_as = consort
+				root = {
+					any_secret = {
+						consort_events_secret_trigger = yes
+					}
+				}
+			}
+			weight = {
+				base = 10
+				#Scheming consorts
+				modifier = {
+					has_character_modifier = scheming_consort_modifier
+					add = 2
+				}
+
+				#Scheming consorts
+				modifier = {
+					add = {
+						value = intrigue
+						multiply = 1.2
+					}
+				}
+
+				#PS
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 3
+				}
+				#GC
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 2
+				}
+				#SS
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 1
+				}
+
+				#Favor
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 3
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 2
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 2
+				}
+
+				#Relation
+				modifier = {
+					has_relation_potential_lover = root
+					add = 1
+				}
+				modifier = {
+					has_relation_lover = root
+					add = 2
+				}
+				modifier = {
+					has_relation_soulmate = root
+					add = 3
+				}
+
+				modifier = {
+					has_relation_potential_friend = root
+					add = 1
+				}
+				modifier = {
+					has_relation_friend = root
+					add = 2
+				}
+				modifier = {
+					has_relation_best_friend = root
+					add = 3
+				}
+
+				#Mei is a spy
+				modifier = {
+					has_character_flag = flag_mei
+					add = 3
+				}
+
+				#Your vassals' children
+				modifier = {
+					any_close_family_member = {
+						is_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+					add = 10
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:secret_holder = {
+			random_secret = {
+				limit = {
+					consort_events_secret_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_criminal_for = secret_owner
+						add = 5
+					}
+				}
+				reveal_to = scope:consort
+			}
+		}
+		random_list = {
+			4 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 8
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 24
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 36
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_learned_secret
+					months = 48
+				}
+			}
+		}
+		if = {
+			limit = {
+				debug_only = yes
+				exists = scope:consort
+				exists = scope:secret_holder
+			}
+			root = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = success_miscarriage_event_t
+					right_icon = scope:consort
+					left_icon = scope:secret_holder
+					custom_tooltip = secret_learned_debug_desc
+				}
+			}
+		}
+	}
+}
+
+##Consort leaks a secret to a vassal##
+scripted_trigger consort_events_secret_0033_trigger = {
+	OR = {	
+		is_shunned_for = secret_owner
+		is_criminal_for = secret_owner
+	}
+	secret_owner = {
+		OR = {
+			this = root
+			is_courtier_of = root
+			is_vassal_of = root
+		}
+		NOR = {
+			is_close_family_of = scope:consort
+			this = scope:consort
+		}
+	}
+	NOT = {
+		is_known_by = scope:confidant
+	}
+}
+
+scripted_trigger consort_events_consort_0033_trigger = {
+	OR = {
+		is_consort_of = root
+		is_parent_of = root
+	}
+	any_close_family_member = {
+		NOR = {
+			is_child_of = root
+			has_trait = loyal
+		}
+		is_vassal_of = root
+		save_temporary_scope_as = confidant
+	}
+	save_temporary_scope_as = consort
+	any_known_secret = {
+		consort_events_secret_0033_trigger = yes
+	}
+	NOR = {
+		has_relation_soulmate = root
+		has_relation_best_friend = root
+
+		has_trait = loyal
+		has_trait = honest
+
+		has_trait = craven
+		has_character_flag = flag_caught_leaking_information
+	}
+	intrigue >= 13
+}
+
+consort_events.0033 = {
+	hidden = yes
+
+	trigger = {
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 3
+		}
+		any_courtier = {
+			consort_events_consort_0033_trigger = yes
+		}
+		NOT = {
+			has_character_flag = flag_consort_leaked_secret
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_mei
+				is_courtier_of = root
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_courtier = {
+				OR = {
+					is_consort_of = root
+					is_parent_of = root
+				}
+				any_close_family_member = {
+					is_vassal_of = root
+					NOT = {
+						is_child_of = root
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = harem_liege
+		random_courtier = {
+			limit = {
+				consort_events_consort_0033_trigger = yes
+			}
+			weight = {
+				base = 10
+				#Scheming consorts
+				modifier = {
+					has_character_modifier = scheming_consort_modifier
+					add = 2
+				}
+
+				#Evil consorts
+				modifier = {
+					harem_politics_evil_consort_trigger = yes
+					add = 2
+				}
+
+				#Scheming consorts
+				modifier = {
+					add = {
+						value = intrigue
+						multiply = 1.5
+					}
+				}
+
+				#PS
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 3
+				}
+				#GC
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 2
+				}
+				#SS
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 1
+				}
+				#Parent
+				modifier = {
+					is_parent_of = root
+					add = 15
+				}
+
+				#Favor
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 3
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 2
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 2
+				}
+
+				#Spies
+				modifier = {
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					any_close_family_member = {
+						is_councillor_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+					add = 5
+				}
+
+				#Mei is a spy
+				modifier = {
+					has_character_flag = flag_mei
+					add = 3
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:consort = {
+			random_close_family_member = {
+				limit = {
+					NOR = {
+						is_child_of = root
+						has_trait = loyal
+					}
+					is_vassal_of = root
+					save_temporary_scope_as = confidant
+					scope:consort = {
+						any_known_secret = {
+							consort_events_secret_0033_trigger = yes
+						}
+					}
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_powerful_vassal_of = root
+						add = 10
+					}
+					modifier = {
+						is_councillor_of = root
+						add = 5
+					}
+				}
+				save_scope_as = confidant
+			}
+			random_known_secret = {
+				limit = {
+					consort_events_secret_0033_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_criminal_for = secret_owner
+						add = 5
+					}
+					modifier = {
+						secret_owner = {
+							this = root
+						}
+						add = 5
+					}
+					modifier = {
+						secret_owner = {
+							is_vassal_of = root
+						}
+						add = 5
+					}
+				}
+				save_scope_as = secret_to_reveal
+				scope:secret_to_reveal = {
+					secret_owner = {
+						save_scope_as = secret_holder
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					exists = root.cp:councillor_spymaster
+					NOT = {
+						this = root.cp:councillor_spymaster
+					}
+				}
+				root.cp:councillor_spymaster = {
+					save_scope_as = spymaster
+				}
+			}
+			else = {
+				root = {
+					save_scope_as = spymaster
+				}
+			}
+
+			duel = {
+				skill = intrigue
+				target = scope:spymaster
+				50 = { # Not caught
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = 2.5
+						min = -50
+					}
+
+					modifier = { #Trusting
+						add = 10
+						scope:spymaster = {
+							has_trait = trusting
+						}
+					}
+
+					modifier = { #Friends
+						add = 5
+						scope:spymaster = {
+							has_relation_potential_friend = scope:consort
+						}
+					}
+					modifier = { #Friends
+						add = 10
+						scope:spymaster = {
+							has_relation_friend = scope:consort
+						}
+					}
+					modifier = { #Friends
+						add = 15
+						scope:spymaster = {
+							has_relation_best_friend = scope:consort
+						}
+					}
+					
+					modifier = { #Lovers
+						add = 5
+						scope:spymaster = {
+							has_relation_potential_lover = scope:consort
+						}
+					}
+					modifier = { #Lovers
+						add = 10
+						scope:spymaster = {
+							has_relation_lover = scope:consort
+						}
+					}
+					modifier = { #Lovers
+						add = 15
+						scope:spymaster = {
+							has_relation_soulmate = scope:consort
+						}
+					}
+
+					modifier = { #Traits
+						add = -15
+						scope:spymaster = {
+							has_trait = deceitful
+						}
+					}
+
+					modifier = { #Scheming consorts
+						add = 5
+						has_character_modifier = scheming_consort_modifier
+					}
+
+					opinion_modifier = {
+						who = scope:spymaster
+						opinion_target = scope:consort
+						min = -20
+						max = 20
+						multiplier = 1
+					}
+					
+					modifier = { #Favored consorts are harder to target
+						add = 5
+						has_character_modifier = favored_consort_modifier
+					}
+					modifier = { #Favored consorts are harder to target
+						add = 5
+						has_character_modifier = favor_boost_modifier
+					}
+					modifier = { #Favored consorts are harder to target
+						add = 10
+						has_character_modifier = beloved_consort_modifier
+					}
+
+					modifier = { #Unfavored consorts don't have many servants at their disposal
+						add = -10
+						has_character_modifier = unfavored_consort_modifier
+					}
+					modifier = { #Unfavored consorts don't have many servants at their disposal
+						add = -20
+						has_character_modifier = forgotten_consort_modifier
+					}
+					
+					#PS
+					modifier = {
+						exists = root.primary_spouse
+						this = root.primary_spouse
+						add = 20
+					}
+					#GC
+					modifier = {
+						has_court_position = grand_consort_court_position
+						add = 15
+					}
+					#SS
+					modifier = {
+						is_married = yes
+						NOR = {
+							this = root.primary_spouse
+							has_court_position = grand_consort_court_position
+						}
+						add = 10
+					}
+					#Parent
+					modifier = {
+						is_parent_of = root
+						add = 15
+					}
+	
+					#Actual effect
+					if = {
+						limit = {
+							scope:confidant = {
+								is_ai = yes
+							}
+						}
+						scope:secret_to_reveal = {
+							reveal_to = scope:confidant
+						}
+					}
+					else = {
+						scope:confidant = {
+							trigger_event = {
+								id = consort_events.0034
+								days = { 6 12 }
+							}
+						}
+					}
+				}
+				50 = { # Caught
+					compare_modifier = {
+						value = scope:duel_value
+						multiplier = -2.5
+						min = -50
+					}
+					modifier = { #Paranoid consorts
+						add = 10
+						scope:spymaster = {
+							has_trait = paranoid
+						}
+					}
+					modifier = { #Rivals
+						add = 5
+						scope:spymaster = {
+							has_relation_potential_rival = scope:consort
+						}
+					}
+					modifier = { #Friends
+						add = 10
+						scope:spymaster = {
+							has_relation_rival = scope:consort
+						}
+					}
+					modifier = { #Friends
+						add = 15
+						scope:spymaster = {
+							has_relation_nemesis = scope:consort
+						}
+					}
+					
+					opinion_modifier = {
+						who = scope:spymaster
+						opinion_target = scope:consort
+						min = -10
+						max = 10
+						multiplier = -1
+					}
+					
+					modifier = { #Favored consorts are harder to target
+						add = -5
+						has_character_modifier = favored_consort_modifier
+					}
+					modifier = { #Favored consorts are harder to target
+						add = -5
+						has_character_modifier = favor_boost_modifier
+					}
+					modifier = { #Favored consorts are harder to target
+						add = -10
+						has_character_modifier = beloved_consort_modifier
+					}
+
+					modifier = { #Unfavored consorts don't have many servants at their disposal
+						add = 10
+						has_character_modifier = unfavored_consort_modifier
+					}
+					modifier = { #Unfavored consorts don't have many servants at their disposal
+						add = 20
+						has_character_modifier = forgotten_consort_modifier
+					}
+					
+					#PS
+					modifier = {
+						exists = root.primary_spouse
+						this = root.primary_spouse
+						add = -15
+					}
+					#GC
+					modifier = {
+						has_court_position = grand_consort_court_position
+						add = -10
+					}
+					#SS
+					modifier = {
+						is_married = yes
+						NOR = {
+							this = root.primary_spouse
+							has_court_position = grand_consort_court_position
+						}
+						add = -5
+					}
+					#Parent
+					modifier = {
+						is_parent_of = root
+						add = -20
+					}
+	
+					#Actual effect
+					root = {
+						trigger_event = {
+							id = harem_politics.0033
+							days = { 6 12 }
+						}
+					}
+				}
+			}
+		}
+
+		random_list = {
+			4 = {			
+				add_character_flag = {
+					flag = flag_consort_leaked_secret
+					months = 8
+				}
+			}
+			6 = {			
+				add_character_flag = {
+					flag = flag_consort_leaked_secret
+					months = 48
+				}
+			}
+		}
+		if = {
+			limit = {
+				debug_only = yes
+				exists = scope:consort
+				exists =  scope:confidant
+			}
+			root = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = success_miscarriage_event_t
+					right_icon = scope:consort
+					left_icon = scope:confidant
+					custom_tooltip = secret_leaked_debug_desc
+				}
+			}
+		}
+	}
+}
+
+##Successful leak##
+consort_events.0034 = {
+	type = letter_event
+	opening = harem_politics.0029.opening.neutral
+	desc = consort_events.0034.desc
+	sender = scope:consort
+
+	immediate = {
+		scope:secret_to_reveal = {
+			reveal_to = root
+		}
+	}
+
+	option = {
+		name = consort_events.0031.a
+		ai_chance = {
+			base = 1
+		}
+	}
 }

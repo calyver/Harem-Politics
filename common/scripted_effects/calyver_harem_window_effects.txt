@@ -5,34 +5,19 @@
 		}
 		remove_variable = show_harem_window
 		#Clear the lists
-		clear_variable_list = harem_ps_list
-		clear_variable_list = harem_gc_list
-		clear_variable_list = harem_ss_list
-		clear_variable_list = harem_concubine_list
+		clear_variable_list = harem_consort_list
 		#Remove variables
-		if = { #GC
-			limit = {
-				has_variable = show_gc
-			}
-			remove_variable = show_gc
-		}
-		if = { #SS list
-			limit = {
-				has_variable = show_ss_list
-			}
-			remove_variable = show_ss_list
-		}
-		if = { #Concubine list
-			limit = {
-				has_variable = show_concubine_list
-			}
-			remove_variable = show_concubine_list
-		}
 		if = { #Can't visit the harem
 			limit = {
 				has_variable = cant_visit_harem
 			}
 			remove_variable = cant_visit_harem
+		}
+		every_consort = {
+			limit = {
+				has_variable = temp_favor
+			}
+			remove_variable = temp_favor
 		}
 	}
 	else = {
@@ -42,7 +27,7 @@
 }
 
 calyver_update_harem_list_effect = {
-	if = { #Is the character married?
+	if = {
 		limit = {
 			exists = scope:harem_master
 		}
@@ -50,90 +35,199 @@ calyver_update_harem_list_effect = {
 	}
 	
 	save_scope_as = harem_master
-	if = { #Is the character married?
-		limit = {
-			is_married = yes
-		}
-		primary_spouse = {
-			save_scope_as = harem_head
-		}
-		add_to_variable_list = {
-			name = harem_ps_list
-			target = scope:harem_head
-		}
-	}
-	
-	if = { #Can you have a Grand Consort?
-		limit = {
-			highest_held_title_tier >= tier_kingdom
-		}
-		set_variable = show_gc
-		if = {
-			limit = {
-				any_consort = {
-					has_court_position = grand_consort_court_position
+
+	ordered_consort = {
+		order_by = {
+			#Favor
+			if = { #Beloved
+				limit = {
+					has_character_modifier = beloved_consort_modifier
 				}
+				add = 19
 			}
-			random_consort = {
+			else_if = { #Favorite
+				limit = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 17
+			}
+			else_if = { #Unfavored
+				limit = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 6
+			}
+			else_if = { #Unfavored
+				limit = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 2
+			}
+			else = { #Neutral
+				add = 13
+			}
+
+			#Rank
+			if = {
+				limit = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+				}
+				add = 400
+			}
+			if = {
 				limit = {
 					has_court_position = grand_consort_court_position
 				}
-				save_scope_as = grand_consort
+				add = 200
 			}
+			if = {
+				limit = {
+					is_married = yes
+				}
+				add = 100
+			}
+
+			#Background
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier >= tier_kingdom
+					}
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_councillor_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_knight_of = root
+						is_acclaimed = yes
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_vassal_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					is_lowborn = no
+				}
+				add = 10
+			}
+
+			#Culture and religion
+			if = {
+				limit = {
+					culture = root.culture
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					faith = root.faith
+				}
+				add = 5
+			}
+
+			#Number of children
+			if = {
+				limit = {
+					any_child = {
+						is_child_of = root
+					}
+				}
+				add = {
+					value = 5
+					if = {
+						limit = {
+							any_child = {
+								is_child_of = root
+								count >= 2
+							}
+						}
+						add = 2
+					}
+					if = {
+						limit = {
+							any_child = {
+								is_child_of = root
+								count >= 3
+							}
+						}
+						add = 2
+					}
+					if = {
+						limit = {
+							any_child = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = root }
+								is_child_of = root
+								count >= 1
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							any_child = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = root }
+								is_child_of = root
+								count >= 2
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							any_child = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = root }
+								is_child_of = root
+								count >= 3
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							any_child = {
+								is_player_heir_of = root
+							}
+						}
+						add = 4
+					}
+				}
+			}
+		}
+		min = 0
+		root = {
 			add_to_variable_list = {
-				name = harem_gc_list
-				target = scope:grand_consort
+				name = harem_consort_list
+				target = prev
 			}
 		}
 	}
-	
-	if = { #Do you accept polygamy?
-		limit = {
-			accepts_polygamy = yes
-		}
-		set_variable = show_ss_list
-		ordered_consort = {
-			limit = {
-				is_married = yes
-				NOR = {
-					this = root.primary_spouse
-					has_court_position = grand_consort_court_position
-				}
-			}
-			order_by = age
-			min = 0
-			root = {
-				add_to_variable_list = {
-					name = harem_ss_list
-					target = prev
-				}
-			}
-		}
-	}
-	
-	if = { #Do you accept concubinage?
-		limit = {
-			accepts_concubinage = yes
-		}
-		set_variable = show_concubine_list
-		ordered_consort = {
-			limit = {
-				is_concubine = yes
-				NOT = {
-					has_court_position = grand_consort_court_position
-				}
-			}
-			order_by = age
-			min = 0
-			root = {
-				add_to_variable_list = {
-					name = harem_concubine_list
-					target = prev
-				}
-			}
-		}
-	}
-	
+
 	if = { #Can you visit the harem?
 		limit = {
 			OR = {
@@ -160,15 +254,29 @@ calyver_update_harem_list_effect = {
 				has_trait = measles
 				
 				is_at_war = yes
+
 				has_variable = flag_visited_harem
+				has_variable = flag_is_visiting_harem
+
 				is_travelling = yes
 				is_available_allow_travelling = no
 				
 				realm_has_any_epidemic = {
-					SIZE = 1
+					SIZE = 3
 					INTENSITY = minor
 				}
+				realm_has_any_epidemic = {
+					SIZE = 1
+					INTENSITY = major
+				}
+				
 				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+
+				any_consort = {
+					is_courtier_of = root
+					is_physically_able_ai_adult = yes
+					count <= 2
+				}
 			}
 		}
 		set_variable = cant_visit_harem
@@ -178,10 +286,10 @@ calyver_update_harem_list_effect = {
 visit_harem_effect = {
 	trigger_event = {
 		id = harem_events.0001
-		days = { 3 9 }
+		days = { 7 10 }
 	}
 	set_variable = {
-		name = flag_visited_harem
-		years = 3
+		name = flag_is_visiting_harem
+		days = 10
 	}
 }
