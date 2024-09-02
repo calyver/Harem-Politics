@@ -421,7 +421,6 @@ scripted_effect bride_show_next_candidate_effect = {
 			}
 			scope:bride = {
 				add_to_list = elegible_candidates
-				add_to_list = chosen_candidate_list
 				add_character_flag = created_bride_flag
 			}
 			clear_saved_scope = bride
@@ -1101,6 +1100,7 @@ scripted_effect bride_show_saved_candidate_effect = {
 	else = {
 		save_scope_as = candidate_4
 	}
+	add_to_list = chosen_candidate_list
 }
 
 ##Pick your candidates##
@@ -2673,6 +2673,76 @@ bride_show.0006 = {
 					trigger_event = {
 						id = harem_politics.0016
 						days = { 7 20 }
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = chosen_candidate_list
+						is_consort_of = root
+						count >= 2
+					}
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = chosen_candidate_list
+							is_consort_of = root
+							harem_politics_evil_consort_trigger = yes
+						}
+					}
+					random_list = {
+						50 = {
+							random_in_list = {
+								list = chosen_candidate_list
+								limit = {
+									harem_politics_evil_consort_trigger = yes
+									is_consort_of = root
+								}
+								save_scope_as = new_consort_1
+							}
+							random_in_list = {
+								list = chosen_candidate_list
+								limit = {
+									NOT = {
+										this = scope:new_consort_1
+									}
+									is_consort_of = root
+								}
+								weight = {
+									base = 1
+									modifier = { #Non-rejected consorts are preferred
+										harem_politics_evil_consort_trigger = yes
+										add = 9
+									}
+								}
+								save_scope_as = new_consort_2
+							}
+							scope:new_consort_1 = {
+								if = {
+									limit = {
+										can_set_relation_potential_rival_trigger = { CHARACTER = scope:new_consort_2 }
+									}
+									set_relation_potential_rival = scope:new_consort_2
+									add_opinion = {
+										target = scope:new_consort_2
+										modifier = unfriendly_opinion
+										opinion = -10
+									}
+									scope:new_consort_2 = {
+										add_opinion = {
+											target = scope:new_consort_1
+											modifier = unfriendly_opinion
+											opinion = -10
+										}
+									}
+								}
+							}
+						}
+						50 = { #Nothing
+							
+						}
 					}
 				}
 			}
