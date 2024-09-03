@@ -487,17 +487,65 @@ calyver_marriage_harem_politics_effect = {
 			DESC = clan_unity_marry_off.desc
 			REVERSE_NON_HOUSE_TARGET = no
 		}
+	}
+
+	#New consorts
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				NOR = {
+					any_former_spouse = {
+						this = scope:secondary_recipient
+					}
+					any_former_concubinist = {
+						this = scope:secondary_recipient
+					}
+				}
+			}
+			scope:secondary_recipient = {
+				NOR = {
+					any_former_spouse = {
+						this = scope:secondary_actor
+					}
+					any_former_concubinist = {
+						this = scope:secondary_actor
+					}
+				}
+			}
+		}
 		#New consorts
 		scope:secondary_recipient = {
-			add_character_flag = {
-				flag = flag_new_consort
-				years = 2
+			if = {
+				limit = {
+					is_landed = no
+				}
+				add_character_flag = {
+					flag = flag_new_consort
+					years = 2
+				}
+			}
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				remove_variable = favor
 			}
 		}
 		scope:secondary_actor = {
-			add_character_flag = {
-				flag = flag_new_consort
-				years = 2
+			if = {
+				limit = {
+					is_landed = no
+				}
+				add_character_flag = {
+					flag = flag_new_consort
+					years = 2
+				}
+			}
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				remove_variable = favor
 			}
 		}
 	}
@@ -656,7 +704,6 @@ calyver_concubine_on_accept_effect = {
 }
 
 make_concubine_harem_politics_effect = {
-	save_scope_as = target_recipient
 	if = {
 		limit = {
 			AND = {
@@ -677,10 +724,31 @@ make_concubine_harem_politics_effect = {
 		}
 		spouse_demotion_effect = yes
 	}
-	else = {
-		add_character_flag = {
-			flag = flag_new_consort
-			years = 2
+	else_if = {
+		limit = {
+			NOR = {
+				any_former_spouse = {
+					this = scope:actor
+				}
+				any_former_concubinist = {
+					this = scope:actor
+				}
+			}
+		}
+		if = {
+			limit = {
+				is_landed = no
+			}
+			add_character_flag = {
+				flag = flag_new_consort
+				years = 2
+			}
+		}
+		if = {
+			limit = {
+				has_variable = favor
+			}
+			remove_variable = favor
 		}
 		
 		# If we're a clan this interaction affects unity
@@ -701,6 +769,14 @@ make_concubine_harem_politics_effect = {
 	}
 }
 forced_concubine_harem_politics_effect = {
+	save_scope_as = target_recipient
+	#Reset the favor variable
+	if = {
+		limit = {
+			has_variable = favor
+		}
+		remove_variable = favor
+	}
 	#No more mourning
 	if = {
 		limit = {
@@ -910,6 +986,9 @@ spouse_management_effect = {
 						}
 						num_sinful_traits = 0
 						is_lowborn = no
+						scope:actor = {
+							highest_held_title_tier >= tier_county
+						}
 					}
 					scope:actor = {
 						add_legitimacy = minor_legitimacy_loss
@@ -1145,6 +1224,9 @@ spouse_management_effect = {
 						}
 						num_sinful_traits = 0
 						is_lowborn = no
+						scope:actor = {
+							highest_held_title_tier >= tier_county
+						}
 					}
 					scope:actor = {
 						add_legitimacy = minor_legitimacy_loss
@@ -1377,11 +1459,10 @@ spouse_demotion_effect = {
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -1409,11 +1490,10 @@ spouse_demotion_effect = {
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -1438,11 +1518,10 @@ spouse_demotion_effect = {
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -1470,11 +1549,10 @@ spouse_demotion_effect = {
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -1499,11 +1577,10 @@ spouse_demotion_effect = {
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -1528,11 +1605,10 @@ spouse_demotion_effect = {
 			}	
 			if = { #Legitimacy loss#
 				limit = {
-					scope:actor = {
-						NOT = {
-							has_imprisonment_reason = scope:recipient
-						}
+					NOT = {
+						has_imprisonment_reason = scope:recipient
 					}
+					highest_held_title_tier >= tier_county
 					scope:recipient = {
 						num_sinful_traits = 0
 						is_lowborn = no
@@ -2264,6 +2340,7 @@ divorcee_effect = {
 					NOT = {
 						has_imprisonment_reason = $DIVORCEE$
 					}
+					highest_held_title_tier >= tier_county
 				}
 				num_sinful_traits = 0
 				is_lowborn = no
@@ -2316,6 +2393,7 @@ divorcee_effect = {
 					NOT = {
 						has_imprisonment_reason = $DIVORCEE$
 					}
+					highest_held_title_tier >= tier_county
 				}
 				num_sinful_traits = 0
 				is_lowborn = no
@@ -2343,6 +2421,7 @@ divorcee_effect = {
 					NOT = {
 						has_imprisonment_reason = $DIVORCEE$
 					}
+					highest_held_title_tier >= tier_county
 				}
 				num_sinful_traits = 0
 				is_lowborn = no
@@ -2972,13 +3051,6 @@ new_primary_spouse_divorce_effect = {
 						}
 						add = -25
 					}
-					opinion_modifier = { #Opinion
-						WHO = $PARTNER$
-						opinion_target = prev
-						min = -50
-						max = 10
-						multiplier = 0.50
-					}
 					
 				}
 				save_scope_as = new_primary_spouse
@@ -3203,6 +3275,7 @@ set_primary_spouse_effect = {
 						NOT = {
 							has_imprisonment_reason = scope:previous_primary_spouse
 						}
+						highest_held_title_tier >= tier_county
 					}
 				}
 				scope:actor = {
@@ -3559,6 +3632,7 @@ make_primary_spouse_effect = {
 					scope:new_primary_spouse = {
 						is_lowborn = no
 					}
+					highest_held_title_tier >= tier_county
 				}
 				#No legitimacy loss, even if the new PS is sinful
 				add_legitimacy = minor_legitimacy_gain
@@ -3578,6 +3652,7 @@ make_primary_spouse_effect = {
 							num_sinful_traits > 0
 						}
 					}
+					highest_held_title_tier >= tier_county
 				}
 				add_legitimacy = minor_legitimacy_loss
 			}
@@ -3590,6 +3665,7 @@ make_primary_spouse_effect = {
 						has_character_flag = dead_main_spouse_flag
 						has_character_flag = flag_lowborn_exception
 					}
+					highest_held_title_tier >= tier_county
 				}
 				add_legitimacy = {
 					value = minor_legitimacy_loss
