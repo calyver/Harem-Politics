@@ -3199,6 +3199,7 @@ harem_politics.0003 = {
 	}
 	option = { # Arrest Hui
 		name = harem_politics.0003.c
+		save_scope_as = actor
 		scope:hailan = {
 			add_opinion = {
 				target = root
@@ -5520,6 +5521,7 @@ harem_politics.0005 = {
 		show_as_tooltip = {
 			imprison = { target = scope:sinful_spouse type = house_arrest }
 		}
+		save_scope_as = actor
 		scope:sinful_spouse = {
 			if = { #If they're a GC, demote them
 				limit = {
@@ -15842,6 +15844,7 @@ harem_politics.0014 = {
 				}
 			}
         }
+		trigger_event = char_interaction.0231
     }
 	
 	option = { # Demote the recipient
@@ -21511,6 +21514,7 @@ harem_politics.0021 = {
 				clear_saved_scope = recipient
 			}
 		}
+		save_scope_as = actor
 	}
 	
 	option = { #Arrest them!
@@ -21523,6 +21527,7 @@ harem_politics.0021 = {
 			modifier = attempted_miscarriage
 		}
 		scope:schemer = {
+			save_scope_as = recipient
 			if = { #If they're a GC, demote them
 				limit = {
 					has_court_position = grand_consort_court_position
@@ -21554,7 +21559,7 @@ harem_politics.0021 = {
 		scope:pregnant_consort = {
 			punishment_consort_opinion_mild_effect = yes
 		}
-		
+		trigger_event = char_interaction.0231
 		stress_impact = {
 			forgiving = minor_stress_impact_gain 
 			compassionate = minor_stress_impact_gain 
@@ -22955,6 +22960,7 @@ harem_politics.0023 = {
 	
 	option = { # Arrest Hua
 		name = harem_politics.0023.a
+		save_scope_as = actor
 		scope:zhen_huan = {
 			calyver_favor_moderate_gain_effect = yes
 			hidden_effect = {
@@ -25851,9 +25857,10 @@ harem_politics.0027 = {
         name = harem_politics.0027.b
 		trigger = {
 			scope:ying_pin = {
-				has_strong_hook = root
+				NOT = { has_strong_hook = root }
 			}
 		}
+		save_scope_as = actor
 
 		scope:ying_pin = {
 
@@ -30611,6 +30618,7 @@ harem_politics.0033 = {
 			}
 		}
 		scope:consort = {
+			save_scope_as = recipient
 			if = {
 				limit = {
 					is_consort_of = root
@@ -30649,6 +30657,9 @@ harem_politics.0033 = {
 			forgiving = minor_stress_impact_gain 
 			compassionate = minor_stress_impact_gain 
 		}
+
+		save_scope_as = actor
+		trigger_event = char_interaction.0231
 		
         ai_chance = {
             base = 50
@@ -31223,6 +31234,1038 @@ harem_politics.0033 = {
 					flag = flag_caught_leaking_information
 					years = 3
 				}
+			}
+		}
+	}
+}
+
+#########################################
+##Someone asks you to release a consort##
+#########################################
+scripted_trigger harem_politics_valid_relative_0034_trigger = {
+	is_physically_able_ai = yes
+
+	OR = {
+		is_courtier_of = root
+		is_vassal_of = root
+	}
+	age >= 13
+
+	is_travelling = no
+
+	NOR = {
+		has_relation_rival = root
+		has_relation_nemesis = root
+		is_liege_or_above_of = root
+		has_strong_hook = root
+	}
+}
+scripted_trigger harem_politics_valid_consort_0034_trigger = {
+	is_ai = yes
+
+	is_courtier_of = root
+	is_imprisoned_by = root
+	OR = {
+		any_relation = {
+			type = friend
+			harem_politics_valid_relative_0034_trigger = yes
+		}
+		any_relation = {
+			type = best_friend
+			harem_politics_valid_relative_0034_trigger = yes
+		}
+		any_close_family_member = {
+			harem_politics_valid_relative_0034_trigger = yes
+		}
+	}
+	NOT = {
+		has_character_flag = flag_pleaded_for
+	}
+}
+
+harem_politics.0034 = {
+	type = character_event
+	title = harem_politics.0001.t
+	desc = {
+		desc = harem_politics.0034.start.desc
+		first_valid = {
+			triggered_desc = { #Is parent of root
+				trigger = {
+					scope:beggar = {
+						is_parent_of = root
+					}
+				}
+				desc = harem_politics.0034.child.desc
+			}
+			triggered_desc = { #Root is their father
+				trigger = {
+					scope:beggar = {
+						is_child_of = root
+					}
+				}
+				desc = harem_politics.0034.parent.desc
+			}
+			triggered_desc = {
+				desc = harem_politics.0034.generic_1.desc
+			}
+		}
+		desc = harem_politics.0034.end.desc
+	}
+	theme = family
+	
+	right_portrait = { 	
+		character = root
+		animation = eyeroll
+	}
+	left_portrait = { 	
+		character = scope:beggar
+		animation = beg
+	}
+	lower_center_portrait = {
+		character = scope:consort
+	}
+	
+	trigger = {
+		is_physically_able_adult = yes
+		is_at_war = no
+		is_landed = yes
+		is_travelling = no
+
+		any_consort = {
+			harem_politics_valid_consort_0034_trigger = yes
+		}
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		random_consort = {
+			limit = {
+				harem_politics_valid_consort_0034_trigger = yes
+			}
+			weight = {
+				base = 10
+				#Rank
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 15
+				}
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 10
+				}
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 5
+				}
+
+				modifier = {
+					NOR = {
+						has_character_modifier = demoted_primary_spouse_modifier
+						has_character_modifier = demoted_spouse_modifier
+					}
+					add = 50
+				}
+
+				#Good relatives
+				modifier = {
+					any_close_family_member = {
+						is_vassal_of = root
+					}
+					add = 10
+				}
+				modifier = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							is_liege_or_above_of = root
+						}
+					}
+					add = 20
+				}
+				modifier = {
+					any_child = {
+						is_child_of = root
+						is_player_heir_of = root
+					}
+					add = 20
+				}
+				modifier = {
+					any_child = {
+						is_child_of = root
+						count >= 1
+					}
+					add = 10
+				}
+				modifier = {
+					any_child = {
+						is_child_of = root
+						count >= 2
+					}
+					add = 5
+				}
+				modifier = {
+					any_child = {
+						is_child_of = root
+						count >= 3
+					}
+					add = 5
+				}
+				
+				#Favor
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 15
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 20
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:consort = {
+			if = { #Friends
+				limit = {
+					any_relation = {
+						type = friend
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+				}
+				every_relation = {
+					type = friend
+					limit = {
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+					add_to_list = pleaders_list
+				}
+			}
+			if = { #Best friends
+				limit = {
+					any_relation = {
+						type = best_friend
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+				}
+				every_relation = {
+					type = best_friend
+					limit = {
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+					add_to_list = pleaders_list
+				}
+			}
+			if = { #Relatives
+				limit = {
+					any_close_family_member = {
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+				}
+				every_close_family_member = {
+					limit = {
+						harem_politics_valid_relative_0034_trigger = yes
+					}
+					add_to_list = pleaders_list
+				}
+			}
+		}
+		random_in_list = {
+			list = pleaders_list
+			limit = {
+				NOR = {
+					has_hook = root
+					has_strong_hook = root
+					has_character_flag = made_a_plea_flag
+					is_liege_or_above_of = root
+				}
+			}
+			weight = { 
+				base = 30
+				
+				modifier = { 
+					is_courtier_of = root
+					add = 15
+				}
+				modifier = { 
+					is_child_of = root
+					add = 10
+				}
+				modifier = { 
+					is_player_heir_of = root
+					add = 10
+				}
+
+				modifier = {
+					is_close_family_of = root
+					add = 10
+				}
+
+				modifier = {
+					is_powerful_vassal_of = root
+					add = 10
+				}
+				modifier = {
+					is_councillor_of = root
+					add = 5
+				}
+			}
+			save_scope_as = beggar
+		}
+	}
+	
+	option = { #Let them go
+        name = harem_politics.0034.a
+		trigger = {
+			NOT = { 
+				scope:consort = { is_imprisoned_by = root } 
+			}
+		}
+		hidden_effect = {
+			# Notification to the imprisoner
+			send_interface_toast = {
+				title = recipient_released_from_prison
+				left_icon = scope:consort
+				scope:consort = {
+					add_opinion = {
+						modifier = released_from_prison
+						target = scope:root
+						opinion = 5
+					}
+				}
+			}
+		}
+
+		scope:consort = {			
+			if = {
+				limit = { is_imprisoned = yes }
+				release_from_prison = yes
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:beggar
+					modifier = plead_for_me_opinion
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				has_imprisonment_reason = scope:consort
+			}
+			stress_impact = {
+				just = medium_stress_impact_gain
+			}
+		}
+		stress_impact = {
+			sadistic = minor_stress_gain
+			callous = minor_stress_gain
+			stubborn = minor_stress_gain
+		}
+		
+        ai_chance = {
+            base = 50
+			ai_value_modifier = {
+				ai_vengefulness = -0.2
+				ai_compassion = 0.2
+			}
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:consort
+				min = -20
+				max = 20
+				multiplier = 0.5
+			}
+			opinion_modifier = { #Opinion of beggar
+				opinion_target = scope:beggar
+				min = -15
+				max = 15
+				multiplier = 0.5
+			}
+			
+			modifier = { #Traits
+				has_trait = compassionate
+				add = 15
+			}
+			modifier = { #Traits
+				has_trait = forgiving
+				add = 15
+			}
+			modifier = { #Traits
+				has_trait = fickle
+				add = 15
+			}
+				
+			modifier = { #Stress management
+				has_trait = sadistic
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = callous
+				add = -25
+			}
+			modifier = { #Traits
+				has_trait = stubborn
+				add = -25
+			}
+			modifier = { #Just characters
+				has_trait = just
+				NOT = {	
+					has_imprisonment_reason = scope:consort
+				}
+				add = 15
+			}
+			modifier = { #Just characters
+				has_trait = just
+				has_imprisonment_reason = scope:consort
+				add = -25
+			}
+			
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
+			}
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
+			}
+
+			modifier = { #Favor
+				scope:consort = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = -5
+			}
+			modifier = { #Favor
+				scope:consort = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = -10
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:consort = { 
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort = { 
+					any_close_family_member = {
+						is_councillor_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				scope:consort = { 
+					any_close_family_member = {
+						is_liege_or_above_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+				}
+				add = 75
+			}
+
+			#Powerful children
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_player_heir_of = root
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 1
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 2
+					}
+				}
+				add = 5
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 3
+					}
+				}
+				add = 5
+			}
+
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:consort = { 
+					this = root.primary_spouse
+				}
+				add = 15
+			}
+			#Grand consort
+			modifier = {
+				scope:consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			#Other spouses
+			modifier = {
+				scope:consort = { 
+					is_spouse_of = root
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = 5
+			}
+
+			#Parents
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						this = root
+					}
+				}
+				add = 25
+			}
+
+			#Pregnant consort
+			modifier = {
+				scope:consort = { 
+					has_trait = pregnant
+				}
+				add = 10
+			}
+
+			#Evil consorts
+			modifier = {
+				scope:consort = { 
+					harem_politics_evil_consort_trigger = no
+				}
+				add = 10
+			}
+			#Virtuous consorts
+			modifier = {
+				scope:consort = { 
+					num_virtuous_traits >= 1
+				}
+				add = 5
+			}
+			modifier = {
+				scope:consort = { 
+					num_virtuous_traits >= 2
+				}
+				add = 5
+			}
+			modifier = {
+				scope:consort = { 
+					num_virtuous_traits >= 3
+				}
+				add = 5
+			}
+
+			#Beggar
+			modifier = {
+				scope:beggar = { 
+					is_councillor_of = root
+				}
+				add = 5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_powerful_vassal_of = root
+				}
+				add = 5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_vassal_of = root
+				}
+				add = 5
+			}
+
+			modifier = {
+				scope:beggar = { 
+					is_child_of = root
+				}
+				add = 5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_player_heir_of = root
+				}
+				add = 5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_parent_of = root
+				}
+				add = 20
+			}
+        }
+    }
+
+	option = { #Arrest them
+        name = harem_politics.0034.b
+		trait = sadistic
+		trait = callous
+		trigger = {
+			scope:beggar = { is_courtier_of = root } 
+			OR = {
+				has_trait = sadistic
+				has_trait = callous
+			}
+		}
+
+		save_scope_as = actor
+
+		show_as_tooltip = {
+			imprison = { target = scope:beggar type = house_arrest }
+		}
+		rightfully_imprison_character_effect = {
+			TARGET = scope:beggar
+			IMPRISONER = root
+		}
+		scope:beggar = {
+			add_opinion = {
+				target = root
+				modifier = cruelty_opinion
+				opinion = -30
+			}
+			save_scope_as = recipient
+		}
+		
+		if = {
+			limit = {
+				NOT = {	
+					has_imprisonment_reason = scope:beggar
+				}
+			}
+			stress_impact = {
+				just = medium_stress_impact_gain
+			}
+		}
+		stress_impact = {
+			forgiving = medium_stress_impact_gain 
+			compassionate = medium_stress_impact_gain 
+		}
+		
+		trigger_event = char_interaction.0231
+		
+        ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_honor = -0.1
+				ai_vengefulness = 0.15
+				ai_compassion = -0.2
+			}
+
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:consort
+				min = -15
+				max = 15
+				multiplier = -0.5
+			}
+			opinion_modifier = { #Opinion of beggar
+				opinion_target = scope:beggar
+				min = -20
+				max = 20
+				multiplier = -0.5
+			}
+			
+			modifier = { #Stress management
+				add = -30
+				has_trait = forgiving
+			}
+			modifier = { #Stress management
+				add = -30
+				has_trait = compassionate
+			}
+
+			modifier = { #Traits
+				add = 40
+				has_trait = sadistic
+			}
+			modifier = { #Traits
+				add = 40
+				has_trait = callous
+			}
+			modifier = { #Traits
+				add = 20
+				has_trait = wrathful
+			}
+			modifier = { #Just characters
+				has_trait = just
+				NOT = {	
+					has_imprisonment_reason = scope:beggar
+				}
+				add = -25
+			}
+			modifier = { #Just characters
+				has_trait = just
+				has_imprisonment_reason = scope:beggar
+				add = 20
+			}
+			
+			modifier = { #Kids
+				scope:beggar = {
+					is_child_of = root
+				}
+				add = -20
+			}
+			modifier = { #Kids
+				scope:beggar = {
+					is_player_heir_of = root
+				}
+				add = -20
+			}
+
+			modifier = { #Parents
+				scope:beggar = { 
+					is_parent_of = root
+				}
+				add = -30
+			}
+		}
+    }
+
+	option = { #Ignore them
+        name = harem_politics.0034.c
+		
+		scope:beggar = {
+			add_opinion = {
+				target = root
+				modifier = rejected_plea_opinion
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = {	
+					has_imprisonment_reason = scope:consort
+				}
+			}
+			stress_impact = {
+				just = medium_stress_impact_gain
+			}
+		}
+
+		stress_impact = {
+			forgiving = medium_stress_impact_gain 
+			compassionate = medium_stress_impact_gain 
+			fickle = minor_stress_gain
+		}
+		
+        ai_chance = {
+            base = 50
+			ai_value_modifier = {
+				ai_vengefulness = 0.1
+				ai_compassion = -0.2
+			}
+			
+			opinion_modifier = { #Opinion of schemer
+				opinion_target = scope:consort
+				min = -20
+				max = 20
+				multiplier = -0.5
+			}
+			opinion_modifier = { #Opinion of beggar
+				opinion_target = scope:beggar
+				min = -15
+				max = 15
+				multiplier = -0.5
+			}
+			
+			modifier = { #Stress management
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = fickle
+				add = -15
+			}
+			modifier = { #Just characters
+				has_trait = just
+				NOT = {	
+					has_imprisonment_reason = scope:consort
+				}
+				add = -25
+			}
+			modifier = { #Just characters
+				has_trait = just
+				has_imprisonment_reason = scope:consort
+				add = 15
+			}
+				
+			modifier = { #Traits
+				has_trait = stubborn
+				add = 15
+			}
+			modifier = { #Traits
+				has_trait = sadistic
+				add = 15
+			}
+			modifier = { #Traits
+				has_trait = callous
+				add = 15
+			}
+			
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = -10
+			}
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = -15
+			}
+			modifier = { #Favor
+			scope:consort = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -20
+			}
+
+			modifier = { #Favor
+				scope:consort = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:consort = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 15
+			}
+
+			#Powerful consorts
+			modifier = {
+				scope:consort = { 
+					any_close_family_member = {
+						is_powerful_vassal_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+				}
+				add = -15
+			}
+			modifier = {
+				scope:consort = { 
+					any_close_family_member = {
+						is_councillor_of = root
+						NOT = {
+							is_child_of = root
+						}
+					}
+				}
+				add = -10
+			}
+
+			#Powerful children
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_player_heir_of = root
+					}
+				}
+				add = -15
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 1
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 2
+					}
+				}
+				add = -5
+			}
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						is_child_of = root
+						count >= 3
+					}
+				}
+				add = -5
+			}
+
+			#Main spouse
+			modifier = {
+				exists = primary_spouse
+				scope:consort = { 
+					this = root.primary_spouse
+				}
+				add = -15
+			}
+			#Grand consort
+			modifier = {
+				scope:consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = -10
+			}
+			#Other spouses
+			modifier = {
+				scope:consort = { 
+					is_spouse_of = root
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = -5
+			}
+
+			#Parents
+			modifier = {
+				scope:consort = { 
+					any_child = {
+						this = root
+					}
+				}
+				add = -25
+			}
+
+			#Pregnant consort
+			modifier = {
+				scope:consort = { 
+					has_trait = pregnant
+				}
+				add = -15
+			}
+
+			#Evil consorts
+			modifier = {
+				scope:consort = { 
+					harem_politics_evil_consort_trigger = yes
+				}
+				add = 15
+			}
+			#Sinful consorts
+			modifier = {
+				scope:consort = { 
+					num_sinful_traits >= 1
+				}
+				add = 5
+			}
+			modifier = {
+				scope:consort = { 
+					num_sinful_traits >= 2
+				}
+				add = 5
+			}
+			modifier = {
+				scope:consort = { 
+					num_sinful_traits >= 3
+				}
+				add = 5
+			}
+
+			#Beggar
+			modifier = {
+				scope:beggar = { 
+					is_councillor_of = root
+				}
+				add = -5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_powerful_vassal_of = root
+				}
+				add = -5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_vassal_of = root
+				}
+				add = -5
+			}
+
+			modifier = {
+				scope:beggar = { 
+					is_child_of = root
+				}
+				add = -5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_player_heir_of = root
+				}
+				add = -5
+			}
+			modifier = {
+				scope:beggar = { 
+					is_parent_of = root
+				}
+				add = -25
+			}
+        }
+    }
+	
+	after = {
+		scope:consort = {
+			add_character_flag = {
+				flag = flag_pleaded_for
+				years = 5
 			}
 		}
 	}
