@@ -159,6 +159,19 @@ consort_favor_valuation.0002 = {
 	}
 }
 
+scripted_trigger consort_favor_valid_harem_consort = {
+	NOR = {
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = scope:harem_liege
+		}
+
+		has_relation_rival = scope:harem_liege
+		has_relation_nemesis = scope:harem_liege
+	}
+
+	accepts_harems = yes
+}
 ##Valuation##
 consort_favor_valuation.0003 = {
 	hidden = yes
@@ -234,6 +247,222 @@ consort_favor_valuation.0003 = {
 					add = {
 						value = scope:favor_addition_ps
 						add = 10
+					}
+				}
+			}
+
+			#Opinion effects
+			#If the consort is a newly-beloved consort
+			if = {
+				limit = {
+					consort_favor_valid_harem_consort = yes
+					NOT = {
+						has_character_flag = flag_has_been_beloved
+					}
+					var:favor >= beloved_consort_lower_limit
+				}
+				add_character_flag = {
+					flag = flag_has_been_beloved
+					years = 5
+				}
+
+				if = {
+					limit = {
+						OR = {
+							has_trait = arrogant
+							has_trait = greedy
+							has_trait = ambitious
+						}
+					}
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = thankful_consort_opinion
+						opinion = 15
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = thankful_consort_opinion
+						opinion = 10
+					}
+				}
+				scope:harem_liege = {
+					if = {
+						limit = {
+							any_consort = {
+								NOR = {
+									this = root
+
+									has_relation_best_friend = root
+									has_relation_lover = root
+									has_relation_soulmate = root
+								}
+								consort_favor_valid_harem_consort = yes
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+						every_consort = {
+							limit = {
+								NOR = {
+									this = root
+
+									has_relation_best_friend = root
+									has_relation_lover = root
+									has_relation_soulmate = root
+								}
+								consort_favor_valid_harem_consort = yes
+								harem_politics_evil_consort_trigger = yes
+							}
+							add_opinion = {
+								target = root
+								modifier = jealousy_opinion
+								opinion = -15
+							}
+						}
+					}
+				}
+			}
+			else_if = { #If the consort is a newly-favored consort
+				limit = {
+					consort_favor_valid_harem_consort = yes
+					NOR = {
+						has_character_flag = flag_has_been_beloved
+						has_character_flag = flag_has_been_favored
+					}
+
+					var:favor >= favorite_consort_lower_limit
+					var:favor < beloved_consort_lower_limit
+				}
+				add_character_flag = {
+					flag = flag_has_been_favored
+					years = 7
+				}
+				if = {
+					limit = {
+						OR = {
+							has_trait = arrogant
+							has_trait = greedy
+							has_trait = ambitious
+						}
+					}
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = thankful_consort_opinion
+						opinion = 10
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = thankful_consort_opinion
+						opinion = 5
+					}
+				}
+				scope:harem_liege = {
+					if = {
+						limit = {
+							any_consort = {
+								NOR = {
+									this = root
+
+									has_relation_best_friend = root
+									has_relation_lover = root
+									has_relation_soulmate = root
+								}
+								consort_favor_valid_harem_consort = yes
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+						every_consort = {
+							limit = {
+								NOR = {
+									this = root
+
+									has_relation_best_friend = root
+									has_relation_lover = root
+									has_relation_soulmate = root
+								}
+								consort_favor_valid_harem_consort = yes
+								harem_politics_evil_consort_trigger = yes
+							}
+							add_opinion = {
+								target = root
+								modifier = jealousy_opinion
+								opinion = -10
+							}
+						}
+					}
+				}
+			}
+			else_if = { #If the consort is a newly-unfavored consort
+				limit = {
+					consort_favor_valid_harem_consort = yes
+					NOR = {
+						has_character_flag = flag_has_been_forgotten
+						has_character_flag = flag_has_been_unfavored
+					}
+
+					var:favor >= unfavored_consort_lower_limit
+					var:favor < neutral_consort_lower_limit
+				}
+				add_character_flag = {
+					flag = flag_has_been_unfavored
+					years = 10
+				}
+				if = {
+					limit = {
+						OR = {
+							has_trait = arrogant
+							has_trait = greedy
+							has_trait = ambitious
+						}
+					}
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = ignored_consort_opinion
+						opinion = -10
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = ignored_consort_opinion
+						opinion = -5
+					}
+				}
+			}
+			else_if = { #If the consort is a newly-forgotten consort
+				limit = {
+					consort_favor_valid_harem_consort = yes
+					NOT = {
+						has_character_flag = flag_has_been_forgotten
+					}
+					var:favor <= forgotten_consort_upper_limit
+				}
+				add_character_flag = {
+					flag = flag_has_been_forgotten
+					years = 10
+				}
+				if = {
+					limit = {
+						OR = {
+							has_trait = arrogant
+							has_trait = greedy
+							has_trait = ambitious
+						}
+					}
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = ignored_consort_opinion
+						opinion = -15
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = ignored_consort_opinion
+						opinion = -10
 					}
 				}
 			}
