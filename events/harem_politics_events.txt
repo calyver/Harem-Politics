@@ -9363,76 +9363,76 @@ harem_politics.0008 = {
 					age = meddling_relative_parent_age
 					save_scope_as = meddling_relative_mother
 				}
-				scope:meddling_relative_mother = {
-					if = {
-						limit = {
-							ROOT = { faith_dominant_gender_female_or_equal = yes }
+				hidden_effect = {
+					random = {
+						chance = 100
+						random_list = {
+							0 = { # The mother is the house head
+								modifier = { #Shy consorts
+									ROOT = { faith_dominant_gender_female_or_equal = yes }
+									add = 50
+								}
+								scope:meddling_relative_mother = {
+									marry_matrilineal = scope:meddling_relative_father
+									if = {
+										limit = { exists = scope:meddling_relative.house }
+										set_house = scope:meddling_relative.house
+									}
+									save_scope_as = consort_relative
+								}
+							}
+							0 = { # The father is the house head
+								modifier = { #Shy consorts
+									ROOT = { faith_dominant_gender_male_or_equal = yes }
+									add = 50
+								}
+								scope:meddling_relative_father = {
+									marry = scope:meddling_relative_mother
+									if = {
+										limit = { exists = scope:meddling_relative.house }
+										set_house = scope:meddling_relative.house
+									}
+									save_scope_as = consort_relative
+								}
+							}
 						}
-						marry_matrilineal = scope:meddling_relative_father
+					}
+
+					scope:meddling_relative = {
+						set_mother = scope:meddling_relative_mother
+						set_father = scope:meddling_relative_father
+					}
+					create_character = { #A sibling
+						location = root.capital_province
+						template = consort_relative_template
+						gender_female_chance = {
+							if = { # Higher chance for non-dominant gender
+								limit = { root.faith = { has_doctrine = doctrine_gender_male_dominated } }
+								add = 0
+							}
+							else_if = {
+								limit = { root.faith = { has_doctrine = doctrine_gender_female_dominated } }
+								add = 100
+							}
+							else = {
+								add = 50
+							}
+						}
+						age = meddling_relative_sibling_age
+						save_scope_as = meddling_relative_sibling
+					}
+					scope:meddling_relative_sibling = {
+						set_mother = scope:meddling_relative_mother
+						set_father = scope:meddling_relative_father
 						if = {
 							limit = { exists = scope:meddling_relative.house }
 							set_house = scope:meddling_relative.house
 						}
 					}
-					else = {
-						marry = scope:meddling_relative_father
-						scope:meddling_relative_father = {
-							if = {
-								limit = { exists = scope:meddling_relative.house }
-								set_house = scope:meddling_relative.house
-							}
-						}
-					}
-				}
-				scope:meddling_relative = {
-					set_mother = scope:meddling_relative_mother
-					set_father = scope:meddling_relative_father
-				}
-				create_character = { #A sibling
-					location = root.capital_province
-					template = consort_relative_template
-					gender_female_chance = {
-						if = { # Higher chance for non-dominant gender
-							limit = { root.faith = { has_doctrine = doctrine_gender_male_dominated } }
-							add = 0
-						}
-						else_if = {
-							limit = { root.faith = { has_doctrine = doctrine_gender_female_dominated } }
-							add = 100
-						}
-						else = {
-							add = 50
-						}
-					}
-					age = meddling_relative_sibling_age
-					save_scope_as = meddling_relative_sibling
-				}
-				scope:meddling_relative_sibling = {
-					set_mother = scope:meddling_relative_mother
-					set_father = scope:meddling_relative_father
-					if = {
-						limit = { exists = scope:meddling_relative.house }
-						set_house = scope:meddling_relative.house
-					}
-				}
-				root = {
-					add_courtier = scope:meddling_relative_sibling
-					add_courtier = scope:meddling_relative_father
-					add_courtier = scope:meddling_relative_mother
-				}
-				if = {
-					limit = {
-						root = {
-							faith_dominant_gender_female_or_equal = yes
-						}
-					}
-					scope:meddling_relative_mother = {
-						save_scope_as = consort_relative
-					}
-				}
-				else = {
-					scope:meddling_relative_father = {
-						save_scope_as = consort_relative
+					root = {
+						add_courtier = scope:meddling_relative_sibling
+						add_courtier = scope:meddling_relative_father
+						add_courtier = scope:meddling_relative_mother
 					}
 				}
 			}
