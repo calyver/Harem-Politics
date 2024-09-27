@@ -1,0 +1,84 @@
+﻿#Demote a spouse to a concubine
+pay_respects_interaction = {
+	category = interaction_category_diplomacy
+	use_diplomatic_range = no
+	icon = icon_marriage
+
+	desc = divorce_character_interaction_desc
+	cost = { piety = divorce_cost }
+
+	is_shown = {
+		scope:actor = {
+			is_ai = no
+	
+			exists = court_owner
+			court_owner = {
+				any_consort = {
+					this = root
+				}
+				any_consort = {
+					count >= 3
+				}
+			}
+
+			exists = court_owner.primary_spouse
+			NOT = {
+				this = court_owner.primary_spouse
+			}
+		
+			any_consort = {
+				count = 1
+			}
+		}
+		scope:recipient = {
+
+			exists = court_owner.primary_spouse
+			this = court_owner.primary_spouse
+
+			exists = court_owner
+			court_owner = {
+				any_consort = {
+					this = root
+				}
+				any_courtier = {
+					this = root
+				}
+			}
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:recipient = { is_available = yes }
+		scope:actor = { is_available = yes }
+	}
+
+	auto_accept = yes
+
+	on_accept = {
+		custom_tooltip = pay_respects_decision_effect_tooltip
+		scope:actor = {
+			random_consort = {
+				limit = {
+					any_consort = {
+						count >= 3
+					}
+				}
+				save_scope_as = harem_liege
+			}
+		}
+		scope:recipient = {
+			save_scope_as = homage_authority
+		}
+		scope:homage_authority = {
+			trigger_event = {
+				id = consort_events.0001
+				days = { 1 3 }
+			}
+		}
+	}
+	
+	# AI
+	ai_will_do = {
+		base = 0
+	}
+}
