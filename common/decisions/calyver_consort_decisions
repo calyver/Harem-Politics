@@ -18,34 +18,9 @@ pay_respects_decision = {
 			save_temporary_scope_as = harem_liege
 		}
 
-		OR = {
-			#Concubines can pay respects to anyone
-			AND = {	
-				is_concubine = yes
-				scope:harem_liege = {
-					any_consort = {
-						is_married = yes
-						is_courtier_of = scope:harem_liege
-						is_capable_adult = yes
-						is_imprisoned = no
-					}
-				}
-			}
-			#Secondary spouses must pay respects to the PS or the GC
-			AND = {	
-				is_married = yes
-				scope:harem_liege = {
-					any_consort = {
-						is_courtier_of = scope:harem_liege
-						is_capable_adult = yes
-						is_imprisoned = no
-						OR = {
-							this = scope:harem_liege.primary_spouse
-							#has_court_position = grand_consort_court_position
-						}
-					}
-				}
-			}
+		exists = scope:harem_liege.primary_spouse
+		NOT = {
+			this = scope:harem_liege.primary_spouse
 		}
 	}
 	
@@ -82,10 +57,23 @@ pay_respects_decision = {
 	}
 
 	effect = {
-		trigger_event = {
-            id = consort_events.0001
-            days = { 7 10 }
-        }
+		random_consort = {
+			limit = {
+				any_consort = {
+					count >= 4
+				}
+			}
+			save_scope_as = harem_liege
+		}
+		scope:harem_liege.primary_spouse = {
+			save_scope_as = homage_authority
+		}
+		scope:homage_authority = {
+			trigger_event = {
+				id = consort_events.0001
+				days = { 1 3 }
+			}
+		}
 	}
 
 	ai_check_interval = 0
