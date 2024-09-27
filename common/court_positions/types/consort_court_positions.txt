@@ -1,0 +1,152 @@
+﻿lady_in_waiting_court_position = {
+	max_available_positions = 2
+	category = court_position_category_royal
+	minimum_rank = kingdom # Should only be available for kings and emperors
+	skill = diplomacy
+
+	opinion = {
+		value = regular_court_position_opinion
+	}
+
+	# How high the aptitude has to be to reach the 5 different modifier levels
+	aptitude_level_breakpoints = { 20 40 60 80 }
+
+	# How good is this character in this position? root scope is the holder of the court position
+	aptitude = {
+		value = 25
+		add = {
+			value = diplomacy
+			multiply = 2.5
+			max = 50
+			desc = court_position_skill_diplomacy
+		}
+		if = {
+			limit = {
+				exists = dynasty
+				dynasty = { has_dynasty_perk = fp3_khvarenah_legacy_1 }
+			}
+			add = {
+				value = 10
+				desc =  court_position_khvarenah_legacy_1
+			}
+		}
+		if = {
+			limit = {
+				has_trait = gregarious
+			}
+			add = {
+				value = 40
+				desc = court_position_gregarious_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = honest
+			}
+			add = {
+				value = 10
+				desc = court_position_honest_trait
+			}
+		}
+		add = court_position_aptitude_traveling_friends_value
+		add = court_position_aptitude_family_business_value
+		add = court_position_aptitude_low_penalty_value
+		# Bonus from court.8311
+		if = {
+			limit = { var:bonus_aptitude_role ?= flag:lady_in_waiting }
+			add = {
+				value = cp_bonus_aptitude_value
+				desc = cp_bonus_aptitude
+			}
+		}
+	}
+
+	is_shown = {
+		is_female = yes
+	}
+
+	valid_position = {
+		is_female = yes
+	}
+
+	is_shown_character = {
+		scope:employee = {
+			exists = court_owner
+			court_owner = {
+				any_courtier = {
+					this = scope:liege
+				}
+			}
+			is_imprisoned = no
+		}
+	}
+
+	valid_character = {
+		scope:employee = {
+			exists = court_owner
+			court_owner = {
+				any_courtier = {
+					this = scope:liege
+				}
+			}
+		}
+	}
+
+	revoke_cost = { # root is the liege, no other scopes are passed here!
+		prestige =  {
+			value = major_court_position_prestige_revoke_cost
+		}
+	}
+
+	salary = {
+		round = no
+		gold = {
+			value = medium_court_position_salary # Update X_salary_tooltip if script_value is changed
+			# Set to 0 with Dynasty Perk Inner Circle
+		}
+	}
+
+	is_powerful_agent = yes
+
+	# These modifiers are employed based on what level the aptitude reaches (levels are defined as breakpoints)
+	scaling_employer_modifiers = {
+		terrible = {
+			stress_loss_mult = 0.10
+			enemy_hostile_scheme_phase_duration_add = 1
+		}
+		poor = {
+			stress_loss_mult = 0.15
+			enemy_hostile_scheme_phase_duration_add = 2
+		}
+		average = {
+			stress_loss_mult = 0.15
+			enemy_hostile_scheme_phase_duration_add = 5
+		}
+		good = {
+			stress_loss_mult = 0.15
+			enemy_hostile_scheme_phase_duration_add = 7
+		}
+		excellent = {
+			stress_loss_mult = 0.20
+			enemy_hostile_scheme_phase_duration_add = 10
+		}
+	}
+
+	modifier = {
+		monthly_prestige = medium_court_position_prestige_salary
+	}
+
+	on_court_position_received = {
+		lady_in_waiting_title_accepted_effect = yes
+	}
+	on_court_position_revoked = {
+		lady_in_waiting_title_revoked_effect = yes
+	}
+	on_court_position_invalidated = {
+		lady_in_waiting_title_invalidated_effect = yes
+	}
+	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
+	candidate_score = {
+		value = 50
+	}
+}
