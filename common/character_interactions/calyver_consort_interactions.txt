@@ -9,50 +9,101 @@ pay_respects_interaction = {
 
 	is_shown = {
 		scope:actor = {
-			is_ai = no
-	
 			exists = court_owner
 			court_owner = {
+				highest_held_title_tier >= tier_county
 				any_consort = {
-					this = scope:actor
-				}
-				any_consort = {
+					is_available_allow_travelling = yes
+					is_courtier_of = scope:actor.court_owner
 					count >= 3
 				}
 			}
-
-			exists = court_owner.primary_spouse
-			NOT = {
-				this = court_owner.primary_spouse
-			}
-		
-			any_consort = {
-				count = 1
+			OR = {
+				AND = { # Concubines can pay respects to any spouse
+					is_concubine_of = court_owner
+					court_owner = {
+						any_consort = {
+							is_available_allow_travelling = yes
+							is_courtier_of = scope:actor.court_owner
+							OR = {
+								is_spouse_of = scope:actor.court_owner
+								#has_court_position = grand_consort_court_position
+							}
+							NOT = {
+								this = scope:actor
+							}
+						}
+					}
+				}
+				AND = { # Secondary spouses can pay respects to the PS or the GC
+					is_spouse_of = court_owner
+					court_owner = {
+						any_consort = {
+							is_available_allow_travelling = yes
+							is_courtier_of = scope:actor.court_owner
+							OR = {
+								AND = {
+									exists = scope:actor.court_owner.primary_spouse
+									is_spouse_of = scope:actor.court_owner.primary_spouse
+								}
+								#has_court_position = grand_consort_court_position
+							}
+							NOT = {
+								this = scope:actor
+							}
+						}
+					}
+				}
 			}
 		}
-		scope:recipient = {
+		scope:recipient = scope:actor
 
-			exists = court_owner.primary_spouse
-			this = court_owner.primary_spouse
 
-			exists = court_owner
-			court_owner = {
-				any_consort = {
-					this = scope:actor
-				}
-				any_courtier = {
-					this = scope:actor
-				}
-			}
-			NOT = {
-				this = scope:actor
-			}
-		}
+	#	scope:actor = {
+	#		is_ai = no
+	#
+	#		exists = court_owner
+	#		court_owner = {
+	#			any_consort = {
+	#				this = scope:actor
+	#			}
+	#			any_consort = {
+	#				count >= 3
+	#			}
+	#		}
+	#
+	#		exists = court_owner.primary_spouse
+	#			NOT = {
+	#			this = court_owner.primary_spouse
+	#		}
+	#	
+	#		any_consort = {
+	#			count = 1
+	#		}
+	#	}
+	#	scope:recipient = {
+	#	
+	#		exists = court_owner.primary_spouse
+	#		this = court_owner.primary_spouse
+	#
+	#		exists = court_owner
+	#		court_owner = {
+	#			any_consort = {
+	#				this = scope:actor
+	#			}
+	#			any_courtier = {
+	#				this = scope:actor
+	#			}
+	#		}
+	#		NOT = {
+	#			this = scope:actor
+	#		}
+	#	}
 	}
 
 	is_valid_showing_failures_only = {
-		scope:recipient = { is_available = yes }
-		scope:actor = { is_available = yes }
+		#scope:recipient = { is_available_allow_travelling = yes }
+		scope:actor = { is_available_allow_travelling = yes }
 	}
 
 	auto_accept = yes
@@ -61,22 +112,21 @@ pay_respects_interaction = {
 		custom_tooltip = pay_respects_decision_effect_tooltip
 		scope:actor = {
 			save_scope_as = homage_subordinate
-			random_consort = {
-				limit = {
-					any_consort = {
-						count >= 3
-					}
-				}
+			court_owner = {
 				save_scope_as = harem_liege
 			}
-		}
-		scope:recipient = {
-			save_scope_as = homage_authority
 			trigger_event = {
-				id = consort_play.0001
-				days = 3
+				id = consort_play.0004
+				days = { 5 10 }
 			}
 		}
+		#scope:recipient = {
+		#	save_scope_as = homage_authority
+		#	trigger_event = {
+		#		id = consort_play.0002
+		#		days = 3
+		#	}
+		#}
 	}
 	
 	# AI

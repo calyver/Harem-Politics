@@ -1,9 +1,211 @@
 ﻿namespace = consort_play
 
+#########################
+##Visiting an authority##
+#########################
+consort_play.0004 = {
+	type = character_event
+	title = consort_play.0004.t
+	desc = consort_play.0004.desc
+	theme = family
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = {
+		character = scope:homage_subordinate
+		animation = personality_rational
+	}
+	right_portrait = {
+		character = scope:homage_authority_1
+		animation = personality_greedy
+	}
+	
+	trigger = {
+		NOR = {
+			exists = scope:is_being_divorced
+			exists = scope:is_being_set_aside
+		}
+		is_physically_able_adult = yes
+		exists = scope:harem_liege
+		scope:harem_liege = {
+			highest_held_title_tier >= tier_county
+			any_consort = {
+				is_available_allow_travelling = yes
+				is_courtier_of = scope:harem_liege
+				count >= 3
+			}
+		}
+		OR = {
+			AND = { # Concubines can pay respects to any spouse
+				is_concubine_of = scope:harem_liege
+				scope:harem_liege = {
+					any_consort = {
+						is_available_allow_travelling = yes
+						is_courtier_of = scope:harem_liege
+						OR = {
+							is_spouse_of = scope:harem_liege
+							#has_court_position = grand_consort_court_position
+						}
+						NOT = {
+							this = root
+						}
+					}
+				}
+			}
+			AND = { # Secondary spouses can pay respects to the PS or the GC
+				is_spouse_of = scope:harem_liege
+				court_owner = {
+					any_consort = {
+						is_available_allow_travelling = yes
+						is_courtier_of = scope:harem_liege
+						OR = {
+							AND = {
+								exists = scope:harem_liege.primary_spouse
+								is_spouse_of = scope:harem_liege.primary_spouse
+							}
+							#has_court_position = grand_consort_court_position
+						}
+						NOT = {
+							this = root
+						}
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				is_concubine = yes
+				scope:harem_liege = {
+					any_consort = {
+						is_available_allow_travelling = yes
+						is_courtier_of = prev
+						OR = {
+							is_spouse_of = prev
+							#has_court_position = grand_consort_court_position
+						}
+					}
+				}
+			}
+			scope:harem_liege = {
+				every_consort = {
+					limit = {
+						is_available_allow_travelling = yes
+						is_courtier_of = prev
+						OR = {
+							is_spouse_of = prev
+							#has_court_position = grand_consort_court_position
+						}
+					}
+					add_to_list = authority_list
+				}
+			}
+			random_in_list = {
+				list = authority_list
+				weight = {
+					base = 1
+					modifier = {
+						add = 15
+						exists = scope:harem_liege.primary_spouse
+						this = scope:harem_liege.primary_spouse
+					}
+					#modifier = {
+					#	add = 5
+					#	has_court_position = grand_consort_court_position
+					#}
+				}
+				save_scope_as = homage_authority_1
+			}
+		}
+	}
+	
+	option = {
+		name = consort_play.0004.a
+		custom_tooltip = consort_play.0004.a.tt
+		
+		scope:homage_authority_1 = {
+			trigger_event = {
+				id = consort_play.0005
+				days = { 5 10 }
+			}	
+		}
+		ai_chance = {
+			base = 10
+		}
+	}
+
+	option = {
+		name = consort_play.0004.d
+		
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+##############################
+##Someone is trying to visit##
+##############################
+consort_play.0005 = {
+	type = character_event
+	title = consort_play.0004.t
+	desc = consort_play.0005.desc
+	theme = family
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	lower_center_portrait = {
+		character = scope:homage_subordinate
+	}
+	
+	trigger = {
+		NOR = {
+			exists = scope:is_being_divorced
+			exists = scope:is_being_set_aside
+		}
+		is_physically_able_adult = yes
+		#rank_is_superior_trigger = { AUTHORITY = root TARGET_CONSORT = scope:homage_subordinate }
+	}
+
+	immediate = {
+	}
+	
+	option = {
+		name = consort_play.0005.a
+		custom_tooltip = consort_play.0005.a.tt
+		
+		#scope:homage_subordinate = {
+		#	trigger_event = {
+		#		id = consort_play.0005
+		#		days = { 5 10 }
+		#	}	
+		#}
+		ai_chance = {
+			base = 10
+		}
+	}
+
+	option = {
+		name = consort_play.0005.c
+		
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
 ################################
 ##Someone pays respects to you##
 ################################
-consort_play.0001 = {
+consort_play.0010 = {
 	type = character_event
 	title = consort_play.0001.t
 	desc = consort_play.0001.desc
@@ -52,7 +254,7 @@ consort_play.0001 = {
 ##############################
 ##I paid respects to someone##
 ##############################
-consort_play.0002 = {
+consort_play.0011 = {
 	type = character_event
 	title = consort_play.0001.t
 	desc = consort_play.0002.desc
