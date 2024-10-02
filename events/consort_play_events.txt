@@ -108,16 +108,20 @@ consort_play.0004 = {
 				weight = {
 					base = 1
 					modifier = {
-						add = 15
+						add = 14
 						exists = scope:harem_liege.primary_spouse
 						this = scope:harem_liege.primary_spouse
 					}
+					modifier = {
+						add = 9
+						is_parent_of = scope:harem_liege
+					}
 					#modifier = {
-					#	add = 5
+					#	add = 4
 					#	has_court_position = grand_consort_court_position
 					#}
 				}
-				save_scope_as = homage_authority_1
+				save_scope_as = authority_1
 			}
 		}
 	}
@@ -126,7 +130,8 @@ consort_play.0004 = {
 		name = consort_play.0004.a
 		custom_tooltip = consort_play.0004.a.tt
 		
-		scope:homage_authority_1 = {
+		scope:authority_1 = {
+			save_scope_as = homage_authority
 			trigger_event = {
 				id = consort_play.0005
 				days = { 2 5 }
@@ -141,7 +146,7 @@ consort_play.0004 = {
 		name = consort_play.0004.d
 		
 		ai_chance = {
-			base = 10
+			base = 0
 		}
 	}
 }
@@ -167,12 +172,15 @@ consort_play.0005 = {
 	}
 	
 	trigger = {
+		exists = scope:homage_authority
+		exists = scope:harem_liege
+		exists = scope:homage_subordinate
 		NOR = {
 			exists = scope:is_being_divorced
 			exists = scope:is_being_set_aside
 		}
 		is_physically_able_adult = yes
-		#rank_is_superior_trigger = { AUTHORITY = root TARGET_CONSORT = scope:homage_subordinate }
+		#calyver_rank_is_superior_trigger = { HAREM_LIEGE = scope:harem_liege AUTHORITY = root TARGET_CONSORT = scope:homage_subordinate }
 	}
 
 	immediate = {
@@ -212,13 +220,16 @@ consort_play.0005 = {
 	}
 }
 
+###################
+##Choose a bowing##
+###################
 consort_play.0006 = {
 	type = character_event
 	title = consort_play.0004.t
 	desc = consort_play.0006.desc
 	theme = family
 	override_background = {
-		reference = bedchamber
+		reference = throne_room
 	}
 	
 	left_portrait = {
@@ -226,55 +237,546 @@ consort_play.0006 = {
 		animation = personality_bold
 	}
 	lower_center_portrait = {
-		character = scope:homage_authority_1
+		character = scope:homage_authority
 	}
 	
 	trigger = {
+		exists = scope:homage_authority
+		exists = scope:harem_liege
+		exists = scope:homage_subordinate
 		NOR = {
 			exists = scope:is_being_divorced
 			exists = scope:is_being_set_aside
 		}
 		is_physically_able_adult = yes
-		#rank_is_superior_trigger = { AUTHORITY = scope:homage_authority_1 TARGET_CONSORT = root }
+		scope:homage_authority = {
+			#calyver_rank_is_superior_trigger = { HAREM_LIEGE = scope:harem_liege AUTHORITY = scope:homage_authority TARGET_CONSORT = root }
+		}
 	}
 
 	immediate = {
 	}
 	
+	#Respectful bow
 	option = {
 		name = consort_play.0006.a
 		custom_tooltip = consort_play.0006.a.tt
 
+		add_prestige = minor_prestige_loss
+
+		show_as_tooltip = {
+			scope:homage_authority = {
+				add_opinion = {
+					target = root
+					modifier = pleased_opinion
+					opinion = 5
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:harem_liege.primary_spouse
+					this = scope:harem_liege.primary_spouse
+				}
+				scope:homage_authority = {
+					add_prestige = 30
+				}
+			}
+			#else_if = {
+			#	limit = {
+			#		has_court_position = grand_consort_court_position
+			#	}
+			#	scope:homage_authority = {
+			#		add_prestige = 20
+			#	}
+			#}
+			else_if = {
+				limit = {
+					is_spouse_of = scope:harem_liege
+				}
+				scope:homage_authority = {
+					add_prestige = 10
+				}
+			}
+			else = {
+				scope:homage_authority = {
+					add_prestige = 5
+				}
+			}
+		}
+		
+		stress_impact = {
+			arrogant = minor_stress_impact_gain
+		}
+
+		set_local_variable = respectful_bow
+
 		ai_chance = {
 			base = 10
+			ai_value_modifier = {
+				ai_boldness = -0.1
+				ai_compassion = 0.1
+				ai_honor = 0.25
+			}
+			opinion_modifier = {
+				opinion_target = scope:homage_authority
+				multiplier = 0.2
+			}
+			modifier = {
+				has_trait = content
+				add = 10
+			}
+			modifier = {
+				has_trait = humble
+				add = 15
+			}
+			modifier = {
+				has_trait = craven
+				add = 10
+			}
+			modifier = { #Stress
+				has_trait = arrogant
+				add = -25
+			}
+
+			modifier = { #Prestige
+				prestige <= minor_prestige_loss
+				add = -25
+			}
 		}
 	}
 
+	#Neutral bow
 	option = {
 		name = consort_play.0006.b
 		custom_tooltip = consort_play.0006.b.tt
 
 		ai_chance = {
 			base = 10
+			ai_value_modifier = {
+				ai_boldness = -0.15
+				ai_compassion = 0.20
+				ai_honor = 0.15
+				ai_sociability = 0.20
+				ai_energy = -0.20
+			}
+
+			opinion_modifier = {
+				opinion_target = scope:homage_authority
+				multiplier = 0.1
+			}
+
+			modifier = {
+				has_trait = lazy
+				add = 20
+			}
 		}
 	}
 
+	#Disrespectful bow
 	option = {
 		name = consort_play.0006.c
 		custom_tooltip = consort_play.0006.c.tt
 
+		add_prestige = minor_prestige_gain
+
+		set_local_variable = disrespectful_bow
+
+		stress_impact = {
+			humble = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+		}
+
 		ai_chance = {
 			base = 10
+			ai_value_modifier = {
+				ai_boldness = 0.1
+				ai_compassion = -0.15
+				ai_honor = -0.25
+				ai_sociability = -0.25
+			}
+
+			opinion_modifier = {
+				opinion_target = scope:homage_authority
+				multiplier = -0.20
+			}
+
+			modifier = {
+				has_trait = arrogant
+				add = 20
+			}
+			modifier = {
+				has_trait = brave
+				add = 10
+			}
+			modifier = {
+				has_trait = ambitious
+				add = 10
+			}
+			modifier = {
+				has_trait = gregarious
+				add = -10
+			}
+
+			modifier = { #Stress
+				has_trait = craven
+				add = -25
+			}
+			modifier = { #Stress
+				has_trait = humble
+				add = -25
+			}
+
+			modifier = {
+				has_opinion_modifier = {
+					modifier = forced_me_concubine_marriage_opinion
+					target = scope:harem_liege
+				}
+				add = 20
+			}
+
+			modifier = {
+				scope:homage_authority = {
+					is_parent_of = scope:harem_liege
+				}
+				add = -50
+			}
 		}
 	}
 
 	after = {
-		#scope:homage_authority_1 = {
-		#	trigger_event = {
-		#		id = consort_play.0007
-		#		days = { 2 5 }
-		#	}	
-		#}
+		scope:homage_authority = {
+			trigger_event = {
+				id = consort_play.0007
+				days = { 1 3 }
+			}	
+		}
+	}
+}
+
+#######################
+##Invite them to stay##
+#######################
+consort_play.0007 = {
+	type = character_event
+	title = consort_play.0004.t
+	desc = consort_play.0007.desc
+	theme = family
+	override_background = {
+		reference = throne_room
+	}
+	
+	left_portrait = {
+		character = root
+		animation = personality_bold
+	}
+	right_portrait = {
+		character = scope:homage_subordinate
+		animation = throne_room_bow_1
+	}
+	
+	trigger = {
+		exists = scope:homage_authority
+		exists = scope:harem_liege
+		exists = scope:homage_subordinate
+		NOR = {
+			exists = scope:is_being_divorced
+			exists = scope:is_being_set_aside
+		}
+		is_physically_able_adult = yes
+		scope:homage_authority = {
+			#calyver_rank_is_superior_trigger = { HAREM_LIEGE = scope:harem_liege AUTHORITY = scope:homage_authority TARGET_CONSORT = scope:homage_subordinate }
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = local_var:respectful_bow
+			}
+			if = {
+				limit = {
+					scope:harem_liege.primary_spouse ?= {
+						this = scope:homage_subordinate
+					}
+				}
+				add_prestige = 30
+			}
+			#else_if = {
+			#	limit = {
+			#		scope:homage_subordinate = {
+			#			has_court_position = grand_consort_court_position
+			#		}
+			#	}
+			#	add_prestige = 20
+			#}
+			else_if = {
+				limit = {
+					scope:homage_subordinate = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add_prestige = 10
+			}
+			else = {
+				add_prestige = 5
+			}
+			add_opinion = {
+				target = scope:homage_subordinate
+				modifier = pleased_opinion
+				opinion = 5
+			}
+		}
+		else_if = { #You get offended
+			limit = {
+				exists = local_var:disrespectful_bow
+			}
+			add_opinion = {
+				target = scope:homage_subordinate
+				modifier = insult_opinion
+				opinion = -10
+			}
+		}
+	}
+	
+	#Dismiss them - Aggressively if they were disrespectful
+	option = {
+		name = {
+			trigger = { exists = local_var:disrespectful_bow }
+			text = consort_play.0007.a.disrespectful_bow
+		}
+		name = {
+			trigger = { NOT = { exists = local_var:disrespectful_bow } }
+			text = consort_play.0007.a.generic
+		}
+		custom_tooltip = consort_play.0007.a.tt
+
+		if = {
+			limit = {
+				exists = local_var:disrespectful_bow
+			}
+			if = {
+				limit = {
+					NOR = { has_relation_grudge = scope:homage_subordinate }
+					can_set_relation_potential_rival_trigger = { CHARACTER = scope:homage_subordinate }
+				}
+				set_relation_grudge = {
+					reason = consort_rival_reason
+					target = scope:homage_subordinate
+				}
+			}
+		}
+
+		scope:homage_subordinate = {
+			#Add modifier for insulting the authority unscathed
+			show_as_tooltip = {
+				if = {
+					limit = {
+						exists = local_var:disrespectful_bow
+					}
+					add_character_modifier = {
+						modifier = unpunished_rebellion_modifier
+						years = 1
+					}
+				}
+			}
+			trigger_event = {
+				id = consort_play.0008
+				days = { 1 2 }
+			}	
+		}
+
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+		}
+
+		ai_chance = {
+			base = 10
+			ai_value_modifier = {
+				ai_boldness = 0.2
+				ai_compassion = -0.2
+				ai_energy = 0.1
+			}
+			opinion_modifier = {
+				opinion_target = scope:homage_subordinate
+				multiplier = -0.2
+			}
+
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+			modifier = {
+				has_trait = content
+				add = -10
+			}
+			modifier = {
+				has_trait = humble
+				add = -10
+			}
+
+			modifier = { #Stress
+				has_trait = arrogant
+				add = 50
+			}
+		}
+	}
+
+	#Punish them severely
+	option = {
+		name = consort_play.0007.b
+		custom_tooltip = consort_play.0007.b.tt
+		trigger = {
+			trigger = { exists = local_var:disrespectful_bow }
+		}
+
+		#Punishment effect
+
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+		}
+
+		ai_chance = {
+			base = 10
+			ai_value_modifier = {
+				ai_boldness = 0.2
+				ai_compassion = -0.4
+				ai_energy = 0.1
+				ai_vengefulness = 0.5
+			}
+			opinion_modifier = {
+				opinion_target = scope:homage_subordinate
+				multiplier = -0.4
+			}
+
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = content
+				add = -10
+			}
+			modifier = {
+				has_trait = humble
+				add = -10
+			}
+			
+			modifier = { 
+				has_trait = arrogant
+				add = 20
+			}
+			modifier = { 
+				has_trait = callous
+				add = 20
+			}
+			modifier = { 
+				has_trait = wrathful
+				add = 20
+			}
+			modifier = { 
+				has_trait = sadistic
+				add = 20
+			}
+			modifier = { 
+				has_trait = vengeful
+				add = 25
+			}
+		}
+	}
+
+	#Scold them
+	option = {
+		name = consort_play.0007.b
+		custom_tooltip = consort_play.0007.b.tt
+		trigger = {
+			trigger = { exists = local_var:disrespectful_bow }
+		}
+
+		#Scolding effect
+		set_local_variable = scolded_subordinate
+
+
+
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+
+			arrogant = minor_stress_impact_gain
+			callous = minor_stress_impact_gain
+			wrathful = minor_stress_impact_gain
+			sadistic = minor_stress_impact_gain
+			vengeful = minor_stress_impact_gain
+		}
+
+		ai_chance = {
+			base = 10
+			ai_value_modifier = {
+				ai_boldness = -0.2
+				ai_compassion = 0.1
+				ai_energy = -0.2
+				ai_vengefulness = -0.1
+			}
+			opinion_modifier = {
+				opinion_target = scope:homage_subordinate
+				multiplier = -0.4
+			}
+
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = content
+				add = 10
+			}
+			modifier = {
+				has_trait = humble
+				add = 10
+			}
+			
+			modifier = { 
+				has_trait = arrogant
+				add = -20
+			}
+			modifier = { 
+				has_trait = callous
+				add = -20
+			}
+			modifier = { 
+				has_trait = wrathful
+				add = -20
+			}
+			modifier = { 
+				has_trait = sadistic
+				add = -20
+			}
+			modifier = { 
+				has_trait = vengeful
+				add = -25
+			}
+		}
+	}
+
+	after = {
+		scope:homage_authority = {
+			trigger_event = {
+				id = consort_play.0007
+				days = { 2 5 }
+			}	
+		}
 	}
 }
 
