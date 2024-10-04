@@ -102,66 +102,120 @@ consort_play.0001 = {
 consort_play.0002 = {
 	type = character_event
 	title = consort_play.0002.t
-	desc = consort_play.0002.desc
+	desc = {	
+		desc = consort_play.0002.intro.desc
+		first_valid = {
+			## Attendant
+			triggered_desc = {
+				trigger = {
+					exists = scope:attendant
+				}
+				desc = consort_play.0002.attendant.desc
+			}
+			## Servant
+			desc = consort_play.0002.servant.desc
+		}
+		desc = consort_play.0002.end.desc
+	}
 	theme = family
-	override_background = { reference = garden }
+	override_background = {
+		reference = study
+	}
 	
 	right_portrait = {
 		character = scope:consort
-		animation = personality_rational
+		animation = disapproval
 	}
 	left_portrait = {
 		trigger = {
 			exists = scope:attendant
 		}
 		character = scope:attendant
-		animation = personality_bold
+		animation = dismissal
 	}
 	lower_center_portrait = {
-		trigger = {
-			exists = scope:rejector
-		}
-		character = scope:rejector
+		character = scope:harem_liege
 	}
 	
 	trigger = {
+		NOR = {
+			exists = scope:is_being_divorced
+			exists = scope:is_being_set_aside
+		}
+		is_physically_able_adult = yes
+		exists = scope:harem_liege
 	}
 
 	immediate = {
-		#Rejected by liege
-		if = {
-			limit = {
-				has_character_flag = flag_was_rejected_by_liege
+		scope:harem_liege = {
+			if = {
+				limit = {
+					OR = {	
+						employs_court_position = lady_in_waiting_court_position
+						has_court_position = chief_eunuch_court_position
+					}
+				}
+				random_courtier = {
+					limit = {
+						OR = {
+							has_court_position = chief_eunuch_court_position
+							has_court_position = lady_in_waiting_court_position
+						}
+					}
+					save_scope_as = attendant
+				}
 			}
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -10
-			}
-			#Loses favor
 		}
-		
+		#Just if rejected - check
+		#add_opinion = {
+		#	target = THIS
+		#	modifier = dissapp
+		#}
 	}
 	
-	#Okay
+	#How dare you? Look for a vanilla option
 	option = {
-		name = consort_play.0002.a
-		
-		scope:consort = {
-			clear_harem_interactions_flags_effect = yes
-		}
-		if = {
-			limit = {
-				exists = scope:rejector
-			}
-			scope:rejector = {
-				clear_harem_interactions_flags_effect = yes
-			}
-		}
+		name = consort_play.0002.a # Check
+
+		clear_harem_interactions_flags_effect = yes
+
 		ai_chance = {
-			base = 10
+			base = 1
 		}
 	}
+
+	#Spend some favor
+	#option = {
+	#	name = consort_play.0002.b # Check
+	#
+	#	clear_harem_interactions_flags_effect = yes
+	#
+	#	ai_chance = {
+	#		base = 1
+	#	}
+	#}
+
+	#Pay them
+	#option = {
+	#	name = consort_play.0002.a # Check
+	#
+	#	clear_harem_interactions_flags_effect = yes
+	#
+	#	ai_chance = {
+	#		base = 1
+	#	}
+	#}
+
+	#Yell
+	#option = {
+	#	name = consort_play.0002.a # Check
+	#
+	#	clear_harem_interactions_flags_effect = yes
+	#
+	#	ai_chance = {
+	#		base = 1
+	#	}
+	#}
 }
 
 ##################
@@ -170,7 +224,8 @@ consort_play.0002 = {
 consort_play.1000 = {
 	type = character_event
 	title = consort_play.1000.t
-	desc = {		
+	desc = {	
+		desc = consort_play.1000.intro.desc
 		first_valid = {
 			## Attendant
 			triggered_desc = {
@@ -247,24 +302,17 @@ consort_play.1000 = {
 		}
 		if = {
 			limit = {
-				is_female = no
-				employs_court_position = chief_eunuch_court_position
-			}
-			random_courtier = {
-				limit = {
+				OR = {	
+					employs_court_position = lady_in_waiting_court_position
 					has_court_position = chief_eunuch_court_position
 				}
-				save_scope_as = attendant
-			}
-		}
-		else_if = {
-			limit = {
-				is_female = yes
-				employs_court_position = lady_in_waiting_court_position
 			}
 			random_courtier = {
 				limit = {
-					has_court_position = lady_in_waiting_court_position
+					OR = {
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+					}
 				}
 				save_scope_as = attendant
 			}
@@ -293,7 +341,6 @@ consort_play.1000 = {
 	#Reject them
 	option = {
 		name = consort_play.0010.b
-		custom_tooltip = consort_play.0010.b.tt
 		clear_harem_interactions_flags_effect = yes
 		
 		scope:consort = {
