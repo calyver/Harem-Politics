@@ -1,5 +1,293 @@
 ﻿namespace = consort_play
 
+##################
+##General events##
+##################
+
+scripted_effect clear_harem_interactions_flags_effect = {
+	if = {
+		limit = { 
+			has_character_flag = is_visiting_harem_character_flag
+		}
+		remove_character_flag = is_visiting_harem_character_flag
+	}
+	if = {
+		limit = { 
+			has_character_flag = is_being_visited_harem_character_flag
+		}
+		remove_character_flag = is_being_visited_harem_character_flag
+	}
+	if = {
+		limit = { 
+			has_character_flag = flag_was_rejected_by_liege
+		}
+		remove_character_flag = flag_was_rejected_by_liege
+	}
+	if = {
+		limit = { 
+			has_character_flag = flag_was_rejected_by_authority
+		}
+		remove_character_flag = flag_was_rejected_by_authority
+	}
+	if = {
+		limit = { 
+			has_character_flag = flag_was_rejected_by_fellow_consort
+		}
+		remove_character_flag = flag_was_rejected_by_fellow_consort
+	}
+	if = {
+		limit = { 
+			has_character_flag = flag_was_rejected_by_subordinate
+		}
+		remove_character_flag = flag_was_rejected_by_subordinate
+	}
+}
+
+consort_play.0001 = {
+	type = character_event
+	title = consort_play.0001.t
+	desc = consort_play.0001.desc
+	theme = family
+	override_background = { reference = study }
+	
+	right_portrait = {
+		character = scope:consort
+		animation = personality_rational
+	}
+	left_portrait = {
+		trigger = {
+			exists = scope:attendant
+		}
+		character = scope:attendant
+		animation = personality_bold
+	}
+	lower_center_portrait = {
+		trigger = {
+			exists = scope:rejector
+		}
+		character = scope:rejector
+	}
+	
+	trigger = {
+	}
+
+	immediate = {
+		#Rejected by liege
+		if = {
+			limit = {
+				has_character_flag = flag_was_rejected_by_liege
+			}
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -10
+			}
+			#Loses favor
+		}
+		
+	}
+	
+	#Okay
+	option = {
+		name = consort_play.0002.a
+		
+		scope:consort = {
+			clear_harem_interactions_flags_effect = yes
+		}
+		if = {
+			limit = {
+				exists = scope:rejector
+			}
+			scope:rejector = {
+				clear_harem_interactions_flags_effect = yes
+			}
+		}
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+consort_play.0002 = {
+	type = character_event
+	title = consort_play.0002.t
+	desc = consort_play.0002.desc
+	theme = family
+	override_background = { reference = garden }
+	
+	right_portrait = {
+		character = scope:consort
+		animation = personality_rational
+	}
+	left_portrait = {
+		trigger = {
+			exists = scope:attendant
+		}
+		character = scope:attendant
+		animation = personality_bold
+	}
+	lower_center_portrait = {
+		trigger = {
+			exists = scope:rejector
+		}
+		character = scope:rejector
+	}
+	
+	trigger = {
+	}
+
+	immediate = {
+		#Rejected by liege
+		if = {
+			limit = {
+				has_character_flag = flag_was_rejected_by_liege
+			}
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -10
+			}
+			#Loses favor
+		}
+		
+	}
+	
+	#Okay
+	option = {
+		name = consort_play.0002.a
+		
+		scope:consort = {
+			clear_harem_interactions_flags_effect = yes
+		}
+		if = {
+			limit = {
+				exists = scope:rejector
+			}
+			scope:rejector = {
+				clear_harem_interactions_flags_effect = yes
+			}
+		}
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+##################
+##Visiting Liege##
+##################
+consort_play.0010 = {
+	type = character_event
+	title = consort_play.0010.t
+	desc = consort_play.0010.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = scope:harem_liege
+		animation = personality_rational
+	}
+	left_portrait = {
+		trigger = {
+			exists = scope:attendant
+		}
+		character = scope:attendant
+		animation = personality_content
+	}
+	lower_center_portrait = {
+		character = scope:consort
+	}
+	
+	trigger = {
+		exists = scope:consort
+		root = scope:harem_liege
+		is_physically_able_adult = yes
+		highest_held_title_tier >= tier_county
+		any_consort = {
+			is_available_allow_travelling = yes
+			is_courtier_of = scope:harem_liege
+			count >= 3
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				is_female = no
+				employs_court_position = chief_eunuch_court_position
+			}
+			random_courtier = {
+				limit = {
+					has_court_position = chief_eunuch_court_position
+				}
+				save_scope_as = attendant
+			}
+		}
+		else_if = {
+			limit = {
+				is_female = yes
+				employs_court_position = lady_in_waiting_court_position
+			}
+			random_courtier = {
+				limit = {
+					has_court_position = lady_in_waiting_court_position
+				}
+				save_scope_as = attendant
+			}
+		}
+	}
+	
+	#See them
+	option = {
+		name = consort_play.0010.a
+		custom_tooltip = consort_play.0010.a.tt
+		
+		scope:consort = {
+			add_character_flag = {
+				flag = liege_accepted_visit_flag
+				days = 6
+			}
+			trigger_event = {
+				id = consort_play.0001
+				days = { 2 5 }
+			}	
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Reject them
+	option = {
+		name = consort_play.0010.b
+		custom_tooltip = consort_play.0010.b.tt
+
+		scope:consort = {
+			add_character_flag = {
+				flag = flag_was_rejected_by_liege
+				days = 6
+			}
+			trigger_event = {
+				id = consort_play.0002
+				days = { 2 5 }
+			}	
+			show_as_tooltip = {
+				add_opinion = {
+					target = root
+					modifier = disappointed_opinion
+					opinion = -10
+				}
+				#Loses favor
+			}
+		}
+		
+		ai_chance = {
+			base = 1
+		}
+	}
+}
 #########################
 ##Visiting an authority##
 #########################
