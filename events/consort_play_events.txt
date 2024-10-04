@@ -51,21 +51,12 @@ consort_play.0001 = {
 	override_background = { reference = study }
 	
 	right_portrait = {
-		character = scope:consort
-		animation = personality_rational
+		character = scope:harem_liege
+		animation = personality_content
 	}
 	left_portrait = {
-		trigger = {
-			exists = scope:attendant
-		}
-		character = scope:attendant
-		animation = personality_bold
-	}
-	lower_center_portrait = {
-		trigger = {
-			exists = scope:rejector
-		}
-		character = scope:rejector
+		character = scope:consort
+		animation = personality_rational
 	}
 	
 	trigger = {
@@ -176,10 +167,45 @@ consort_play.0002 = {
 ##################
 ##Visiting Liege##
 ##################
-consort_play.0010 = {
+consort_play.1000 = {
 	type = character_event
-	title = consort_play.0010.t
-	desc = consort_play.0010.desc
+	title = consort_play.1000.t
+	desc = {		
+		first_valid = {
+			## Attendant
+			triggered_desc = {
+				trigger = {
+					exists = scope:attendant
+				}
+				desc = {
+					first_valid = {
+						## Lady-in-waiting
+						triggered_desc = {
+							trigger = {
+								scope:attendant = {
+									has_court_position = lady_in_waiting_court_position
+								}
+							}
+							desc = consort_play.1000.lady_in_waiting.desc
+						}
+						## Chief Eunuch
+						triggered_desc = {
+							trigger = {
+								scope:attendant = {
+									has_court_position = chief_eunuch_court_position
+								}
+							}
+							desc = consort_play.1000.chief_eunuch.desc
+						}
+					}
+					desc = consort_play.1000.attendant.desc
+				}
+			}
+			## Servant
+			desc = consort_play.1000.servant.desc
+		}
+		desc = consort_play.1000.end.desc
+	}
 	theme = family
 	override_background = {
 		reference = study
@@ -202,7 +228,9 @@ consort_play.0010 = {
 	
 	trigger = {
 		exists = scope:consort
-		root = scope:harem_liege
+		scope:harem_liege ?= {
+			this = root
+		}
 		is_physically_able_adult = yes
 		highest_held_title_tier >= tier_county
 		any_consort = {
@@ -213,6 +241,10 @@ consort_play.0010 = {
 	}
 
 	immediate = {
+		add_character_flag = {
+			flag = is_being_visited_character_flag
+			days = 50
+		}
 		if = {
 			limit = {
 				is_female = no
@@ -243,7 +275,6 @@ consort_play.0010 = {
 	option = {
 		name = consort_play.0010.a
 		custom_tooltip = consort_play.0010.a.tt
-		
 		scope:consort = {
 			add_character_flag = {
 				flag = liege_accepted_visit_flag
@@ -263,16 +294,18 @@ consort_play.0010 = {
 	option = {
 		name = consort_play.0010.b
 		custom_tooltip = consort_play.0010.b.tt
-
+		clear_harem_interactions_flags_effect = yes
+		
 		scope:consort = {
-			add_character_flag = {
-				flag = flag_was_rejected_by_liege
-				days = 6
-			}
-			trigger_event = {
-				id = consort_play.0002
-				days = { 2 5 }
-			}	
+			clear_harem_interactions_flags_effect = yes
+			#add_character_flag = {
+			#	flag = flag_was_rejected_by_liege
+			#	days = 6
+			#}
+			#trigger_event = {
+			#	id = consort_play.0002
+			#	days = { 2 5 }
+			#}	
 			show_as_tooltip = {
 				add_opinion = {
 					target = root

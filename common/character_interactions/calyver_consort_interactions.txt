@@ -44,12 +44,125 @@ visit_liege_interaction = {
 	on_accept = {
 		custom_tooltip = visit_liege_interaction_effect_tooltip
 		scope:actor = {
+			add_character_flag = {
+				flag = is_visiting_harem_character_flag
+				days = 50
+			}
 			save_scope_as = consort
 			court_owner = {
 				save_scope_as = harem_liege
 			}
-			random = {
+			random_list = {
+				25 = { #You reach your liege
+					#Rank
+					modifier = {
+						scope:harem_liege.primary_spouse ?= {
+							this = scope:actor
+						}
+						add = 40
+					}
+					#modifier = {
+					#	has_court_position = grand_consort_court_position
+					#	add = 30
+					#}
+					modifier = {
+						is_spouse_of = scope:harem_liege
+						NOR = {
+							this = scope:harem_liege.primary_spouse
+							#has_court_position = grand_consort_court_position
+						}
+						add = 30
+					}
+					#Favor
 
+					#Too few consorts
+					modifier = {
+						scope:harem_liege = {
+							any_consort = {
+								is_courtier_of = prev
+								count <= 5
+							}
+						}
+						add = 10
+					}
+					#Liege's stress
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 1
+						}
+						add = -10
+					}
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 2
+						}
+						add = -10
+					}
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 3
+						}
+						add = -10
+					}
+					#Children
+					modifier = {
+						any_children = {
+							is_alive = yes
+							is_child_of = scope:harem_liege
+							count >= 2
+						}
+						add = 5
+					}
+					modifier = {
+						any_children = {
+							is_alive = yes
+							is_child_of = scope:harem_liege
+							count >= 3
+						}
+						add = 5
+					}
+					#Family connections
+					modifier = {
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = scope:harem_liege
+								is_councillor_of = scope:harem_liege
+								is_liege_or_above_of = scope:harem_liege
+							}
+						}
+						add = 15
+					}
+					scope:harem_liege = {
+						trigger_event = {
+							id = consort_play.1000
+							days = { 5 10 }
+						}	
+					}
+				}
+				25 = { #Servants stop you
+					#Rank
+					modifier = {
+						is_concubine = yes
+						add = 10
+					}
+					#Favor
+
+					#Too many consorts
+					modifier = {
+						scope:harem_liege = {
+							any_consort = {
+								is_courtier_of = prev
+								count >= 8
+							}
+						}
+						add = 10
+					}
+
+					trigger_event = {
+						id = consort_play.0002
+						days = { 5 10 }
+					}
+				}
 			}
 		}
 		#scope:recipient = {
