@@ -1,8 +1,8 @@
 ﻿namespace = consort_play
 
-##################
-##General events##
-##################
+#################
+##Consort's POV##
+#################
 
 scripted_effect clear_harem_interactions_flags_effect = {
 	if = {
@@ -102,20 +102,50 @@ consort_play.0001 = {
 consort_play.0002 = {
 	type = character_event
 	title = consort_play.0002.t
-	desc = {	
-		desc = consort_play.0002.intro.desc
+	desc = {
 		first_valid = {
-			## Attendant
+			## Rejected
 			triggered_desc = {
 				trigger = {
-					exists = scope:attendant
+					exists = local_var:rejected_visit
 				}
-				desc = consort_play.0002.attendant.desc
+				desc = { 
+					first_valid = {
+						## Attendant
+						triggered_desc = {
+							trigger = {
+								exists = scope:attendant
+							}
+							desc = consort_play.0002.rejected_visit.attendant.desc
+						}
+						## Servant
+						triggered_desc = {
+							desc = consort_play.0002.rejected_visit.servant.desc
+						}
+					}
+					desc = consort_play.0002.rejected_visit.end.desc
+				}
 			}
-			## Servant
-			desc = consort_play.0002.servant.desc
-		}
-		desc = consort_play.0002.end.desc
+
+			#Fallback - A servant won't let you in
+			desc = {
+				desc = consort_play.0002.intro.desc
+				first_valid = {
+					## Attendant
+					triggered_desc = {
+						trigger = {
+							exists = scope:attendant
+						}
+						desc = consort_play.0002.attendant.desc
+					}
+					## Servant
+					triggered_desc = {
+						desc = consort_play.0002.servant.desc
+					}
+				}
+				desc = consort_play.0002.end.desc
+			}
+		}	
 	}
 	theme = family
 	override_background = {
@@ -175,7 +205,22 @@ consort_play.0002 = {
 	
 	#How dare you? Look for a vanilla option
 	option = {
-		name = consort_play.0002.a # Check
+		name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							exists = local_var:rejected_visit
+						}
+						desc = consort_play.0002.rejected.a
+					}
+					#How dare you? - look for vanilla version
+					triggered_desc = {
+						desc = consort_play.0002.a #Check
+					}
+				}
+			}
+		}
 
 		clear_harem_interactions_flags_effect = yes
 
