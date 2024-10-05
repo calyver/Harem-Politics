@@ -103,49 +103,21 @@ consort_play.0002 = {
 	type = character_event
 	title = consort_play.0002.t
 	desc = {
+		desc = consort_play.0002.intro.desc
 		first_valid = {
-			## Rejected
+			## Attendant
 			triggered_desc = {
 				trigger = {
-					exists = local_var:rejected_visit
+					exists = scope:attendant
 				}
-				desc = { 
-					first_valid = {
-						## Attendant
-						triggered_desc = {
-							trigger = {
-								exists = scope:attendant
-							}
-							desc = consort_play.0002.rejected_visit.attendant.desc
-						}
-						## Servant
-						triggered_desc = {
-							desc = consort_play.0002.rejected_visit.servant.desc
-						}
-					}
-					desc = consort_play.0002.rejected_visit.end.desc
-				}
+				desc = consort_play.0002.attendant.desc
 			}
-
-			#Fallback - A servant won't let you in
-			desc = {
-				desc = consort_play.0002.intro.desc
-				first_valid = {
-					## Attendant
-					triggered_desc = {
-						trigger = {
-							exists = scope:attendant
-						}
-						desc = consort_play.0002.attendant.desc
-					}
-					## Servant
-					triggered_desc = {
-						desc = consort_play.0002.servant.desc
-					}
-				}
-				desc = consort_play.0002.end.desc
+			## Servant
+			triggered_desc = {
+				desc = consort_play.0002.servant.desc
 			}
-		}	
+		}
+		desc = consort_play.0002.end.desc
 	}
 	theme = family
 	override_background = {
@@ -203,34 +175,7 @@ consort_play.0002 = {
 	
 	#How dare you? Look for a vanilla option
 	option = {
-		name = {
-			text = {
-				first_valid = {
-					triggered_desc = {
-						trigger = {
-							exists = local_var:rejected_visit
-						}
-						desc = consort_play.0002.rejected.a
-					}
-					#How dare you? - look for vanilla version
-					triggered_desc = {
-						desc = consort_play.0002.a #Check
-					}
-				}
-			}
-		}
-		#Liege rejected you
-		if = {
-			limit = {
-				exists = local_var:rejected_visit
-			}
-			add_opinion = {
-				target = scope:harem_liege
-				modifier = disappointed_opinion
-				opinion = -10
-			}
-			#Loses favor
-		}
+		name = consort_play.0002.a #Check
 
 		clear_harem_interactions_flags_effect = yes
 
@@ -255,9 +200,6 @@ consort_play.0002 = {
 		name = consort_play.0002.c # Check
 		trigger = {
 			gold >= 5
-			NOT = {
-				exists = local_var:rejected_visit
-			}
 		}
 		show_as_unavailable = {
 			gold < 5 
@@ -267,6 +209,7 @@ consort_play.0002 = {
 			name = bribed_servant
 			value = yes
 		}
+
 		if = {
 			limit = {
 				exists = scope:attendant
@@ -295,6 +238,121 @@ consort_play.0002 = {
 			base = 1
 		}
 	}
+
+	#Yell
+	#option = {
+	#	name = consort_play.0002.a # Check
+	#
+	#	clear_harem_interactions_flags_effect = yes
+	#
+	#	ai_chance = {
+	#		base = 1
+	#	}
+	#}
+}
+
+consort_play.0003 = {
+	type = character_event
+	title = consort_play.0002.t
+	desc = { 
+		first_valid = {
+			## Attendant
+			triggered_desc = {
+				trigger = {
+					exists = scope:attendant
+				}
+				desc = consort_play.0002.rejected_visit.attendant.desc
+			}
+			## Servant
+			triggered_desc = {
+				desc = consort_play.0002.rejected_visit.servant.desc
+			}
+		}
+		desc = consort_play.0002.rejected_visit.end.desc
+	}
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	left_portrait = {
+		character = scope:consort
+		animation = disapproval
+	}
+	right_portrait = {
+		trigger = {
+			exists = scope:attendant
+		}
+		character = scope:attendant
+		animation = personality_bold
+	}
+	lower_center_portrait = {
+		character = scope:harem_liege
+	}
+	
+	trigger = {
+		NOR = {
+			exists = scope:is_being_divorced
+			exists = scope:is_being_set_aside
+		}
+		is_physically_able_adult = yes
+		exists = scope:harem_liege
+		exists = local_var:rejected_visit
+	}
+
+	immediate = {
+		scope:harem_liege = {
+			if = {
+				limit = {
+					NOT = {
+						exists = scope:attendant
+					}
+					OR = {	
+						employs_court_position = lady_in_waiting_court_position
+						has_court_position = chief_eunuch_court_position
+					}
+				}
+				random_courtier = {
+					limit = {
+						OR = {
+							has_court_position = chief_eunuch_court_position
+							has_court_position = lady_in_waiting_court_position
+						}
+					}
+					save_scope_as = attendant
+				}
+			}
+		}
+	}
+	
+	#How dare you? Look for a vanilla option
+	option = {
+		name = consort_play.0002.rejected.a
+
+		add_opinion = {
+			target = scope:harem_liege
+			modifier = disappointed_opinion
+			opinion = -10
+		}
+		#Loses favor
+
+		clear_harem_interactions_flags_effect = yes
+
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Spend some favor
+	#option = {
+	#	name = consort_play.0002.b # Check
+	#
+	#	clear_harem_interactions_flags_effect = yes
+	#
+	#	ai_chance = {
+	#		base = 1
+	#	}
+	#}
 
 	#Yell
 	#option = {
