@@ -769,16 +769,13 @@ consort_play.1001 = {
 	type = character_event
 	title = {
 		first_valid = {
-			triggered_desc = {
+			triggered_desc = { #Success
 				trigger = {
 					exists = local_var:pleasant_conversation_success
 				}
 				desc = consort_play.1001.t.pleasant_conversation_success
 			}
-			triggered_desc = {
-				trigger = {
-					exists = local_var:pleasant_conversation_failure
-				}
+			triggered_desc = { #Failure
 				desc = consort_play.1001.t.pleasant_conversation_failure
 			}
 		}
@@ -791,21 +788,10 @@ consort_play.1001 = {
 				}
 				desc = consort_play.1001.desc.pleasant_conversation_success
 			}
-			desc = consort_play.1000.servant.desc
-		}
-		desc = consort_play.1000.end_1.desc
-		first_valid = {
-			## Attendant
-			triggered_desc = {
-				trigger = {
-					exists = scope:attendant
-				}
-				desc = consort_play.1000.end_attendant.desc
+			triggered_desc = { #Failure
+				desc = consort_play.1001.desc.pleasant_conversation_failure
 			}
-			## Servant
-			desc = consort_play.1000.end_servant.desc
 		}
-		desc = consort_play.1000.end_2.desc
 	}
 	theme = family
 	override_background = {
@@ -897,7 +883,7 @@ consort_play.1001 = {
 		name = consort_play.1001.a
 		trigger = {
 			NOT = {
-				exists = local_var:pleasant_conversation_success
+				exists = local_var:pleasant_conversation_failure
 			}
 		}
 		#scope:consort = {
@@ -914,15 +900,24 @@ consort_play.1001 = {
 
 	#Reject them
 	option = {
-		name = consort_play.1001.b
+		name = {
+			trigger = { exists = local_var:pleasant_conversation_success }
+			text = consort_play.1001.b.success
+		}
+		name = {
+			trigger = { exists = local_var:pleasant_conversation_failure }
+			text = consort_play.1001.b.failure
+		}
+
 		clear_harem_interactions_flags_effect = yes
 		scope:consort = {
-			#Loses favor
+			#Loses favor if the conversation was a failure
 			#Loses op
-			trigger_event = {
-				id = consort_play.0001 #Check
-				days = { 2 5 }
-			}	
+		#	trigger_event = {
+		#		id = consort_play.0001 #Check
+		#		days = { 2 5 }
+		#	}	
+		#	Maybe add a modifier if the conversation was a success and a failure?
 		}
 		
 		ai_chance = {
