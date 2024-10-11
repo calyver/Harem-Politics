@@ -479,6 +479,43 @@ consort_play.0004 = {
 }
 
 ##Successful conversation##
+scripted_trigger is_eligible_relative_for_promotion_relative_trigger = {
+	any_liege_or_above = {
+		this = $LIEGE$
+	}
+	is_available_healthy_ai_adult = yes
+	any_held_title = { count = 0 }
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+		has_character_modifier = recently_tortured
+		any_consort = {
+			this = root
+		}
+		is_child_of = root
+		any_heir_title = {} # Not heir to anything
+		has_hook = root
+	}
+	trigger_if = {
+		limit = { is_female = yes }
+		$LIEGE$ = { faith_dominant_gender_female_or_equal = yes }
+	}
+	trigger_else = {
+		$LIEGE$ = { faith_dominant_gender_male_or_equal = yes }
+	}
+	OR = {
+		AND = {
+			exists = dynasty
+			NOT = {
+				dynasty = $LIEGE$.dynasty
+			}
+		}
+		NOT = {
+			exists = dynasty
+		}
+	}
+}
+
 consort_play.0005 = {
 	type = character_event
 	title = consort_play.0005.t
@@ -495,6 +532,10 @@ consort_play.0005 = {
 	right_portrait = {
 		character = scope:harem_liege
 		animation = personality_dishonorable
+	}
+
+	lower_center_portrait = {
+		character = scope:consort_relative
 	}
 	
 	trigger = {
@@ -513,6 +554,86 @@ consort_play.0005 = {
 				any_close_family_member = {
 					is_eligible_relative_for_promotion_relative_trigger = { LIEGE = scope:harem_liege }
 				}
+				scope:harem_liege = {
+					OR = {
+						any_held_title = {
+							tier = tier_barony
+							is_capital_barony = no
+							is_leased_out = no
+							NOT = { THIS = ROOT.capital_barony }
+						}
+						any_held_title = {
+							count >= 4
+							tier = tier_county
+						}
+					}
+				}
+			}
+			every_close_or_extended_family_member = {
+				limit = {
+					is_eligible_relative_for_promotion_relative_trigger = { LIEGE = scope:harem_liege }
+				}
+				add_to_list = valid_relative_list
+			}
+			random_in_list = {
+				list = valid_relative_list
+				weight = {
+					base = 10
+					modifier = { #Siblings are priority
+						any_close_family_member = { this = scope:meddling_relative }
+						add = 25
+					}
+					modifier = { #Parents event more
+						any_child = {
+							this = scope:meddling_relative
+						}
+						add = 15
+					}
+					modifier = { #Same dynasty
+						exists = dynasty
+						exists = scope:meddling_relative.dynasty
+						dynasty = scope:meddling_relative.dynasty
+						add = 20
+					}
+					modifier = { #Same house
+						exists = house
+						exists = scope:meddling_relative.house
+						house = scope:meddling_relative.house
+						add = 15
+					}
+					modifier = { #Opinion
+						opinion = {
+							target = scope:meddling_relative
+							value >= low_positive_opinion
+						}
+						add = 20
+					}
+					modifier = { #Martial
+						martial >= very_high_skill_rating
+						add = 25
+					}
+					modifier = { #Stewardship
+						stewardship >= very_high_skill_rating
+						add = 25
+					}
+					modifier = { #Martial
+						martial >= high_skill_rating
+						add = 15
+					}
+					modifier = { #Stewardship
+						stewardship >= high_skill_rating
+						add = 15
+					}
+					modifier = { #Martial
+						martial >= decent_skill_rating
+						add = 5
+					}
+					modifier = { #stewardship
+						stewardship >= decent_skill_rating
+						add = 5
+					}
+				}
+				save_scope_as = consort_relative
 			}
 		}
 	}
@@ -520,6 +641,47 @@ consort_play.0005 = {
 	#Try to become friends or lovers
 	option = {
 		name = consort_play.0004.a
+
+		#Progress towards friends
+		if = {
+			limit = {
+				exists = local_var:pleasant_conversation_success
+			}
+			set_relation_potential_friend = $CHARACTER$
+			scope:harem_liege = {
+				add_opinion = {
+					target = scope:consort
+					modifier = pleasant_conversation_opinion #Check
+					opinion = 5
+				}
+			}
+
+			#Set the variable
+			if = {
+				limit = {
+					NOT = {
+						exists = var:had_pleasant_conversation_liege
+					}
+				}
+				set_variable = {
+					name = had_pleasant_conversation_liege
+					value = this.host
+					years = 3
+				}
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						exists = var:last_visited_ruler
+					}
+				}
+				set_variable = {
+					name = had_pleasant_conversation_liege
+					value = this.host
+					years = 3
+				}
+			}
+		}
 
 		ai_chance = {
 			base = 1
