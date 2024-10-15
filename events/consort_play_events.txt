@@ -479,6 +479,75 @@ consort_play.0004 = {
 }
 
 ##Successful conversation##
+scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
+	harem_politics_valid_vassal_trigger = yes
+
+	OR = {	
+		AND = {
+			highest_held_title_tier = tier_county
+			any_held_title = { #Not many titles
+				tier = tier_county
+				count <= 3
+			}
+			primary_title = {
+				de_jure_liege = {
+					OR = {
+						AND = {
+							is_title_created = yes
+							holder ?= {
+								this = scope:harem_liege
+							}
+							any_held_title = { #Check. This doesn't matter if the duchy is not created
+								tier = tier_duchy
+								count >= 3
+							}
+						}
+						AND = {
+							is_title_created = no
+							any_in_de_jure_hierarchy = {
+								filter = {
+									tier = tier_county
+								}
+								holder = scope:harem_liege
+								percent >= 0.50
+							}
+						}
+					}
+					NOT = {
+						any_de_jure_county = {
+							this = scope:harem_liege.capital_county
+						}
+					}
+				}
+			}	
+			scope:harem_liege = {
+				gold >= create_duchy_title_value_harem_politics
+			}
+		}
+		AND = {	
+			highest_held_title_tier = tier_barony
+			primary_title = {
+				de_jure_liege = {
+					NOT = {
+						this = scope:harem_liege.capital_county
+					}
+				}
+			}	
+			scope:harem_liege = {
+				any_held_title = {
+					tier = tier_county
+					count >= 4
+				}
+			}
+		}
+	}
+
+	NOR = {
+		government_has_flag = government_is_republic
+		government_has_flag = government_is_theocracy
+	}
+}
+
 scripted_trigger is_eligible_relative_for_promotion_relative_trigger = {
 	any_liege_or_above = {
 		this = $LIEGE$
@@ -506,11 +575,11 @@ scripted_trigger is_eligible_relative_for_promotion_relative_trigger = {
 		has_trait = wounded
 		has_character_modifier = recently_tortured
 		any_consort = {
-			this = root
+			this = scope:harem_liege
 		}
-		is_child_of = root
+		is_child_of = scope:harem_liege
 		any_heir_title = {} # Not heir to anything
-		has_hook = root
+		has_hook = scope:harem_liege
 	}
 	OR = {
 		dynasty ?= {
@@ -566,7 +635,7 @@ consort_play.0005 = {
 								tier = tier_barony
 								is_capital_barony = no
 								is_leased_out = no
-								NOT = { THIS = ROOT.capital_barony }
+								NOT = { THIS = scope:harem_liege.capital_barony }
 							}
 							highest_held_title_tier >= tier_county
 						}
@@ -949,7 +1018,7 @@ consort_play.1000 = {
 			#}
 			show_as_tooltip = {
 				add_opinion = {
-					target = root
+					target = scope:harem_liege
 					modifier = disappointed_opinion
 					opinion = -10
 				}
@@ -1125,7 +1194,7 @@ consort_play.1001 = {
 						exists = local_var:pleasant_conversation_success
 					}
 					add_opinion = {
-						target = root
+						target = scope:harem_liege
 						modifier = disappointed_opinion
 						opinion = -10
 					}
@@ -1196,7 +1265,7 @@ consort_play.2000 = {
 							#has_court_position = grand_consort_court_position
 						}
 						NOT = {
-							this = root
+							this = scope:harem_liege
 						}
 					}
 				}
@@ -1215,7 +1284,7 @@ consort_play.2000 = {
 							#has_court_position = grand_consort_court_position
 						}
 						NOT = {
-							this = root
+							this = scope:harem_liege
 						}
 					}
 				}
