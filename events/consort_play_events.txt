@@ -480,10 +480,33 @@ consort_play.0004 = {
 
 ##Successful conversation##
 scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
-	harem_politics_valid_vassal_trigger = yes
+	is_physically_able_ai_adult = yes
+	is_travelling = no
+	is_at_war = no
+	
+	#accepts_harems = yes Check
+
+	exists = scope:harem_liege.dynasty
+	dynasty ?= {
+		NOT = {
+			this = scope:harem_liege.dynasty
+		}
+	}
+	NOR = {
+		has_relation_rival = scope:harem_liege
+		has_relation_nemesis = scope:harem_liege
+
+		has_hook = scope:harem_liege
+	}
+
+	scope:harem_liege = {
+		NOT = {
+			has_hook = prev
+		}
+	}
 
 	OR = {	
-		AND = {
+		AND = { #Promote a count to duke
 			highest_held_title_tier = tier_county
 			any_held_title = { #Not many titles
 				tier = tier_county
@@ -496,10 +519,10 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 							is_title_created = yes
 							holder ?= {
 								this = scope:harem_liege
-							}
-							any_held_title = { #Check. This doesn't matter if the duchy is not created
-								tier = tier_duchy
-								count >= 3
+								any_held_title = { #Check. This doesn't matter if the duchy is not created
+									tier = tier_duchy
+									count >= 3
+								}
 							}
 						}
 						AND = {
@@ -513,7 +536,7 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 							}
 						}
 					}
-					NOT = {
+					NOT = { #Check. Can't I reuse the any_in_de_jure_hierarchy?
 						any_de_jure_county = {
 							this = scope:harem_liege.capital_county
 						}
@@ -521,10 +544,11 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 				}
 			}	
 			scope:harem_liege = {
-				gold >= create_duchy_title_value_harem_politics
+				gold >= create_duchy_title_value_harem_politics #Check
+				highest_held_title_tier >= tier_kingdom
 			}
 		}
-		AND = {	
+		AND = {	#Promote a baron to count
 			highest_held_title_tier = tier_barony
 			primary_title = {
 				de_jure_liege = {
@@ -538,7 +562,41 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 					tier = tier_county
 					count >= 4
 				}
+				highest_held_title_tier >= tier_duchy
 			}
+		}
+		#Promote unlanded to landed
+		AND = { #Is untitled
+			any_held_title = { count = 0 }
+			any_heir_title = {} # Not heir to anything
+			trigger_if = {
+				limit = { is_female = yes }
+				$LIEGE$ = { faith_dominant_gender_female_or_equal = yes }
+			}
+			trigger_else = {
+				$LIEGE$ = { faith_dominant_gender_male_or_equal = yes }
+			}
+		}
+		#Promote lowborn to noble. Must be unlanded
+		is_lowborn = yes
+		AND = { #Give them a Noble Family title
+			scope:harem_liege = {
+				is_landed = yes
+				government_allows = administrative
+				highest_held_title_tier >= tier_duchy
+				#Check, must have some money
+			}
+			highest_held_title_tier <= tier_county
+			trigger_if = {
+				limit = {
+					is_landed = yes
+				}
+				NOR = {
+					government_has_flag = government_is_republic
+					government_has_flag = government_is_theocracy
+				}
+			}
+			any_held_title = { count = 0 }
 		}
 	}
 
