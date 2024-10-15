@@ -272,7 +272,11 @@ offer_concubine = {
 	is_shown = {
 		NOT = { scope:actor = scope:recipient }
 		scope:actor = {
-			accepts_concubinage = yes
+			#accepts_concubinage = yes - Check
+			OR = { #Check
+				culture = { has_cultural_tradition = tradition_concubines }
+				faith = { has_doctrine = doctrine_concubines }
+			}		
 		}
 		scope:recipient = {
 			allowed_concubines = yes
@@ -343,7 +347,7 @@ offer_concubine = {
 					limit = {
 						is_female = yes
 					}
-					age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					is_aging_character = no
 				}
 			}
 			desc = AI_POSITIVE_TRAIT_REASON
@@ -359,7 +363,7 @@ offer_concubine = {
 					limit = {
 						is_female = yes
 					}
-					age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					is_aging_character = no
 				}
 			}
 			desc = AI_DYNASTY_PRESTIGE_REASON_NOBLE
@@ -378,7 +382,7 @@ offer_concubine = {
 					limit = {
 						is_female = yes
 					}
-					age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					is_aging_character = no
 				}
 			}
 			desc = AI_NEGATIVE_TRAIT_REASON
@@ -395,7 +399,7 @@ offer_concubine = {
 					limit = {
 						is_female = yes
 					}
-					age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					is_aging_character = no
 				}
 			}
 			desc = AI_DYNASTY_PRESTIGE_REASON_LOWBORN_NO_POSITIVE_TRAIT
@@ -418,7 +422,7 @@ offer_concubine = {
 		compare_modifier = { # Recipient is reluctant to marry old women (procreation is a key factor)
 			trigger = {
 				scope:secondary_actor = {
-					age > 29
+					is_young_character = no
 					is_female = yes
 				}
 			}
@@ -454,9 +458,7 @@ offer_concubine = {
 							}
 						}
 					}
-					any_child = {
-						is_player_heir_of_trigger = { CHARACTER = root }
-					}
+					any_child = { is_player_heir_of = root }
 				}
 				trigger_else = {
 					always = no
@@ -676,8 +678,12 @@ offer_concubine = {
 		NOR = {
 			has_trait = greedy
 			ai_greed > very_high_positive_ai_value
+		}	
+		#accepts_concubinage = yes - Check
+		OR = { #Check
+			culture = { has_cultural_tradition = tradition_concubines }
+			faith = { has_doctrine = doctrine_concubines }
 		}
-		accepts_concubinage = yes
 	}
 
 	ai_will_do = {
@@ -696,7 +702,7 @@ offer_concubine = {
 					sex_opposite_of = scope:recipient
 				}
 				fertility > 0.2
-				age < 36
+				is_young_character = yes
 				NOR = {
 					is_councillor_of = scope:actor
 					is_of_major_interest_trigger = {
@@ -722,12 +728,14 @@ offer_concubine = {
 
 		modifier = { # If secondary_actor could be an agent...
 			add = 25
-			any_scheme = {
-				scheme_target = scope:recipient
-				save_temporary_scope_as = scheme_check
+			scope:actor = {
+				any_scheme = {
+					scheme_target_character = scope:recipient
+					save_temporary_scope_as = scheme_check
+				}
 			}
 			scope:secondary_actor = {
-				is_valid_as_agent_in_scheme = scope:scheme_check
+				char_can_fit_into_scheme_trigger = { SCHEME = scope:scheme_check }
 			}
 		}
 		
@@ -739,7 +747,7 @@ offer_concubine = {
 			}
 		}
 		
-		modifier = { # More likely if its your friend and it's a nice concubine
+		modifier = { # More likely if it's your friend and it's a nice concubine
 			add = 50
 			scope:recipient = {
 				OR = {
@@ -749,7 +757,7 @@ offer_concubine = {
 			}
 			scope:secondary_actor = {
 				fertility > 0.2
-				age < 36
+				is_young_character = yes
 				OR = {
 					has_trait = lustful
 					num_of_good_genetic_traits > 0
@@ -851,7 +859,7 @@ offer_concubine = {
 	on_decline = {
 		scope:actor = {
 			send_interface_toast = {
-				type = event_generic_neutral
+				type = event_toast_effect_bad
 				title = msg_concubine_offer_rejected_title
 				right_icon = scope:recipient
 				left_icon = scope:secondary_actor
