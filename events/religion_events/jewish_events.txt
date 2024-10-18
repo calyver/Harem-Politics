@@ -135,35 +135,45 @@ jewish_events.0001 = {
 	}
 
 	after = {
-		add_character_flag = had_event_jewish_events_0001
-		if = {
-			limit = {
-				NOT = { root.faith = { has_variable = rabbinicism_rejected_monogamy } }
-			}
+		hidden_events = {
+			add_character_flag = had_event_jewish_events_0001
 			if = {
 				limit = {
-					root.faith = { has_doctrine = doctrine_polygamy }
+					NOT = { root.faith = { has_variable = rabbinicism_rejected_monogamy } }
 				}
-				root.faith = {
-					set_variable = {
-						name = rabbinicism_accepted_monogamy
-						value = yes
-					}
-					remove_doctrine = doctrine_polygamy
-					add_doctrine = doctrine_monogamy
-				}
-			}
-			if = {
-				limit = {
-					exists = root.faith.religious_head
-					root.faith.religious_head = { is_vassal_or_below_of = root }
-				}
-				every_player = {
+				if = {
 					limit = {
-						faith = root.faith
-						NOT = { has_character_flag = had_event_jewish_events_0001 }
+						root.faith = { has_doctrine_parameter = allows_polygamy }
 					}
-					trigger_event = jewish_events.0001
+					root.faith = {
+						set_variable = {
+							name = rabbinicism_accepted_monogamy
+							value = yes
+						}
+						remove_doctrine = var:faith_polygamy_doctrine
+						add_doctrine = doctrine_monogamy
+						if = {
+							limit = {
+								var:faith_swap_realm_celebration = yes
+							}
+							remove_doctrine = doctrine_marriage_realm_celebration_disallowed
+							add_doctrine = doctrine_marriage_realm_celebration_first
+							
+						}
+					}
+				}
+				if = {
+					limit = {
+						exists = root.faith.religious_head
+						root.faith.religious_head = { is_vassal_or_below_of = root }
+					}
+					every_player = {
+						limit = {
+							faith = root.faith
+							NOT = { has_character_flag = had_event_jewish_events_0001 }
+						}
+						trigger_event = jewish_events.0001
+					}
 				}
 			}
 		}
