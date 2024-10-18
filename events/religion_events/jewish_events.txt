@@ -33,34 +33,44 @@ jewish_events.0001 = {
 		}
 	}
 
-	option = { #Refuse to change
+	option = { #Refuse to change - Polygamy
 		name = jewish_events.0001.b
 		trigger = {
+			root.faith = {
+				has_doctrine_parameter = allows_polygamy
+				OR = {
+					NOT = { has_doctrine_parameter = allows_concubinage }
+					#Allow polygamy option if Harem is blocked by game rules
+					NOT = { has_game_rule = khd_allowed_doctrines_harem }
+				}
+			}
 			this = root.culture.culture_head
 			root.culture = {
-				NOT = { has_cultural_tradition = tradition_polygamous }
+				NOT = { 
+					OR = {
+						has_cultural_parameter = allows_polygamy
+						has_cultural_parameter = allows_concubinage
+						has_cultural_tradition = tradition_monogamous
+					}
+				}
 			}
 		}
 		add_piety = major_piety_loss
 		show_as_tooltip = {
 			root.faith = {
-				remove_doctrine = doctrine_polygamy
+				remove_doctrine = var:faith_polygamy_doctrine
 				add_doctrine = doctrine_monogamy
+				if = {
+					limit = {
+						var:faith_swap_realm_celebration = yes
+					}
+					remove_doctrine = doctrine_marriage_realm_celebration_disallowed
+					add_doctrine = doctrine_marriage_realm_celebration_first
+					
+				}
 			}
 		}
 		root.culture = {
-			if = {
-				limit = {
-					has_cultural_tradition = tradition_monogamous
-				}
-				remove_culture_tradition = tradition_monogamous
-			}
-			if = {
-				limit = {
-					has_cultural_tradition = tradition_concubines
-				}
-				remove_culture_tradition = tradition_concubines
-			}
 			add_culture_tradition = tradition_polygamous
 		}
 	}
