@@ -412,7 +412,7 @@ culture_tradition_events.0100 = {
 				culture = {
 					OR = {
 						has_cultural_tradition = tradition_monogamous
-						has_cultural_tradition = tradition_concubines
+						has_cultural_parameter = allows_concubinage
 					}
 				}
 			}
@@ -425,8 +425,8 @@ culture_tradition_events.0100 = {
 				}
 				culture = {
 					OR = {
-						has_cultural_tradition = tradition_polygamous
-						has_cultural_tradition = tradition_concubines
+						has_cultural_parameter = allows_polygamy
+						has_cultural_parameter = allows_concubinage
 					}
 				}
 			}
@@ -440,7 +440,7 @@ culture_tradition_events.0100 = {
 				culture = {
 					OR = {
 						has_cultural_tradition = tradition_monogamous
-						has_cultural_tradition = tradition_polygamous
+						has_cultural_parameter = allows_polygamy
 					}
 				}
 			}
@@ -450,9 +450,9 @@ culture_tradition_events.0100 = {
 					has_doctrine_parameter = allows_polygamy
 				}
 				culture = {
-					OR = {
-						has_cultural_tradition = tradition_monogamous
-						has_cultural_tradition = tradition_polygamous
+					NOR = {
+						has_cultural_parameter = allows_polygamy
+						has_cultural_parameter = allows_concubinage
 					}
 				}
 			}
@@ -485,15 +485,18 @@ culture_tradition_events.0100 = {
 		add_piety_level = 1
 		
 		hidden_effect = {
-			if = {
+			if = { #Only Polygamy allowed
 				limit = {
 					scope:head_of_faith.faith = {
 						has_doctrine_parameter = allows_polygamy
+						NOT = {
+							has_doctrine_parameter = allows_concubinage
+						}
 					}
 					culture = {
 						OR = {
 							has_cultural_tradition = tradition_monogamous
-							has_cultural_tradition = tradition_concubines
+							has_cultural_parameter = allows_concubinage
 						}
 					}
 				}
@@ -504,20 +507,29 @@ culture_tradition_events.0100 = {
 						}
 						remove_culture_tradition = tradition_monogamous
 					}
-					else = {
+					else_if = {
+						limit = {
+							has_cultural_tradition = tradition_concubines
+						}
 						remove_culture_tradition = tradition_concubines
+					}
+					else = {
+						remove_culture_tradition = tradition_harem
 					}
 				}
 			}
-			else_if = {
+			else_if = { #Only Monogamy allowed
 				limit = {
 					scope:head_of_faith.faith = {
 						has_doctrine = doctrine_monogamy
+						NOT = {
+							has_doctrine_parameter = allows_concubinage
+						}
 					}
 					culture = {
 						OR = {
-							has_cultural_tradition = tradition_polygamous
-							has_cultural_tradition = tradition_concubines
+							has_cultural_parameter = allows_polygamy
+							has_cultural_parameter = allows_concubinage
 						}
 					}
 				}
@@ -528,21 +540,53 @@ culture_tradition_events.0100 = {
 						}
 						remove_culture_tradition = tradition_polygamous
 					}
-					else = {
+					else_if = {
+						limit = {
+							has_cultural_tradition = tradition_concubines
+						}
 						remove_culture_tradition = tradition_concubines
+					}
+					else = {
+						remove_culture_tradition = tradition_harem
 					}
 				}
 			}
-			else = {
+			else_if = { #Only Concubinage allowed
+				limit = {
+					scope:head_of_faith.faith = {
+						has_doctrine = doctrine_monogamy
+						NOT = {
+							has_doctrine_parameter = allows_concubinage
+						}
+					}
+					culture = {
+						OR = {
+							has_cultural_parameter = allows_polygamy
+							has_cultural_parameter = allows_concubinage
+						}
+					}
+					culture = {
+						OR = {
+							has_cultural_tradition = tradition_monogamous
+							has_cultural_parameter = allows_polygamy
+						}
+					}
+				}
 				culture = {
 					if = {
 						limit = {
-							has_cultural_tradition = tradition_monogamous
+							has_cultural_tradition = tradition_polygamous
 						}
-						remove_culture_tradition = tradition_monogamous
+						remove_culture_tradition = tradition_polygamous
+					}
+					else_if = {
+						limit = {
+							has_cultural_tradition = tradition_concubines
+						}
+						remove_culture_tradition = tradition_concubines
 					}
 					else = {
-						remove_culture_tradition = tradition_concubines
+						remove_culture_tradition = tradition_harem
 					}
 				}
 			}
