@@ -1127,7 +1127,7 @@ marry_off_interaction = {
 			}
 
 		}
-		else_if = {
+		else = {
 			scope:recipient = {
 				save_scope_as = secondary_actor
 			}
@@ -1136,42 +1136,117 @@ marry_off_interaction = {
 	}
 
 	populate_recipient_list = {
-		scope:secondary_actor = {
-			if = {
-				limit = {
-					allowed_to_marry_same_sex_trigger = yes
-				}
-				every_opposite_sex_spouse_candidate = {
-					limit = {
-						NAND = {
-							is_landless_ruler = yes
-							faith.religious_head = this
-							NOT = { scope:secondary_actor.faith = faith }
-						}
-					}
-					add_to_list = characters
-				}
-				every_same_sex_spouse_candidate = {
-					limit = {
-						NAND = {
-							is_landless_ruler = yes
-							faith.religious_head = this
-							NOT = { scope:secondary_actor.faith = faith }
-						}
-					}
-					add_to_list = characters
+		#populate only with your courtiers or children/grandchildren if you are a landless adventurer
+		if = {
+			limit = {
+				scope:actor = {
+					is_landless_adventurer = yes
 				}
 			}
-			else = {
-				every_opposite_sex_spouse_candidate = {
+			scope:secondary_actor = {
+				if = {
 					limit = {
-						NAND = {
-							is_landless_ruler = yes
-							faith.religious_head = this
-							NOT = { scope:secondary_actor.faith = faith }
+						NOT = { scope:actor = this }
+					}
+					add_to_list = characters
+				}
+				every_courtier = {
+					limit = {
+						trigger_if = {
+							limit = {
+								is_concubine = yes
+							}
+							is_concubine_of = scope:actor
+							can_marry_character_trigger = { CHARACTER = scope:actor }
 						}
 					}
 					add_to_list = characters
+				}
+				every_courtier_away = {
+					limit = {
+						trigger_if = {
+							limit = {
+								is_concubine = yes
+							}
+							is_concubine_of = scope:actor
+							can_marry_character_trigger = { CHARACTER = scope:actor }
+						}
+					}
+					add_to_list = characters
+				}
+				every_child = {
+					even_if_dead = yes
+					if = {
+						limit = {
+							is_alive = yes
+							NOT = { is_in_list = characters }
+							trigger_if = {
+								limit = {
+									is_concubine = yes
+								}
+								is_concubine_of = scope:actor
+								can_marry_character_trigger = { CHARACTER = scope:actor }
+							}
+						}
+						add_to_list = characters
+					}
+					every_child = {
+						even_if_dead = yes
+						if = {
+							limit = {
+								is_alive = yes
+								NOT = { is_in_list = characters }
+								trigger_if = {
+									limit = {
+										is_concubine = yes
+									}
+									is_concubine_of = scope:actor
+									can_marry_character_trigger = { CHARACTER = scope:actor }
+								}
+							}
+							add_to_list = characters
+						}
+						every_child = {
+							if = {
+								limit = {
+									is_alive = yes
+									NOT = { is_in_list = characters }
+									trigger_if = {
+										limit = {
+											is_concubine = yes
+										}
+										is_concubine_of = scope:actor
+										can_marry_character_trigger = { CHARACTER = scope:actor }
+									}
+								}
+								add_to_list = characters
+							}
+						}
+					}
+				}
+			}
+		}
+		#otherwise, populate with anyone eligible
+		else = {
+			scope:secondary_actor = {
+				if = {
+					limit = {
+						allowed_to_marry_same_sex_trigger = yes
+					}
+					every_opposite_sex_spouse_candidate = {
+						add_to_list = characters
+					}
+					every_same_sex_spouse_candidate = {
+						limit = {
+							NOT = { scope:secondary_actor = this }
+						}
+						add_to_list = characters
+					}
+				}
+				else = {
+					every_opposite_sex_spouse_candidate = {
+						add_to_list = characters
+					}
 				}
 			}
 		}
@@ -1212,7 +1287,15 @@ marry_off_interaction = {
 					desc = VASSAL_WITH_MARRIAGE_FAVOR
 				}
 			}
+		}
 
+		influence = {
+			value = 0
+			if = {
+				limit = { scope:influence_send_option = yes }
+				add = scope:actor.medium_influence_value
+				desc = INFLUENCE_INTERACTION_ACCEPTANCE_SEND_OPTION
+			}
 		}
 	}
 
@@ -1222,6 +1305,17 @@ marry_off_interaction = {
 	# secondary_actor, secondary_recipient ... characters that should marry
 
 	is_shown = {
+		# Enable only for yourself if you're a landless adventurer
+		trigger_if = {
+			limit = {
+				scope:actor = {
+					is_landless_adventurer = yes
+				}
+			}
+			scope:secondary_actor = {
+				scope:actor = this
+			}
+		}
 		scope:secondary_actor = {
 			#Is this someone I can marry off?
 			OR = {
@@ -1344,7 +1438,16 @@ marry_off_interaction = {
 	}
 
 	on_accept = {
-		calyver_marriage_interaction_on_accept_effect = yes		
+		marriage_interaction_on_accept_effect = yes
+
+		# If we're a clan this interaction affects unity
+		add_clan_unity_interaction_effect = {
+			CHARACTER = scope:actor
+			TARGET = scope:recipient
+			VALUE = medium_unity_gain
+			DESC = clan_unity_marry_off.desc
+			REVERSE_NON_HOUSE_TARGET = no
+		}		
 
 		scope:actor = { 
 			if = {
@@ -1402,7 +1505,7 @@ marry_off_interaction = {
 		is_shown = {
 			scope:actor = { #Can organize a Grand Wedding
 				highest_held_title_tier > tier_barony
-				is_landed = yes
+				is_landed_or_landless_administrative = yes
 				trigger_if = {
 					limit = {
 						is_ai = yes
@@ -1497,6 +1600,25 @@ marry_off_interaction = {
 		localization = MARRIAGE_HOOK
 	}
 	#This option cannot be linked with the hook icon, because recipient isn't known in the right-click menu
+
+	send_option = { # EP3 Influence
+		is_shown = { # Actor must have a government that uses influence 
+			scope:actor = {
+				government_has_flag = government_has_influence
+			}
+		}
+		is_valid = {
+			# Actor has enough influence
+			scope:actor = { influence >= medium_influence_value }
+			# Both characters are within the same top realm
+			custom_tooltip = {
+				text = not_same_realm_tt
+				scope:recipient.top_liege = scope:actor.top_liege
+			}
+		}
+		flag = influence_send_option
+		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
+	}
 	
 	send_options_exclusive = no
 	
