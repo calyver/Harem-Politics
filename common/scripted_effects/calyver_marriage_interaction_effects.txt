@@ -436,87 +436,33 @@ calyver_marriage_harem_politics_effect = {
 	}
 	
 	#Promotions and demotions
-	if = { #Check and create the triggers
-		limit = {
-			scope:secondary_recipient = {
-				OR = {
-					has_character_modifier = demoted_primary_spouse_modifier
-					has_character_modifier = demoted_spouse_modifier
-					has_character_flag = flag_demoted_spouse
-					has_character_flag = flag_demoted_grand_consort
-					has_character_flag = flag_divorced_spouse
-					has_character_flag = flag_divorced_grand_consort
-					has_character_flag = flag_divorced_primary_spouse
-				}
-				OR = {
-					has_opinion_modifier = {
-						target = scope:secondary_actor
-						modifier = divorced_me_opinion
-					}
-					has_opinion_modifier = {
-						target = scope:secondary_actor
-						modifier = demoted_me_concubine_marriage_opinion
-					}
-				}
-			}
-		}
-		spouse_management_effect = yes
-	}
-	if = { #Check and create the triggers
+	if = {
 		limit = {
 			OR = {
 				scope:secondary_recipient = {
-					AND = {
-						OR = {
-							has_character_modifier = demoted_primary_spouse_modifier
-							has_character_modifier = demoted_spouse_modifier
-							has_character_flag = flag_demoted_spouse
-							has_character_flag = flag_demoted_grand_consort
-							has_character_flag = flag_divorced_spouse
-							has_character_flag = flag_divorced_grand_consort
-							has_character_flag = flag_divorced_primary_spouse
-						}
-						OR = {
-							has_opinion_modifier = {
-								target = scope:secondary_actor
-								modifier = divorced_me_opinion
-							}
-							has_opinion_modifier = {
-								target = scope:secondary_actor
-								modifier = demoted_me_concubine_marriage_opinion
-							}
-						}
+					has_demoted_or_divorced_opinion_trigger = {
+						TARGET = scope:secondary_actor
 					}
 				}
-				scope:secondary_actor = {
-					AND = {
-						OR = {
-							has_character_modifier = demoted_primary_spouse_modifier
-							has_character_modifier = demoted_spouse_modifier
-							has_character_flag = flag_demoted_spouse
-							has_character_flag = flag_demoted_grand_consort
-							has_character_flag = flag_divorced_spouse
-							has_character_flag = flag_divorced_grand_consort
-							has_character_flag = flag_divorced_primary_spouse
-						}
-						OR = {
-							has_opinion_modifier = {
-								target = scope:secondary_recipient
-								modifier = divorced_me_opinion
-							}
-							has_opinion_modifier = {
-								target = scope:secondary_recipient
-								modifier = demoted_me_concubine_marriage_opinion
-							}
-						}
+				scope:secondary_recipient = {
+					has_demoted_or_divorced_opinion_trigger = {
+						TARGET = scope:secondary_actor
 					}
 				}
 			}
 		}
-		spouse_management_effect = yes
+		spouse_management_effect = {
+			CONSORT = scope:secondary_recipient
+			PARTNER = scope:secondary_actor
+		}
+		spouse_management_effect = {
+			CONSORT = scope:secondary_actor
+			PARTNER = scope:secondary_recipient
+		}
 	}
-	else_if = { #Check. Don't add it to both cases above or it may trigger double effect
+	else_if = {
 		limit = {
+			exists = scope:recipient
 			NOT = {
 				scope:actor = scope:recipient
 			}
@@ -1979,34 +1925,50 @@ child_promotion_effect = {
 	scope:secondary_recipient = {
 		#Remove traits
 		hidden_effect = {
-			every_child = {
-				if = {
-					limit = {
+			if = {
+				limit = {
+					any_child = {
 						is_child_of = scope:secondary_actor
-					}
-					if = {
-						limit = {
+						is_alive = yes
+						OR = {
 							has_any_bastard_trait_trigger = yes
-						}
-						remove_all_bastard_traits = yes
-					}
-					if = {
-						limit = {
 							has_trait = bastard_founder
-						}
-						remove_trait = bastard_founder
-					}
-					if = { #child_of_concubine_female
-						limit = {
 							has_trait = child_of_concubine_female
-						}
-						remove_trait = child_of_concubine_female
-					}
-					if = { #child_of_concubine_male
-						limit = {
 							has_trait = child_of_concubine_male
 						}
-						remove_trait = child_of_concubine_male
+						count >= 1
+					}
+				}
+				every_child = {
+					if = {
+						limit = {
+							is_child_of = scope:secondary_actor
+							is_alive = yes
+						}
+						if = {
+							limit = {
+								has_any_bastard_trait_trigger = yes
+							}
+							remove_all_bastard_traits = yes
+						}
+						if = {
+							limit = {
+								has_trait = bastard_founder
+							}
+							remove_trait = bastard_founder
+						}
+						if = { #child_of_concubine_female
+							limit = {
+								has_trait = child_of_concubine_female
+							}
+							remove_trait = child_of_concubine_female
+						}
+						if = { #child_of_concubine_male
+							limit = {
+								has_trait = child_of_concubine_male
+							}
+							remove_trait = child_of_concubine_male
+						}
 					}
 				}
 			}
@@ -2016,34 +1978,50 @@ child_promotion_effect = {
 	scope:secondary_actor = {
 		#Remove traits
 		hidden_effect = {
-			every_child = {
-				if = {
-					limit = {
+			if = {
+				limit = {
+					any_child = {
 						is_child_of = scope:secondary_recipient
-					}
-					if = {
-						limit = {
+						is_alive = yes
+						OR = {
 							has_any_bastard_trait_trigger = yes
-						}
-						remove_all_bastard_traits = yes
-					}
-					if = {
-						limit = {
 							has_trait = bastard_founder
-						}
-						remove_trait = bastard_founder
-					}
-					if = { #child_of_concubine_female
-						limit = {
 							has_trait = child_of_concubine_female
-						}
-						remove_trait = child_of_concubine_female
-					}
-					if = { #child_of_concubine_male
-						limit = {
 							has_trait = child_of_concubine_male
 						}
-						remove_trait = child_of_concubine_male
+						count >= 1
+					}
+				}
+				every_child = {
+					if = {
+						limit = {
+							is_child_of = scope:secondary_recipient
+							is_alive = yes
+						}
+						if = {
+							limit = {
+								has_any_bastard_trait_trigger = yes
+							}
+							remove_all_bastard_traits = yes
+						}
+						if = {
+							limit = {
+								has_trait = bastard_founder
+							}
+							remove_trait = bastard_founder
+						}
+						if = { #child_of_concubine_female
+							limit = {
+								has_trait = child_of_concubine_female
+							}
+							remove_trait = child_of_concubine_female
+						}
+						if = { #child_of_concubine_male
+							limit = {
+								has_trait = child_of_concubine_male
+							}
+							remove_trait = child_of_concubine_male
+						}
 					}
 				}
 			}
