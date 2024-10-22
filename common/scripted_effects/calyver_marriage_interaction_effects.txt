@@ -972,482 +972,6 @@ former_consort_forced_concubine_effect = {
 }
 
 spouse_management_effect = {
-	scope:secondary_recipient = {
-		#Remarrying your divorced primary spouse
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_primary_spouse
-			}
-			remove_character_flag = flag_divorced_primary_spouse
-			
-			#The secondary_actor has another primary spouse
-			if = {
-				limit = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						NOT = {
-							this = scope:secondary_recipient
-						}
-					}
-				}
-				if = { #Legitimacy loss#
-					limit = {
-						scope:secondary_actor = {
-							NOT = {
-								has_imprisonment_reason = scope:secondary_recipient
-							}
-							this = scope:actor
-						}
-						num_sinful_traits = 0
-						is_lowborn = no
-						scope:actor = {
-							highest_held_title_tier >= tier_county
-						}
-					}
-					scope:actor = {
-						add_legitimacy = minor_legitimacy_loss
-					}
-				}
-				# If we're a clan this interaction affects unity
-				add_clan_unity_interaction_effect = {
-					CHARACTER = scope:actor
-					TARGET = scope:recipient
-					VALUE = minor_unity_loss
-					DESC = clan_unity_demotion.desc
-					REVERSE_NON_HOUSE_TARGET = no
-				}
-				add_character_modifier = {
-					modifier = demoted_primary_spouse_modifier
-				}
-				calyver_favor_big_loss_effect = yes
-				# Victim is naturally angry for being demoted.
-				add_opinion = {
-					target = scope:secondary_actor
-					modifier = demoted_me_concubine_marriage_opinion
-				}
-				#Relatives too
-				save_scope_as = demoted_consort_scope
-				scope:secondary_actor = {
-					save_scope_as = demoter
-				}
-				every_close_or_extended_family_member = {
-					limit = { NOT = { this = scope:secondary_actor } } # don't hate yourself just because of demotion
-					custom = all_family_members
-					add_opinion = {
-						modifier = demoted_concubine_marriage_opinion
-						target = scope:secondary_actor
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = event_generic_bad
-							title = demoted_grand_consort_t
-							right_icon = scope:secondary_recipient
-							left_icon = scope:secondary_actor
-							desc = demoted_relative_interface_message
-						}
-					}
-				}
-				if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_county }
-					add_prestige = { value = miniscule_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_duchy }
-					add_prestige = { value = minor_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_kingdom }
-					add_prestige = { value = medium_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_empire }
-					add_prestige = { value = major_prestige_loss }
-				}
-			}
-			else_if = { #The secondary_actor has no primary spouse
-				limit = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						this = scope:secondary_recipient
-					}
-				}
-			}
-		}
-		
-		#Remarrying a divorced Grand Consort
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_grand_consort
-			}
-			remove_character_flag = flag_divorced_grand_consort
-			#The secondary_actor has another primary spouse
-			if = {
-				limit = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						NOT = {
-							this = scope:secondary_recipient
-						}
-					}
-				}
-				# If we're a clan this interaction affects unity
-				add_clan_unity_interaction_effect = {
-					CHARACTER = scope:actor
-					TARGET = scope:recipient
-					VALUE = minor_unity_loss
-					DESC = clan_unity_demotion.desc
-					REVERSE_NON_HOUSE_TARGET = no
-				}
-				add_character_flag = {
-					flag = flag_demoted_grand_consort
-				}
-				add_character_modifier = {
-					modifier = demoted_spouse_modifier
-				}
-				calyver_favor_big_loss_effect = yes
-				# Victim is naturally angry for being demoted.
-				add_opinion = {
-					target = scope:secondary_actor
-					modifier = demoted_me_concubine_marriage_opinion
-				}
-				#Relatives too
-				save_scope_as = demoted_consort_scope
-				scope:secondary_actor = {
-					save_scope_as = demoter
-				}
-				every_close_or_extended_family_member = {
-					limit = { NOT = { this = scope:secondary_actor } } # don't hate yourself just because of demotion
-					custom = all_family_members
-					add_opinion = {
-						modifier = demoted_concubine_marriage_opinion
-						target = scope:secondary_actor
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = event_generic_bad
-							title = demoted_grand_consort_t
-							right_icon = scope:secondary_recipient
-							left_icon = scope:secondary_actor
-							desc = demoted_relative_interface_message
-						}
-					}
-				}
-				if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_kingdom }
-					add_prestige = { value = minor_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_actor.primary_title.tier = tier_empire }
-					add_prestige = { value = medium_prestige_loss }
-				}
-			}
-			else_if = { #The secondary_actor has no primary spouse
-				limit = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						this = scope:secondary_recipient
-					}
-				}
-			}
-		}
-		
-		#Remarrying a divorced secondary spouse
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_spouse
-			}
-			remove_character_flag = flag_divorced_spouse
-		}
-		
-		#Remarrying a demoted primary spouse
-		if = {
-			limit = {
-				AND = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						this = scope:secondary_recipient
-					}
-					has_character_modifier = demoted_primary_spouse_modifier
-				}
-			}
-			remove_character_modifier = demoted_primary_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_actor
-				REINSTATED = scope:secondary_recipient
-			}
-		}
-		
-		#Remarrying a demoted Grand Consort
-		if = {
-			limit = {
-				AND = {
-					exists = scope:secondary_actor.primary_spouse 
-					scope:secondary_actor.primary_spouse = {
-						this = scope:secondary_recipient
-					}
-					has_character_flag = flag_demoted_grand_consort
-				}
-			}
-			remove_character_flag = flag_demoted_grand_consort
-			remove_character_modifier = demoted_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_actor
-				REINSTATED = scope:secondary_recipient
-			}
-		}
-		
-		#Remarrying a demoted spouse
-		if = {
-			limit = {
-				has_character_flag = flag_demoted_spouse
-			}
-			remove_character_flag = flag_demoted_spouse
-			remove_character_modifier = demoted_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_actor
-				REINSTATED = scope:secondary_recipient
-			}
-		}
-	}
-	
-	scope:secondary_actor = {
-		#Remarrying your divorced primary spouse
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_primary_spouse
-			}
-			remove_character_flag = flag_divorced_primary_spouse
-			
-			#The secondary_recipient has a new primary spouse
-			if = {
-				limit = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						NOT = {
-							this = scope:secondary_actor
-						}
-					}
-				}
-				if = { #Legitimacy loss#
-					limit = {
-						scope:secondary_recipient = {
-							NOT = {
-								has_imprisonment_reason = scope:secondary_actor
-							}
-							this = scope:actor
-						}
-						num_sinful_traits = 0
-						is_lowborn = no
-						scope:actor = {
-							highest_held_title_tier >= tier_county
-						}
-					}
-					scope:actor = {
-						add_legitimacy = minor_legitimacy_loss
-					}
-				}
-				# If we're a clan this interaction affects unity
-				add_clan_unity_interaction_effect = {
-					CHARACTER = scope:actor
-					TARGET = scope:recipient
-					VALUE = minor_unity_loss
-					DESC = clan_unity_demotion.desc
-					REVERSE_NON_HOUSE_TARGET = no
-				}
-				add_character_modifier = {
-					modifier = demoted_primary_spouse_modifier
-				}
-				calyver_favor_big_loss_effect = yes
-				# Victim is naturally angry for being demoted.
-				add_opinion = {
-					target = scope:secondary_recipient
-					modifier = demoted_me_concubine_marriage_opinion
-				}
-				#Relatives too
-				save_scope_as = demoted_consort_scope
-				scope:secondary_recipient = {
-					save_scope_as = demoter
-				}
-				every_close_or_extended_family_member = {
-					limit = { NOT = { this = scope:secondary_recipient } } # don't hate yourself just because of demotion
-					custom = all_family_members
-					add_opinion = {
-						modifier = demoted_concubine_marriage_opinion
-						target = scope:secondary_recipient
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = event_generic_bad
-							title = demoted_grand_consort_t
-							right_icon = scope:secondary_actor
-							left_icon = scope:secondary_recipient
-							desc = demoted_relative_interface_message
-						}
-					}
-				}
-				if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_county }
-					add_prestige = { value = miniscule_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_duchy }
-					add_prestige = { value = minor_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_kingdom }
-					add_prestige = { value = medium_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_empire }
-					add_prestige = { value = major_prestige_loss }
-				}
-			}
-			else_if = { #The secondary_recipient has a no spouse
-				limit = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						this = scope:secondary_actor
-					}
-				}
-			}
-		}
-		
-		#Remarrying a divorced Grand Consort
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_grand_consort
-			}
-			remove_character_flag = flag_divorced_grand_consort
-			#The secondary_recipient has a primary spouse
-			if = {
-				limit = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						NOT = {
-							this = scope:secondary_actor
-						}
-					}
-				}
-				# If we're a clan this interaction affects unity
-				add_clan_unity_interaction_effect = {
-					CHARACTER = scope:actor
-					TARGET = scope:recipient
-					VALUE = minor_unity_loss
-					DESC = clan_unity_demotion.desc
-					REVERSE_NON_HOUSE_TARGET = no
-				}
-				add_character_flag = {
-					flag = flag_demoted_grand_consort
-				}
-				add_character_modifier = {
-					modifier = demoted_spouse_modifier
-				}
-				calyver_favor_big_loss_effect = yes
-				# Victim is naturally angry for being demoted.
-				add_opinion = {
-					target = scope:secondary_recipient
-					modifier = demoted_me_concubine_marriage_opinion
-				}
-				#Relatives too
-				save_scope_as = demoted_consort_scope
-				scope:secondary_recipient = {
-					save_scope_as = demoter
-				}
-				every_close_or_extended_family_member = {
-					limit = { NOT = { this = scope:secondary_recipient } } # don't hate yourself just because of demotion
-					custom = all_family_members
-					add_opinion = {
-						modifier = demoted_concubine_marriage_opinion
-						target = scope:secondary_recipient
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = event_generic_bad
-							title = demoted_grand_consort_t
-							right_icon = scope:secondary_actor
-							left_icon = scope:secondary_recipient
-							desc = demoted_relative_interface_message
-						}
-					}
-				}
-				if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_kingdom }
-					add_prestige = { value = minor_prestige_loss }
-				}
-				else_if = {
-					limit = { scope:secondary_recipient.primary_title.tier = tier_empire }
-					add_prestige = { value = medium_prestige_loss }
-				}
-			}
-			else_if = { #The secondary_recipient has a no spouse
-				limit = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						this = scope:secondary_actor
-					}	
-				}
-			}
-		}
-		
-		#Remarrying a divorced secondary spouse
-		if = {
-			limit = {
-				has_character_flag = flag_divorced_spouse
-			}
-			remove_character_flag = flag_divorced_spouse
-		}
-		
-		#Remarrying a demoted primary spouse
-		if = {
-			limit = {
-				AND = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						this = scope:secondary_actor
-					}
-					has_character_modifier = demoted_primary_spouse_modifier
-				}
-			}
-			remove_character_modifier = demoted_primary_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_recipient
-				REINSTATED = scope:secondary_actor
-			}
-		}
-		
-		#Remarrying a demoted Grand Consort
-		if = {
-			limit = {
-				AND = {
-					exists = scope:secondary_recipient.primary_spouse
-					scope:secondary_recipient.primary_spouse = {
-						this = scope:secondary_actor
-					}
-					has_character_flag = flag_demoted_grand_consort
-				}
-			}
-			remove_character_flag = flag_demoted_grand_consort
-			remove_character_modifier = demoted_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_recipient
-				REINSTATED = scope:secondary_actor
-			}
-		}
-		
-		#Remarrying a demoted spouse
-		if = {
-			limit = {
-				has_character_flag = flag_demoted_spouse
-			}
-			remove_character_flag = flag_demoted_spouse
-			remove_character_modifier = demoted_spouse_modifier
-			consort_reinstatement_effect = {
-				REINSTATOR = scope:secondary_recipient
-				REINSTATED = scope:secondary_actor
-			}
-		}
-	}
-
 	$CONSORT$ = {
 		#Divorced
 		if = {#As PS
@@ -1457,8 +981,245 @@ spouse_management_effect = {
 					target = $PARTNER$
 				}
 			}
-
-			#They were the PS
+			remove_opinion = {
+				modifier = divorced_me_as_ps
+				target = $PARTNER$
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				#Trigger event and something related to reinstatement
+			}
+			else = {
+				add_character_modifier = {
+					modifier = demoted_primary_spouse_modifier
+				}
+				calyver_favor_big_loss_effect = yes
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = $PARTNER$
+					modifier = demoted_me_ps_opinion
+				}
+				#Relatives too
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = $PARTNER$ } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = $PARTNER$
+					}
+					hidden_effect = {
+						send_interface_message = { #Change the message
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = $CONSORT$
+							left_icon = $PARTNER$
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { $PARTNER$.primary_title.tier = tier_county }
+					add_prestige = { value = miniscule_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_duchy }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_kingdom }
+					add_prestige = { value = medium_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_empire }
+					add_prestige = { value = major_prestige_loss }
+				}
+				#Trigger event
+				$PARTNER$ = {
+					if = { #Legitimacy loss#
+						limit = {
+							NOT = {
+								has_imprisonment_reason = $CONSORT$
+							}
+							$CONSORT$ = {
+								num_sinful_traits = 0
+								is_lowborn = no
+							}
+							is_valid_for_legitimacy_change = yes
+						}
+						add_legitimacy = minor_legitimacy_loss #Check. I guess there's further loss on divorce?
+					}
+					# If we're a clan this interaction affects unity
+					add_clan_unity_interaction_effect = {
+						CHARACTER = $PARTNER$
+						TARGET = $CONSORT$
+						VALUE = minor_unity_loss #Check. I guess there's further loss on divorce?
+						DESC = clan_unity_demotion.desc
+						REVERSE_NON_HOUSE_TARGET = no
+					}
+				}
+			}
+		}
+		else_if = {#As GC
+			limit = {
+				has_opinion_modifier = {
+					modifier = divorced_me_as_gc
+					target = $PARTNER$
+				}
+			}
+			remove_opinion = {
+				modifier = divorced_me_as_gc
+				target = $PARTNER$
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				#Trigger event and something related to promotion
+			}
+			else = {
+				add_character_modifier = {
+					modifier = demoted_spouse_modifier
+				}
+				calyver_favor_big_loss_effect = yes
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = scope:secondary_recipient
+					modifier = demoted_me_gc_opinion
+				}
+				#Relatives too
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = $PARTNER$ } } # don't hate yourself just because of demotion
+					custom = all_family_members
+					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
+						target = $PARTNER$
+					}
+					hidden_effect = {
+						send_interface_message = { #Change the message
+							type = event_generic_bad
+							title = demoted_grand_consort_t
+							right_icon = $CONSORT$
+							left_icon = $PARTNER$
+							desc = demoted_relative_interface_message
+						}
+					}
+				}
+				if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_kingdom }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { scope:secondary_recipient.primary_title.tier = tier_empire }
+					add_prestige = { value = medium_prestige_loss }
+				}
+				#Trigger event
+				$PARTNER$ = {
+					# If we're a clan this interaction affects unity
+					add_clan_unity_interaction_effect = {
+						CHARACTER = $PARTNER$
+						TARGET = $CONSORT$
+						VALUE = minor_unity_loss #Check. I guess there's further loss on divorce?
+						DESC = clan_unity_demotion.desc
+						REVERSE_NON_HOUSE_TARGET = no
+					}
+				}
+			}
+		}
+		else_if = {#As SS
+			limit = {
+				has_opinion_modifier = {
+					modifier = divorced_me_as_ss
+					target = $PARTNER$
+				}
+			}
+			remove_opinion = {
+				modifier = divorced_me_as_ss
+				target = $PARTNER$
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				#Trigger event and something related to promotion
+			}
+			else = {
+				#Trigger event and something related to reinstatement
+			}
+		}
+		#Demoted
+		if = { #As PS
+			limit = {
+				has_character_modifier = demoted_primary_spouse_modifier
+				has_opinion_modifier = {
+					modifier = demoted_me_as_ps
+					target = $PARTNER$
+				}
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				remove_character_modifier = demoted_primary_spouse_modifier
+				remove_opinion = {
+					modifier = demoted_me_as_ps
+					target = $PARTNER$
+				}
+				consort_reinstatement_effect = {
+					REINSTATOR = $PARTNER$
+					REINSTATED = $CONSORT$
+				}
+				#Trigger reinstatement event
+			}
+			else = {
+				#Trigger event
+			}
+		}
+		else_if = { #As GC
+			limit = {
+				has_character_flag = flag_demoted_grand_consort
+				has_opinion_modifier = {
+					modifier = demoted_me_as_gc
+					target = $PARTNER$
+				}
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				#Trigger promotion event
+			}
+		}
+		else_if = { #As SS
+			limit = {
+				has_character_flag = flag_demoted_spouse
+				has_opinion_modifier = {
+					modifier = demoted_me_as_ss
+					target = $PARTNER$
+				}
+			}
+			remove_character_flag = flag_demoted_spouse
+			remove_opinion = {
+				modifier = demoted_me_as_ss
+				target = $PARTNER$
+			}
+			if = {
+				limit = {
+					has_character_modifier = demoted_spouse_modifier
+				}
+				remove_character_modifier = demoted_spouse_modifier
+			}
+			consort_reinstatement_effect = {
+				REINSTATOR = $PARTNER$
+				REINSTATED = $CONSORT$
+			}
+			if = {
+				limit = {
+					this = $PARTNER$.primary_spouse
+				}
+				#Trigger promotion event
+			}
 		}
 	}
 }
