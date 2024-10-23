@@ -2372,18 +2372,7 @@ divorcee_effect = {
 	
 	#Removing demoted modifiers and flags
 	clear_demoted_consort_modifiers_effect = yes
-	
-	#Progress towards rivals
-	if = {
-		limit = {
-			can_set_relation_rival_trigger = { CHARACTER = $DIVORCER$ }
-		}
-		progress_towards_rival_effect = {
-			REASON = rival_at_university #Check
-			CHARACTER = $DIVORCER$
-			OPINION = default_rival_opinion #Check
-		}
-	}
+
 	if = { #No longer thankful
 		limit = {
 			has_opinion_modifier = {
@@ -2396,10 +2385,6 @@ divorcee_effect = {
 			modifier = thankful_consort_opinion
 		}
 	}
-	
-	clear_negative_consort_modifiers_effect = yes
-	clear_positive_consort_modifiers_effect = yes
-	
 	if = { #No longer primary opinion
 		limit = {
 			has_opinion_modifier = {
@@ -2436,6 +2421,7 @@ divorcee_effect = {
 			target = $DIVORCER$
 		}
 	}
+
 	if = {
 		limit = {
 			any_close_or_extended_family_member = {
@@ -2454,6 +2440,22 @@ divorcee_effect = {
 			}
 		}
 	}
+	
+	#Progress towards rivals
+	if = {
+		limit = {
+			can_set_relation_rival_trigger = { CHARACTER = $DIVORCER$ }
+		}
+		progress_towards_rival_effect = {
+			REASON = rival_at_university #Check
+			CHARACTER = $DIVORCER$
+			OPINION = default_rival_opinion #Check
+		}
+	}
+	
+	clear_negative_consort_modifiers_effect = yes
+	clear_positive_consort_modifiers_effect = yes
+	
 	hidden_effect = {
 		#Update consort opinion
 		every_consort = {
@@ -2483,36 +2485,25 @@ divorcee_effect = {
 			}
 			if = { #Craven consorts don't feel threatened by a despot
 				limit = {
-					AND = {
-						OR = {
-							is_concubine = yes
-							AND = {
-								is_married = yes
-								$DIVORCER$ = {
-									AND = {
-										OR = {
-											is_grand_consort_trigger = yes
-											this = $DIVORCEE$.primary_spouse
-										}
-										NOR = {
-											has_character_modifier = demoted_primary_spouse_modifier
-											has_character_modifier = demoted_spouse_modifier
-										}
-									}
+					OR = {
+						is_concubine = yes
+						AND = {
+							is_married = yes
+							$DIVORCER$ = {
+								OR = {
+									this = $DIVORCEE$.primary_spouse
+									is_grand_consort_trigger = yes
 								}
 							}
 						}
-						NOR = {
-							has_relation_best_friend = $DIVORCER$
-							has_relation_friend = $DIVORCER$
-							has_relation_soulmate = $DIVORCER$
-							has_relation_lover = $DIVORCER$
-							has_relation_soulmate = $DIVORCEE$
-							this = $DIVORCER$
-						}
-						$DIVORCER$ = {
-							harem_politics_evil_consort_trigger = yes
-						}
+					}
+					NOR = {
+						has_relation_best_friend = $DIVORCEE$
+						has_relation_soulmate = $DIVORCEE$
+						this = $DIVORCEE$
+					}
+					$DIVORCEE$ = {
+						harem_politics_evil_consort_trigger = yes
 					}
 				}
 				stress_impact = {
@@ -2521,6 +2512,7 @@ divorcee_effect = {
 					paranoid = minor_stress_impact_loss
 				}
 			}
+			#Trigger event
 		}
 		every_close_or_extended_family_member = {
 			limit = {
