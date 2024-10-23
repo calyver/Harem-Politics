@@ -2270,10 +2270,8 @@ divorcee_effect = {
 		}
 		if = {
 			limit = {
-				AND = {	
-					exists = $DIVORCER$.primary_spouse
-					this = $DIVORCER$.primary_spouse
-				}
+				exists = $DIVORCER$.primary_spouse
+				this = $DIVORCER$.primary_spouse
 				$DIVORCER$ = {
 					any_spouse = {
 						count >= 2
@@ -2292,7 +2290,10 @@ divorcee_effect = {
 		limit = {
 			OR = {
 				is_grand_consort_trigger = yes
-				has_character_flag = flag_demoted_grand_consort
+				has_opinion_modifier = {
+					modifier = demoted_me_as_gc
+					target = $DIVORCER$
+				}
 			}
 		}
 		# If we're a clan this interaction affects unity
@@ -2309,7 +2310,7 @@ divorcee_effect = {
 					NOT = {
 						has_imprisonment_reason = $DIVORCEE$
 					}
-					highest_held_title_tier >= tier_county
+					is_valid_for_legitimacy_change = yes
 				}
 				num_sinful_traits = 0
 				is_lowborn = no
@@ -2318,8 +2319,9 @@ divorcee_effect = {
 				add_legitimacy = minor_legitimacy_loss
 			}
 		}
-		add_character_flag = {
-			flag = flag_divorced_grand_consort
+		add_opinion = {
+			target = $DIVORCER$
+			modifier = divorced_me_as_gc
 		}
 	}
 	else = { #Regular secondary spouse
@@ -2337,7 +2339,7 @@ divorcee_effect = {
 					NOT = {
 						has_imprisonment_reason = $DIVORCEE$
 					}
-					highest_held_title_tier >= tier_county
+					is_valid_for_legitimacy_change = yes
 				}
 				num_sinful_traits = 0
 				is_lowborn = no
@@ -2346,8 +2348,9 @@ divorcee_effect = {
 				add_legitimacy = minor_legitimacy_loss
 			}
 		}
-		add_character_flag = {
-			flag = flag_divorced_spouse
+		add_opinion = {
+			target = $DIVORCER$
+			modifier = divorced_me_as_ss
 		}
 	}
 	if = {
@@ -2368,13 +2371,13 @@ divorcee_effect = {
 	}
 	
 	#Removing demoted modifiers and flags
-	if = { #If for whatever reason, they have another modifier
+	if = {
 		limit = {
 			has_character_modifier = demoted_spouse_modifier
 		}
 		remove_character_modifier = demoted_spouse_modifier
 	}
-	if = { #If for whatever reason, they have another modifier
+	if = {
 		limit = {
 			has_character_modifier = demoted_primary_spouse_modifier
 		}
@@ -4213,5 +4216,37 @@ calyver_dismiss_concubine_effect = {
 		VALUE = medium_unity_loss
 		DESC = clan_unity_concubinage_dismissal.desc
 		REVERSE_NON_HOUSE_TARGET = no
+	}
+}
+
+clear_demoted_consort_modifiers_effect = {
+	if = { #Demoted primary spouses
+		limit = { 
+			has_character_modifier = demoted_primary_spouse_modifier 
+		}
+		remove_character_modifier = demoted_primary_spouse_modifier
+	}
+	if = { #Demoted spouses
+		limit = { 
+			has_character_modifier = demoted_spouse_modifier 
+		}
+		remove_character_modifier = demoted_spouse_modifier
+	}
+	
+	if = {
+		limit = { 
+			has_character_flag = flag_new_consort 
+		}
+		remove_character_flag = flag_new_consort
+	}
+	if = {
+		limit = { has_character_flag = flag_scolded_consort }
+		remove_character_flag = flag_scolded_consort
+	}
+	if = {
+		limit = {
+			has_variable = favor
+		}
+		remove_variable = favor	
 	}
 }
