@@ -1779,39 +1779,57 @@ spouse_demotion_effect = {
 		}
 		else_if = { #Taking a secondary spouse as a concubine
 			limit = {
-				AND = {
-					OR = {
-						has_character_flag = flag_divorced_spouse
-						is_married = yes
+				OR = {
+					has_opinion_modifier = {
+						modifier = demoted_me_as_ss
+						target = scope:actor
 					}
-					NOR = { 
-						has_character_modifier = demoted_primary_spouse_modifier
-						has_character_flag = flag_demoted_grand_consort
-						this = scope:actor.primary_spouse
+					has_opinion_modifier = {
+						modifier = divorced_me_as_ss
+						target = scope:actor
+					}
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_ss
+						target = scope:actor
 					}
 				}
 			}
 			if = {
 				limit = {
-					has_character_flag = flag_divorced_spouse
+					has_opinion_modifier = {
+						modifier = divorced_me_as_ss
+						target = scope:actor
+					}
 				}
-				remove_character_flag = flag_divorced_spouse
+				remove_opinion = {
+					modifier = divorced_me_as_ss
+					target = scope:actor
+				}
 			}
-			add_character_flag = {
-				flag = flag_demoted_spouse
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_ss
+						target = scope:actor
+					}
+				}
+				remove_opinion = {
+					modifier = dismissed_me_as_ss
+					target = scope:actor
+				}
 			}
 			add_character_modifier = {
 				modifier = demoted_spouse_modifier
 			}
 			if = {
-				limit = { 
-					NOR = { 
-						has_relation_potential_rival = scope:actor
-						has_relation_rival = scope:actor
-						has_relation_nemesis = scope:actor
-					} 
+				limit = {
+					can_set_relation_rival_trigger = { CHARACTER = scope:actor }
 				}
-				set_relation_potential_rival = scope:actor
+				progress_towards_rival_effect = {
+					REASON = rival_at_university #Check
+					CHARACTER = scope:actor
+					OPINION = default_rival_opinion #Check
+				}
 			}
 			if = {
 				limit = { scope:actor.primary_title.tier = tier_county }
@@ -1833,21 +1851,16 @@ spouse_demotion_effect = {
 				if = {
 					limit = {
 						any_vassal = { 
-							OR = { 
-								accepts_concubinage = yes
-								accepts_polygamy = yes
-							}
+							accepts_harems = yes
 							has_vassal_stance = courtly
+							count >= 1
 						}
 					}
 					custom_tooltip = demote_consort_courtly_vassal_penalty
 					hidden_effect = {
 						every_vassal = {
 							limit = { 
-								OR = { 
-									accepts_concubinage = yes
-									accepts_polygamy = yes
-								}
+								accepts_harems = yes
 								has_vassal_stance = courtly
 							}
 							add_opinion = {
