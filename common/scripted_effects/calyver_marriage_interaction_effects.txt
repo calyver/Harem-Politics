@@ -577,40 +577,39 @@ calyver_concubine_on_accept_effect = {
 
 			# Family members of victim are also angry that you've forced them into concubinage.
 			every_close_family_member = {
+				limit = { 
+					NOT = { this = scope:actor } # Don't hate yourself.
+				}
+				custom = all_family_members
+				add_opinion = {
+					target = scope:actor
+					modifier = forced_family_concubine_marriage_opinion
+				}
+				hidden_effect = {
+					send_interface_message = {
+						type = msg_family_became_concubine
+						title = msg_close_family_member_taken_as_concubine_title
+						right_icon = scope:recipient
+						left_icon = scope:secondary_actor
+						show_as_tooltip = { scope:secondary_actor = { make_concubine = scope:recipient } }
+					}
+				}
+
+				# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
 				if = {
 					limit = { 
-						NOT = { this = scope:actor } # Don't hate yourself.
+						OR = {
+							NOT = { accepts_concubinage = yes }
+							NOT = { faith = { has_doctrine = tenet_polyamory } }
+							AND = {
+								allowed_to_marry_same_sex_trigger = no
+								scope:recipient = { sex_same_as = scope:secondary_actor }
+							}
+						}
 					}
 					add_opinion = {
 						target = scope:actor
-						modifier = forced_family_concubine_marriage_opinion
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = msg_family_became_concubine
-							title = msg_close_family_member_taken_as_concubine_title
-							right_icon = scope:recipient
-							left_icon = scope:secondary_actor
-							show_as_tooltip = { scope:secondary_actor = { make_concubine = scope:recipient } }
-						}
-					}
-
-					# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
-					if = {
-						limit = { 
-							OR = {
-								NOT = { faith = { has_doctrine = doctrine_concubines } }
-								NOT = { faith = { has_doctrine = tenet_polyamory } }
-								AND = {
-									allowed_to_marry_same_sex_trigger = no
-									scope:recipient = { sex_same_as = scope:secondary_actor }
-								}
-							}
-						}
-						add_opinion = {
-							target = scope:actor
-							modifier = relative_in_blasphemous_union_opinion
-						}
+						modifier = relative_in_blasphemous_union_opinion
 					}
 				}
 			}	
@@ -627,6 +626,28 @@ calyver_concubine_on_accept_effect = {
 					is_married = yes
 				}
 				every_spouse = {
+					hidden_effect = {
+						if = {
+							limit = {
+								exists = primary_spouse
+								primary_spouse = {
+									this = scope:recipient
+								}
+								any_spouse = {
+									count >= 2
+								}
+							}
+							add_character_flag = {
+								flag = flag_lowborn_exception
+								days = 2
+							}
+							new_primary_spouse_divorce_effect = {
+								PREVIOUS_PS = scope:recipient
+								PARTNER = prev
+							}
+							remove_character_flag = flag_lowborn_exception
+						}
+					}
 					show_as_tooltip = {
 						add_opinion = {
 							target = scope:actor
@@ -671,7 +692,9 @@ calyver_concubine_on_accept_effect = {
 					}
 				}
 			}
+			forced_concubine_harem_politics_effect = yes
 		}
+		make_concubine_harem_politics_effect = yes
 	}
 
 	# Send us a notification about what we just did.
@@ -681,7 +704,16 @@ calyver_concubine_on_accept_effect = {
 				type = event_toast_effect_neutral
 				title = msg_concubine_taken_title
 				right_icon = scope:recipient
-				make_concubine = scope:recipient
+				if = {
+					limit = {
+						scope:recipient = {
+							NOT = {
+								is_concubine_of = scope:secondary_actor
+							}
+						}
+					}
+					make_concubine = scope:recipient
+				}
 			}
 		}
 	}
