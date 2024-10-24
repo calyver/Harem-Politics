@@ -3083,21 +3083,21 @@ set_primary_spouse_effect = {
 			# If we're a clan this interaction affects unity
 			add_clan_unity_interaction_effect = {
 				CHARACTER = scope:actor
-				TARGET = scope:previous_primary_spouse
+				TARGET = scope:previous_primary_spouse #Check
 				VALUE = medium_unity_loss
-				DESC = clan_unity_demotion.desc
+				DESC = clan_unity_demotion.desc #Check
 				REVERSE_NON_HOUSE_TARGET = no
 			}
 			if = { #Legitimacy loss#
 				limit = {
-					is_lowborn = no
-					num_sinful_traits = 0
 					scope:actor = {
 						NOT = {
 							has_imprisonment_reason = scope:previous_primary_spouse
 						}
-						highest_held_title_tier >= tier_county
+						is_valid_for_legitimacy_change = yes
 					}
+					num_sinful_traits = 0
+					is_lowborn = no
 				}
 				scope:actor = {
 					add_legitimacy = medium_legitimacy_loss
@@ -3138,38 +3138,37 @@ set_primary_spouse_effect = {
 			DESC = clan_unity_promotion.desc
 			REVERSE_NON_HOUSE_TARGET = no
 		}
-		save_scope_as = secondary_actor
-		save_scope_as = current_partner
+		save_scope_as = secondary_actor #Check
+		save_scope_as = current_partner #Check
 		hidden_effect = {	
+			scope:recipient = {
+				save_scope_as = new_primary_spouse
+			}
 			every_consort = {
-				scope:recipient = {
-					save_scope_as = new_primary_spouse
-				}
 				calyver_downgrade_active_consort_opinion_effect = yes
 				#Consorts will update their opinions on new primary_spouse
 				if = {
 					limit = {
-						AND = {
-							scope:recipient = {
-								NOT = { has_character_modifier = demoted_primary_spouse_modifier }
+						scope:recipient = {
+							NOT = { has_character_modifier = demoted_primary_spouse_modifier }
+						}
+						harem_politics_evil_consort_trigger = yes
+						NOR = {
+							has_relation_best_friend = scope:recipient
+							has_relation_friend = scope:recipient
+							has_relation_soulmate = scope:recipient
+							has_relation_lover = scope:recipient
+							has_relation_soulmate = scope:actor
+							this = scope:recipient
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = scope:actor
 							}
-							harem_politics_evil_consort_trigger = yes
-							NOR = {
-								has_relation_best_friend = scope:recipient
-								has_relation_friend = scope:recipient
-								has_relation_soulmate = scope:recipient
-								has_relation_lover = scope:recipient
-								has_relation_soulmate = scope:actor
-								this = scope:recipient
-							}
-							OR = { #Only harem consorts would care
-								accepts_concubinage = yes
-								accepts_polygamy = yes
-							}
-							opinion = {
-								target = scope:recipient
-								value <= low_positive_opinion
-							}
+						}
+						accepts_harems = yes
+						opinion = {
+							target = scope:recipient
+							value <= low_positive_opinion
 						}
 					}
 					add_opinion = {
@@ -3179,17 +3178,11 @@ set_primary_spouse_effect = {
 				}
 				if = {
 					limit = {
-						AND = {
-							NOR = {
-								has_relation_best_friend = scope:recipient
-								has_relation_friend = scope:recipient
-								has_relation_soulmate = scope:recipient
-								has_relation_lover = scope:recipient
-								this = scope:recipient
-							}
-							scope:recipient = {
-								harem_politics_evil_consort_trigger = yes
-							}
+						NOT = {
+							this = scope:recipient
+						}
+						scope:recipient = {
+							harem_politics_evil_consort_trigger = yes
 						}
 					}
 					stress_impact = {
@@ -3197,6 +3190,14 @@ set_primary_spouse_effect = {
 						shy = minor_stress_impact_gain
 						paranoid = minor_stress_impact_gain
 					}
+				}
+				if = {
+					limit = {
+						NOT = {
+							this = scope:recipient
+						}
+					}
+					#Trigger event
 				}
 			}
 			if = {
@@ -3238,28 +3239,23 @@ set_primary_spouse_effect = {
 				if = {
 					limit = {
 						scope:recipient = {
-							AND = {
-								OR = {
-									has_trait = craven
-									has_trait = paranoid
-									has_trait = shy
-									harem_politics_evil_consort_trigger = yes
-								}
-								NOR = {
-									has_relation_best_friend = scope:grand_consort_scope
-									has_relation_friend = scope:grand_consort_scope
-									has_relation_soulmate = scope:grand_consort_scope
-									has_relation_lover = scope:grand_consort_scope
-								}
-								opinion = {
-									target = scope:grand_consort_scope
-									value <= low_positive_opinion
-								}
-								OR = { #Only harem consorts would care
-									accepts_concubinage = yes
-									accepts_polygamy = yes
-								}
+							OR = {
+								has_trait = craven
+								has_trait = paranoid
+								has_trait = shy
+								harem_politics_evil_consort_trigger = yes
 							}
+							NOR = {
+								has_relation_best_friend = scope:grand_consort_scope
+								has_relation_friend = scope:grand_consort_scope
+								has_relation_soulmate = scope:grand_consort_scope
+								has_relation_lover = scope:grand_consort_scope
+							}
+							opinion = {
+								target = scope:grand_consort_scope
+								value <= low_positive_opinion
+							}
+							accepts_harems = yes
 						}
 					}
 					scope:recipient = {
@@ -3272,20 +3268,21 @@ set_primary_spouse_effect = {
 				scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
 					if = {
 						limit = {
-							AND = {
-								harem_politics_evil_consort_trigger = yes
-								opinion = {
-									target = scope:recipient
-									value <= 10
-								}
-								OR = { #Only harem consorts would care
-									accepts_concubinage = yes
-									accepts_polygamy = yes
+							harem_politics_evil_consort_trigger = yes
+							opinion = {
+								target = scope:recipient
+								value <= 10
+							}
+							accepts_harems = yes
+							NOT = {
+								has_opinion_modifier = {
+									modifier = forced_me_concubine_marriage_opinion
+									target = scope:actor
 								}
 							}
 						}
 						add_opinion = {
-							target = root
+							target = scope:actor
 							modifier = ignored_consort_opinion
 							opinion = -15
 						}
@@ -3305,10 +3302,7 @@ set_primary_spouse_effect = {
 		if = {
 			limit = {
 				any_vassal = { 
-					OR = { 
-						accepts_concubinage = yes
-						accepts_polygamy = yes
-					}
+					accepts_harems = yes
 					has_vassal_stance = courtly
 				}
 			}
@@ -3316,10 +3310,7 @@ set_primary_spouse_effect = {
 			hidden_effect = {
 				every_vassal = {
 					limit = { 
-						OR = { 
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
+						accepts_harems = yes
 						has_vassal_stance = courtly
 					}
 					add_opinion = {
