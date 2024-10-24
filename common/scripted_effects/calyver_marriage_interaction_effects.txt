@@ -3483,18 +3483,7 @@ make_primary_spouse_effect = {
 				}
 			}
 
-			if = { #Modifiers
-				limit = {
-					has_character_modifier = demoted_spouse_modifier
-				}
-				remove_character_modifier = demoted_spouse_modifier
-			}
-			else_if = { #Modifiers
-				limit = {
-					has_character_modifier = demoted_primary_spouse_modifier
-				}
-				remove_character_modifier = demoted_primary_spouse_modifier
-			}
+			clear_demoted_consort_modifiers_effect = yes
 			
 			add_opinion = {
 				modifier = reinstated_me_opinion
@@ -3530,7 +3519,8 @@ make_primary_spouse_effect = {
 			add_prestige = { value = major_prestige_gain }
 		}
 		
-		scope:demoter = {
+		$PARTNER$ = {
+			#Legitimacy loss
 			if = { #Legitimacy loss#
 				limit = {
 					exists = scope:previous_primary_spouse
@@ -3544,6 +3534,21 @@ make_primary_spouse_effect = {
 				}
 				#No legitimacy loss, even if the new PS is sinful
 				add_legitimacy = minor_legitimacy_gain
+			}
+			if = { #Legitimacy loss#
+				limit = {
+					scope:actor = {
+						NOT = {
+							has_imprisonment_reason = scope:previous_primary_spouse
+						}
+						is_valid_for_legitimacy_change = yes
+					}
+					num_sinful_traits = 0
+					is_lowborn = no
+				}
+				scope:actor = {
+					add_legitimacy = medium_legitimacy_loss
+				}
 			}
 			else_if = { #Legitimacy loss#
 				limit = {
@@ -4211,6 +4216,12 @@ calyver_dismiss_concubine_effect = {
 clear_demoted_consort_divorce_modifiers_effect = {
 	clear_demoted_consort_modifiers_effect = yes
 	if = {
+		limit = { 
+			has_character_flag = flag_new_consort 
+		}
+		remove_character_flag = flag_new_consort
+	}
+	if = {
 		limit = {
 			has_variable = favor
 		}
@@ -4232,12 +4243,6 @@ clear_demoted_consort_modifiers_effect = {
 		remove_character_modifier = demoted_spouse_modifier
 	}
 	
-	if = {
-		limit = { 
-			has_character_flag = flag_new_consort 
-		}
-		remove_character_flag = flag_new_consort
-	}
 	if = {
 		limit = { has_character_flag = flag_scolded_consort }
 		remove_character_flag = flag_scolded_consort
