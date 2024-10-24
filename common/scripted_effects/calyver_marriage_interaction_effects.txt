@@ -2938,8 +2938,7 @@ less_verbose_divorce_effect = {
 set_primary_spouse_effect = {
 	if = {
 		limit = {
-			exists = scope:actor.primary_spouse
-			scope:actor.primary_spouse = {
+			scope:actor.primary_spouse ?= {
 				NOT = {
 					this = scope:recipient
 				}
@@ -2984,21 +2983,20 @@ set_primary_spouse_effect = {
 			}
 			add_opinion = {
 				target = scope:actor
-				modifier = spouse_made_secondary_opinion
+				modifier = demoted_me_as_ps
+			}
+			add_character_modifier = {
+				modifier = demoted_primary_spouse_modifier
 			}
 			if = {
-				limit = { 
-					NOR = {
-						has_relation_best_friend = scope:actor
-						has_relation_friend = scope:actor
-						has_relation_soulmate = scope:actor
-						has_relation_lover = scope:actor
-						has_relation_rival = scope:actor
-						has_relation_nemesis = scope:actor
-						has_relation_potential_rival = scope:actor
-					} 
+				limit = {
+					can_set_relation_rival_trigger = { CHARACTER = scope:actor }
 				}
-				set_relation_potential_rival = scope:actor
+				progress_towards_rival_effect = {
+					REASON = rival_at_university #Check
+					CHARACTER = scope:actor
+					OPINION = default_rival_opinion #Check
+				}
 			}
 			if = {
 				limit = {
@@ -3018,6 +3016,24 @@ set_primary_spouse_effect = {
 					}
 				}
 			}
+			if = {
+				limit = {
+					any_close_or_extended_family_member = {
+						has_opinion_modifier = {
+							target = scope:actor
+							modifier = thankful_consort_relative_opinion
+						}
+					}
+				}
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = scope:actor } }
+					custom = all_family_members
+					remove_opinion = {
+						modifier = thankful_consort_relative_opinion
+						target = scope:actor
+					}
+				}
+			}
 			every_close_or_extended_family_member = {
 				limit = { NOT = { this = scope:actor } } # don't hate yourself just because of demotion
 				custom = all_family_members
@@ -3026,24 +3042,16 @@ set_primary_spouse_effect = {
 					target = scope:actor
 				}
 			}
-			add_opinion = {
-				target = scope:recipient
-				modifier = hatred_spouse_opinion
-			}
 			hidden_effect = {
 				if = {
-					limit = { 
-						NOR = {
-							has_relation_best_friend = scope:recipient
-							has_relation_friend = scope:recipient
-							has_relation_soulmate = scope:recipient
-							has_relation_lover = scope:recipient
-							has_relation_rival = scope:recipient
-							has_relation_nemesis = scope:recipient
-							has_relation_potential_rival = scope:recipient
-						}
+					limit = {
+						can_set_relation_rival_trigger = { CHARACTER = scope:recipient }
 					}
-					set_relation_potential_rival = scope:recipient
+					progress_towards_rival_effect = {
+						REASON = rival_at_university #Check
+						CHARACTER = scope:recipient
+						OPINION = default_rival_opinion #Check
+					}
 				}
 				clear_positive_consort_modifiers_effect = yes
 				send_interface_toast = {
@@ -3053,9 +3061,6 @@ set_primary_spouse_effect = {
 					right_icon = scope:recipient
 
 					custom_tooltip = set_primary_spouse_interaction_toast_removed
-				}
-				add_character_modifier = {
-					modifier = demoted_primary_spouse_modifier
 				}
 			}
 			if = {
