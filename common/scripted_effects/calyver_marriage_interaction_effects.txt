@@ -3521,52 +3521,54 @@ make_primary_spouse_effect = {
 		
 		$PARTNER$ = {
 			#Legitimacy loss
-			if = { #Legitimacy loss#
+			if = {
 				limit = {
-					scope:previous_primary_spouse ?= {
-						is_lowborn = yes
-					}
-					scope:new_primary_spouse = {
-						is_lowborn = no
-					}
 					is_valid_for_legitimacy_change = yes
 				}
-				#No legitimacy loss, even if the new PS is sinful
-				add_legitimacy = minor_legitimacy_gain
-			}
-			else_if = { #Legitimacy loss if the new one is a criminal or sinful
-				limit = {
-					scope:new_primary_spouse = {
-						is_lowborn = no
-					}
-					NOR = {
-						has_character_flag = dead_main_spouse_flag
-						has_character_flag = flag_lowborn_exception
-					}
-					OR = {
-						has_imprisonment_reason = scope:new_primary_spouse
+				if = { #Legitimacy loss#
+					limit = {
+						scope:previous_primary_spouse ?= {
+							is_lowborn = yes
+						}
 						scope:new_primary_spouse = {
-							num_sinful_traits > 0
+							is_lowborn = no
 						}
 					}
-					is_valid_for_legitimacy_change = yes
+					#No legitimacy loss, even if the new PS is sinful
+					add_legitimacy = minor_legitimacy_gain
 				}
-				add_legitimacy = minor_legitimacy_loss
-			}
-			else_if = { #Larger loss if the new one is a lowborn#
-				limit = {
-					scope:new_primary_spouse = {
-						is_lowborn = yes
+				else_if = {
+					limit = {
+						NOR = {
+							has_character_flag = dead_main_spouse_flag
+							has_character_flag = flag_lowborn_exception
+						}
 					}
-					NOR = {
-						has_character_flag = dead_main_spouse_flag
-						has_character_flag = flag_lowborn_exception
+					if = { #Legitimacy loss if the new one is a criminal or sinful
+						limit = {
+							scope:new_primary_spouse = {
+								is_lowborn = no
+							}
+							OR = {
+								has_imprisonment_reason = scope:new_primary_spouse
+								scope:new_primary_spouse = {
+									num_sinful_traits > 0
+								}
+							}
+						}
+						add_legitimacy = minor_legitimacy_loss
 					}
-					is_valid_for_legitimacy_change = yes
-				}
-				add_legitimacy = {
-					value = minor_legitimacy_loss
-					multiply = scope:actor.primary_title.tier
+					else_if = { #Larger loss if the new one is a lowborn#
+						limit = {
+							scope:new_primary_spouse = {
+								is_lowborn = yes
+							}
+						}
+						add_legitimacy = {
+							value = minor_legitimacy_loss
+							multiply = scope:actor.primary_title.tier
+						}
+					}
 				}
 			}
 		}
