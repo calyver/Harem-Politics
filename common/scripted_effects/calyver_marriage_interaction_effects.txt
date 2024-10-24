@@ -2697,7 +2697,7 @@ new_primary_spouse_divorce_effect = {
 		}
 		set_primary_spouse = scope:new_primary_spouse
 		make_primary_spouse_effect = {
-			DEMOTER = $PARTNER$
+			PARTNER = $PARTNER$
 		}
 		clear_saved_scope = new_primary_spouse
 	}
@@ -2788,7 +2788,7 @@ new_primary_spouse_divorce_effect = {
 					
 					modifier = {
 						NOT = { has_character_flag = flag_new_consort }
-						add = 10
+						add = 15
 					}
 					modifier = {
 						has_character_modifier = forgotten_consort_modifier
@@ -2812,11 +2812,17 @@ new_primary_spouse_divorce_effect = {
 					}
 					modifier = {
 						num_virtuous_traits >= 1
-						add = 5
+						add = {
+							value = num_virtuous_traits
+							multiply = 5
+						}
 					}
 					modifier = {
 						num_sinful_traits >= 1
-						add = -10
+						add = {
+							value = num_sinful_traits
+							multiply = -5
+						}
 					}
 					modifier = {
 						any_secret = {
@@ -2824,7 +2830,7 @@ new_primary_spouse_divorce_effect = {
 							is_known_by = $PARTNER$
 							is_criminal_for = $PARTNER$
 						}
-						add = -10
+						add = -20
 					}
 					modifier = {
 						OR = {
@@ -2834,13 +2840,34 @@ new_primary_spouse_divorce_effect = {
 						}
 						add = -25
 					}
-					
+					modifier = {
+						every_child = {
+							limit = {
+								is_child_of = $PARTNER$
+							}
+							add = {
+								value = 1
+								if = {
+									limit = {
+										is_player_heir_of = $PARTNER$
+									}
+									add = 2
+								}
+								if = {
+									limit = {
+										character_gender_can_inherit_from_trigger = { CHARACTER = $PARTNER$ }
+									}
+									add = 1
+								}
+							}
+						}
+					}
 				}
 				save_scope_as = new_primary_spouse
 			}
 			set_primary_spouse = scope:new_primary_spouse
 			make_primary_spouse_effect = {
-				DEMOTER = $PARTNER$
+				PARTNER = $PARTNER$
 			}
 			clear_saved_scope = new_primary_spouse
 		}
@@ -3296,7 +3323,7 @@ set_primary_spouse_effect = {
 		}
 	}
 	make_primary_spouse_effect = {
-		DEMOTER = scope:actor
+		PARTNER = scope:actor
 	}
 }
 
