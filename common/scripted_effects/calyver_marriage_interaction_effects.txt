@@ -3523,34 +3523,18 @@ make_primary_spouse_effect = {
 			#Legitimacy loss
 			if = { #Legitimacy loss#
 				limit = {
-					exists = scope:previous_primary_spouse
-					scope:previous_primary_spouse = {
+					scope:previous_primary_spouse ?= {
 						is_lowborn = yes
 					}
 					scope:new_primary_spouse = {
 						is_lowborn = no
 					}
-					highest_held_title_tier >= tier_county
+					is_valid_for_legitimacy_change = yes
 				}
 				#No legitimacy loss, even if the new PS is sinful
 				add_legitimacy = minor_legitimacy_gain
 			}
-			if = { #Legitimacy loss#
-				limit = {
-					NOT = {
-						has_imprisonment_reason = scope:previous_primary_spouse
-					}
-					is_valid_for_legitimacy_change = yes
-					scope:new_primary_spouse = {
-						num_sinful_traits = 0
-						is_lowborn = no
-					}
-				}
-				scope:actor = {
-					add_legitimacy = medium_legitimacy_loss
-				}
-			}
-			else_if = { #Legitimacy loss#
+			else_if = { #Legitimacy loss if the new one is a criminal or sinful
 				limit = {
 					scope:new_primary_spouse = {
 						is_lowborn = no
@@ -3565,11 +3549,11 @@ make_primary_spouse_effect = {
 							num_sinful_traits > 0
 						}
 					}
-					highest_held_title_tier >= tier_county
+					is_valid_for_legitimacy_change = yes
 				}
 				add_legitimacy = minor_legitimacy_loss
 			}
-			else_if = { #Legitimacy loss#
+			else_if = { #Larger loss if the new one is a lowborn#
 				limit = {
 					scope:new_primary_spouse = {
 						is_lowborn = yes
@@ -3578,7 +3562,7 @@ make_primary_spouse_effect = {
 						has_character_flag = dead_main_spouse_flag
 						has_character_flag = flag_lowborn_exception
 					}
-					highest_held_title_tier >= tier_county
+					is_valid_for_legitimacy_change = yes
 				}
 				add_legitimacy = {
 					value = minor_legitimacy_loss
