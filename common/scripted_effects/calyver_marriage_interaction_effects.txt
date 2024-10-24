@@ -2497,10 +2497,8 @@ divorcee_effect = {
 							}
 						}
 					}
-					NOR = {
-						has_relation_best_friend = $DIVORCEE$
-						has_relation_soulmate = $DIVORCEE$
-						this = $DIVORCEE$
+					NOT = {
+						this = $DIVORCER$
 					}
 					$DIVORCEE$ = {
 						harem_politics_evil_consort_trigger = yes
@@ -2534,56 +2532,26 @@ divorcee_effect = {
 
 divorcer_effect = {
 	#Harem Politics effects#
-	#Character flags for events and modifiers
-	if = { #Primary spouse
+	if = {
 		limit = {
-			OR = {
-				AND = {	
-					exists = $DIVORCEE$.primary_spouse
-					this = $DIVORCEE$.primary_spouse
-				}
-				has_character_modifier = demoted_primary_spouse_modifier
-			}
-		}
-		add_character_flag = {
-			flag = flag_divorced_primary_spouse
-		}
-		if = {
-			limit = {
-				AND = {	
-					exists = $DIVORCEE$.primary_spouse
-					this = $DIVORCEE$.primary_spouse
-				}
-				$DIVORCEE$ = {
-					any_spouse = {
-						count >= 2
-					}
-				}
+			AND = {	
+				exists = $DIVORCEE$.primary_spouse
+				this = $DIVORCEE$.primary_spouse
 			}
 			$DIVORCEE$ = {
-				new_primary_spouse_divorce_effect = {
-					PREVIOUS_PS = $DIVORCER$
-					PARTNER = $DIVORCEE$
+				any_spouse = {
+					count >= 2
 				}
 			}
 		}
-	}
-	else_if = { #Grand Consort
-		limit = {
-			OR = {
-				is_grand_consort_trigger = yes
-				has_character_flag = flag_demoted_grand_consort
+		$DIVORCEE$ = {
+			new_primary_spouse_divorce_effect = {
+				PREVIOUS_PS = $DIVORCER$
+				PARTNER = $DIVORCEE$
 			}
 		}
-		add_character_flag = {
-			flag = flag_divorced_grand_consort
-		}
 	}
-	else = { #Regular secondary spouse
-		add_character_flag = {
-			flag = flag_divorced_spouse
-		}
-	}
+	
 	if = {
 		limit = { $DIVORCEE$.primary_title.tier = tier_county }
 		add_prestige = { value = miniscule_prestige_loss }
@@ -2602,34 +2570,7 @@ divorcer_effect = {
 	}
 	
 	#Removing demoted modifiers and flags
-	if = { #If for whatever reason, they have another modifier
-		limit = {
-			has_character_modifier = demoted_spouse_modifier
-		}
-		remove_character_modifier = demoted_spouse_modifier
-	}
-	if = { #If for whatever reason, they have another modifier
-		limit = {
-			has_character_modifier = demoted_primary_spouse_modifier
-		}
-		remove_character_modifier = demoted_primary_spouse_modifier
-	}
-	if = { #Flags
-		limit = {
-			has_character_flag = flag_demoted_grand_consort
-		}
-		remove_character_flag = flag_demoted_grand_consort
-	}
-	if = { #Flags
-		limit = {
-			has_character_flag = flag_demoted_spouse
-		}
-		remove_character_flag = flag_demoted_spouse
-	}
-	if = {
-		limit = { has_character_flag = flag_new_consort }
-		remove_character_flag = flag_new_consort
-	}
+	clear_demoted_consort_modifiers_effect = yes
 	
 	if = { #No longer thankful
 		limit = {
@@ -2643,10 +2584,6 @@ divorcer_effect = {
 			modifier = thankful_consort_opinion
 		}
 	}
-	
-	clear_negative_consort_modifiers_effect = yes
-	clear_positive_consort_modifiers_effect = yes
-
 	if = { #No longer primary opinion
 		limit = {
 			has_opinion_modifier = {
@@ -2683,34 +2620,11 @@ divorcer_effect = {
 			target = $DIVORCEE$
 		}
 	}
+	
+	clear_negative_consort_modifiers_effect = yes
+	clear_positive_consort_modifiers_effect = yes
+
 	hidden_effect = {
-		every_close_or_extended_family_member = {
-			limit = { NOT = { this = $DIVORCEE$ } }
-			if = {
-				limit = {
-					has_opinion_modifier = {
-						target = $DIVORCEE$
-						modifier = reinstated_relative_marriage_opinion
-					}
-				}
-				remove_opinion = {
-					modifier = reinstated_relative_marriage_opinion
-					target = $DIVORCEE$
-				}
-			}
-			if = {
-				limit = {
-					has_opinion_modifier = {
-						target = $DIVORCEE$
-						modifier = thankful_consort_relative_opinion
-					}
-				}
-				remove_opinion = {
-					target = $DIVORCEE$
-					modifier = thankful_consort_relative_opinion
-				}
-			}
-		}
 		#Update consort opinion
 		every_consort = {
 			if = { #The primary spouse is relieved
@@ -2739,36 +2653,23 @@ divorcer_effect = {
 			}
 			if = { #Craven consorts don't feel threatened by a despot
 				limit = {
-					AND = {
-						OR = {
-							is_concubine = yes
-							AND = {
-								is_married = yes
-								$DIVORCEE$ = {
-									AND = {
-										OR = {
-											is_grand_consort_trigger = yes
-											this = $DIVORCER$.primary_spouse
-										}
-										NOR = {
-											has_character_modifier = demoted_primary_spouse_modifier
-											has_character_modifier = demoted_spouse_modifier
-										}
-									}
+					OR = {
+						is_concubine = yes
+						AND = {
+							is_married = yes
+							$DIVORCEE$ = {
+								OR = {
+									this = $DIVORCER$.primary_spouse
+									is_grand_consort_trigger = yes
 								}
 							}
 						}
-						NOR = {
-							has_relation_best_friend = $DIVORCEE$
-							has_relation_friend = $DIVORCEE$
-							has_relation_soulmate = $DIVORCEE$
-							has_relation_lover = $DIVORCEE$
-							has_relation_soulmate = $DIVORCER$
-							this = $DIVORCEE$
-						}
-						$DIVORCEE$ = {
-							harem_politics_evil_consort_trigger = yes
-						}
+					}
+					NOT = {
+						this = $DIVORCEE$
+					}
+					$DIVORCEE$ = {
+						harem_politics_evil_consort_trigger = yes
 					}
 				}
 				stress_impact = {
@@ -2777,6 +2678,7 @@ divorcer_effect = {
 					paranoid = minor_stress_impact_loss
 				}
 			}
+			#Trigger event
 		}
 	}
 }
