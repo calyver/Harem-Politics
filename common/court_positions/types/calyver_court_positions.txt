@@ -591,25 +591,38 @@
 	salary = {
 		round = no
 		gold = {
-			value = medium_court_position_salary
+			value = medium_court_position_salary # Update X_salary_tooltip if script_value is changed
 			# Set to 0 with Dynasty Perk Inner Circle
 			if = {
-				limit = {
-					scope:liege = {
-						exists = dynasty
-						dynasty = { has_dynasty_perk = fp2_coterie_legacy_1 }
-
-						employs_court_position = grand_consort_court_position
-						any_court_position_holder = {
-					        type = grand_consort_court_position
-							exists = dynasty
-							house = prev.house
-						}
-					}
-				}
+				limit = { court_position_inner_circle_salary_trigger = { POS = grand_consort } }
 				multiply = {
 					value = 0.0
 					desc = inner_circle_salary_mod
+					format = "BASE_VALUE_FORMAT_DECIMALS_MINUS_POSITIVE"
+				}
+			}
+			# Halved with obligation hook
+			else_if = {
+				limit = { 
+					court_position_obligation_hook_salary_trigger = {
+						POS = grand_consort
+						LIEGE = scope:liege
+					}
+				}
+				multiply = {
+					value = 0.5
+					desc = obligation_hook_salary
+					format = "BASE_VALUE_FORMAT_DECIMALS_MINUS_POSITIVE"
+				}
+			}
+			# Halved salary
+			if = {
+				limit = {
+					court_position_halved_salary_trigger = { POS = grand_consort }
+				}
+				multiply = {
+					value = 0.5
+					desc = court_position_halved_salary
 					format = "BASE_VALUE_FORMAT_DECIMALS_MINUS_POSITIVE"
 				}
 			}
