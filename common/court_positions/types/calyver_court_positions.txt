@@ -513,15 +513,23 @@
 	}
 
 	is_shown = {
-		OR = {
-			accepts_polygamy = yes
-			accepts_concubinage = yes
-		}
+		accepts_harems = yes
 	}
 
 	# Is this an available position for this court? (root is court owner)
 	valid_position = {
 		highest_held_title_tier >= tier_kingdom
+		trigger_if = { #Administrative kings are only bureaucrats, shouldn't have hierarchical harems
+			limit = {
+				highest_held_title_tier = tier_kingdom
+			}
+			OR = {
+				is_independent_ruler = yes
+				NOT = {
+					government_has_flag = government_is_administrative
+				}
+			}
+		}
 		NOT = {
 			government_has_flag = government_is_tribal
 		}
@@ -548,22 +556,32 @@
 		}
 	}
 
-	revoke_cost = {
+	revoke_cost = { # root is the liege, no other scopes are passed here!
 		prestige =  {
 			value = major_court_position_prestige_revoke_cost
-
-			# Set to 0 with Dynasty Perk Inner Circle
+			# Set to 0 via obligation hook
+			if = {
+				limit = { 
+					court_position_obligation_hook_salary_trigger = {
+						POS = grand_consort
+						LIEGE = root
+					}
+				}
+				multiply = 0
+			}
+			# Avoid AI prestige issues
 			if = {
 				limit = {
-					exists = dynasty
-					dynasty = { has_dynasty_perk = fp2_coterie_legacy_1 }
-
-					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-				        type = grand_consort_court_position
-						exists = dynasty
-						house = prev.house
-					}
+					exists = this
+					is_ai = yes
+				}
+				multiply = 0
+			}
+			# Special case for events
+			if = {
+				limit = {
+					exists = this
+					has_character_flag = free_revoke_cost
 				}
 				multiply = 0
 			}
