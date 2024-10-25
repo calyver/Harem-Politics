@@ -3305,10 +3305,10 @@ make_primary_spouse_effect = {
 			send_interface_toast = {
 				type = event_toast_effect_good
 				title = set_primary_spouse_interaction_toast
-				left_icon = scope:demoter
+				left_icon = scope:demoter #Check
 				right_icon = scope:new_primary_spouse
 
-				custom_tooltip = set_primary_spouse_interaction_toast_added
+				custom_tooltip = set_primary_spouse_interaction_toast_added #Check
 
 				clear_negative_consort_modifiers_effect = yes
 				if = {
@@ -3317,7 +3317,7 @@ make_primary_spouse_effect = {
 							has_character_modifier = demoted_primary_spouse_modifier
 						}
 					}
-					calyver_favor_huge_gain_effect = yes
+					calyver_favor_big_gain_effect = yes
 				}
 			}
 		}
@@ -3342,26 +3342,9 @@ make_primary_spouse_effect = {
 				}
 			}
 
-			clear_consort_opinions_effect = {
-				TARGET = $PARTNER$
-			}
-
-			clear_demoted_consort_modifiers_effect = yes
-			
-			add_opinion = {
-				modifier = reinstated_me_opinion
-				target = $PARTNER$
-			}
-			
-			calyver_favor_moderate_gain_effect = yes
-
-			every_close_or_extended_family_member = {
-				limit = { NOT = { this = $PARTNER$ } }
-				custom = all_family_members
-				add_opinion = {
-					modifier = reinstated_relative_marriage_opinion
-					target = $PARTNER$
-				}
+			consort_reinstatement_effect = {
+				REINSTATOR = $PARTNER$
+				REINSTATED = scope:new_primary_spouse
 			}
 		}
 		
@@ -3891,83 +3874,117 @@ consort_reinstatement_effect = {
 
 calyver_dismiss_concubine_effect = {
 	scope:recipient = {
-		#Add appropriate flags	
-
-		if = { #Flag for the Primary spouse
-			limit = {
-				has_character_modifier = demoted_primary_spouse_modifier
-			}
-			add_character_flag = {
-				flag = flag_divorced_primary_spouse
-			}
-		}
-		#Grand Consort#
-		if = { #First demote the Grand Consort
-			limit = {
-				is_grand_consort_trigger = yes
-			}
-			save_scope_as = employee
-			scope:actor = {
-				save_scope_as = liege
-			}
-			grand_consort_revoked_court_position_effect = yes
-		}
-		if = { #Grand Consort
-			limit = {
-				has_character_flag = flag_demoted_grand_consort
-			}
-			add_character_flag = {
-				flag = flag_divorced_grand_consort
-			}
-		}
+		#Add appropriate opinions
 		if = {
 			limit = {
-				has_character_flag = flag_demoted_spouse
+				OR = {
+					has_opinion_modifier = {
+						modifier = demoted_me_as_ps
+						target = scope:actor
+					}
+					has_opinion_modifier = {
+						modifier = divorced_me_as_ps
+						target = scope:actor
+					}
+				}
+				NOT = {
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_ps
+						target = scope:actor
+					}
+				}
 			}
-			add_character_flag = {
-				flag = flag_divorced_spouse
+			clear_consort_opinions_effect = {
+				TARGET = scope:actor
+			}
+			add_opinion = {
+				target = scope:actor
+				modifier = dismissed_me_as_ps
+			}
+		}	
+		else_if = {
+			limit = {
+				OR = {
+					is_grand_consort_trigger = yes
+					AND = {
+						OR = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_gc
+								target = scope:actor
+							}
+							has_opinion_modifier = {
+								modifier = divorced_me_as_gc
+								target = scope:actor
+							}
+						}
+						NOT = {
+							has_opinion_modifier = {
+								modifier = dismissed_me_as_gc
+								target = scope:actor
+							}
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					is_grand_consort_trigger = yes
+				}
+				save_scope_as = employee
+				scope:actor = {
+					save_scope_as = liege
+				}
+				grand_consort_revoked_court_position_effect = yes
+			}
+			clear_consort_opinions_effect = {
+				TARGET = scope:actor
+			}
+			add_opinion = {
+				target = scope:actor
+				modifier = dismissed_me_as_gc
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					has_opinion_modifier = {
+						modifier = demoted_me_as_ss
+						target = scope:actor
+					}
+					has_opinion_modifier = {
+						modifier = divorced_me_as_ss
+						target = scope:actor
+					}
+				}
+				NOT = {
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_ss
+						target = scope:actor
+					}
+				}
+			}
+			clear_consort_opinions_effect = {
+				TARGET = scope:actor
+			}
+			add_opinion = {
+				target = scope:actor
+				modifier = dismissed_me_as_ss
+			}
+		}
+		else = {
+			add_opinion = {
+				modifier = set_me_aside_opinion
+				target = scope:actor
 			}
 		}
 
 		#Removing demoted modifiers and flags
-		if = { #If for whatever reason, they have another modifier
-			limit = {
-				has_character_modifier = demoted_spouse_modifier
-			}
-			remove_character_modifier = demoted_spouse_modifier
-		}
-		if = { #If for whatever reason, they have another modifier
-			limit = {
-				has_character_modifier = demoted_primary_spouse_modifier
-			}
-			remove_character_modifier = demoted_primary_spouse_modifier
-		}
-		if = { #Flags
-			limit = {
-				has_character_flag = flag_demoted_grand_consort
-			}
-			remove_character_flag = flag_demoted_grand_consort
-		}
-		if = { #Flags
-			limit = {
-				has_character_flag = flag_demoted_spouse
-			}
-			remove_character_flag = flag_demoted_spouse
-		}
-		if = {
-			limit = { has_character_flag = flag_new_consort }
-			remove_character_flag = flag_new_consort
-		}
+		clear_demoted_consort_divorce_modifiers_effect = yes
 		
 		hidden_effect = {
 			clear_positive_consort_modifiers_effect = yes
 			clear_negative_consort_modifiers_effect = yes
-			if = { #Mourner
-				limit = {
-					has_character_modifier = mourner_modifier
-				}
-				remove_character_modifier = mourner_modifier
-			}
+
 			if = { #Scolded
 				limit = { has_character_flag = flag_scolded_consort }
 				remove_character_flag = flag_scolded_consort
@@ -4052,6 +4069,12 @@ calyver_dismiss_concubine_effect = {
 
 clear_demoted_consort_divorce_modifiers_effect = {
 	clear_demoted_consort_modifiers_effect = yes
+	if = {
+		limit = {
+			has_character_modifier = mourner_modifier
+		}
+		remove_character_modifier = mourner_modifier
+	}
 	if = {
 		limit = { 
 			has_character_flag = flag_new_consort 
