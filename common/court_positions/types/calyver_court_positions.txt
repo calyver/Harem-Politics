@@ -678,6 +678,55 @@
 		value = 50
 		add = scope:base_value
 		add = court_position_candidate_score_base_value
+		add = court_position_candidate_aptitude_value
+		scope:liege = {
+			# Opinion affects how likely they are to be hired
+			if = {
+				limit = {
+					has_relation_soulmate = scope:employee
+				}
+				add = 100
+			}
+			if = {
+				limit = {
+					OR = {
+						has_relation_lover = scope:employee
+						has_relation_best_friend = scope:employee
+					}
+				}
+				add = 80
+			}
+			else_if = {
+				limit = {
+					has_relation_friend = scope:employee
+				}
+				add = 60
+			}
+			else_if = {
+				limit = {
+					opinion = {
+						target = scope:employee
+						value >= high_positive_opinion
+					}
+				}
+				add = 40
+			}
+			else_if = {
+				limit = {
+					opinion = {
+						target = scope:employee
+						value >= medium_positive_opinion
+					}
+				}
+				add = 20
+			}
+		}
+		if = { # To stop petitioned positions immediately being fired by the AI
+			limit = {
+				court_position_petition_ai_weight_trigger = { ROLE = grand_consort }
+			}
+			add = 1000
+		}
 		add = court_position_debt_considerations_value
 	}
 }
