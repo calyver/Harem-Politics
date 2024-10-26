@@ -265,8 +265,19 @@
 									count >= 3
 								}
 							}
-							AND = { #With limited authority, they need 3 vassals
+							AND = { #With limited authority, they need 3 non-dominant vassals
 								has_realm_law = imperial_bureaucracy_1
+								any_vassal = {
+									house ?= { is_dominant_family = no }
+									NOR = { 
+										government_has_flag = government_is_theocracy
+										is_at_war_with = root
+									}
+									count >= 3
+								}
+							}
+							AND = { #With limited authority, they need just 3 vassals
+								has_realm_law = imperial_bureaucracy_2
 								any_vassal = {
 									NOR = { 
 										government_has_flag = government_is_theocracy
@@ -279,10 +290,22 @@
 					}
 					#Kings
 					AND = {
-						highest_held_title_tier = tier_duchy
+						highest_held_title_tier = tier_kingdom
 						OR = {
-							AND = { #With low authority, they need at least 3 non-powerful vassals
+							AND = { #With low authority, they need at least 3 non-powerful counts
 								has_realm_law = imperial_bureaucracy_0
+								any_vassal = {
+									is_powerful_vassal = no
+									highest_held_title_tier <= tier_county
+									NOR = { 
+										government_has_flag = government_is_theocracy
+										is_at_war_with = root
+									}
+									count >= 3
+								}
+							}
+							AND = { #With limited authority, they need 3 non-powerful dukes or below
+								has_realm_law = imperial_bureaucracy_1
 								any_vassal = {
 									is_powerful_vassal = no
 									NOR = { 
@@ -292,9 +315,17 @@
 									count >= 3
 								}
 							}
-							AND = { #With limited authority, they need 3 vassals
-								has_realm_law = imperial_bureaucracy_1
+						}
+					}
+					#Emperors
+					AND = {
+						highest_held_title_tier = tier_empire
+						OR = {
+							AND = { #With low authority, they need at least 3 non-powerful dukes
+								has_realm_law = imperial_bureaucracy_0
 								any_vassal = {
+									is_powerful_vassal = no
+									highest_held_title_tier <= tier_duchy
 									NOR = { 
 										government_has_flag = government_is_theocracy
 										is_at_war_with = root
@@ -302,6 +333,42 @@
 									count >= 3
 								}
 							}
+							AND = { #With limited authority, they need 3 non-powerful kings or below
+								has_realm_law = imperial_bureaucracy_1
+								any_vassal = {
+									is_powerful_vassal = no
+									NOR = { 
+										government_has_flag = government_is_theocracy
+										is_at_war_with = root
+									}
+									count >= 3
+								}
+							}
+						}
+					}
+					#With high authority, just any non-dominant vassal
+					AND = {
+						highest_held_title_tier >= tier_kingdom
+						has_realm_law = imperial_bureaucracy_2
+						any_vassal = {
+							house ?= { is_dominant_family = no }
+							NOR = { 
+								government_has_flag = government_is_theocracy
+								is_at_war_with = root
+							}
+							count >= 3
+						}
+					}
+					#With absolute authority, just any vassal
+					AND = {
+						highest_held_title_tier >= tier_kingdom
+						has_realm_law = imperial_bureaucracy_3
+						any_vassal = {
+							NOR = { 
+								government_has_flag = government_is_theocracy
+								is_at_war_with = root
+							}
+							count >= 3
 						}
 					}
 				}
