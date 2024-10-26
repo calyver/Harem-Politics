@@ -35,7 +35,7 @@
 	}
 
 	decision_group_type = courtier
-	ai_check_frequency = 60
+	ai_check_interval = 60
 	sort_order = {
 		value = 20
 		if = {
@@ -161,7 +161,7 @@
 									count >= 3
 								}
 							}
-							AND = { #With limited authority, they need just 3 vassals
+							AND = { #With higher authority, they need just 3 vassals
 								has_realm_law = imperial_bureaucracy_2
 								any_vassal = {
 									NOR = { 
@@ -246,7 +246,6 @@
 					}
 					#With absolute authority, just any vassal
 					AND = {
-						highest_held_title_tier >= tier_kingdom
 						has_realm_law = imperial_bureaucracy_3
 						any_vassal = {
 							NOR = { 
@@ -314,7 +313,7 @@
 							count >= 3
 						}
 					}
-					AND = {	#If ruler is a king with low authority, they need at least 3 vassals
+					AND = {	#If ruler is a king with low authority, they need at least 3 non-powerful vassals
 						highest_held_title_tier = tier_kingdom
 						OR = {
 							has_realm_law = crown_authority_1
@@ -408,151 +407,400 @@
 		custom_tooltip = bride_show_opinion_effect_tooltip
 		hidden_effect = {
 			save_scope_as = liege
-			every_vassal = {
-				if = {
-					limit = { #Appropriate vassals
-						NOR = { 
-							government_has_flag = government_is_theocracy
-							is_at_war_with = scope:liege
+			if = {
+				limit = {
+					government_has_flag = government_is_administrative
+				}
+				if = { #Dukes
+					limit = {
+						highest_held_title_tier = tier_duchy
+					}
+					if = { #With low authority, they need at least 3 non-powerful vassals
+						limit = {
+							has_realm_law = imperial_bureaucracy_0
 						}
-						OR = {
-							AND = { #If scope:liege is a duke with low crown authority, the vassal isn't powerful
-								scope:liege = {
-									highest_held_title_tier = tier_duchy
-									OR = {
-										has_realm_law = crown_authority_0
-										has_realm_law = tribal_authority_0
-									}
-								}
+						every_vassal = {
+							limit = {
 								is_powerful_vassal = no
-							}
-							AND = { #If scope:liege is a duke with limited crown authority, just any vassal
-								scope:liege = {
-									highest_held_title_tier = tier_duchy
-									OR = {
-										has_realm_law = crown_authority_1
-										has_realm_law = tribal_authority_1
-									}
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
 								}
 							}
-
-							AND = { #If scope:liege is a king with low crown authority, only counts
-								scope:liege = {
-									highest_held_title_tier = tier_kingdom
-									OR = {
-										has_realm_law = crown_authority_0
-										has_realm_law = tribal_authority_0
-									}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With limited authority, they need 3 non-dominant vassals
+						limit = {
+							has_realm_law = imperial_bureaucracy_1
+						}
+						every_vassal = {
+							limit = {
+								house ?= { is_dominant_family = no }
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
 								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With higher authority, they need just 3 vassals
+						limit = {
+							OR = {
+								has_realm_law = imperial_bureaucracy_2
+								has_realm_law = imperial_bureaucracy_3
+							}
+						}
+						every_vassal = {
+							limit = {
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+				}
+				else_if = { #Kings
+					limit = {
+						highest_held_title_tier = tier_kingdom
+					}
+					if = { #With low authority, they need at least 3 non-powerful counts
+						limit = {
+							has_realm_law = imperial_bureaucracy_0
+						}
+						every_vassal = {
+							limit = {
 								is_powerful_vassal = no
 								highest_held_title_tier <= tier_county
-							}
-							AND = { #If scope:liege is a king with limited crown authority, only non-powerful dukes and below
-								scope:liege = {
-									highest_held_title_tier = tier_kingdom
-									OR = {
-										has_realm_law = crown_authority_1
-										has_realm_law = tribal_authority_1
-									}
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
 								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With limited authority, they need 3 non-powerful dukes or below
+						limit = {
+							has_realm_law = imperial_bureaucracy_1
+						}
+						every_vassal = {
+							limit = {
 								is_powerful_vassal = no
-							}
-
-							AND = { #If scope:liege is an emperor with low crown authority, only non-powerful counts and below
-								scope:liege = {
-									highest_held_title_tier = tier_empire
-									OR = {
-										has_realm_law = crown_authority_0
-										has_realm_law = tribal_authority_0
-									}
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
 								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With high authority, just any non-dominant vassal
+						limit = {
+							has_realm_law = imperial_bureaucracy_2
+						}
+						every_vassal = {
+							limit = {
+								house ?= { is_dominant_family = no }
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With absolute authority, just any vassal
+						limit = {
+							has_realm_law = imperial_bureaucracy_3
+						}
+						every_vassal = {
+							limit = {
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+				}
+				else_if = { #Emperors
+					limit = {
+						highest_held_title_tier = tier_empire
+					}
+					if = { #With low authority, they need at least 3 non-powerful counts
+						limit = {
+							has_realm_law = imperial_bureaucracy_0
+						}
+						every_vassal = { #With low authority, they need at least 3 non-powerful dukes
+							limit = {
 								is_powerful_vassal = no
 								highest_held_title_tier <= tier_duchy
-							}
-							AND = { #If scope:liege is an emperor with limited crown authority, only non-powerful counts and below
-								scope:liege = {
-									highest_held_title_tier = tier_empire
-									OR = {
-										has_realm_law = crown_authority_1
-										has_realm_law = tribal_authority_1
-									}
-								}
-								is_powerful_vassal = no
-							}
-
-							AND = {
-								#Or high crown authority
-								scope:liege = {
-									OR = {
-										has_realm_law = crown_authority_2
-										has_realm_law = crown_authority_3
-										has_realm_law = tribal_authority_2
-										has_realm_law = tribal_authority_3
-									}
-								}
-							}
-						}
-					}
-					if = {
-						limit = { 
-							OR = { 
-								accepts_concubinage = yes
-								accepts_polygamy = yes
-								culture = { has_cultural_pillar = heritage_east_slavic }
-								culture = { has_cultural_pillar = heritage_byzantine }
-							}
-						}
-						if = {
-							limit = { 
-								NOT = { has_vassal_stance = courtly }
-							}
-							add_opinion = {
-								target = scope:liege
-								modifier = bride_show_vassal_opinion
-							}
-						}
-						else = {
-							add_opinion = {
-								target = scope:liege
-								modifier = bride_show_courtly_vassal_opinion
-							}
-						}
-					}
-					if = {
-						limit = { 
-							AND = { 
-								accepts_concubinage = no
-								accepts_polygamy = no
 								NOR = { 
-									culture = { has_cultural_pillar = heritage_east_slavic }
-									culture = { has_cultural_pillar = heritage_byzantine }
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
 								}
 							}
-						}
-						add_opinion = {
-							target = scope:liege
-							modifier = bride_show_monogamous_vassal_opinion
+							add_to_list = bride_show_vassal_list
 						}
 					}
-					if = {
+					else_if = { #With limited authority, they need 3 non-powerful dukes or below
 						limit = {
-							is_ai = no
+							has_realm_law = imperial_bureaucracy_1
 						}
-						trigger_event = {
-							id = bride_show.0007
-							days = 1 
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With high authority, just any non-dominant vassal
+						limit = {
+							has_realm_law = imperial_bureaucracy_2
+						}
+						every_vassal = {
+							limit = {
+								house ?= { is_dominant_family = no }
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #With absolute authority, just any vassal
+						limit = {
+							has_realm_law = imperial_bureaucracy_3
+						}
+						every_vassal = {
+							limit = {
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
 						}
 					}
 				}
 			}
+			else = {
+				if = { #Dukes
+					limit = {
+						highest_held_title_tier = tier_duchy
+					}
+					if = { #If ruler is a duke with low authority, they need at least 3 non-powerful vassals
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { #If ruler is a duke with low authority, they need at least 3 non-powerful vassals
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_1
+								has_realm_law = tribal_authority_1
+							}
+						}
+						every_vassal = {
+							limit = {
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+				}
+				else_if = { #Kings
+					limit = {
+						highest_held_title_tier = tier_kingdom
+					}
+					if = { 	#If ruler is a king with low authority, they need at least 3 non-powerful counts
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								highest_held_title_tier <= tier_county
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { 	#If ruler is a king with low authority, they need at least 3 non-powerful counts
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_1
+								has_realm_law = tribal_authority_1
+							}
+						}
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+				}
+				else_if = { #Emperors
+					limit = {
+						highest_held_title_tier = tier_empire
+					}
+					if = { 	#If ruler is an emperor with low authority, they need at least 3 non-powerful dukes
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_0
+								has_realm_law = tribal_authority_0
+							}
+						}
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								highest_held_title_tier <= tier_duchy
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+					else_if = { 	#If ruler is an emperor with low authority, they need at least 3 non-powerful dukes
+						limit = {
+							OR = {
+								has_realm_law = crown_authority_1
+								has_realm_law = tribal_authority_1
+							}
+						}
+						every_vassal = {
+							limit = {
+								is_powerful_vassal = no
+								NOR = { 
+									government_has_flag = government_is_theocracy
+									is_at_war_with = scope:liege
+								}
+							}
+							add_to_list = bride_show_vassal_list
+						}
+					}
+				}
+				#Absolute authority
+				if = {
+					limit = {
+						OR = {
+							has_realm_law = crown_authority_2
+							has_realm_law = crown_authority_3
+							has_realm_law = tribal_authority_2
+							has_realm_law = tribal_authority_3
+						}
+					}
+					every_vassal = {
+						limit = {
+							NOR = { 
+								government_has_flag = government_is_theocracy
+								is_at_war_with = scope:liege
+								is_in_list = bride_show_vassal_list
+							}
+						}
+					}
+				}
+			}
+			every_in_list = {
+				list = bride_show_vassal_list
+				if = {
+					limit = { 
+						OR = { 
+							culture = { has_cultural_pillar = heritage_east_slavic }
+							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+							culture = { has_cultural_tradition = tradition_legalistic }
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+					}
+					if = {
+						limit = { 
+							NOT = { has_vassal_stance = courtly }
+						}
+						add_opinion = {
+							target = scope:liege
+							modifier = bride_show_vassal_opinion
+						}
+					}
+					else = {
+						add_opinion = {
+							target = scope:liege
+							modifier = bride_show_courtly_vassal_opinion
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						NOR = { 
+							culture = { has_cultural_pillar = heritage_east_slavic }
+							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+							culture = { has_cultural_tradition = tradition_legalistic }
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+					}
+					add_opinion = {
+						target = scope:liege
+						modifier = bride_show_monogamous_vassal_opinion
+					}
+				}
+
+				if = {
+					limit = {
+						is_ai = no
+					}
+					trigger_event = {
+						id = bride_show.0007
+						days = 1 
+					}
+				}
+			}
+			
 			trigger_event = {
 				id = bride_show.0001
 				days = { 7 10 }
 			}
 		}
 	}
-
-	ai_check_interval = 60
 	
 	ai_potential = { always = yes }
 
@@ -567,8 +815,15 @@
 				has_trait = chaste
 			}
 		}
+		modifier = { #Sexuality
+			add = -20
+			OR = {
+				has_trait = celibate
+				has_sexuality = asexual
+			}
+		}
 		modifier = {
-			add = 40
+			add = 60
 			OR = {
 				trigger_if = {
 					limit = {
