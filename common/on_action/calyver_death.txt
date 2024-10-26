@@ -10,21 +10,34 @@ mourning_period_on_action = {
 			limit = {
 				has_game_rule = mourning_cycle
 			}
-			if = {
+			if = { #Spouses
 				limit = {
 					is_married = yes
 				}
-				every_spouse = { #Spouses
+				every_spouse = {
+					limit = {
+						is_ruler = yes
+					}
 					if = { #Primary Spouse
 						limit = {
-							exists = primary_spouse
-							primary_spouse = {
+							primary_spouse ?= {
 								this = scope:dead_relation
 							}
 						}
 						add_character_flag = {
 							flag = dead_main_spouse_flag
-							days = 5
+							days = 2
+						}
+						if = { #New Primary Spouse
+							limit = {
+								any_spouse = {
+									NOT = {
+										this = scope:dead_relation
+									}
+									count >= 1
+								}
+							}
+							new_primary_spouse_on_action_effect = yes
 						}
 					}
 					add_to_list = mourners_list
@@ -33,6 +46,7 @@ mourning_period_on_action = {
 			if = { #Children
 				limit = {
 					any_child = {
+						is_ruler = yes
 						NOR = {
 							has_trait = incapable
 							is_in_list = mourners_list
@@ -42,6 +56,7 @@ mourning_period_on_action = {
 				}
 				every_child = {
 					limit = {
+						is_ruler = yes
 						NOR = {
 							has_trait = incapable
 							is_in_list = mourners_list
@@ -49,7 +64,7 @@ mourning_period_on_action = {
 					}
 					add_character_flag = {
 						flag = dead_important_relative_flag
-						days = 4
+						days = 2
 					}
 					add_to_list = mourners_list
 				}
@@ -63,8 +78,8 @@ mourning_period_on_action = {
 							is_in_list = mourners_list
 						}
 						highest_held_title_tier >= tier_duchy
-						exists = player_heir
-						player_heir = {
+						is_landed = yes
+						player_heir ?= {
 							this = scope:dead_relation
 						}
 						count >= 1
@@ -77,14 +92,14 @@ mourning_period_on_action = {
 							is_in_list = mourners_list
 						}
 						highest_held_title_tier >= tier_duchy
-						exists = player_heir
-						player_heir = {
+						is_landed = yes
+						player_heir ?= {
 							this = scope:dead_relation
 						}
 					}
 					add_character_flag = {
 						flag = dead_important_relative_flag
-						days = 4
+						days = 2
 					}
 					add_to_list = mourners_list
 				}
@@ -93,31 +108,8 @@ mourning_period_on_action = {
 				list = mourners_list
 				trigger_event = {
 					id = harem_politics.0015
-					days = 3
+					days = 1
 				} 
-			}
-		}
-		if = {
-			limit = {
-				is_married = yes
-			}
-			every_spouse = { #Spouses
-				if = { #Primary Spouse
-					limit = {
-						is_landed = yes
-						exists = primary_spouse
-						primary_spouse = {
-							this = scope:dead_relation
-						}
-						any_spouse = {
-							NOT = {
-								this = scope:dead_relation
-							}
-							count >= 1
-						}
-					}
-					new_primary_spouse_on_action_effect = yes
-				}
 			}
 		}
 	}
