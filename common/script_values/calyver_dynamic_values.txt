@@ -1036,6 +1036,27 @@ favor_points = {
 							OR = {
 								is_powerful_vassal_of = scope:harem_liege
 								is_councillor_of = scope:harem_liege
+								AND = { #It applies also to fellow powerful vassals
+									exists = scope:harem_liege.liege
+									liege ?= scope:harem_liege.liege
+									OR = {	
+										is_powerful_vassal_of = scope:harem_liege.liege
+										is_councillor_of = scope:harem_liege.liege
+									}
+								}
+							}
+							NAND = { #Dominant families have another calculation
+								government_allows = administrative
+								house ?= { is_dominant_family = yes }
+								OR = {
+									AND = {
+										exists = scope:harem_liege.top_liege
+										top_liege ?= scope:harem_liege.top_liege
+									}
+									AND = {
+										is_vassal_or_below_of = scope:harem_liege
+									}
+								}
 							}
 						}
 					}
@@ -1053,7 +1074,7 @@ favor_points = {
 					OR = {
 						is_liege_or_above_of = scope:harem_liege
 						max_military_strength >= scope:harem_liege.max_military_strength
-						AND = {
+						AND = { #Dominant families
 							government_allows = administrative
 							house ?= { is_dominant_family = yes }
 							OR = {
