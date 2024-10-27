@@ -3797,75 +3797,60 @@ initial_favor_valuation = {
 	#########Children#########
 	#Number of children
 	if = {
-		limit = { 
-			root = { 
-				any_child = { 
+		limit = {
+			root = {
+				any_child = {
 					is_child_of = scope:harem_liege
 					is_alive = yes
 					count > 0
 				}
 			}
 		}
-		add = {
-			#desc = favor_addition_children
-			value = favor_minor_value_gain
-			if = {
-				limit = { 
-					root = { 
-						any_child = { 
-							is_child_of = scope:harem_liege
-							is_alive = yes
-							count >= 3
-						}
-					}
-				}
-				add = favor_miniscule_value_gain
-			}
-		}
-	}
-	#Eligible children
-	if = {
-		limit = { 
-			root = {  
-				any_child = { 
+		root = {
+			every_child = {
+				limit = {
 					is_child_of = scope:harem_liege
 					is_alive = yes
-					character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
-					count > 0
 				}
-			}
-		}
-		add = {
-			#desc = favor_addition_eligible_heirs
-			value = favor_minor_value_gain
-			if = {
-				limit = { 
-					root = {  
-						any_child = { 
-							is_child_of = scope:harem_liege
-							is_alive = yes
+				add = {
+					value = favor_minor_value_gain
+					if = { #Eligible heirs
+						limit = {
 							character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
-							count >= 2
 						}
+						add = favor_miniscule_value_gain
+					}
+					if = { #Closer to the throne
+						limit = {
+							scope:harem_liege.primary_title = {
+								place_in_line_of_succession = {
+									target = prev
+									value <= 3
+								}
+							}
+						}
+						add = favor_miniscule_value_gain
+					}
+					if = { #Player heir
+						limit = {
+							is_player_heir_of = scope:harem_liege
+						}
+						add = favor_miniscule_value_gain
+					}
+					if = { #Friends with liege
+						limit = {
+							has_relation_friend = scope:harem_liege
+						}
+						add = favor_miniscule_value_gain
+					}
+					if = { #Friends with liege
+						limit = {
+							has_relation_best_friend = scope:harem_liege
+						}
+						add = favor_minor_value_gain
 					}
 				}
-				add = favor_miniscule_value_gain
 			}
-		}
-	}
-	#Player heir
-	if = {
-		limit = { 
-			root = {  
-				any_child = { 
-					is_child_of = scope:harem_liege
-					is_player_heir_of = scope:harem_liege
-				}
-			}
-		}
-		add = {
-			#desc = favor_addition_player_heir
-			value = favor_minor_value_gain
 		}
 	}
 	#Pregnant consorts
@@ -3888,38 +3873,6 @@ initial_favor_valuation = {
 					}
 				}
 				add = favor_miniscule_value_gain
-			}
-		}
-	}
-	#Friendly children
-	if = {
-		limit = { 
-			root = {  
-				any_child = { 
-					is_child_of = scope:harem_liege
-					is_alive = yes
-					OR = {	
-						has_relation_friend = scope:harem_liege
-						has_relation_best_friend = scope:harem_liege
-					}
-					count > 0
-				}
-			}
-		}
-		add = {
-			#desc = favor_addition_friendly_children
-			value = favor_minor_value_gain
-			if = {
-				limit = { 
-					root = {  
-						any_child = { 
-							is_child_of = scope:harem_liege
-							is_alive = yes
-							has_relation_best_friend = scope:harem_liege
-						}
-					}
-				}
-				add = favor_minor_value_gain
 			}
 		}
 	}
