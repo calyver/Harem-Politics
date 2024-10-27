@@ -12,30 +12,34 @@ grand_consort_gained_court_position_effect = {
 		}
 		hidden_effect = {
 			every_consort = { #Harem opinion management
-				send_interface_toast = {
-					type = event_generic_bad #Check
-					title = grand_consort_promotion_toast
-					right_icon = scope:grand_consort
-					left_icon = scope:liege
-					custom_tooltip = grand_consort_promotion_toast_desc
-					
-					if = {
-						limit = {
-							scope:grand_consort = {
-								NOT = {
-									has_demoted_or_divorced_as_ps_opinion_trigger = {
-										TARGET = scope:liege
+				if = {
+					limit = {
+						NOT = {
+							this = scope:employee
+						}
+					}
+					send_interface_toast = {
+						type = event_generic_bad #Check
+						title = grand_consort_promotion_toast
+						right_icon = scope:grand_consort
+						left_icon = scope:liege
+						custom_tooltip = grand_consort_promotion_toast_desc
+						
+						if = {
+							limit = {
+								scope:grand_consort = {
+									NOT = {
+										has_demoted_or_divorced_as_ps_opinion_trigger = {
+											TARGET = scope:liege
+										}
 									}
 								}
 							}
-						}
-						#Update the primary spouse's opinion on the Grand Consort
-						if = {
-							limit = {
-								exists = scope:liege_actor_primary_spouse
-								exists = scope:grand_consort
-								this = scope:liege_actor_primary_spouse
-								AND = {
+							#Update the primary spouse's opinion on the Grand Consort
+							if = {
+								limit = {
+									exists = scope:liege_actor_primary_spouse
+									this = scope:liege_actor_primary_spouse
 									OR = {
 										has_trait = craven
 										has_trait = paranoid
@@ -43,90 +47,63 @@ grand_consort_gained_court_position_effect = {
 										harem_politics_evil_consort_trigger = yes
 									}
 									NOR = {
-										has_relation_best_friend = scope:grand_consort
-										has_relation_friend = scope:grand_consort
-										has_relation_soulmate = scope:grand_consort
-										has_relation_lover = scope:grand_consort
-										has_relation_soulmate = scope:actor
-										scope:grand_consort = {
-											this = scope:liege_actor_primary_spouse
-										}
+										has_relation_best_friend = scope:employee
+										has_relation_friend = scope:employee
+										has_relation_soulmate = scope:employee
+										has_relation_lover = scope:employee
+										has_relation_soulmate = scope:liege
 									}
 									opinion = {
-										target = scope:grand_consort
+										target = scope:employee
 										value <= low_positive_opinion
 									}
-									OR = { #Only harem consorts would care
-										accepts_concubinage = yes
-										accepts_polygamy = yes
+									accepts_harems = yes
+								}
+								add_opinion = {
+									target = scope:employee
+									modifier = threatening_consort_opinion
+								}
+							}
+							#Consorts will update their opinions on new Grand Consort
+							if = {
+								limit = {
+									harem_politics_evil_consort_trigger = yes
+									accepts_harems = yes
+									opinion = {
+										target = scope:employee
+										value <= 15
+									}
+									NAND = {
+										exists = scope:liege_actor_primary_spouse
+										this = scope:liege_actor_primary_spouse
+									}
+								}
+								if = {
+									limit = {
+										NOT = {
+											has_opinion_modifier = {
+												target = scope:employee
+												modifier = envy_consort_opinion
+											}
+										}
+									}
+									add_opinion = {
+										target = scope:employee
+										modifier = envy_consort_opinion
 									}
 								}
 							}
-							add_opinion = {
-								target = scope:grand_consort
-								modifier = threatening_consort_opinion
-							}
-						}
-						if = {
-							limit = {
-								AND = {
-									NOR = {
-										has_relation_best_friend = scope:grand_consort
-										has_relation_friend = scope:grand_consort
-										has_relation_soulmate = scope:grand_consort
-										has_relation_lover = scope:grand_consort
-										has_relation_soulmate = scope:actor
-										this = scope:grand_consort
-									}
-									scope:grand_consort = {
+							if = {
+								limit = {
+									scope:employee = {
 										harem_politics_evil_consort_trigger = yes
 									}
-									opinion = {
-										target = scope:grand_consort
-										value <= 0
-									}
 								}
-							}
-							stress_impact = {
-								craven = minor_stress_impact_gain
-								shy = minor_stress_impact_gain
-								paranoid = miniscule_stress_impact_gain
-							}
-						}
-						#Consorts will update their opinions on new Grand Consort
-						if = {
-							limit = {
-								AND = {
-									harem_politics_evil_consort_trigger = yes
-									NOR = {
-										has_relation_best_friend = scope:grand_consort
-										has_relation_friend = scope:grand_consort
-										has_relation_soulmate = scope:grand_consort
-										has_relation_lover = scope:grand_consort
-										has_relation_soulmate = scope:actor
-										AND = {	
-											exists = scope:liege_actor_primary_spouse
-											this = scope:liege_actor_primary_spouse
-										}
-										this = scope:grand_consort
-										has_opinion_modifier = {
-											target = scope:grand_consort
-											modifier = envy_consort_opinion
-										}
-									}
-									OR = { #Only harem consorts would care
-										accepts_concubinage = yes
-										accepts_polygamy = yes
-									}
-									opinion = {
-										target = scope:grand_consort
-										value <= low_positive_opinion
-									}
+								stress_impact = {
+									craven = minor_stress_impact_gain
+									shy = minor_stress_impact_gain
+									paranoid = miniscule_stress_impact_gain
 								}
-							}
-							add_opinion = {
-								target = scope:grand_consort
-								modifier = envy_consort_opinion
 							}
 						}
 					}
@@ -138,7 +115,7 @@ grand_consort_gained_court_position_effect = {
 		every_close_or_extended_family_member = {
 			hidden_effect = {
 				send_interface_message = {
-					type = event_generic_good_text
+					type = event_generic_good_text #Check
 					title = grand_consort_promotion_t 
 					right_icon = scope:employee
 					left_icon = scope:liege
@@ -154,22 +131,18 @@ grand_consort_gained_court_position_effect = {
 						target = scope:liege
 						modifier = forced_me_concubine_marriage_opinion
 					}
-					has_character_modifier = demoted_primary_spouse_modifier
-					has_character_flag = flag_demoted_grand_consort
+					has_demoted_or_divorced_opinion_trigger = {
+						TARGET = scope:liege
+					}
 				}
+				accepts_harems = yes
 			}
 			if = {
 				limit = {
-					AND = {
-						OR = {
-							has_trait = arrogant
-							has_trait = ambitious
-							has_trait = greedy
-						}
-						OR = { #Only harem consorts would care
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
+					OR = {
+						has_trait = arrogant
+						has_trait = ambitious
+						has_trait = greedy
 					}
 				}
 				add_opinion = {
@@ -177,6 +150,7 @@ grand_consort_gained_court_position_effect = {
 					modifier = thankful_consort_opinion
 				}
 			}
+			#Trigger event
 			
 			hidden_effect = {
 				every_close_or_extended_family_member = {
@@ -192,6 +166,7 @@ grand_consort_gained_court_position_effect = {
 								modifier = thankful_consort_relative_opinion
 							}
 						}
+						accepts_harems = yes
 					}
 					add_opinion = {
 						target = scope:liege
@@ -200,11 +175,16 @@ grand_consort_gained_court_position_effect = {
 				}
 			}
 		}
+		else = {
+			#Trigger event
+		}
 		
 		if = {
 			limit = {
 				NOT = {
-					has_character_modifier = demoted_primary_spouse_modifier
+					has_demoted_or_divorced_as_ps_opinion_trigger = {
+						TARGET = scope:liege
+					}
 				}
 			}
 			# If we're a clan this interaction affects unity
@@ -218,11 +198,9 @@ grand_consort_gained_court_position_effect = {
 			clear_negative_consort_modifiers_effect = yes
 			if = {
 				limit = {
-					NOR = {
-						has_character_flag = flag_demoted_grand_consort
-						has_opinion_modifier = {
-							modifier = demoted_me_concubine_marriage_opinion
-							target = scope:liege
+					NOT = {
+						has_demoted_or_divorced_opinion_trigger = {
+							TARGET = scope:liege
 						}
 					}
 				}
@@ -245,43 +223,20 @@ grand_consort_gained_court_position_effect = {
 		if = { #Character flags
 			limit = {
 				OR = {
-					has_character_flag = flag_demoted_grand_consort
-					has_character_flag = flag_demoted_spouse
+					has_opinion_modifier = {
+						modifier = demoted_me_as_gc
+						target = scope:liege
+					}
+					has_opinion_modifier = {
+						modifier = demoted_me_as_ss
+						target = scope:liege
+					}
 				}
-				has_opinion_modifier = {
-					modifier = demoted_me_concubine_marriage_opinion
-					target = scope:liege
-				}
-			}
-			if = { #Character flags
-				limit = {
-					has_character_flag = flag_demoted_grand_consort
-				}
-				remove_character_flag = flag_demoted_grand_consort
-			}
-			else = { #Character flags
-				remove_character_flag = flag_demoted_spouse
-			}
-			
-			add_opinion = {
-				modifier = reinstated_me_opinion
-				target = scope:liege
-			}
 
-			if = {
-				limit = { 
-					has_character_modifier = demoted_spouse_modifier
-				}
-				remove_character_modifier = demoted_spouse_modifier
 			}
-			
-			every_close_or_extended_family_member = {
-				limit = { NOT = { this = scope:liege } }
-				custom = all_family_members
-				add_opinion = {
-					modifier = reinstated_relative_marriage_opinion
-					target = scope:liege
-				}
+			consort_reinstatement_effect = {
+				REINSTATOR = scope:liege
+				REINSTATED = scope:employee
 			}
 		}
 	}
@@ -330,50 +285,58 @@ grand_consort_revoked_court_position_effect = {
 					modifier = thankful_consort_opinion
 				}
 			}
+
 			hidden_effect = {
 				every_close_or_extended_family_member = {
-					limit = {
-						has_opinion_modifier = {
+					if = {
+						limit = {
+							has_opinion_modifier = {
+								target = scope:liege
+								modifier = thankful_consort_relative_opinion
+							}
+						}
+						remove_opinion = {
 							target = scope:liege
 							modifier = thankful_consort_relative_opinion
 						}
 					}
-					remove_opinion = {
-						target = scope:liege
-						modifier = thankful_consort_relative_opinion
-					}
 				}
 			}
 			clear_positive_consort_modifiers_effect = yes
+			#Progress towards rivals
 			if = {
-				limit = { 
-					NOR = { 
-						has_relation_potential_rival = scope:liege
-						has_relation_rival = scope:liege
-						has_relation_nemesis = scope:liege
-					} 
+				limit = {
+					can_set_relation_rival_trigger = { CHARACTER = scope:liege }
 				}
-				set_relation_potential_rival = scope:liege
+				progress_towards_rival_effect = {
+					REASON = rival_at_university #Check
+					CHARACTER = scope:liege
+					OPINION = default_rival_opinion #Check
+				}
 			}
 			if = { #Character flags
 				limit = {
 					NOT = {
-						has_character_modifier = demoted_primary_spouse_modifier
+						has_demoted_or_divorced_as_ps_opinion_trigger = {
+							TARGET = scope:liege
+						}
 					}
 				}
-				calyver_favor_big_loss_effect = yes
-				add_character_flag = {
-					flag = flag_demoted_grand_consort
-				}
-				add_character_modifier = {
-					modifier = demoted_spouse_modifier
-					years = 10
+				clear_consort_opinions_effect = {
+					TARGET = scope:liege
 				}
 				# Victim is naturally angry for being demoted.
 				add_opinion = {
 					target = scope:liege
-					modifier = demoted_me_concubine_marriage_opinion
+					modifier = demoted_me_as_gc
 				}
+				calyver_favor_big_loss_effect = yes
+				add_character_modifier = {
+					modifier = demoted_spouse_modifier
+				}
+			}
+			else = {
+				calyver_favor_medium_loss_effect = yes
 			}
 			#Relatives too
 			if = {
@@ -403,7 +366,7 @@ grand_consort_revoked_court_position_effect = {
 				}
 				hidden_effect = {
 					send_interface_message = {
-						type = event_generic_bad_text
+						type = event_generic_bad_text #Check
 						title = demoted_grand_consort_t
 						right_icon = scope:employee
 						left_icon = scope:liege
@@ -447,54 +410,37 @@ grand_consort_revoked_court_position_effect = {
 			}
 			hidden_effect = {
 				every_consort = {
-					scope:employee = {
-						save_scope_as = previous_grand_consort
-					}
-					#Previous primary spouse will no longer have threatening_consort_opinion
-					if = {
+					if = { #The primary spouse is relieved
 						limit = {
 							has_opinion_modifier = {
+								target = scope:employee
 								modifier = threatening_consort_opinion
-								target = scope:previous_grand_consort
 							}
 						}
 						remove_opinion = {
+							target = scope:employee
 							modifier = threatening_consort_opinion
-							target = scope:previous_grand_consort
 						}
 					}
-					#Consorts will update their opinions on previous grand consort
-					if = {
+					if = { #Other consorts don't feel jealous
 						limit = {
 							has_opinion_modifier = {
-								target = scope:previous_grand_consort
+								target = scope:employee
 								modifier = envy_consort_opinion
 							}
 						}
 						remove_opinion = {
-							target = scope:previous_grand_consort
+							target = scope:employee
 							modifier = envy_consort_opinion
 						}
 					}
 					if = { #Craven consorts don't feel threatened by a despot
 						limit = {
-							AND = {
-								NOR = {
-									has_relation_best_friend = scope:previous_grand_consort
-									has_relation_friend = scope:previous_grand_consort
-									has_relation_soulmate = scope:previous_grand_consort
-									has_relation_lover = scope:previous_grand_consort
-									has_relation_soulmate = scope:liege
-									this = scope:previous_grand_consort
-								}
-								OR = {
-									has_trait = paranoid
-									has_trait = craven
-									has_trait = shy
-								}
-								scope:previous_grand_consort = {
-									harem_politics_evil_consort_trigger = yes
-								}
+							NOT = {
+								this = scope:employee
+							}
+							scope:employee = {
+								harem_politics_evil_consort_trigger = yes
 							}
 						}
 						stress_impact = {
@@ -503,6 +449,7 @@ grand_consort_revoked_court_position_effect = {
 							paranoid = minor_stress_impact_loss
 						}
 					}
+					#Trigger event
 				}
 			}
 		}
