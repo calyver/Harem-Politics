@@ -1,3 +1,59 @@
+######################################################
+############## LIST TYPES AND TEMPLATES ##############
+######################################################
+
+template default_character_list_overlay
+{
+	modify_texture = {
+		texture = "gfx/interface/buttons/button_standard_overlay.dds"
+		spriteType = Corneredstretched
+		spriteborder = { 3 3 }
+		blend_mode = overlay
+	}
+}
+
+template character_age_or_death_text
+{
+	hbox = {
+		block "list_layout" {
+			minimumsize = { 62 0 }
+			expand = {}
+		}
+
+		margin_right = 5
+		spacing = 2
+
+		block "character_age"
+		{
+			text_single = {
+				text = "[Character.GetAge]"
+				align = nobaseline
+			}
+		}
+
+		icon = {
+			visible = "[Not(Character.IsDeadAndValid)]"
+			size = { 23 23 }
+			framesize = { 60 60 }
+			frame = "[Character.GetHealthIconFrame]"
+			texture = "gfx/interface/icons/character_status/icon_health.dds"
+			tooltip = "[Character.GetHealthInfo]"
+		}
+
+		block "is_dead"
+		{
+			icon = {
+				name = "is_dead"
+				visible = "[Character.IsDeadAndValid]"
+				size = { 23 23 }
+
+				texture = "[Character.GetDeathReasonIcon]"
+				tooltip = "CHARACTER_DEAD_TOOLTIP"
+			}
+		}
+	}
+}
+
 types Lists
 {
 	type character_age_health = hbox
@@ -2839,6 +2895,463 @@ types Lists
 					layoutpolicy_vertical = expanding
 					visible = "[IsDataModelEmpty( CharacterSelectionList.GetList )]"
 					text = "NO_CHARACTERS_TO_SELECT"
+				}
+			}
+		}
+	}
+}
+
+
+####################################
+########### SCROLL AREA ############
+####################################
+
+## Generic scrollarea. Remember that "scrollbox_content" can only contain one child without siblings.
+types Scrollbar
+{
+
+	type scrollbox = scrollarea {
+		size = { 100 100 }
+
+		scrollbarpolicy_horizontal = always_off
+
+		block "scrollbox_scrollbar_vertical"
+		{
+			scrollbar_vertical = {
+				using = Scrollbar_Vertical
+			}
+		}
+
+		block "scrollbox_background"
+		{
+			background = {
+				using = Background_Area
+			}
+		}
+
+		scrollwidget = {
+			block "scrollbox_replace_vbox"
+			{
+				vbox = {
+					block "scrollbox_margins"
+					{
+						using = Scrollbox_Margins
+					}
+
+					block "scrollbox_content"
+					{
+						debug_square = {}
+					}
+
+					text_single = {
+						layoutpolicy_vertical = expanding
+						default_format = "#weak"
+
+						block "scrollbox_empty"
+						{
+							visible = no
+						}
+					}
+
+					block "scrollbox_expand"
+					{
+						expand = {
+							layoutpolicy_vertical = growing
+						}
+					}
+				}
+			}
+		}
+
+		block "scrollbox_background_fade" {
+			icon = {
+				name = "scrollbar_fade"
+				texture = "gfx/interface/scrollbars/scrollbar_fade.dds"
+				size = { 100% 100% }
+				alwaystransparent = yes
+
+				spriteType = Corneredtiled
+				spriteborder = { 0 30 }
+			}
+		}
+	}
+}
+
+## Vertical scrollbar
+template Scrollbar_Vertical
+{
+	scrollbar = {
+		name = "vertical_scrollbar"
+		size = { 12 12 }
+		wheelstep = 60
+		direction = vertical
+
+		track = {
+			button = {
+				size = { 12 12 }
+				gfxtype = buttongfx
+
+				texture = "gfx/interface/scrollbars/scrollbar_track_vertical.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 0 3 }
+				effectname = "NoHighlight"
+			}
+		}
+
+		slider = {
+			button = {
+				gfxtype = framedbuttongfx
+				effectname = "NoHighlight"
+
+				texture = "gfx/interface/scrollbars/scrollbar_slider.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 0 3 }
+				framesize = { 12 40 }
+				minimumsize = { -1 40 }
+
+				upframe = 1
+				overframe = 2
+				downframe = 2
+
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_icon_pointer_over"
+
+				state = {
+					name = _mouse_press
+					start_sound = {
+						soundeffect = "event:/SFX/UI/Generic/sfx_ui_generic_icon_select"
+					}
+				}
+
+				state = {
+					name = _mouse_release
+					start_sound = {
+						soundeffect = "event:/SFX/UI/Generic/sfx_ui_generic_icon_select"
+					}
+				}
+			}
+		}
+
+		dec_button = {
+			button = {
+			}
+		}
+
+		inc_button = {
+			button = {
+			}
+		}
+	}
+}
+
+## Horizontal scrollbar
+template Scrollbar_Horizontal
+{
+	scrollbar = {
+		name = "horizontal_scrollbar"
+		size = { 12 12 }
+		wheelstep = 60
+		direction = horizontal
+
+		track = {
+			button = {
+				size = { 12 12 }
+				gfxtype = buttongfx
+
+				texture = "gfx/interface/scrollbars/scrollbar_track_horizontal.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 3 0 }
+				effectname = "NoHighlight"
+				intersectionmask = yes
+			}
+		}
+
+		slider = {
+			button = {
+				gfxtype = framedbuttongfx
+				effectname = "NoHighlight"
+
+				texture = "gfx/interface/scrollbars/scrollbar_slider_horizontal.dds"
+				spriteType = Corneredtiled
+				spriteborder = { 3 0 }
+				framesize = { 40 12 }
+				minimumsize = { 15 -1 }
+
+				upframe = 1
+				overframe = 2
+				downframe = 2
+
+				intersectionmask = yes
+				oversound = "event:/SFX/UI/Generic/sfx_ui_generic_icon_pointer_over"
+
+				state = {
+					name = _mouse_press
+					start_sound = {
+						soundeffect = "event:/SFX/UI/Generic/sfx_ui_generic_icon_select"
+					}
+				}
+
+				state = {
+					name = _mouse_release
+					start_sound = {
+						soundeffect = "event:/SFX/UI/Generic/sfx_ui_generic_icon_select"
+					}
+				}
+			}
+		}
+
+		dec_button = {
+			button = {
+			}
+		}
+
+		inc_button = {
+			button = {
+			}
+		}
+	}
+}
+
+types DataModelViewTypes
+{
+	type data_model_view_options_hbox = hbox
+	{
+		spacing = 5
+
+		button_standard = {
+			name = "filters"
+			size = { 25 25 }
+
+			down = "[DataModelView.AreFiltersShown]"
+			onclick = "[DataModelView.ToggleFiltersShown]"
+
+			tooltip = "TOGGLE_FILTERS"
+			using = tooltip_nw
+
+			button_search = {
+				alwaystransparent = yes
+				parentanchor = center
+				size = { 20 20 }
+			}
+		}
+
+		divider_light = {
+			size = { 3 20 }
+		}
+
+		text_single = {
+			text = "SORT_BY"
+			align = nobaseline
+		}
+
+		dropdown_menu_standard = {
+			name = "sort_options"
+
+			blockoverride "dropdown_properties"
+			{
+				datamodel = "[DataModelView.GetSorters]"
+				selectedindex = "[DataModelView.GetActiveSortIndex]"
+				onselectionchanged = "[DataModelView.SortBy]"
+			}
+
+			blockoverride "dropdown_active_item_properties"
+			{
+				text = "[DataModelSorter.GetName]"
+			}
+
+			blockoverride "dropdown_item_properties"
+			{
+				text = "[DataModelSorter.GetName]"
+			}
+		}
+
+		button_standard = {
+			name = "sort_order"
+			size = { 25 25 }
+
+			using = tooltip_ne
+			onclick = "[DataModelView.ToggleSortOrder]"
+
+			button_icon = {
+				size = { 25 25 }
+				texture = "gfx/interface/icons/flat_icons/sort_icon.dds"
+				framesize = { 66 66 }
+				frame = "[BoolTo1And2( DataModelView.GetSortOrder )]"
+
+				alwaystransparent = yes
+
+				blockoverride "button_frames"
+				{
+					effectname = "NoHighlight"
+				}
+			}
+		}
+	}
+
+	type data_model_view_toggle_filter = button_checkbox_label
+	{
+		layoutpolicy_horizontal = expanding
+
+		onclick = "[DataModelView.ToggleFilter( PdxGuiWidget.GetIndexInDataModel )]"
+
+		block "toggle_onclick"
+		{
+		}
+
+		blockoverride "checkbox"
+		{
+			checked = "[DataModelFilter.IsEnabled]"
+		}
+
+		blockoverride "text"
+		{
+			text = "[DataModelFilter.GetName]"
+		}
+	}
+
+	type data_model_view_dropdown_filter = hbox
+	{
+		layoutpolicy_horizontal = expanding
+
+		spacing = 5
+
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			text = "[DataModelGroupedFilter.GetGroupName]"
+			default_format = "#medium"
+			align = nobaseline
+			autoresize = no
+		}
+
+		dropdown_menu_standard = {
+			blockoverride "dropdown_properties"
+			{
+				datamodel = "[DataModelGroupedFilter.GetFilters]"
+				selectedindex = "[DataModelGroupedFilter.GetActiveFilter]"
+				onselectionchanged = "[DataModelView.SelectGroupFilter( PdxGuiWidget.GetIndexInDataModel )]"
+
+				block "dropdown_onselect"
+				{
+				}
+			}
+
+			blockoverride "dropdown_active_item_properties"
+			{
+				text = "[CString.GetString]"
+			}
+
+			blockoverride "dropdown_item_properties"
+			{
+				text = "[CString.GetString]"
+			}
+		}
+	}
+
+	type data_model_view_filter_hbox = hbox
+	{
+		layoutpolicy_horizontal = expanding
+		spacing = 10
+
+		hbox = {
+			name = "toggle_filters"
+			layoutpolicy_horizontal = expanding
+			datamodel = "[DataModelView.GetFilters]"
+
+			item = {
+				data_model_view_toggle_filter = {}
+			}
+		}
+
+		hbox = {
+			name = "grouped_filters"
+			layoutpolicy_horizontal = expanding
+			datamodel = "[DataModelView.GetGroupedFilters]"
+
+			item = {
+				data_model_view_dropdown_filter = {}
+			}
+		}
+	}
+
+	type data_model_view_filters_window = window
+	{
+		visible_at_creation = no
+		visible = "[DataModelView.AreFiltersShown]"
+
+		parentanchor = top|right
+		position = { -780 20 }
+		size = { 510 800 }
+		focuspolicy = click
+
+		allow_outside = yes
+
+		using = Window_Movable
+		using = Window_Background_Subwindow
+
+		state = {
+			name = _show
+			using = Animation_FadeIn_Quick
+		}
+
+		state = {
+			name = _hide
+			using = Animation_FadeOut_Quick
+		}
+
+		vbox = {
+			margin = { 4 4 }
+
+			spacing = 10
+
+			header_pattern = {
+				layoutpolicy_horizontal = expanding
+
+				blockoverride "header_text"
+				{
+					text = "CHARACTER_LIST_FILTERS"
+				}
+				blockoverride "button_close"
+				{
+					onclick = "[DataModelView.ToggleSortOrder]"
+				}
+			}
+
+			scrollbox = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+
+				blockoverride "scrollbox_content"
+				{
+					vbox = {
+						name = "toggle_filters"
+						layoutpolicy_horizontal = expanding
+						datamodel = "[DataModelView.GetFilters]"
+
+						item = {
+							data_model_view_toggle_filter = {}
+						}
+					}
+
+					vbox = {
+						name = "grouped_filters"
+						layoutpolicy_horizontal = expanding
+						datamodel = "[DataModelView.GetGroupedFilters]"
+
+						item = {
+							data_model_view_dropdown_filter = {}
+						}
+					}
+				}
+			}
+
+			hbox = {
+				layoutpolicy_horizontal = growing
+				margin_bottom = 10
+
+				button_standard = {
+					name = "remove_filters"
+					raw_text = "Remove Filters"
+					focuspolicy = click
+					onclick = "[DataModelView.RemoveAllFilters]"
 				}
 			}
 		}
