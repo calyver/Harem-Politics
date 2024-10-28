@@ -3451,6 +3451,97 @@ calyver_downgrade_active_consort_opinion_effect = {
 	}
 }
 
+# When you take spouses/concubines whose Faith does not permit that union, they will gain opinion penalties.
+# This effect adds/updates/replaces/removes those opinion penalties, as approprite to the current situation.
+update_active_consort_opinion_effect = {
+
+	# If we currently have any existing consort opinion modifiers, check if they should be downgraded from permanent modifiers to decaying modifiers.
+	downgrade_invalid_consort_opinions_effect = { PARTNER = $PARTNER$ }
+
+	if = {
+		# If this opinion change was triggered by being divorced/set-aside, we may still technically be married/joined to PARTNER at this moment, but we won't be very shortly and should skip this step.
+		limit = {
+			NOR = {
+				exists = scope:is_being_divorced
+				exists = scope:is_being_set_aside
+			}
+		}
+
+		# Oterwise, apply any new consort opinion effects that are applicable.
+		if = {
+			# Characters who do not believe in concubinage, but are forced into it, have the harshest opinion penalties.
+			limit = {
+				is_concubine_of = $PARTNER$
+				NOT = { accepts_concubinage = yes }
+			}
+			if = {
+				# Harshest opinion penalty if they are a concubine but believe in monogamy
+				limit = { 
+					accepts_concubinage = no
+					accepts_polygamy = no
+				}
+				add_opinion = {
+					target = $PARTNER$
+					modifier = concubine_with_monogamous_faith_opinion
+				}
+			}
+			else_if = {
+				# Lesser-but-still-harsh opinion penalty if they are a concubine but believe in polygamy
+				limit = {
+					accepts_polygamy = yes
+				}
+				add_opinion = {
+					target = $PARTNER$
+					modifier = concubine_with_polygamous_faith_opinion
+				}
+			}
+		}
+		else_if = {
+			# Characters who are legitimate spouses of their partner, but do not approve of their partner's other spouses/concubines, will have milder opinion penalties.
+			limit = {
+				is_spouse_of = $PARTNER$
+				$PARTNER$ = { any_consort = { count >= 2 }}
+				NOT = { accepts_concubinage = yes }
+				NOT = { faith = { has_doctrine = tenet_polyamory }}
+			}
+			if = {
+				limit = {
+					$PARTNER$ = { any_concubine = { count >= 1 }}
+				}
+				add_opinion = {
+					target = $PARTNER$
+					modifier = spouse_does_not_believe_in_concubines_opinion
+				}
+				#Remove the opinion modifier if you flip-flop and go get concubines after getting rid of them all...
+				remove_opinion = {
+					target = $PARTNER$
+					modifier = spouse_does_not_believe_in_former_concubines_opinion
+				}
+			}
+			else_if = {
+				limit = {
+					accepts_polygamy = no
+				}
+				add_opinion = {
+					target = $PARTNER$
+					modifier = polygamous_marriage_opinion
+				}
+			}
+		}
+		#Same-sex not accepted penalty
+		if = {
+			limit = {
+				allowed_to_marry_same_sex_trigger = no
+				sex_same_as = $PARTNER$
+			}
+			add_opinion = {
+				target = $PARTNER$
+				modifier = same_sex_with_no_acceptance_opinion
+			}
+		}
+	}
+}
+
 new_primary_spouse_on_action_effect = {
 	save_scope_as = harem_liege
 	if = { #The Grand Consort is promoted
