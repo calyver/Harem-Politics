@@ -3542,6 +3542,181 @@ update_active_consort_opinion_effect = {
 	}
 }
 
+# Checks if we have any permanent opinion modifiers which are no longer applicable. If so, downgrade them to decaying opinion modifiers.
+downgrade_invalid_consort_opinions_effect = {
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = concubine_with_monogamous_faith_opinion
+				target = $PARTNER$
+			}
+			OR = {
+				# We are no longer a concubine of PARTNER...
+				NOT = { is_concubine_of = $PARTNER$ }
+				# ...or will no longer be a concubine of them.
+				trigger_if = {
+					limit = { exists = scope:is_being_set_aside}
+					scope:is_being_set_aside = this
+				}
+
+				# Or, our Faith/culture has changed to permit us being a concubine.
+				accepts_concubinage = yes
+			}
+		}
+		remove_opinion = {
+			modifier = concubine_with_monogamous_faith_opinion
+			target = $PARTNER$
+		}
+		add_opinion = {
+			modifier = formerly_concubine_with_monogamous_faith_opinion
+			target = $PARTNER$
+		}
+	}
+
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = concubine_with_polygamous_faith_opinion
+				target = $PARTNER$
+			}
+			OR = {
+				# We are no longer a concubine of PARTNER...
+				NOT = { is_concubine_of = $PARTNER$ }
+				# ...or will no longer be a concubine of them.
+				trigger_if = {
+					limit = { exists = scope:is_being_set_aside}
+					scope:is_being_set_aside = this
+				}
+
+				# Or, our Faith/Culture has changed to permit us being a concubine.
+				accepts_concubinage = yes
+			}
+		}
+		remove_opinion = {
+			modifier = concubine_with_polygamous_faith_opinion
+			target = $PARTNER$
+		}
+		add_opinion = {
+			modifier = formerly_concubine_with_polygamous_faith_opinion
+			target = $PARTNER$
+		}
+	}
+
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = spouse_does_not_believe_in_concubines_opinion
+				target = $PARTNER$
+			}
+			OR = {
+				# We are no longer married to PARTNER...
+				NOT = { is_spouse_of = $PARTNER$ }
+				# ...or will no longer be married to them.
+				trigger_if = {
+					limit = { exists = scope:is_being_divorced}
+					scope:is_being_divorced = this
+				}
+
+				# Or, the offending relationship no longer exists.
+				$PARTNER$ = { any_concubine = {	count = 0 }}
+				AND = {
+					# The last remaining concubine is being set aside, leaving none.
+					exists = scope:is_being_set_aside
+					$PARTNER$ = { any_concubine = { count = 1 }}
+				}
+
+				# Or, our Faith/Culture has changed to permit the relationship.
+				accepts_concubinage = yes
+				faith = { has_doctrine = tenet_polyamory }
+			}
+		}
+		remove_opinion = {
+			modifier = spouse_does_not_believe_in_concubines_opinion
+			target = $PARTNER$
+		}
+		add_opinion = {
+			modifier = spouse_does_not_believe_in_former_concubines_opinion
+			target = $PARTNER$
+		}
+	}
+
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = polygamous_marriage_opinion
+				target = $PARTNER$
+			}
+			OR = {
+				# We are no longer married to PARTNER...
+				NOT = { is_spouse_of = $PARTNER$ }
+				# ...or will no longer be married to them.
+				trigger_if = {
+					limit = { exists = scope:is_being_divorced}
+					scope:is_being_divorced = this
+				}
+
+				# Or, the offending relationship no longer exists.
+				$PARTNER$ = { any_spouse = { count = 1 }}
+				AND = {
+					# One of the 2 remaining spouses will be divorced next tick, leaving only 1.
+					exists = scope:is_being_divorced 
+					$PARTNER$ = { any_spouse = { count = 2 }}
+				}
+
+				# Or, our Faith/Culture has changed to permit the relationship.
+				accepts_concubinage = yes
+				accepts_polygamy = yes
+				faith = { has_doctrine = tenet_polyamory }
+			}
+		}
+		remove_opinion = {
+			modifier = polygamous_marriage_opinion
+			target = $PARTNER$
+		}
+		add_opinion = {
+			modifier = former_polygamous_marriage_opinion
+			target = $PARTNER$
+		}
+	}
+
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = same_sex_with_no_acceptance_opinion
+				target = $PARTNER$
+			}
+			OR = {
+				# We are no partner of PARTNER...
+				NOT = { is_consort_of = $PARTNER$ }
+				# ...or will no longer be married to them
+				trigger_if = {
+					limit = { exists = scope:is_being_divorced}
+					scope:is_being_divorced = this
+				}
+				# ...or will no longer be a concubine of them
+				trigger_if = {
+					limit = { exists = scope:is_being_set_aside}
+					scope:is_being_set_aside = this
+				}
+
+				# Or, the offending relationship no longer exists.
+				sex_opposite_of = $PARTNER$
+
+				# Or, our Faith has changed to permit the relationship.
+				allowed_to_marry_same_sex_trigger = yes
+			}
+		}
+		remove_opinion = {
+			modifier = same_sex_with_no_acceptance_opinion
+			target = $PARTNER$
+		}
+		add_opinion = {
+			modifier = former_same_sex_with_no_acceptance_opinion
+			target = $PARTNER$
+		}
+	}
+}
+
 new_primary_spouse_on_action_effect = {
 	save_scope_as = harem_liege
 	if = { #The Grand Consort is promoted
