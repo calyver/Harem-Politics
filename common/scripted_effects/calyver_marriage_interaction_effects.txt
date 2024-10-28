@@ -580,8 +580,10 @@ calyver_concubine_on_accept_effect = {
 					limit = {
 						NOT = { this = scope:actor }
 					}
-					former_consort_forced_concubine_effect = {
-						PARTNER = prev
+					scope:recipient = {
+						former_consort_forced_concubine_effect = {
+							PARTNER = prev
+						}
 					}
 				}
 			}
@@ -645,8 +647,7 @@ calyver_concubine_on_accept_effect = {
 					hidden_effect = {
 						if = {
 							limit = {
-								exists = primary_spouse
-								primary_spouse = {
+								primary_spouse ?= {
 									this = scope:recipient
 								}
 								any_spouse = {
@@ -657,9 +658,11 @@ calyver_concubine_on_accept_effect = {
 								flag = flag_lowborn_exception
 								days = 2
 							}
-							new_primary_spouse_divorce_effect = {
-								PREVIOUS_PS = scope:recipient
-								PARTNER = prev
+							scope:recipient = {
+								new_primary_spouse_divorce_effect = {
+									PREVIOUS_PS = scope:recipient
+									PARTNER = prev
+								}
 							}
 							remove_character_flag = flag_lowborn_exception
 						}
@@ -780,73 +783,75 @@ make_concubine_harem_politics_effect = {
 }
 
 former_consort_forced_concubine_effect = {
-	if = {
-		limit = {
-			any_consort = {
-				count >= 2
+	$PARTNER$= {
+		if = {
+			limit = {
+				any_consort = {
+					count >= 2
+				}
 			}
-		}
-		every_consort = { #Updating consort opinions
-			if = { #The primary spouse is relieved
-				limit = {
-					has_opinion_modifier = {
+			every_consort = { #Updating consort opinions
+				if = { #The primary spouse is relieved
+					limit = {
+						has_opinion_modifier = {
+							target = scope:recipient
+							modifier = threatening_consort_opinion
+						}
+					}
+					remove_opinion = {
 						target = scope:recipient
 						modifier = threatening_consort_opinion
 					}
 				}
-				remove_opinion = {
-					target = scope:recipient
-					modifier = threatening_consort_opinion
-				}
-			}
-			if = { #Other consorts don't feel jealous
-				limit = {
-					has_opinion_modifier = {
+				if = { #Other consorts don't feel jealous
+					limit = {
+						has_opinion_modifier = {
+							target = scope:recipient
+							modifier = envy_consort_opinion
+						}
+					}
+					remove_opinion = {
 						target = scope:recipient
 						modifier = envy_consort_opinion
 					}
 				}
-				remove_opinion = {
-					target = scope:recipient
-					modifier = envy_consort_opinion
-				}
-			}
-			if = { #Craven consorts don't feel threatened by a despot
-				limit = {
-					OR = {
-						AND = {
-							is_concubine = yes
-							scope:recipient = {
-								OR = {
-									is_married = yes
-									is_grand_consort_trigger = yes
+				if = { #Craven consorts don't feel threatened by a despot
+					limit = {
+						OR = {
+							AND = {
+								is_concubine = yes
+								scope:recipient = {
+									OR = {
+										is_married = yes
+										is_grand_consort_trigger = yes
+									}
+								}
+							}
+							AND = {
+								is_married = yes
+								scope:recipient = {
+									OR = {
+										this = $PARTNER$.primary_spouse
+										is_grand_consort_trigger = yes
+									}
 								}
 							}
 						}
-						AND = {
-							is_married = yes
-							scope:recipient = {
-								OR = {
-									this = $PARTNER$.primary_spouse
-									is_grand_consort_trigger = yes
-								}
-							}
+						NOT = {
+							this = scope:recipient
+						}
+						scope:recipient = {
+							harem_politics_evil_consort_trigger = yes
 						}
 					}
-					NOT = {
-						this = scope:recipient
-					}
-					scope:recipient = {
-						harem_politics_evil_consort_trigger = yes
+					stress_impact = {
+						craven = minor_stress_impact_loss
+						shy = minor_stress_impact_loss
+						paranoid = minor_stress_impact_loss
 					}
 				}
-				stress_impact = {
-					craven = minor_stress_impact_loss
-					shy = minor_stress_impact_loss
-					paranoid = minor_stress_impact_loss
-				}
+				#Trigger event
 			}
-			#Trigger event
 		}
 	}
 }
@@ -2477,188 +2482,19 @@ divorcer_effect = {
 }
 
 new_primary_spouse_divorce_effect = {
-	if = { 
-		limit = { 
-			any_spouse = {
-				has_court_position = grand_consort_court_position
-				NOT = {	
-					this = $PREVIOUS_PS$
-				}
-			}
-		}
-		random_spouse = {
-			limit = {
-				has_court_position = grand_consort_court_position
-			}
-			save_scope_as = new_primary_spouse
-		}
-		set_primary_spouse = scope:new_primary_spouse
-		make_primary_spouse_effect = {
-			PARTNER = $PARTNER$
-		}
-		clear_saved_scope = new_primary_spouse
-	}
-	else = {
-		hidden_effect = {
-			every_spouse = {
-				limit = { 	
+	$PARTNER$ = {
+		if = { 
+			limit = { 
+				any_spouse = {
+					has_court_position = grand_consort_court_position
 					NOT = {	
 						this = $PREVIOUS_PS$
 					}
 				}
-				add_to_temporary_list = future_primary_spouse
 			}
-			random_in_list = {
-				list = future_primary_spouse
-				weight = {
-					base = 100
-					modifier = {
-						faith = $PARTNER$.faith
-						add = 20
-					}
-					modifier = {
-						culture = $PARTNER$.culture
-						add = 10
-					}
-					modifier = {
-						is_demoted_consort_trigger = no
-						add = 30
-					}
-					modifier = {
-						is_lowborn = no
-						add = 50
-					}
-					modifier = {
-						any_close_or_extended_family_member = {
-							is_landed = yes
-						}
-						add = 20
-					}
-					modifier = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_county
-						}
-						add = 15
-					}
-					modifier = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_duchy
-						}
-						add = 25
-					}
-					modifier = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_kingdom
-						}
-						add = 35
-					}
-					modifier = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_empire
-						}
-						add = 45
-					}
-					modifier = {
-						any_close_family_member = {
-							is_vassal_of = $PARTNER$
-						}
-						add = 10
-					}
-					modifier = {
-						any_close_family_member = {
-							is_powerful_vassal_of = $PARTNER$
-						}
-						add = 35
-					}
-					modifier = {
-						any_close_family_member = {
-							is_councillor_of = $PARTNER$
-						}
-						add = 30
-					}
-					modifier = {
-						any_close_family_member = {
-							is_liege_or_above_of = $PARTNER$
-						}
-						add = 500
-					}
-					
-					modifier = {
-						NOT = { has_character_flag = flag_new_consort }
-						add = 15
-					}
-					modifier = {
-						has_character_modifier = forgotten_consort_modifier
-						add = -20
-					}
-					modifier = {
-						has_character_modifier = unfavored_consort_modifier
-						add = -10
-					}
-					modifier = {
-						has_character_modifier = favored_consort_modifier
-						add = 5
-					}
-					modifier = {
-						has_character_modifier = favor_boost_modifier
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = beloved_consort_modifier
-						add = 15
-					}
-					modifier = {
-						num_virtuous_traits >= 1
-						add = {
-							value = num_virtuous_traits
-							multiply = 5
-						}
-					}
-					modifier = {
-						num_sinful_traits >= 1
-						add = {
-							value = num_sinful_traits
-							multiply = -5
-						}
-					}
-					modifier = {
-						any_secret = {
-							exists = secret_owner
-							is_known_by = $PARTNER$
-							is_criminal_for = $PARTNER$
-						}
-						add = -20
-					}
-					modifier = {
-						OR = {
-							has_relation_rival = $PARTNER$
-							has_relation_nemesis = $PARTNER$
-							has_relation_potential_rival = $PARTNER$
-						}
-						add = -25
-					}
-					modifier = {
-						every_child = {
-							limit = {
-								is_child_of = $PARTNER$
-							}
-							add = {
-								value = 1
-								if = {
-									limit = {
-										is_player_heir_of = $PARTNER$
-									}
-									add = 2
-								}
-								if = {
-									limit = {
-										character_gender_can_inherit_from_trigger = { CHARACTER = $PARTNER$ }
-									}
-									add = 1
-								}
-							}
-						}
-					}
+			random_spouse = {
+				limit = {
+					has_court_position = grand_consort_court_position
 				}
 				save_scope_as = new_primary_spouse
 			}
@@ -2667,6 +2503,177 @@ new_primary_spouse_divorce_effect = {
 				PARTNER = $PARTNER$
 			}
 			clear_saved_scope = new_primary_spouse
+		}
+		else = {
+			hidden_effect = {
+				every_spouse = {
+					limit = { 	
+						NOT = {	
+							this = $PREVIOUS_PS$
+						}
+					}
+					add_to_temporary_list = future_primary_spouse
+				}
+				random_in_list = {
+					list = future_primary_spouse
+					weight = {
+						base = 100
+						modifier = {
+							faith = $PARTNER$.faith
+							add = 20
+						}
+						modifier = {
+							culture = $PARTNER$.culture
+							add = 10
+						}
+						modifier = {
+							is_demoted_consort_trigger = no
+							add = 30
+						}
+						modifier = {
+							is_lowborn = no
+							add = 50
+						}
+						modifier = {
+							any_close_or_extended_family_member = {
+								is_landed = yes
+							}
+							add = 20
+						}
+						modifier = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_county
+							}
+							add = 15
+						}
+						modifier = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_duchy
+							}
+							add = 25
+						}
+						modifier = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_kingdom
+							}
+							add = 35
+						}
+						modifier = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_empire
+							}
+							add = 45
+						}
+						modifier = {
+							any_close_family_member = {
+								is_vassal_of = $PARTNER$
+							}
+							add = 10
+						}
+						modifier = {
+							any_close_family_member = {
+								is_powerful_vassal_of = $PARTNER$
+							}
+							add = 35
+						}
+						modifier = {
+							any_close_family_member = {
+								is_councillor_of = $PARTNER$
+							}
+							add = 30
+						}
+						modifier = {
+							any_close_family_member = {
+								is_liege_or_above_of = $PARTNER$
+							}
+							add = 500
+						}
+						
+						modifier = {
+							NOT = { has_character_flag = flag_new_consort }
+							add = 15
+						}
+						modifier = {
+							has_character_modifier = forgotten_consort_modifier
+							add = -20
+						}
+						modifier = {
+							has_character_modifier = unfavored_consort_modifier
+							add = -10
+						}
+						modifier = {
+							has_character_modifier = favored_consort_modifier
+							add = 5
+						}
+						modifier = {
+							has_character_modifier = favor_boost_modifier
+							add = 10
+						}
+						modifier = {
+							has_character_modifier = beloved_consort_modifier
+							add = 15
+						}
+						modifier = {
+							num_virtuous_traits >= 1
+							add = {
+								value = num_virtuous_traits
+								multiply = 5
+							}
+						}
+						modifier = {
+							num_sinful_traits >= 1
+							add = {
+								value = num_sinful_traits
+								multiply = -5
+							}
+						}
+						modifier = {
+							any_secret = {
+								exists = secret_owner
+								is_known_by = $PARTNER$
+								is_criminal_for = $PARTNER$
+							}
+							add = -20
+						}
+						modifier = {
+							OR = {
+								has_relation_rival = $PARTNER$
+								has_relation_nemesis = $PARTNER$
+								has_relation_potential_rival = $PARTNER$
+							}
+							add = -25
+						}
+						modifier = {
+							every_child = {
+								limit = {
+									is_child_of = $PARTNER$
+								}
+								add = {
+									value = 1
+									if = {
+										limit = {
+											is_player_heir_of = $PARTNER$
+										}
+										add = 2
+									}
+									if = {
+										limit = {
+											character_gender_can_inherit_from_trigger = { CHARACTER = $PARTNER$ }
+										}
+										add = 1
+									}
+								}
+							}
+						}
+					}
+					save_scope_as = new_primary_spouse
+				}
+				set_primary_spouse = scope:new_primary_spouse
+				make_primary_spouse_effect = {
+					PARTNER = $PARTNER$
+				}
+				clear_saved_scope = new_primary_spouse
+			}
 		}
 	}
 }
