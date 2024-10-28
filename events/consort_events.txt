@@ -11942,29 +11942,68 @@ consort_events.0016 = {
 	hidden = yes
 	
 	trigger = {
-		OR = {
-			AND = {
-				is_demoted_consort_trigger = yes
-				any_consort = {
-					exists = primary_spouse
-					primary_spouse = {
-						this = root
+		any_consort = {
+			OR = {
+				AND = { #A PS who shouldn't be demoted
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_ps
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_ps
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_ps
+							target = root
+						}
+					}
+				}
+				AND = { #A GC who shouldn't be demoted
+					has_court_position = grand_consort_court_position
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_gc
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_gc
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_gc
+							target = root
+						}
+					}
+				}
+				AND = { #A GC who shouldn't be demoted 
+					is_spouse_of = root
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_ss
+							target = root
+						}
 					}
 				}
 			}
-			AND = {
-				OR = {
-					has_character_flag = flag_demoted_grand_consort
-					has_character_flag = flag_demoted_spouse
-				}
-				has_court_position = grand_consort_court_position
-			}
-			AND = {
-				has_character_flag = flag_demoted_spouse
-				is_married = yes
-			}
 		}
-		is_physically_able_adult = yes
 	}
 	
 	weight_multiplier = {
@@ -12014,79 +12053,121 @@ consort_events.0016 = {
 	immediate = {
 		if = { #The PS
 			limit = {
-				AND = {
-					is_demoted_consort_trigger = yes
-					any_consort = {
-						exists = primary_spouse
-						primary_spouse = {
-							this = root
+				any_consort = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_ps
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_ps
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_ps
+							target = root
 						}
 					}
 				}
 			}
-			if = {
+			random_consort = {
 				limit = {
-					has_character_modifier = demoted_primary_spouse_modifier
+					this = root.primary_spouse
 				}
-				remove_character_modifier = demoted_primary_spouse_modifier
-			}
-			if = {
-				limit = {
-					OR = {
-						has_character_flag = flag_demoted_grand_consort
-						has_character_flag = flag_demoted_spouse
-					}
+				save_scope_as = previous_primary_spouse
+				consort_reinstatement_effect = {
+					REINSTATOR = root
+					REINSTATED = scope:previous_primary_spouse
 				}
-				if = {
-					limit = {
-						has_character_flag = flag_demoted_grand_consort
-					}
-					remove_character_flag = flag_demoted_grand_consort
-				}
-				else = {
-					remove_character_flag = flag_demoted_spouse
-				}
-				remove_character_modifier = demoted_spouse_modifier
 			}
 		}
-		else_if = { #The GC
+
+		if = { #The GC
 			limit = {
-				AND = {
+				any_consort = {
+					has_court_position = grand_consort_court_position
 					OR = {
-						has_character_flag = flag_demoted_grand_consort
-						has_character_flag = flag_demoted_spouse
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_gc
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_gc
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_gc
+							target = root
+						}
 					}
+				}
+			}
+			random_consort = {
+				limit = {
 					has_court_position = grand_consort_court_position
 				}
-			}
-			if = {
-				limit = {
-					OR = {
-						has_character_flag = flag_demoted_grand_consort
-						has_character_flag = flag_demoted_spouse
-					}
+				save_scope_as = previous_grand_consort
+				consort_reinstatement_effect = {
+					REINSTATOR = root
+					REINSTATED = scope:previous_grand_consort
 				}
-				if = {
-					limit = {
-						has_character_flag = flag_demoted_grand_consort
-					}
-					remove_character_flag = flag_demoted_grand_consort
-				}
-				else = {
-					remove_character_flag = flag_demoted_spouse
-				}
-				remove_character_modifier = demoted_spouse_modifier
 			}
 		}
-		else_if = { #Secondary spouses
+
+		if = { #The SS
 			limit = {
-				AND = {
-					has_character_flag = flag_demoted_spouse
-					is_married = yes
+				any_consort = {
+					is_spouse_of = root
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_ss
+							target = root
+						}
+					}
 				}
 			}
-			remove_character_flag = flag_demoted_spouse
-			remove_character_modifier = demoted_spouse_modifier
+			random_consort = {
+				limit = {
+					is_spouse_of = root
+					OR = {
+						has_opinion_modifier = {
+							target = root
+							modifier = divorced_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							target = root
+							modifier = demoted_me_as_ss
+						}
+
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_ss
+							target = root
+						}
+					}
+				}
+				save_scope_as = previous_spouse
+				consort_reinstatement_effect = {
+					REINSTATOR = root
+					REINSTATED = scope:previous_spouse
+				}
+			}
 		}
 	}
 }
