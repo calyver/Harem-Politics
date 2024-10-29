@@ -557,11 +557,8 @@ scripted_trigger eligible_heir_trigger = {
 			is_landed_or_landless_administrative = yes
 			any_liege_or_above = { this = $PARTNER$ }
 		}
-		AND = {
-			exists = court_owner
-			court_owner = {
-				this = $PARTNER$
-			}
+		court_owner ?= {
+			this = $PARTNER$
 		}
 	}
 	character_gender_can_rule_title_trigger = {
@@ -11038,7 +11035,13 @@ consort_events.0013 = {
 			save_temporary_scope_as = temporary_partner
 		}
 		scope:temporary_partner = {
-			exists = primary_heir
+			is_landed_or_landless_administrative = yes
+			primary_heir ?= {
+				is_child_of = prev
+				NOT = {
+					is_child_of = root
+				}
+			}
 		}
 		NOR = {
 			exists = scope:is_being_divorced
@@ -11071,10 +11074,8 @@ consort_events.0013 = {
 			NOT = { 
 				this = { is_primary_heir_of = scope:temporary_partner }
 			}
-		}
-		any_child = {
-			count > 0
 			eligible_heir_trigger = { PARTNER = scope:temporary_partner }
+			count > 0
 		}
 		can_start_scheme = {
 			type = murder
@@ -11116,7 +11117,12 @@ consort_events.0013 = {
 							this = root
 						}
 					}
-					exists = primary_heir
+					primary_heir ?= {
+						is_child_of = prev
+						NOT = {
+							is_child_of = root
+						}
+					}
 				}
 			}
 			save_scope_as = partner
