@@ -1851,7 +1851,6 @@ spouse_demotion_effect = {
 				}
 			}
 		}
-		#Check if there's an opinion from relatives from making their relative a PS and add to the interface_message
 		every_close_or_extended_family_member = {
 			limit = { NOT = { this = scope:actor } } # don't hate yourself just because of demotion
 			custom = all_family_members
@@ -3161,14 +3160,40 @@ make_primary_spouse_effect = {
 		
 		if = {
 			limit = {
-				accepts_harems = yes
 				NOT = {
 					has_character_modifier = demoted_primary_spouse_modifier
 				}
 			}
-			add_opinion = {
-				target = $PARTNER$
-				modifier = spouse_made_primary_opinion
+			if = {
+				limit = {
+					accepts_harems = yes
+				}
+				add_opinion = {
+					target = $PARTNER$
+					modifier = spouse_made_primary_opinion
+				}
+			}
+			hidden_effect = {
+				every_close_or_extended_family_member = {
+					limit = {
+						NOR = {
+							has_opinion_modifier = {
+								target = $PARTNER$
+								modifier = forced_family_concubine_marriage_opinion
+							}
+							this = $PARTNER$
+							has_opinion_modifier = {
+								target = $PARTNER$
+								modifier = thankful_consort_relative_opinion
+							}
+						}
+						accepts_harems = yes
+					}
+					add_opinion = {
+						target = $PARTNER$
+						modifier = thankful_consort_relative_opinion
+					}
+				}
 			}
 		}
 		
