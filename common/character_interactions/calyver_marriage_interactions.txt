@@ -2159,54 +2159,190 @@ divorce_character_interaction = {
 		piety = divorce_cost 
 		influence = {
 			value = 0
-			if = { #If recipient comes from a powerful family, some influence
+			if = {
 				limit = { government_has_flag = government_is_administrative }
-				add = {
-					add = minor_influence_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
+				if = { #If recipient comes from a powerful family or the same rank, some influence
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									is_powerful_vassal_of = scope:actor
+									is_councillor_of = scope:actor
+									tier_difference = {
+										target = scope:actor
+										value = 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_is_administrative
+										exists = scope:actor.top_liege
+										exists = scope:actor.house
+										top_liege ?= {
+											this = scope:actor.topliege
+										}
+										house ?= {
+											is_powerful_family = yes
+											NOT = { this = scope:actor.house }
+											is_dominant_family = no
+										}
+									}
+								}
+							}
 						}
-						add = minor_influence_value
 					}
+					add = medium_influence_value
 				}
-			}
-			if = { #More if dominant
-				limit = { government_has_flag = government_is_administrative }
-				add = {
-					add = minor_influence_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
+				if = { #If recipient comes from a dominant family, massive influence
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									tier_difference = {
+										target = scope:actor
+										value > 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_is_administrative
+										OR = {
+											AND = {
+												exists = scope:actor.top_liege
+												top_liege ?= {
+													this = scope:actor.topliege
+												}
+											}
+											is_vassal_or_below_of = scope:actor
+										}
+										exists = scope:actor.house
+										house ?= {
+											NOT = { this = scope:actor.house }
+											is_dominant_family = yes
+										}
+									}
+								}
+							}
 						}
-						add = minor_influence_value
 					}
-				}
-			}
-			if = { #More if the imperial family
-				limit = { government_has_flag = government_is_administrative }
-				add = {
-					add = minor_influence_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
+					add = {
+						value = major_influence_value
+						if = {
+							limit = { #More for someone who far outranks you
+								scope:recipient = {
+									any_close_family_member = {
+										NOR = { 
+											this = scope:actor 
+											is_child_of = scope:actor
+										}
+										tier_difference = {
+											target = scope:actor
+											value > 1
+										}
+									}
+								}
+							}
+							add = major_influence_value
 						}
-						add = minor_influence_value
 					}
 				}
 			}
 		}
-		prestige = { #Do this
+		prestige = {
 			value = 0
-			if = { #If recipient comes from a powerful family, some influence
-				limit = { government_has_flag = government_is_administrative }
-				add = {
-					add = minor_influence_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
+			if = {
+				limit = { NOT = { government_has_flag = government_is_administrative } }
+				if = { #If recipient comes from a powerful family or the same rank, some prestige
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									is_powerful_vassal_of = scope:actor
+									is_councillor_of = scope:actor
+									tier_difference = {
+										target = scope:actor
+										value = 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_is_administrative
+										exists = scope:actor.top_liege
+										exists = scope:actor.house
+										top_liege ?= {
+											this = scope:actor.topliege
+										}
+										house ?= {
+											is_powerful_family = yes
+											NOT = { this = scope:actor.house }
+											is_dominant_family = no
+										}
+									}
+								}
+							}
 						}
-						add = minor_influence_value
+					}
+					add = medium_prestige_value
+				}
+				if = { #If recipient comes from a dominant family, massive prestige
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									tier_difference = {
+										target = scope:actor
+										value > 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_is_administrative
+										OR = {
+											AND = {
+												exists = scope:actor.top_liege
+												top_liege ?= {
+													this = scope:actor.topliege
+												}
+											}
+											is_vassal_or_below_of = scope:actor
+										}
+										exists = scope:actor.house
+										house ?= {
+											NOT = { this = scope:actor.house }
+											is_dominant_family = yes
+										}
+									}
+								}
+							}
+						}
+					}
+					add = {
+						value = major_prestige_value
+						if = {
+							limit = { #More for someone who far outranks you
+								scope:recipient = {
+									any_close_family_member = {
+										NOR = { 
+											this = scope:actor 
+											is_child_of = scope:actor
+										}
+										tier_difference = {
+											target = scope:actor
+											value > 1
+										}
+									}
+								}
+							}
+							add = major_prestige_value
+						}
 					}
 				}
 			}
