@@ -1169,8 +1169,7 @@ spouse_demotion_effect = {
 		#PS#
 		if = {
 			limit = {
-				exists = primary_spouse
-				primary_spouse = {
+				primary_spouse ?= {
 					this = scope:recipient
 				}
 			}
@@ -1200,12 +1199,9 @@ spouse_demotion_effect = {
 			limit = {
 				scope:recipient = {
 					OR = {
-						AND = {
-							has_character_modifier = demoted_primary_spouse_modifier
-							has_opinion_modifier = {
-								modifier = demoted_me_as_ps
-								target = scope:actor
-							}
+						has_opinion_modifier = {
+							modifier = demoted_me_as_ps
+							target = scope:actor
 						}
 						has_opinion_modifier = {
 							modifier = divorced_me_as_ps
@@ -2854,7 +2850,7 @@ set_primary_spouse_effect = {
 						can_set_relation_rival_trigger = { CHARACTER = scope:recipient }
 					}
 					progress_towards_rival_effect = {
-						REASON = stole_my_position_reason
+						REASON = consort_rival_reason
 						CHARACTER = scope:recipient
 						OPINION = 0
 					}
@@ -2958,7 +2954,11 @@ set_primary_spouse_effect = {
 				if = {
 					limit = {
 						scope:recipient = {
-							NOT = { has_character_modifier = demoted_primary_spouse_modifier }
+							NOT = { 
+								has_demoted_or_divorced_as_ps_opinion_trigger = {
+									TARGET = scope:actor
+								}
+							}
 						}
 						harem_politics_evil_consort_trigger = yes
 						NOR = {
@@ -2973,8 +2973,8 @@ set_primary_spouse_effect = {
 								target = scope:actor
 							}
 							AND = {
-								exists = scope:actor.primary_spouse
-								this = scope:actor.primary_spouse
+								exists = scope:previous_primary_spouse
+								this = scope:previous_primary_spouse
 							}
 						}
 						accepts_harems = yes
@@ -3156,7 +3156,9 @@ make_primary_spouse_effect = {
 				if = {
 					limit = {
 						NOT = {
-							has_character_modifier = demoted_primary_spouse_modifier
+							has_demoted_or_divorced_as_ps_opinion_trigger = {
+								TARGET = $PARTNER$
+							}
 						}
 					}
 					calyver_favor_big_gain_effect = yes
@@ -3167,7 +3169,9 @@ make_primary_spouse_effect = {
 		if = {
 			limit = {
 				NOT = {
-					has_character_modifier = demoted_primary_spouse_modifier
+					has_demoted_or_divorced_as_ps_opinion_trigger = {
+						TARGET = $PARTNER$
+					}
 				}
 			}
 			if = {
@@ -3985,7 +3989,9 @@ new_primary_spouse_on_action_effect = {
 				limit = {
 					accepts_harems = yes
 					NOT = {
-						has_character_modifier = demoted_primary_spouse_modifier
+						has_demoted_or_divorced_as_ps_opinion_trigger = {
+							TARGET = scope:harem_liege
+						}
 					}
 				}
 				add_opinion = {
