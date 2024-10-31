@@ -973,86 +973,84 @@ spouse_management_effect = {
 				}
 			}
 
-			hidden_effect = {
-				if = {
-					limit = {
-						OR = {	
-							this = $PARTNER$.primary_spouse
-							$PARTNER$ = {
-								is_married = no
-							}
+			if = {
+				limit = {
+					OR = {	
+						this = $PARTNER$.primary_spouse
+						$PARTNER$ = {
+							is_married = no
 						}
-					}
-					#Trigger event and something related to reinstatement
-					consort_reinstatement_effect = {
-						REINSTATOR = $PARTNER$
-						REINSTATED = $CONSORT$
 					}
 				}
-				else = {
-					add_character_modifier = {
-						modifier = demoted_primary_spouse_modifier
-					}
-					calyver_favor_big_loss_effect = yes
-					# Victim is naturally angry for being demoted.
+				#Trigger event and something related to reinstatement
+				consort_reinstatement_effect = {
+					REINSTATOR = $PARTNER$
+					REINSTATED = $CONSORT$
+				}
+			}
+			else = {
+				add_character_modifier = {
+					modifier = demoted_primary_spouse_modifier
+				}
+				calyver_favor_big_loss_effect = yes
+				# Victim is naturally angry for being demoted.
+				add_opinion = {
+					target = $PARTNER$
+					modifier = demoted_me_as_ps
+				}
+				#Relatives too
+				every_close_or_extended_family_member = {
+					limit = { NOT = { this = $PARTNER$ } } # don't hate yourself just because of demotion
 					add_opinion = {
+						modifier = demoted_concubine_marriage_opinion
 						target = $PARTNER$
-						modifier = demoted_me_as_ps
 					}
-					#Relatives too
-					every_close_or_extended_family_member = {
-						limit = { NOT = { this = $PARTNER$ } } # don't hate yourself just because of demotion
-						add_opinion = {
-							modifier = demoted_concubine_marriage_opinion
-							target = $PARTNER$
-						}
-						send_interface_message = {
-							type = event_generic_bad
-							title = demoted_grand_consort_t
-							right_icon = $CONSORT$
-							left_icon = $PARTNER$
-							desc = demoted_relative_interface_message
-						}
+					send_interface_message = {
+						type = event_generic_bad
+						title = demoted_grand_consort_t
+						right_icon = $CONSORT$
+						left_icon = $PARTNER$
+						desc = demoted_relative_interface_message
 					}
-					if = {
-						limit = { $PARTNER$.primary_title.tier = tier_county }
-						add_prestige = { value = miniscule_prestige_loss }
-					}
-					else_if = {
-						limit = { $PARTNER$.primary_title.tier = tier_duchy }
-						add_prestige = { value = minor_prestige_loss }
-					}
-					else_if = {
-						limit = { $PARTNER$.primary_title.tier = tier_kingdom }
-						add_prestige = { value = medium_prestige_loss }
-					}
-					else_if = {
-						limit = { $PARTNER$.primary_title.tier = tier_empire }
-						add_prestige = { value = major_prestige_loss }
-					}
-					#Trigger event
-					$PARTNER$ = {
-						if = { #Legitimacy loss#
-							limit = {
-								NOT = {
-									has_imprisonment_reason = $CONSORT$
-								}
-								$CONSORT$ = {
-									num_sinful_traits = 0
-									is_lowborn = no
-								}
-								is_valid_for_legitimacy_change = yes
+				}
+				if = {
+					limit = { $PARTNER$.primary_title.tier = tier_county }
+					add_prestige = { value = miniscule_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_duchy }
+					add_prestige = { value = minor_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_kingdom }
+					add_prestige = { value = medium_prestige_loss }
+				}
+				else_if = {
+					limit = { $PARTNER$.primary_title.tier = tier_empire }
+					add_prestige = { value = major_prestige_loss }
+				}
+				#Trigger event
+				$PARTNER$ = {
+					if = { #Legitimacy loss#
+						limit = {
+							NOT = {
+								has_imprisonment_reason = $CONSORT$
 							}
-							add_legitimacy = minor_legitimacy_loss
+							$CONSORT$ = {
+								num_sinful_traits = 0
+								is_lowborn = no
+							}
+							is_valid_for_legitimacy_change = yes
 						}
-						# If we're a clan this interaction affects unity
-						add_clan_unity_interaction_effect = {
-							CHARACTER = $PARTNER$
-							TARGET = $CONSORT$
-							VALUE = minor_unity_loss
-							DESC = clan_unity_demotion.desc
-							REVERSE_NON_HOUSE_TARGET = no
-						}
+						add_legitimacy = minor_legitimacy_loss
+					}
+					# If we're a clan this interaction affects unity
+					add_clan_unity_interaction_effect = {
+						CHARACTER = $PARTNER$
+						TARGET = $CONSORT$
+						VALUE = minor_unity_loss
+						DESC = clan_unity_demotion.desc
+						REVERSE_NON_HOUSE_TARGET = no
 					}
 				}
 			}
