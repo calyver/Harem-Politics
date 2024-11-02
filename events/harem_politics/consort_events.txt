@@ -17524,3 +17524,340 @@ consort_events.0034 = {
 		}
 	}
 }
+
+########################
+##Influential consorts##
+########################
+scripted_trigger is_influential_consort_trigger = {
+	is_courtier_of = root
+	is_available_healthy_adult = yes
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_evil_consort_trigger = yes
+
+	OR = {
+		AND = {	#Consorts need some favor
+			is_consort_of = root
+			OR = {	
+				harem_politics_favored_consort_trigger = yes
+				has_relation_lover = root
+				has_relation_soulmate = root
+			}
+		}
+		is_parent_of = root
+	}
+
+	house ?= {
+		NOT = { this = root.house}
+	}
+
+	
+
+	any_close_family_member = {
+		is_vassal_or_below_of = root
+		OR = {
+			is_landless_administrative = yes
+			is_governor = yes
+		}
+		NOR = {
+			is_child_of = root
+			has_trait = humble
+			has_trait = content
+			has_trait = loyal
+			has_trait = just
+		}
+		house ?= {
+			NOT = { this = root.house }
+		}
+	}
+	
+	NOR = {
+		has_trait = humble
+		has_trait = content
+		has_trait = loyal
+		has_trait = just
+
+		has_relation_potential_rival = root
+		has_relation_rival = root
+		has_relation_nemesis = root
+	}
+}
+
+consort_events.0007 = {
+	hidden = yes
+	
+	trigger = {
+		government_allows = administrative
+		is_landed = yes
+		is_independent_ruler = yes
+		highest_held_title_tier >= tier_kingdom
+
+		exists = house
+		any_consort = {
+			is_courtier_of = root
+			count >= 3
+		}
+		any_consort = {
+			is_influential_consort_trigger = yes
+		}
+
+		influence >= medium_influence_value
+
+		is_physically_able_adult = yes
+
+		NOT = {
+			has_character_flag = had_influential_consort_flag
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				count >= 10
+			}
+		}
+		modifier = {
+			add = 0.1
+			influence >= major_influence_value
+		}
+		modifier = {
+			add = 0.1
+			influence >= massive_influence_value
+		}
+		modifier = {
+			add = 0.1
+			influence >= monumental_influence_value
+		}
+	}
+	
+	immediate = {
+		save_scope_as = partner
+		every_courtier = {
+			limit = {
+				is_influential_consort_trigger = yes
+			}
+			add_to_list = influential_consort_list
+		}
+		
+		random_in_list = {
+			list = influential_consort_list
+			weight = {
+				base = 20
+				#Rank
+				modifier = {
+					is_parent_of = root
+					add = 20
+				}
+				modifier = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+					add = 20
+				}
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 15
+				}
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 10
+				}
+				#Traits
+				modifier = {
+					has_trait = calm
+					add = -25
+				}
+				modifier = {
+					has_trait = lazy
+					add = -15
+				}
+				
+				modifier = {
+					has_trait = arrogant
+					add = 10
+				}
+				modifier = {
+					has_trait = ambitious
+					add = 15
+				}
+				modifier = {
+					has_trait = greedy
+					add = 15
+				}
+				#Scheming consorts
+				modifier = {
+					add = 10
+					has_character_modifier = scheming_consort_modifier
+				}
+				#Favor
+				modifier = {
+					add = 20
+					has_character_modifier = beloved_consort_modifier
+				}
+				modifier = {
+					add = 15
+					has_character_modifier = favor_boost_modifier
+				}
+				modifier = {
+					add = 10
+					has_character_modifier = favored_consort_modifier
+				}
+				#Relation
+				modifier = {
+					add = 20
+					has_relation_soulmate = root
+				}
+				modifier = {
+					add = 10
+					has_relation_lover = root
+				}
+			}
+			save_scope_as = influential_consort
+		}
+		if = {
+			limit = {
+				exists = scope:influential_consort
+			}
+			scope:influential_consort = {
+				every_close_family_member = {
+					limit = {
+						is_vassal_or_below_of = root
+						OR = {
+							is_landless_administrative = yes
+							is_governor = yes
+						}
+						NOR = {
+							is_child_of = root
+							has_trait = humble
+							has_trait = content
+							has_trait = loyal
+							has_trait = just
+						}
+						house ?= {
+							NOT = { this = root.house }
+						}
+					}
+					add_to_list = consort_relatives_list
+				}
+				random_in_list = {
+					list = influential_consort_list
+					weight = {
+						base = 20
+						modifier = {
+							is_parent_of = scope:influential_consort
+							add = 20
+						}
+						modifier = {
+							exists = scope:influential_consort.house
+							house ?= {
+								this = scope:influential_consort.house
+							}
+							add = 20
+						}
+
+						modifier = {
+							exists = scope:influential_consort.house.house_head
+							this = scope:influential_consort.house.house_head
+							add = 50
+						}
+
+						modifier = {
+							has_trait = lazy
+							add = -15
+						}
+						
+						modifier = {
+							has_trait = arrogant
+							add = 10
+						}
+						modifier = {
+							has_trait = ambitious
+							add = 15
+						}
+						modifier = {
+							has_trait = greedy
+							add = 15
+						}
+		
+						modifier = {
+							has_relation_rival = root
+							add = 10
+						}
+						modifier = {
+							has_relation_nemesis = root
+							add = 20
+						}
+					}
+					save_scope_as = consort_relative
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:consort_relative
+				}
+				if = {
+					limit = {
+						influence >= major_influence_value
+					}
+					save_scope_value_as = {
+						name = stolen_influence
+						value = minor_influence_value
+					}
+				}
+				else = {
+					save_scope_value_as = {
+						name = stolen_influence
+						value = miniscule_influence_value
+					}
+				}
+			}
+			root = {
+				send_interface_toast = {
+					type = event_generic_bad
+					title = influential_consort_t
+					right_icon = scope:influential_consort
+					custom_tooltip = influential_consort_desc
+					
+					change_influence = {
+						value = 0
+						subtract = scope:stolen_influence
+					}
+				}
+				#Flag assignment
+				if = {
+					limit = {
+
+					}
+				}
+			}
+			scope:consort_relative = {
+				if = {
+					limit = {
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = influential_consort_t
+						right_icon = scope:influential_consort
+						custom_tooltip = influential_consort_desc
+						
+						change_influence = {
+							value = 0
+							add = scope:stolen_influence
+						}
+					}
+				}
+			}
+		}
+	}
+}
