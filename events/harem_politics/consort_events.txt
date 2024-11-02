@@ -17547,26 +17547,22 @@ scripted_trigger is_influential_consort_trigger = {
 	}
 
 	house ?= {
-		NOT = { this = root.house}
-	}
-
-	
-
-	any_close_family_member = {
-		is_vassal_or_below_of = root
-		OR = {
-			is_landless_administrative = yes
-			is_governor = yes
-		}
-		NOR = {
-			is_child_of = root
-			has_trait = humble
-			has_trait = content
-			has_trait = loyal
-			has_trait = just
-		}
-		house ?= {
-			NOT = { this = root.house }
+		NOT = { this = root.house }
+		house_head = {
+			is_adult = yes
+			government_allows = administrative
+			is_vassal_or_below_of = root
+			OR = {
+				is_landless_administrative = yes
+				is_governor = yes
+			}
+			NOR = {
+				is_child_of = root
+				has_trait = humble
+				has_trait = content
+				has_trait = loyal
+				has_trait = just
+			}
 		}
 	}
 	
@@ -17582,7 +17578,7 @@ scripted_trigger is_influential_consort_trigger = {
 	}
 }
 
-consort_events.0007 = {
+consort_events.0035 = {
 	hidden = yes
 	
 	trigger = {
@@ -17721,103 +17717,73 @@ consort_events.0007 = {
 					add = 10
 					has_relation_lover = root
 				}
+				#Powerful families
+				modifier = {
+					add = 10
+					house ?= {
+						is_powerful_family = yes
+					}
+				}
 			}
 			save_scope_as = influential_consort
 		}
 		if = {
 			limit = {
-				exists = scope:influential_consort
+				exists = scope:influential_consort.house_head
 			}
-			scope:influential_consort = {
-				every_close_family_member = {
-					limit = {
-						is_vassal_or_below_of = root
-						OR = {
-							is_landless_administrative = yes
-							is_governor = yes
-						}
-						NOR = {
-							is_child_of = root
-							has_trait = humble
-							has_trait = content
-							has_trait = loyal
-							has_trait = just
-						}
-						house ?= {
-							NOT = { this = root.house }
-						}
-					}
-					add_to_list = consort_relatives_list
-				}
-				random_in_list = {
-					list = influential_consort_list
-					weight = {
-						base = 20
-						modifier = {
-							is_parent_of = scope:influential_consort
-							add = 20
-						}
-						modifier = {
-							exists = scope:influential_consort.house
-							house ?= {
-								this = scope:influential_consort.house
-							}
-							add = 20
-						}
-
-						modifier = {
-							exists = scope:influential_consort.house.house_head
-							this = scope:influential_consort.house.house_head
-							add = 50
-						}
-
-						modifier = {
-							has_trait = lazy
-							add = -15
-						}
-						
-						modifier = {
-							has_trait = arrogant
-							add = 10
-						}
-						modifier = {
-							has_trait = ambitious
-							add = 15
-						}
-						modifier = {
-							has_trait = greedy
-							add = 15
-						}
-		
-						modifier = {
-							has_relation_rival = root
-							add = 10
-						}
-						modifier = {
-							has_relation_nemesis = root
-							add = 20
-						}
-					}
-					save_scope_as = consort_relative
-				}
+			scope:influential_consort.house_head = {
+				save_scope_as = consort_relative
 			}
 			if = {
 				limit = {
 					exists = scope:consort_relative
 				}
-				if = {
-					limit = {
-						influence >= major_influence_value
+				random_list = {
+					0 = { #Big influence
+						modifier = {
+							influence >= massive_influence_value
+							add = 10
+						}
+						modifier = {
+							has_relation_soulmate = scope:influential_consort
+							add = 5
+						}
+						modifier = {
+							scope:influential_consort = {
+								has_character_modifier = beloved_consort_modifier
+							}
+							add = 5
+						}
+						modifier = {
+							scope:influential_consort = {
+								has_character_modifier = favor_boost_modifier
+							}
+							add = 10
+						}
+						save_scope_value_as = {
+							name = stolen_influence
+							value = medium_influence_value
+						}
 					}
-					save_scope_value_as = {
-						name = stolen_influence
-						value = minor_influence_value
+					0 = { #Some influence
+						modifier = {
+							influence >= major_influence_value
+							add = 20
+						}
+						save_scope_value_as = {
+							name = stolen_influence
+							value = minor_influence_value
+						}
 					}
-				}
-				else = {
-					save_scope_value_as = {
-						name = stolen_influence
-						value = miniscule_influence_value
+					1 = { #Little influence
+						modifier = {
+							influence <= medium_influence_value
+							add = 20
+						}
+						save_scope_value_as = {
+							name = stolen_influence
+							value = miniscule_influence_value
+						}
 					}
 				}
 			}
@@ -17836,7 +17802,61 @@ consort_events.0007 = {
 				#Flag assignment
 				if = {
 					limit = {
-
+						scope:stolen_influence = miniscule_influence_value
+					}
+					random_list = {
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								months = 9
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								years = 1
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								months = 18
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								years = 2
+							}
+						}
+					}
+				}
+				else = {
+					random_list = {
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								years = 1
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								months = 18
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								years = 2
+							}
+						}
+						1 = {
+							add_character_flag = {
+								flag = had_influential_consort_flag
+								years = 3
+							}
+						}
 					}
 				}
 			}
