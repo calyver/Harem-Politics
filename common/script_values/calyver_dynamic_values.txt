@@ -5491,3 +5491,121 @@ create_duchy_title_value_harem_politics = {
 	value = create_duchy_title_value
 	multiply = 0.50
 }
+
+##Rank difference##
+consort_rank_difference_value = {
+	value = 0
+	if = { #The PS
+		limit = {
+			exists = scope:harem_liege.primary_spouse
+			this = scope:harem_liege.primary_spouse
+		}
+		if = { #Can recruit the GC?
+			limit = {
+				scope:harem_liege = {
+					can_employ_court_position_type = grand_consort_court_position
+				}
+			}
+			scope:target_consort = {
+				has_court_position = grand_consort_court_position
+			}
+			add = 1
+		}
+		if = { #The SS
+			limit = {
+				scope:target_consort = {
+					NOT = {	
+						has_court_position = grand_consort_court_position
+					}
+					is_spouse_of = scope:harem_liege
+				}
+			}
+			add = {
+				value = 1
+				if = {
+					limit = {
+						scope:harem_liege = {
+							has_court_position = grand_consort_court_position
+						}
+					}
+					add = 1
+				}
+			}
+		}
+		if = { #Concubines
+			limit = {
+				scope:target_consort = {
+					NOT = {	
+						has_court_position = grand_consort_court_position
+					}
+					is_concubine_of = scope:harem_liege
+				}
+			}
+			add = {
+				value = 1
+				if = {
+					limit = {
+						scope:harem_liege = {
+							accepts_polygamy = yes
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = {
+						scope:harem_liege = {
+							has_court_position = grand_consort_court_position
+						}
+					}
+					add = 1
+				}
+			}
+		}
+	}
+	else_if = { #The GC
+		limit = {
+			has_court_position = grand_consort_court_position
+		}
+		if = { #SS
+			limit = {
+				scope:target_consort = {
+					is_spouse_of = scope:harem_liege
+					NOT = {
+						this = scope:harem_liege.primary_spouse
+					}
+				}
+			}
+			add = 1
+		}
+		if = { #Concubines
+			limit = {
+				scope:target_consort = {
+					is_concubine_of = scope:harem_liege
+				}
+			}
+			add = {
+				value = 1
+				if = {
+					limit = {
+						scope:harem_liege = {
+							accepts_polygamy = yes
+						}
+					}
+					add = 1
+				}
+			}
+		}
+	}
+	else_if = { #SS
+		limit = {
+			is_spouse_of = scope:harem_liege
+			NOT = {
+				this = scope:harem_liege.primary_spouse
+			}
+			scope:target_consort = {
+				is_concubine_of = scope:harem_liege
+			}
+		}
+		add = 1
+	}
+}
