@@ -67,3 +67,50 @@ is_valid_for_favor_system_trigger = {
 		is_imprisoned = no
 	}
 }
+
+harem_politics_target_outranks_consort_trigger = {
+	$CONSORT$ = {
+		is_consort_of = $LIEGE$
+		NOT = {
+			is_parent_of = $LIEGE$
+		}
+	}
+	$TARGET$ = {
+		trigger_if = { #They're liege's parent
+			limit = {
+				is_parent_of = $LIEGE$
+			}
+		}
+		trigger_else_if = { #They're the primary spouse
+			limit = {
+				exists = $LIEGE$.primary_spouse
+				this = $LIEGE$.primary_spouse
+			}
+		}
+		trigger_else_if = { #They're the Grand Consort
+			limit = {
+				has_court_position = grand_consort_court_position
+			}
+			$CONSORT$ = {
+				trigger_if = { #They can't be the PS
+					limit = {
+						exists = $LIEGE$.primary_spouse
+					}
+					NOT = {
+						this = $LIEGE$.primary_spouse
+					}
+				}
+			}
+		}
+		trigger_else = {
+			trigger_if = {
+				limit = {
+					is_spouse_of = $LIEGE$
+				}
+				$CONSORT$ = {
+					is_concubine_of = $LIEGE$
+				}
+			}
+		}
+	}
+}
