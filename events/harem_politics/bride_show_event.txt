@@ -16,20 +16,6 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 	is_concubine = no
 	is_imprisoned = no
 	OR = {
-		any_heir_title = { #Far from succession
-			any_title_heir = {
-				this = prev
-				place_in_line_of_succession = {
-					target = prev
-					value <= 3
-				}
-			}
-		}
-		NOT = {
-			any_heir_title = {} # Not heir to anything
-		}
-	}
-	OR = {
 		AND = { #If they aren't betrothed, you can arrange a marriage with them
 			age = 15
 			exists = betrothed
@@ -125,6 +111,14 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 		}
 	}
 	can_take_as_concubine_character_trigger = { CHARACTER = root }
+	NOT = {
+		any_heir_title = {
+			place_in_line_of_succession = {
+				target = prev
+				value <= 2
+			}
+		}
+	}
 }
 
 scripted_trigger can_have_four_candidates_trigger = {
@@ -2055,18 +2049,12 @@ bride_show.0005 = {
 			allowed_more_concubines = yes
 			scope:potential_candidate = {
 				age >= 16
-				OR = {
-					AND = {
-						exists = court_owner
-						court_owner.primary_title = {
-							place_in_line_of_succession = {
-								target = scope:potential_candidate
-								value >= 3
-							}
+				NOT = {
+					any_heir_title = {
+						place_in_line_of_succession = {
+							target = prev
+							value <= 2
 						}
-					}
-					NOT = {
-						any_heir_title = {} # Not heir to anything
 					}
 				}
 			}
@@ -2323,40 +2311,10 @@ bride_show.0005 = {
 			modifier = { #Less likely if they could inherit a title
 				add = -20
 				scope:potential_candidate = {
-					OR = {
-						AND = {
-							is_female = yes
-							any_close_family_member = {
-								is_landed_or_landless_administrative = yes
-								OR = {
-									has_realm_law = female_only_law
-									has_realm_law = female_preference_law
-									has_realm_law = equal_law
-								}
-								primary_title = {
-									place_in_line_of_succession = {
-										target = scope:potential_candidate 
-										value < 2
-									}
-								}
-							}
-						}
-						AND = {
-							is_female = no
-							any_close_family_member = {
-								is_landed_or_landless_administrative = yes
-								OR = {
-									has_realm_law = male_only_law
-									has_realm_law = male_preference_law
-									has_realm_law = equal_law
-								}
-								primary_title = {
-									place_in_line_of_succession = {
-										target = scope:potential_candidate 
-										value < 2
-									}
-								}
-							}
+					any_heir_title = {
+						place_in_line_of_succession = {
+							target = prev
+							value <= 2
 						}
 					}
 				}
@@ -2378,28 +2336,12 @@ bride_show.0005 = {
 		trigger = {
 			scope:potential_candidate = {
 				age >= 16
-				OR = {
-					AND = { #If they're close to inherit, they must be betrothed. Otherwise, a marriage can still be arranged
-						exists = betrothed
-						exists = court_owner
-						court_owner.primary_title = {
-							place_in_line_of_succession = {
-								target = scope:potential_candidate
-								value <= 2
-							}
+				NOT = {
+					any_heir_title = {
+						place_in_line_of_succession = {
+							target = scope:potential_candidate
+							value <= 2
 						}
-					}
-					AND = {
-						exists = court_owner
-						court_owner.primary_title = {
-							place_in_line_of_succession = {
-								target = scope:potential_candidate
-								value >= 3
-							}
-						}
-					}
-					NOT = {
-						any_heir_title = {} # Not heir to anything
 					}
 				}
 			}
@@ -2501,17 +2443,11 @@ bride_show.0005 = {
 		if = {
 			limit = {
 				scope:potential_candidate = {
-					OR = {
-						NOt = { 
-							any_heir_title = {} # Not heir to anything
-						}
-						AND = {
-							exists = court_owner
-							court_owner.primary_title = {
-								place_in_line_of_succession = {
-									target = scope:potential_candidate
-									value >= 3
-								}
+					NOT = {
+						any_heir_title = {
+							place_in_line_of_succession = {
+								target = scope:potential_candidate
+								value <= 2
 							}
 						}
 					}
