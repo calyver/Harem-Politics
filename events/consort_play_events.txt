@@ -331,7 +331,7 @@ consort_play.0004 = {
 	}
 	right_portrait = {
 		character = scope:harem_liege
-		animation = personality_dishonorable
+		animation = personality_honorable
 	}
 	
 	trigger = {
@@ -364,7 +364,7 @@ consort_play.0004 = {
 				opinion_modifier = {
 					who = scope:harem_liege
 					opinion_target = scope:consort
-					multiplier = 0.2
+					multiplier = 0.1
 				}
 				modifier = {
 					scope:consort = { has_trait = gregarious }
@@ -402,7 +402,7 @@ consort_play.0004 = {
 				opinion_modifier = {
 					who = scope:harem_liege
 					opinion_target = scope:consort
-					multiplier = -0.2
+					multiplier = -0.1
 				}
 				modifier = {
 					scope:consort = { has_trait = shy }
@@ -454,28 +454,6 @@ consort_play.0004 = {
 			base = 1
 		}
 	}
-
-	#Spend some favor
-	#option = {
-	#	name = consort_play.0002.b # Check
-	#
-	#	clear_harem_interactions_flags_effect = yes
-	#
-	#	ai_chance = {
-	#		base = 1
-	#	}
-	#}
-
-	#Yell
-	#option = {
-	#	name = consort_play.0002.a # Check
-	#
-	#	clear_harem_interactions_flags_effect = yes
-	#
-	#	ai_chance = {
-	#		base = 1
-	#	}
-	#}
 }
 
 ##Successful conversation##
@@ -653,8 +631,10 @@ scripted_trigger is_eligible_relative_for_promotion_relative_trigger = {
 
 consort_play.0005 = {
 	type = character_event
-	title = consort_play.0005.t
-	desc = consort_play.0002.rejected_visit.attendant.desc
+	title = consort_play.1001.t.pleasant_conversation_success
+	desc = {
+		desc = consort_play.0005.desc
+	}
 	theme = family
 	override_background = {
 		reference = study
@@ -757,106 +737,14 @@ consort_play.0005 = {
 		}
 	}
 	
-	#Try to become friends or lovers
+	#Continue with the conversation
 	option = {
-		name = consort_play.0004.a
+		name = consort_play.0005.a
 
-		#Progress towards friends
-		if = {
-			limit = {
-				exists = local_var:pleasant_conversation_success
-			}
-			set_relation_potential_friend = $CHARACTER$
-			scope:harem_liege = {
-				add_opinion = {
-					target = scope:consort
-					modifier = pleasant_conversation_opinion #Check
-					opinion = 5
-				}
-			}
-
-			#Set the variable
-			if = {
-				limit = {
-					NOT = {
-						exists = var:had_pleasant_conversation_liege
-					}
-					scope:harem_liege = {
-						has_opinion_modifier = {
-							modifier = scope:consort
-							target = pleasant_conversation_opinion
-						}
-					}
-				}
-				set_variable = {
-					name = had_pleasant_conversation_liege
-					value = 1
-					years = 3
-				}
-			}
-			else_if = {
-				limit = {
-					var:had_pleasant_conversation_liege ?= {
-						value = 1
-					}
-					scope:harem_liege = {
-						has_opinion_modifier = {
-							modifier = scope:consort
-							target = pleasant_conversation_opinion
-						}
-					}
-				}
-				change_variable = {
-					name = had_pleasant_conversation_liege
-					add = 1
-				}
-				if = {
-					limit = {
-						can_set_relation_potential_friend_trigger = { CHARACTER = scope:harem_liege }
-					}
-					set_relation_potential_friend = scope:harem_liege
-				}
-			}
-			else_if = {
-				limit = {
-					var:had_pleasant_conversation_liege ?= {
-						value = 2
-					}
-					scope:harem_liege = {
-						has_opinion_modifier = {
-							modifier = scope:consort
-							target = pleasant_conversation_opinion
-						}
-					}
-				}
-				change_variable = {
-					name = had_pleasant_conversation_liege
-					add = 1
-				}
-			}
-			else_if = { #Becoming friends
-				limit = {
-					var:had_pleasant_conversation_liege ?= {
-						value = 2
-					}
-					scope:harem_liege = {
-						has_opinion_modifier = {
-							modifier = scope:consort
-							target = pleasant_conversation_opinion
-						}
-					}
-				}
-				change_variable = {
-					name = had_pleasant_conversation_liege
-					add = 3
-				}
-				#Check this
-				if = {
-					limit = {
-						can_set_relation_potential_friend_trigger = { CHARACTER = scope:harem_liege }
-					}
-					set_relation_potential_friend = scope:harem_liege
-				}
+		scope:harem_liege = {
+			trigger_event = {
+				id = consort_play.1002
+				days = { 2 5 }
 			}
 		}
 
@@ -864,32 +752,6 @@ consort_play.0005 = {
 			base = 1
 		}
 	}
-
-	#Request a promotion
-	#option = {
-	#	name = consort_play.0002.b # Check
-	#
-	#	clear_harem_interactions_flags_effect = yes
-	#
-	#	ai_chance = {
-	#		base = 1
-	#	}
-	#}
-
-	#Request promoting a relative
-
-	#Request landing a relative
-
-	#Seduce to bed
-	#option = {
-	#	name = consort_play.0002.a # Check
-	#
-	#	clear_harem_interactions_flags_effect = yes
-	#
-	#	ai_chance = {
-	#		base = 1
-	#	}
-	#}
 }
 ##################
 ##Visiting Liege##
@@ -975,6 +837,7 @@ consort_play.1000 = {
 		}
 		is_physically_able_adult = yes
 		highest_held_title_tier >= tier_county
+		is_landed_or_landless_administrative = yes
 		any_consort = {
 			is_available_allow_travelling = yes
 			is_courtier_of = scope:harem_liege
@@ -1004,8 +867,8 @@ consort_play.1000 = {
 	
 	#See them
 	option = {
-		name = consort_play.0010.a
-		custom_tooltip = consort_play.0010.a.tt
+		name = consort_play.1000.a
+		custom_tooltip = consort_play.1000.a.tt
 		scope:consort = {
 			add_character_flag = {
 				flag = liege_accepted_visit_flag
@@ -1028,7 +891,7 @@ consort_play.1000 = {
 
 	#Reject them
 	option = {
-		name = consort_play.0010.b
+		name = consort_play.1000.b
 		trigger = {
 			NOT = {
 				exists = local_var:bribed_servant
@@ -1139,6 +1002,7 @@ consort_play.1001 = {
 		}
 		is_physically_able_adult = yes
 		highest_held_title_tier >= tier_county
+		is_landed_or_landless_administrative = yes
 		any_consort = {
 			is_available_allow_travelling = yes
 			is_courtier_of = scope:harem_liege
@@ -1242,6 +1106,166 @@ consort_play.1001 = {
 		}
 	}
 }
+
+##Pleasant conversation - result##
+consort_play.1002 = {
+	type = character_event
+	title = consort_play.1001.t.pleasant_conversation_success
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = consort_play.1002.desc.generic
+			}
+		}
+	}
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = scope:consort
+		triggered_animation = {
+			trigger = {
+				exists = local_var:pleasant_conversation_success
+			}
+  			animation = happiness
+  		}
+		triggered_animation = {
+			trigger = {
+				exists = local_var:pleasant_conversation_failure
+			}
+			animation = shame
+  		}
+	}
+	left_portrait = {
+		character = scope:harem_liege
+		triggered_animation = {
+			trigger = {
+				exists = local_var:pleasant_conversation_success
+			}
+  			animation = admiration	
+  		}
+		triggered_animation = {
+			trigger = {
+				exists = local_var:pleasant_conversation_failure
+			}
+			animation = boredom
+  		}
+	}
+	
+	trigger = {
+		exists = scope:consort
+		scope:harem_liege ?= {
+			this = root
+		}
+		is_physically_able_adult = yes
+		highest_held_title_tier >= tier_county
+		is_landed_or_landless_administrative = yes
+		any_consort = {
+			is_available_allow_travelling = yes
+			is_courtier_of = scope:harem_liege
+			count >= 3
+		}
+		OR = {
+			exists = local_var:pleasant_conversation_success
+			exists = local_var:pleasant_conversation_failure
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = local_var:pleasant_conversation_success
+			}
+			add_opinion = {
+				modifier = pleased_opinion
+				opinion = 5
+				target = scope:consort
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_trait = shy
+					}
+				}
+				stress_impact = {   
+					base = minor_stress_impact_loss
+					gregarious = minor_stress_impact_loss
+				}
+			}
+		}
+		else = {
+			add_opinion = {
+				target = scope:consort
+				modifier = disappointed_opinion
+				opinion = -10
+			}
+		}
+	}
+	
+	#Great
+	option = {
+		name = consort_play.1001.a
+		trigger = {
+			NOT = {
+				exists = local_var:pleasant_conversation_failure
+			}
+		}
+		scope:consort = {
+			trigger_event = {
+				id = consort_play.0005
+				days = { 2 5 }
+			}	
+		}
+		
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Reject them
+	option = {
+		name = {
+			trigger = { exists = local_var:pleasant_conversation_success }
+			text = consort_play.1001.b.success
+		}
+		name = {
+			trigger = { exists = local_var:pleasant_conversation_failure }
+			text = consort_play.1001.b.failure
+		}
+
+		clear_harem_interactions_flags_effect = yes
+		scope:consort = {
+			show_as_tooltip = {
+				#Loses favor
+				if = {
+					limit = {
+						exists = local_var:pleasant_conversation_success
+					}
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = disappointed_opinion
+						opinion = -10
+					}
+				}
+				stress_impact = {   
+					gregarious = minor_stress_impact_gain
+				}
+			}
+		#	trigger_event = {
+		#		id = consort_play.0001 #Check
+		#		days = { 2 5 }
+		#	}	
+		#	Maybe add a modifier if the conversation was a success and a failure?
+		}
+		
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
 
 ##A servant notifies you a consort is coming##
 #########################
@@ -2027,7 +2051,7 @@ consort_play.5000 = {
 ################################
 ##Someone pays respects to you##
 ################################
-consort_play.0010 = {
+consort_play.4050 = {
 	type = character_event
 	title = consort_play.0001.t
 	desc = consort_play.0001.desc

@@ -1,22 +1,22 @@
 ﻿#Visit Liege
 visit_liege_interaction = {
 	category = interaction_category_harem
-	use_diplomatic_range = no
 	icon = icon_marriage
 
 	desc = visit_liege_interaction_desc #Check
 
 	is_shown = {
 		scope:actor = {
-			exists = court_owner
-			is_consort_of = court_owner
-			court_owner = {
-				is_available = yes
+			court_owner ?= {
 				highest_held_title_tier >= tier_county
+				is_landed_or_landless_administrative = yes
 				any_consort = {
 					is_available_allow_travelling = yes
 					is_courtier_of = scope:actor.court_owner
 					count >= 3
+				}
+				any_consort = {
+					this = scope:actor
 				}
 			}
 			NOR = {
@@ -33,8 +33,8 @@ visit_liege_interaction = {
 	}
 
 	is_valid_showing_failures_only = {
-		scope:recipient = { is_available_allow_travelling = yes }
-		scope:actor = { is_available_allow_travelling = yes }
+		scope:recipient = { is_available_healthy_adult = yes }
+		scope:actor = { is_available_healthy_adult = yes }
 		custom_tooltip = {
 			text = already_did_this_consort_play_tooltip
 			scope:actor = {
@@ -67,6 +67,31 @@ visit_liege_interaction = {
 				}
 			}
 		}
+		scope:recipient = {
+			trigger_if = {
+				limit = {
+					NOT = {
+						this = scope:actor
+					}
+				}
+				custom_tooltip = {
+					text = epidemic_bride_show
+					NOR = {
+						realm_has_any_epidemic = {
+							SIZE = 1
+							INTENSITY = minor
+						}
+						capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+					}
+				}
+				custom_tooltip = {
+					text = seclusion_bride_show
+					NOR = {
+						has_character_modifier = isolating_modifier
+					}
+				}
+			}
+		}
 	}
 
 	auto_accept = yes
@@ -76,7 +101,7 @@ visit_liege_interaction = {
 			custom_tooltip = visit_liege_effect_tooltilp
 			add_character_flag = {
 				flag = visited_liege_flag
-				years = 1
+				years = 2
 			}
 			add_character_flag = {
 				flag = is_visiting_harem_character_flag
@@ -207,23 +232,38 @@ visit_liege_interaction = {
 							OR = {
 								is_powerful_vassal_of = scope:harem_liege
 								is_councillor_of = scope:harem_liege
+								AND = { #Or belongs to the same realm
+									government_has_flag = government_is_administrative
+									exists = scope:harem_liege.top_liege
+									top_liege ?= {
+										this = scope:harem_liege.top_liege
+									}
+									house ?= {
+										is_powerful_family = yes
+										is_dominant_family = no
+									}
+								}
 							}
 						}
 						add = 15
 					}
 					modifier = {
 						any_close_family_member = {
-							is_liege_or_above_of = scope:harem_liege
+							OR = {	
+								is_liege_or_above_of = scope:harem_liege
+								AND = { #Or belongs to the same realm
+									government_has_flag = government_is_administrative
+									exists = scope:harem_liege.top_liege
+									top_liege ?= {
+										this = scope:harem_liege.top_liege
+									}
+									house ?= {
+										is_dominant_family = yes
+									}
+								}
+							}
 						}
 						add = 50
-					}
-					modifier = {
-						any_close_family_member = {
-							government_allows = administrative
-							house ?= { is_dominant_family = yes }
-							is_vassal_or_below_of = scope:harem_liege
-						}
-						add = 25
 					}
 					#Liege's traits
 					modifier = {
@@ -372,13 +412,6 @@ visit_liege_interaction = {
 				}
 			}
 		}
-		#scope:recipient = {
-		#	save_scope_as = homage_authority
-		#	trigger_event = {
-		#		id = consort_play.0002
-		#		days = 3
-		#	}
-		#}
 	}
 	
 	# AI
