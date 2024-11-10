@@ -65,6 +65,126 @@ scripted_trigger can_be_promoted_trigger = {
 	}
 }
 
+scripted_trigger valid_relative_promotion_trigger = {
+	any_liege_or_above = {
+		this = scope:harem_liege
+	}
+	is_available_healthy_ai_adult = yes
+
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+		has_character_modifier = recently_tortured
+		any_consort = {
+			this = scope:harem_liege
+		}
+		is_child_of = scope:harem_liege
+		any_heir_title = {} # Not heir to anything
+		has_hook = scope:harem_liege
+	}
+	trigger_if = {
+		limit = { is_female = yes }
+		scope:harem_liege = { faith_dominant_gender_female_or_equal = yes }
+	}
+	trigger_else = { faith_dominant_gender_male_or_equal = yes }
+
+	#Unlanded or lowly vassal
+	trigger_if = {
+		limit = {
+			is_landed = yes
+		}
+		OR = {	
+			AND = { #Promote count to duke
+				highest_held_title_tier = tier_county
+				any_held_title = { #Not many titles
+					tier = tier_county
+					count <= 2
+				}
+				primary_title = {
+					de_jure_liege = {
+						OR = {
+							holder ?= {
+								this = scope:harem_liege
+								any_held_title = {
+									tier = tier_duchy
+									count >= 3
+								}
+							}
+							AND = {
+								is_title_created = no
+								any_in_de_jure_hierarchy = {
+									filter = {
+										tier = tier_county
+									}
+									holder = scope:harem_liege
+									percent >= 0.50
+								}
+							}
+						}
+						NOT = {
+							any_de_jure_county = {
+								this = scope:harem_liege.capital_county
+							}
+						}
+					}
+				}	
+				scope:harem_liege = {
+					gold >= create_duchy_title_value_harem_politics
+				}
+			}
+			AND = {	#Promote baron to count
+				highest_held_title_tier = tier_barony
+				primary_title = {
+					de_jure_liege = {
+						NOT = {
+							this = scope:harem_liege.capital_county
+						}
+					}
+				}	
+				scope:harem_liege = {
+					any_held_title = {
+						tier = tier_county
+						count >= 4
+					}
+				}
+			}
+			AND = {	#Promote to Noble Family
+				highest_held_title_tier <= tier_county	
+				scope:harem_liege = {
+					government_allows = administrative
+					highest_held_title_tier >= tier_kingdom
+					trigger_if = {
+						limit = {
+							highest_held_title_tier = tier_kingdom
+						}
+						is_independent_ruler = yes
+					}
+					gold >= 400
+				}
+			}
+		}
+		NOR = {
+			government_has_flag = government_is_republic
+			government_has_flag = government_is_theocracy
+		}
+	}
+	trigger_else = {
+		any_held_title = { count = 0 }
+	}
+	OR = {
+		AND = {
+			exists = dynasty
+			exists = scope:harem_liege.dynasty
+			NOT = {
+				dynasty = scope:harem_liege.dynasty
+			}
+		}
+		NOT = {
+			exists = dynasty
+		}
+	}
+}
+
 consort_play.0002 = {
 	type = character_event
 	title = consort_play.0002.t
