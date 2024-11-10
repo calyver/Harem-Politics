@@ -1,0 +1,337 @@
+﻿calyver_toggle_harem_window_effect = {
+	if = {
+		limit = {
+			has_variable = show_harem_window
+		}
+		remove_variable = show_harem_window
+		#Clear the lists
+		clear_variable_list = harem_consort_list
+		#Remove variables
+		if = { #Can't visit the harem
+			limit = {
+				has_variable = cant_visit_harem
+			}
+			remove_variable = cant_visit_harem
+		}
+	}
+	else = {
+		calyver_update_harem_list_effect = yes
+		set_variable = show_harem_window
+	}
+}
+
+calyver_update_harem_list_effect = {
+	if = {
+		limit = {
+			exists = scope:harem_master
+		}
+		clear_saved_scope = harem_master
+	}
+	
+	save_scope_as = harem_master
+
+	ordered_consort = {
+		order_by = {
+			#Favor
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				add = var:favor
+				divide = 50
+			}
+
+			#Rank
+			if = {
+				limit = {
+					exists = root.primary_spouse
+					this = root.primary_spouse
+				}
+				add = 550
+			}
+			if = {
+				limit = {
+					has_court_position = grand_consort_court_position
+				}
+				add = 270
+			}
+			if = {
+				limit = {
+					is_married = yes
+				}
+				add = 170
+			}
+
+			#Background
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_empire
+					}
+				}
+				add = 25
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_kingdom
+					}
+				}
+				add = 20
+			}
+			if = { #Dominant families
+				limit = {
+					any_close_family_member = {
+						government_allows = administrative
+						house ?= { is_dominant_family = yes }
+						OR = {
+							AND = {
+								exists = scope:harem_master.top_liege
+								top_liege ?= scope:harem_master.top_liege
+							}
+							AND = {
+								is_vassal_or_below_of = scope:harem_master
+							}
+						}
+					}
+				}
+				add = 15
+			}
+			else_if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_duchy
+					}
+				}
+				add = 15
+			}
+
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_county
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_barony
+					}
+				}
+				add = 5
+			}
+
+			if = { #Powerful families
+				limit = {
+					any_close_family_member = {
+						is_landed_or_landless_administrative = yes
+						highest_held_title_tier >= tier_county
+						NAND = { #Dominant families have another calculation
+							government_allows = administrative
+							house ?= { is_dominant_family = yes }
+							OR = {
+								AND = {
+									exists = scope:harem_master.top_liege
+									top_liege ?= scope:harem_master.top_liege
+								}
+								AND = {
+									is_vassal_or_below_of = scope:harem_master
+								}
+							}
+						}
+					}
+				}
+				add = {
+					value = 0
+					if = {
+						limit = {
+							any_close_family_member = {
+								OR = {
+									is_powerful_vassal_of = scope:harem_master
+									AND = { #It applies also to fellow powerful vassals
+										exists = scope:harem_master.liege
+										liege ?= scope:harem_master.liege
+										is_powerful_vassal_of = scope:harem_master.liege
+									}
+								}
+							}
+						}
+						add = 5
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								OR = {
+									is_councillor_of = scope:harem_master
+									AND = { #It applies also to fellow powerful vassals
+										exists = scope:harem_master.liege
+										liege ?= scope:harem_master.liege
+										is_councillor_of = scope:harem_master.liege
+									}
+								}
+							}
+						}
+						add = 5
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_knight_of = root
+					}
+				}
+				add = {
+					value = 2
+					if = {
+						limit = {
+							any_close_family_member = {
+								is_knight_of = root
+								is_acclaimed = yes
+							}
+						}
+						add = {
+							value = 5
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_vassal_of = root
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					is_lowborn = no
+				}
+				add = 10
+			}
+
+			#Culture and religion
+			if = {
+				limit = {
+					culture = root.culture
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					faith = root.faith
+				}
+				add = 15
+			}
+
+			#Number of children
+			if = {
+				limit = {
+					any_child = {
+						is_child_of = scope:harem_master
+						is_alive = yes
+						count > 0
+					}
+				}
+				every_child = {
+					limit = {
+						is_child_of = scope:harem_master
+						is_alive = yes
+					}
+					add = {
+						value = 2
+						if = { #Eligible heirs
+							limit = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
+							}
+							add = 1
+						}
+						if = { #Closer to the throne
+							limit = {
+								scope:harem_master.primary_title = {
+									place_in_line_of_succession = {
+										target = prev
+										value <= 3
+									}
+								}
+							}
+							add = 1
+						}
+						if = { #Player heir
+							limit = {
+								is_player_heir_of = scope:harem_master
+							}
+							add = 2
+						}
+					}
+				}
+			}
+		}
+		min = 0
+		root = {
+			add_to_variable_list = {
+				name = harem_consort_list
+				target = prev
+			}
+		}
+	}
+
+	if = { #Can you visit the harem?
+		limit = {
+			OR = {
+				has_trait = ill
+				has_trait = wounded_1
+				
+				has_trait = wounded_2
+				has_trait = wounded_3						
+				has_trait = incapable
+				has_trait = maimed
+				has_trait = blind
+				has_trait = bubonic_plague
+				has_trait = cancer
+				has_trait = consumption
+				has_trait = great_pox
+
+				has_trait = leper
+				has_trait = pneumonic
+				has_trait = smallpox
+				has_trait = typhus
+				
+				has_trait = dysentery
+				has_trait = ergotism
+				has_trait = measles
+				
+				is_at_war = yes
+
+				has_variable = flag_visited_harem
+				has_variable = flag_is_visiting_harem
+
+				is_travelling = yes
+				is_available_allow_travelling = no
+				
+				has_character_modifier = isolating_modifier
+
+				any_consort = {
+					is_courtier_of = root
+					is_physically_able_adult = yes
+					count <= 2
+				}
+			}
+		}
+		set_variable = cant_visit_harem
+	}
+}
+
+visit_harem_effect = {
+	trigger_event = {
+		id = harem_events.0001
+		days = { 7 10 }
+	}
+	set_variable = {
+		name = flag_is_visiting_harem
+		days = 10
+	}
+}

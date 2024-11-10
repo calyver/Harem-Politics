@@ -1,0 +1,101 @@
+window = {
+	name = "harem_window"
+	# size = { 750 90% }
+	parentanchor = hcenter
+	#position = { -50 65 }
+	allow_outside = yes
+	layer = middle
+
+	using = Window_Background
+	using = Window_Decoration_Spike
+	using = Window_Size_CharacterList
+
+	visible = "[GetPlayer.MakeScope.Var('show_harem_window').IsSet]"
+	
+	vbox = {
+		name = "harem_content"
+		using = Window_Margins
+
+		header_pattern = {
+			layoutpolicy_horizontal = expanding
+		
+			blockoverride "header_text"
+			{
+				text = "check_harem_decision"
+			}
+		
+			blockoverride "button_close"
+			{
+				onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+			}
+		}
+
+		#Consorts
+		vbox_consort_list = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+
+			blockoverride "scrollbox_empty_visibility"
+			{
+				layoutpolicy_vertical = expanding
+				visible = "[IsDataModelEmpty(GetPlayer.MakeScope.GetList('harem_consort_list'))]"
+				text = "CHARACTER_FINDER_NO_MATCH"
+			}
+			
+			blockoverride "container_implementation" {
+				fixedgridbox = {
+					addcolumn = 630
+					addrow = 92
+
+					name = "characters_grid"
+					datamodel_reuse_widgets = yes
+					datamodel = "[GetPlayer.MakeScope.GetList('harem_consort_list')]"
+					visible = "[Not(GetPlayer.MakeScope.GetList('harem_consort_list'))]" #Check because it should be the opposite of the empty list text
+
+					item = {
+						widget_harem_list_item_finder = {
+							size = { 630 94 }
+						}
+					}
+				}
+			}
+		}
+		
+		#Button
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			margin_top = 10
+			margin_bottom = 10
+			spacing = 5
+
+			spacer = {
+				size = { 10 10 }
+			}
+
+			# default step
+			widget = {
+				size = { 380 50 }
+				decision_confirm_button = {
+					name = "harem_decision_button"
+					text = "IM_TT_HAREM_WINDOW"
+					onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					enabled = "[Not(GetPlayer.MakeScope.Var('cant_visit_harem').IsSet)]"
+					size = { 100% 100% }
+					
+					tooltip = "cant_visit_harem_tooltip"
+					tooltip_visible = "[GetPlayer.MakeScope.Var('cant_visit_harem').IsSet]"
+				}
+				
+			}
+
+			spacer = {
+				size = { 0 2 }
+			}
+
+			
+
+			expand = {}
+		}
+	}
+}
