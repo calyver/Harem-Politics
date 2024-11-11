@@ -48,10 +48,7 @@ scripted_trigger can_be_promoted_trigger = {
 		AND = { #Concubine to spouse
 			is_concubine = yes
 			scope:harem_liege = {
-				allowed_more_concubines = yes
-				can_marry_character_trigger = {
-					CHARACTER = scope:consort
-				}
+				allowed_more_spouses = yes
 			}
 		}
 		AND = { #The GC
@@ -907,12 +904,16 @@ consort_play.0005 = {
 			name = requested_promotion
 			value = yes
 		}
-		# scope:harem_liege = {
-		# 	trigger_event = {
-		# 		id = consort_play.1002
-		# 		days = { 2 5 }
-		# 	}
-		# }
+		set_local_variable = {
+			name = requested_harem_promotion
+			value = yes
+		}
+		scope:harem_liege = {
+			trigger_event = {
+				id = consort_play.1002
+				days = { 2 5 }
+			}
+		}
 
 		ai_chance = {
 			base = 1
@@ -1254,12 +1255,15 @@ consort_play.1001 = {
 	#Reject them
 	option = {
 		name = {
-			trigger = { exists = local_var:pleasant_conversation_success }
-			text = consort_play.1001.b.success
-		}
-		name = {
-			trigger = { exists = local_var:pleasant_conversation_failure }
-			text = consort_play.1001.b.failure
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = { exists = local_var:pleasant_conversation_success }
+						desc = consort_play.1001.b.success
+					}
+					desc = consort_play.1001.b.failure
+				}
+			}
 		}
 
 		clear_harem_interactions_flags_effect = yes
@@ -1291,9 +1295,27 @@ consort_play.1001 = {
 ##Pleasant conversation - result##
 consort_play.1002 = {
 	type = character_event
-	title = consort_play.1001.t.pleasant_conversation_success
+	title = {
+		first_valid = {
+			triggered_desc = { #A bold request
+				trigger = {
+					exists = local_var:requested_promotion
+				}
+				desc = consort_play.1002.t.request
+			}
+			triggered_desc = { #Pleasant conversation
+				desc = consort_play.1001.t.pleasant_conversation_success
+			}
+		}
+	}
 	desc = {
 		first_valid = {
+			triggered_desc = { #A bold request
+				trigger = {
+					exists = local_var:requested_harem_promotion
+				}
+				desc = consort_play.1002.desc.harem_promotion
+			}
 			triggered_desc = {
 				desc = consort_play.1002.desc.generic
 			}
@@ -1355,6 +1377,9 @@ consort_play.1002 = {
 					has_trait = eunuch
 				}
 				is_healthy = yes
+			}
+			NOR = {
+				exists = exists = local_var:requested_promotion
 			}
 		}
 
@@ -1783,35 +1808,206 @@ consort_play.1002 = {
 		}
 	}
 
+	#Concede promotion
+	option = {
+		name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = { 
+							scope:harem_liege = { #Can appoint a GC
+								can_appoint_char_to_court_position = {
+									CHAR = scope:consort
+									COURT_POS = grand_consort_court_position
+								}
+							}
+						}
+						desc = consort_play.1002.b.gc
+					}
+					desc = consort_play.1002.b.ss
+				}
+			}
+		}
+		trigger = {
+			exists = local_var:requested_harem_promotion
+			OR = {
+				scope:harem_liege = { #Can appoint a GC
+					can_appoint_char_to_court_position = {
+						CHAR = scope:consort
+						COURT_POS = grand_consort_court_position
+					}
+				}
+				AND = { #Concubine to spouse
+					scope:consort = {
+						is_concubine = yes
+					}
+					scope:harem_liege = {
+						allowed_more_spouses = yes
+					}
+				}
+			}
+		}
+		
+		scope:harem_liege = {
+			if = { #Appoint to GC
+				limit = {
+					can_appoint_char_to_court_position = {
+						CHAR = scope:consort
+						COURT_POS = grand_consort_court_position
+					}
+				}
+				appoint_court_position = {
+					recipient = scope:consort
+					court_position = grand_consort_court_position
+				}
+			}
+			else_if = {
+				limit = {
+					scope:consort = {
+						is_concubine = yes
+					}
+					allowed_more_spouses = yes
+				}
+				if = {
+					limit = {
+						has_trait = just
+						OR = {
+							has_imprisonment_reason = scope:consort
+							scope:consort = {
+								any_secret = {
+									exists = secret_owner
+									is_known_by = scope:harem_liege
+									is_criminal_for = secret_owner
+								}
+							}
+						}
+					}
+					stress_impact = {
+						just = minor_stress_impact_gain
+					}
+				}
+				if = {
+					limit = {
+						is_female = yes
+					}
+					marry_matrilineal = scope:consort
+				}
+				else = {
+					marry = scope:consort
+				}
+				scope:consort = {
+					save_scope_as = secondary_recipient
+				}
+				save_scope_as = actor
+				save_scope_as = secondary_actor
+				save_scope_as = recipient
+				calyver_marriage_interaction_on_accept_effect = yes
+			}
+		}
+
+		ai_chance = {
+			base = 10
+		}
+	}
+
 	#It was a nice time
 	option = {
-		name = consort_play.1002.b
-
-		stress_impact = {
-			lustful = minor_stress_impact_gain
-		}
-		add_opinion = {
-			target = scope:consort
-			modifier = friendliness_opinion
-			opinion = 5
-		}
-		scope:consort = {
-			add_opinion = {
-				target = scope:harem_liege
-				modifier = friendliness_opinion
-				opinion = 5
+		name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = { 
+							exists = local_var:requested_promotion
+						}
+						desc = consort_play.1002.c.requested_promotion
+					}
+					desc = consort_play.1002.c.generic
+				}
 			}
-			hidden_effect = {
-				send_interface_toast = {
-					type = event_generic_neutral
-					title = neutral_consort_visit_t
-					right_icon = scope:harem_liege
-					show_as_tooltip = {
-						scope:harem_liege = {
-							add_opinion = {
-								target = scope:consort
-								modifier = friendliness_opinion
-								opinion = 5
+		}
+
+		scope:harem_liege = {
+			if = {
+				limit = {
+					NOT = {
+						exists = local_var:requested_promotion
+					}
+				}
+				stress_impact = {
+					lustful = minor_stress_impact_gain
+				}
+				add_opinion = {
+					target = scope:consort
+					modifier = friendliness_opinion
+					opinion = 5
+				}
+			}
+			else = {
+				hidden_effect = {
+					if = {
+						limit = {
+							exists = local_var:requested_harem_promotion
+						}
+						add_opinion = {
+							target = scope:consort
+							modifier = disappointed_opinion
+							opinion = -5
+						}
+					}
+				}
+			}
+		}
+
+		scope:consort = {
+			if = {
+				limit = {
+					NOT = {
+						exists = local_var:requested_promotion
+					}
+				}
+				add_opinion = {
+					target = scope:harem_liege
+					modifier = friendliness_opinion
+					opinion = 5
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = neutral_consort_visit_t
+						right_icon = scope:harem_liege
+						show_as_tooltip = {
+							scope:harem_liege = {
+								add_opinion = {
+									target = scope:consort
+									modifier = friendliness_opinion
+									opinion = 5
+								}
+							}
+						}
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					exists = local_var:requested_harem_promotion
+				}
+				add_opinion = {
+					target = scope:harem_liege
+					modifier = disappointed_opinion
+					opinion = -5
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_bad
+						title = bad_consort_visit_t
+						right_icon = scope:harem_liege
+						show_as_tooltip = {
+							scope:harem_liege = {
+								add_opinion = {
+									target = scope:consort
+									modifier = disappointed_opinion
+									opinion = -5
+								}
 							}
 						}
 					}
@@ -1826,11 +2022,17 @@ consort_play.1002 = {
 				scope:harem_liege = {
 					has_trait = chaste
 				}
+				NOT = {
+					exists = local_var:requested_promotion
+				}
 			}
 			modifier = { #Traits
 				add = 20
 				scope:consort = {
 					has_trait = chaste
+				}
+				NOT = {
+					exists = local_var:requested_promotion
 				}
 			}
 		}
