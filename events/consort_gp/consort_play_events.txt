@@ -620,10 +620,13 @@ consort_play.0005 = {
 	}
 	right_portrait = {
 		character = scope:harem_liege
-		animation = personality_dishonorable
+		animation = personality_honorable
 	}
 
 	lower_center_portrait = {
+		trigger = {
+			exists = scope:consort_relative
+		}
 		character = scope:consort_relative
 	}
 	
@@ -637,7 +640,99 @@ consort_play.0005 = {
 	}
 
 	immediate = {
-		
+		if = {
+			limit = {
+				any_close_family_member = {
+					valid_relative_promotion_trigger = yes
+				}
+			}
+			every_close_family_member = {
+				limit = {
+					valid_relative_promotion_trigger = yes
+				}
+				add_to_list = consort_relatives_list
+			}
+			random_in_list = {
+				list = consort_relatives_list
+				weight = {
+					base = 10
+					modifier = { #Parents event more
+						any_child = {
+							this = scope:consort
+						}
+						add = 15
+					}
+					modifier = { #Same dynasty
+						exists = dynasty
+						exists = scope:consort.dynasty
+						dynasty = scope:consort.dynasty
+						add = 20
+					}
+					modifier = { #Same house
+						exists = house
+						exists = scope:consort.house
+						house = scope:consort.house
+						add = 15
+					}
+					modifier = { #House Head
+						exists = scope:consort.house.house_head
+						this = scope:consort.house.house_head
+						add = 15
+					}
+					modifier = { #Opinion
+						opinion = {
+							target = scope:consort
+							value >= low_positive_opinion
+						}
+						add = 20
+					}
+				}
+				save_scope_as = consort_relative
+			}
+			if = {
+				limit = {
+					scope:consort_relative = {
+						any_held_title = { count = 0 }
+					}
+				}
+				if = { # Find a valid barony to give away
+					limit = {
+						any_held_title = {
+							tier = tier_barony
+							is_capital_barony = no
+							is_leased_out = no
+							NOT = { THIS = scope:harem_liege.capital_barony }
+						}
+					}
+					ordered_held_title = {
+						limit = {
+							tier = tier_barony
+							is_capital_barony = no
+							is_leased_out = no
+							NOT = { THIS = scope:harem_liege.capital_barony }
+						}
+						order_by = {
+							value = 0
+							subtract = title_province.combined_building_level
+						}
+						save_scope_as = worst_title
+					}
+				}
+				else = { # Find a valid county to give away
+					ordered_held_title = {
+						limit = {
+							tier = tier_county
+							NOT = { THIS = scope:harem_liege.capital_county }
+						}
+						order_by = {
+							value = 0
+							subtract = development_level
+						}
+						save_scope_as = worst_title
+					}
+				}
+			}
+		}
 	}
 	
 	#Continue with the conversation
