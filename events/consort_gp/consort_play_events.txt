@@ -62,130 +62,6 @@ scripted_trigger can_be_promoted_trigger = {
 	}
 }
 
-scripted_trigger valid_relative_promotion_trigger = {
-	any_liege_or_above = {
-		this = scope:harem_liege
-	}
-	is_available_healthy_ai_adult = yes
-
-	NOR = {
-		has_trait = ill
-		has_trait = wounded
-		has_character_modifier = recently_tortured
-		any_consort = {
-			this = scope:harem_liege
-		}
-		is_child_of = scope:harem_liege
-		any_heir_title = {} # Not heir to anything
-		has_hook = scope:harem_liege
-	}
-	trigger_if = {
-		limit = { is_female = yes }
-		scope:harem_liege = { faith_dominant_gender_female_or_equal = yes }
-	}
-	trigger_else = { faith_dominant_gender_male_or_equal = yes }
-
-	#Unlanded or lowly vassal
-	trigger_if = {
-		limit = {
-			is_landed = yes
-		}
-		OR = {	
-			AND = { #Promote count to duke
-				highest_held_title_tier = tier_county
-				any_held_title = { #Not many titles
-					tier = tier_county
-					count <= 2
-				}
-				primary_title = {
-					de_jure_liege = {
-						OR = {
-							holder ?= {
-								this = scope:harem_liege
-								any_held_title = {
-									tier = tier_duchy
-									count >= 3
-								}
-							}
-							AND = {
-								is_title_created = no
-								any_in_de_jure_hierarchy = {
-									filter = {
-										tier = tier_county
-									}
-									holder = scope:harem_liege
-									percent >= 0.50
-								}
-							}
-						}
-						NOT = {
-							any_de_jure_county = {
-								this = scope:harem_liege.capital_county
-							}
-						}
-					}
-				}	
-				scope:harem_liege = {
-					gold >= create_duchy_title_value_harem_politics
-					highest_held_title_tier >= tier_kingdom
-				}
-			}
-			AND = {	#Promote baron to count
-				highest_held_title_tier = tier_barony
-				primary_title = {
-					de_jure_liege = {
-						NOT = {
-							this = scope:harem_liege.capital_county
-						}
-					}
-				}	
-				scope:harem_liege = {
-					any_held_title = {
-						tier = tier_county
-						count >= 4
-					}
-					highest_held_title_tier >= tier_duchy
-				}
-			}
-		}
-		NOR = {
-			government_has_flag = government_is_republic
-			government_has_flag = government_is_theocracy
-		}
-	}
-	trigger_else = {
-		any_held_title = { count = 0 }
-		scope:harem_liege = {
-			OR = {
-				any_held_title = {
-					tier = tier_barony
-					is_capital_barony = no
-					is_leased_out = no
-					NOT = { THIS = scope:harem_liege.capital_barony }
-				}
-				any_held_title = {
-					count >= 4
-					tier = tier_county
-				}
-				AND = { #Promote to Noble Family
-					government_allows = administrative
-					highest_held_title_tier >= tier_kingdom
-					gold >= 400
-				}
-			}
-		}
-	}
-	
-	trigger_if = {
-		limit = {
-			exists = dynasty
-			exists = scope:harem_liege.dynasty
-		}
-		NOT = {
-			dynasty = scope:harem_liege.dynasty
-		}
-	}
-}
 
 consort_play.0002 = {
 	type = character_event
@@ -601,130 +477,129 @@ consort_play.0004 = {
 }
 
 ##Successful conversation##
-scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
-	is_physically_able_ai_adult = yes
-	is_travelling = no
-	is_at_war = no
-	
-	#accepts_harems = yes Check
-
-	exists = scope:harem_liege.dynasty
-	dynasty ?= {
-		NOT = {
-			this = scope:harem_liege.dynasty
-		}
+scripted_trigger valid_relative_promotion_trigger = {
+	any_liege_or_above = {
+		this = scope:harem_liege
 	}
-	NOR = {
-		has_relation_rival = scope:harem_liege
-		has_relation_nemesis = scope:harem_liege
+	is_available_healthy_ai_adult = yes
 
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+		has_character_modifier = recently_tortured
+		any_consort = {
+			this = scope:harem_liege
+		}
+		is_child_of = scope:harem_liege
+		any_heir_title = {} # Not heir to anything
 		has_hook = scope:harem_liege
 	}
-
-	scope:harem_liege = {
-		NOT = {
-			has_hook = prev
-		}
+	trigger_if = {
+		limit = { is_female = yes }
+		scope:harem_liege = { faith_dominant_gender_female_or_equal = yes }
 	}
+	trigger_else = { faith_dominant_gender_male_or_equal = yes }
 
-	OR = {	
-		AND = { #Promote a count to duke
-			highest_held_title_tier = tier_county
-			any_held_title = { #Not many titles
-				tier = tier_county
-				count <= 3
-			}
-			primary_title = {
-				de_jure_liege = {
-					OR = {
-						AND = {
-							is_title_created = yes
+	#Unlanded or lowly vassal
+	trigger_if = {
+		limit = {
+			is_landed = yes
+		}
+		is_at_war = no
+		OR = {	
+			AND = { #Promote count to duke
+				highest_held_title_tier = tier_county
+				any_held_title = { #Not many titles
+					tier = tier_county
+					count <= 2
+				}
+				primary_title = {
+					de_jure_liege = {
+						OR = {
 							holder ?= {
 								this = scope:harem_liege
-								any_held_title = { #Check. This doesn't matter if the duchy is not created
+								any_held_title = {
 									tier = tier_duchy
 									count >= 3
 								}
 							}
-						}
-						AND = {
-							is_title_created = no
-							any_in_de_jure_hierarchy = {
-								filter = {
-									tier = tier_county
+							AND = {
+								is_title_created = no
+								any_in_de_jure_hierarchy = {
+									filter = {
+										tier = tier_county
+									}
+									holder = scope:harem_liege
+									percent >= 0.50
 								}
-								holder = scope:harem_liege
-								percent >= 0.50
+							}
+						}
+						NOT = {
+							any_de_jure_county = {
+								this = scope:harem_liege.capital_county
 							}
 						}
 					}
-					NOT = { #Check. Can't I reuse the any_in_de_jure_hierarchy?
-						any_de_jure_county = {
+				}	
+				scope:harem_liege = {
+					gold >= create_duchy_title_value_harem_politics
+					highest_held_title_tier >= tier_kingdom
+				}
+			}
+			AND = {	#Promote baron to count
+				highest_held_title_tier = tier_barony
+				primary_title = {
+					de_jure_liege = {
+						NOT = {
 							this = scope:harem_liege.capital_county
 						}
 					}
-				}
-			}	
-			scope:harem_liege = {
-				gold >= create_duchy_title_value_harem_politics #Check
-				highest_held_title_tier >= tier_kingdom
-			}
-		}
-		AND = {	#Promote a baron to count
-			highest_held_title_tier = tier_barony
-			primary_title = {
-				de_jure_liege = {
-					NOT = {
-						this = scope:harem_liege.capital_county
+				}	
+				scope:harem_liege = {
+					any_held_title = {
+						tier = tier_county
+						count >= 4
 					}
+					highest_held_title_tier >= tier_duchy
 				}
-			}	
-			scope:harem_liege = {
+			}
+		}
+		NOR = {
+			government_has_flag = government_is_republic
+			government_has_flag = government_is_theocracy
+		}
+	}
+	trigger_else = {
+		any_held_title = { count = 0 }
+		scope:harem_liege = {
+			OR = {
 				any_held_title = {
-					tier = tier_county
+					tier = tier_barony
+					is_capital_barony = no
+					is_leased_out = no
+					NOT = { THIS = scope:harem_liege.capital_barony }
+				}
+				any_held_title = {
 					count >= 4
+					tier = tier_county
 				}
-				highest_held_title_tier >= tier_duchy
-			}
-		}
-		#Promote unlanded to landed
-		AND = { #Is untitled
-			any_held_title = { count = 0 }
-			any_heir_title = {} # Not heir to anything
-			trigger_if = {
-				limit = { is_female = yes }
-				$LIEGE$ = { faith_dominant_gender_female_or_equal = yes }
-			}
-			trigger_else = {
-				$LIEGE$ = { faith_dominant_gender_male_or_equal = yes }
-			}
-		}
-		#Promote lowborn to noble. Must be unlanded
-		is_lowborn = yes
-		AND = { #Give them a Noble Family title
-			scope:harem_liege = {
-				is_landed = yes
-				government_allows = administrative
-				highest_held_title_tier >= tier_duchy
-				#Check, must have some money
-			}
-			highest_held_title_tier <= tier_county
-			trigger_if = {
-				limit = {
-					is_landed = yes
-				}
-				NOR = {
-					government_has_flag = government_is_republic
-					government_has_flag = government_is_theocracy
+				AND = { #Promote to Noble Family
+					government_allows = administrative
+					highest_held_title_tier >= tier_kingdom
+					gold >= 400
 				}
 			}
-			any_held_title = { count = 0 }
 		}
 	}
 
-	NOR = {
-		government_has_flag = government_is_republic
-		government_has_flag = government_is_theocracy
+	trigger_if = {
+		limit = {
+			exists = dynasty
+			exists = scope:harem_liege.dynasty
+		}
+		NOT = {
+			dynasty = scope:harem_liege.dynasty
+		}
 	}
 }
 
