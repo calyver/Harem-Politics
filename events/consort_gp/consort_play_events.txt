@@ -127,6 +127,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 				}	
 				scope:harem_liege = {
 					gold >= create_duchy_title_value_harem_politics
+					highest_held_title_tier >= tier_kingdom
 				}
 			}
 			AND = {	#Promote baron to count
@@ -143,20 +144,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 						tier = tier_county
 						count >= 4
 					}
-				}
-			}
-			AND = {	#Promote to Noble Family
-				highest_held_title_tier <= tier_county	
-				scope:harem_liege = {
-					government_allows = administrative
-					highest_held_title_tier >= tier_kingdom
-					trigger_if = {
-						limit = {
-							highest_held_title_tier = tier_kingdom
-						}
-						is_independent_ruler = yes
-					}
-					gold >= 400
+					highest_held_title_tier >= tier_duchy
 				}
 			}
 		}
@@ -167,17 +155,34 @@ scripted_trigger valid_relative_promotion_trigger = {
 	}
 	trigger_else = {
 		any_held_title = { count = 0 }
-	}
-	OR = {
-		AND = {
-			exists = dynasty
-			exists = scope:harem_liege.dynasty
-			NOT = {
-				dynasty = scope:harem_liege.dynasty
+		scope:harem_liege = {
+			OR = {
+				any_held_title = {
+					tier = tier_barony
+					is_capital_barony = no
+					is_leased_out = no
+					NOT = { THIS = scope:harem_liege.capital_barony }
+				}
+				any_held_title = {
+					count >= 4
+					tier = tier_county
+				}
+				AND = { #Promote to Noble Family
+					government_allows = administrative
+					highest_held_title_tier >= tier_kingdom
+					gold >= 400
+				}
 			}
 		}
-		NOT = {
+	}
+	
+	trigger_if = {
+		limit = {
 			exists = dynasty
+			exists = scope:harem_liege.dynasty
+		}
+		NOT = {
+			dynasty = scope:harem_liege.dynasty
 		}
 	}
 }
