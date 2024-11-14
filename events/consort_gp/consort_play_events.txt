@@ -44,6 +44,28 @@ scripted_effect clear_harem_interactions_flags_effect = {
 }
 
 scripted_effect consort_gp_promote_relative_effect = {
+	if = {
+		limit = {
+			scope:consort_relative = {
+				is_landed = yes
+				primary_title = {
+					de_jure_liege = {
+						is_title_created = no
+						any_in_de_jure_hierarchy = {
+							filter = {
+								tier = tier_county
+							}
+							holder = scope:harem_liege
+							percent >= 0.50
+						}
+					}
+				}
+			}
+		}
+		#Subtract some money
+		remove_short_term_gold = create_duchy_title_value_harem_politics
+	}
+
 	create_title_and_vassal_change = {
 		type = granted
 		save_scope_as = change
@@ -53,6 +75,81 @@ scripted_effect consort_gp_promote_relative_effect = {
 		change_title_holder = {
 			holder = scope:consort_relative
 			change = scope:change
+		}
+		if = {
+			limit = {
+				tier = tier_duchy
+			}
+			#If the holder has other associated titles, they're given as well
+			if = {
+				limit = {
+					any_in_de_jure_hierarchy = {
+						tier = tier_county
+						exists = holder
+						holder = scope:harem_liege
+					}
+				}
+				every_in_de_jure_hierarchy = {
+					limit = {
+						tier = tier_county
+						exists = holder
+						holder = scope:harem_liege
+					}
+					change_title_holder = {
+						holder = scope:consort_relative
+						change = scope:change
+					}
+				}
+				scope:consort_relative = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = received_title_county
+					}
+				}
+			}
+			#If the holder is root's vassal, the vassal is also transferred
+			if = {
+				limit = {
+					any_in_de_jure_hierarchy = {
+						tier = tier_county
+						holder ?= {
+							is_vassal_of = scope:harem_liege
+							NOT = { this = scope:consort_relative }
+							primary_title = {
+								de_jure_liege = {
+									this = scope:worst_title
+								}
+							}
+						}
+					}
+				}
+				every_in_de_jure_hierarchy = {
+					limit = {
+						tier = tier_county
+						holder ?= {
+							is_vassal_of = scope:harem_liege
+							NOT = { this = scope:consort_relative }
+							primary_title = {
+								de_jure_liege = {
+									this = scope:worst_title
+								}
+							}
+						}
+					}
+					holder = {
+						change_liege = {
+							liege = scope:consort_relative
+							change = scope:change
+						}
+					}
+				}
+				scope:consort_relative = {
+					add_opinion = {
+						target = scope:harem_liege
+						modifier = granted_vassal
+					}
+				}
+			}
 		}
 	}
 	resolve_title_and_vassal_change = scope:change
@@ -64,12 +161,21 @@ scripted_effect consort_gp_promote_relative_effect = {
 				modifier = received_title_barony
 			}
 		}
-		else = {
+		else_if = {
+			limit = { scope:worst_title.tier = tier_county }
 			add_opinion = {
 				target = scope:harem_liege
 				modifier = received_title_county
 			}
 		}
+		else_if = {
+			limit = { scope:worst_title.tier = tier_duchy }
+			add_opinion = {
+				target = scope:harem_liege
+				modifier = received_title_duchy
+			}
+		}
+		
 		if = {
 			limit = {
 				is_close_family_of = scope:consort
@@ -473,7 +579,7 @@ consort_play.0004 = {
 				}
 				desc = consort_play.0004.a.tt.success
 			}
-			50 = { # They think you suck.
+			0 = { # They think you suck.
 				compare_modifier = {
 					value = scope:duel_value
 					multiplier = -0.30
@@ -840,7 +946,7 @@ consort_play.0005 = {
 		}
 
 		ai_chance = {
-			base = 1
+			base = 50
 		}
 	}
 }
@@ -976,7 +1082,7 @@ consort_play.1000 = {
 		}
 		
 		ai_chance = {
-			base = 1
+			base = 50
 			modifier = { #Rank
 				add = 15
 				scope:harem_liege.primary_spouse ?= scope:consort
@@ -1172,7 +1278,7 @@ consort_play.1001 = {
 		}
 		
 		ai_chance = {
-			base = 10
+			base = 30
 		}
 	}
 
@@ -2052,7 +2158,7 @@ consort_play.1002 = {
 		}
 
 		ai_chance = {
-			base = 10
+			base = 50
 		}
 	}
 
