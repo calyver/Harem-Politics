@@ -9822,6 +9822,9 @@ harem_politics.0008 = {
 					if = {
 						limit = {
 							is_close_family_of = scope:meddling_relative
+							NOT = {
+								is_allied_to = root
+							}
 						}
 						create_alliance = {
 							target = root
@@ -26907,9 +26910,7 @@ scripted_trigger harem_politics_valid_ruler_relative_trigger = {
 		has_trait = content
 		has_trait = humble
 
-		any_ally = {
-			this = root
-		}
+		is_allied_to = root
 
 		is_close_family_of = root
 	}
@@ -29125,17 +29126,19 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 			primary_title = {
 				de_jure_liege = {
 					OR = {
-						AND = {
-							exists = holder
-							holder = root
-						}
+						holder ?= root
 						AND = {
 							is_title_created = no
 							any_in_de_jure_hierarchy = {
 								filter = {
 									tier = tier_county
 								}
-								holder = root
+								holder ?= {
+									OR = {
+										this = root
+										is_vassal_or_below_of = root
+									}
+								}
 								percent >= 0.50
 							}
 						}
@@ -29198,7 +29201,12 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 								filter = {
 									tier = tier_county
 								}
-								holder = root
+								holder ?= {
+									OR = {
+										this = root
+										is_vassal_or_below_of = root
+									}
+								}
 								percent >= 0.50
 							}
 						}
@@ -29213,8 +29221,7 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 				scope:consort_relative = {
 					primary_title = {
 						de_jure_liege = {
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 					}
 				}
@@ -29240,15 +29247,13 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 					limit = {
 						any_in_de_jure_hierarchy = {
 							tier = tier_county
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 					}
 					every_in_de_jure_hierarchy = {
 						limit = {
 							tier = tier_county
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 						change_title_holder = {
 							holder = scope:consort_relative

@@ -55,7 +55,12 @@ scripted_effect consort_gp_promote_relative_effect = {
 							filter = {
 								tier = tier_county
 							}
-							holder = scope:harem_liege
+							holder ?= {
+								OR = {
+									this = scope:harem_liege
+									is_vassal_or_below_of = scope:harem_liege
+								}
+							}
 							percent >= 0.50
 						}
 					}
@@ -179,6 +184,9 @@ scripted_effect consort_gp_promote_relative_effect = {
 		if = {
 			limit = {
 				is_close_family_of = scope:consort
+				NOT = {
+					is_allied_to = scope:harem_liege
+				}
 			}
 			create_alliance = {
 				target = scope:harem_liege
@@ -2091,6 +2099,16 @@ consort_play.1002 = {
 				}
 			}
 		}
+		show_as_unavailable = { 
+			trigger_if = {
+				limit = {
+					scope:consort_relative = {
+						highest_held_title_tier = tier_county
+					}
+				}
+				NOT = { gold >= create_duchy_title_value_harem_politics }
+			}
+		}
 		scope:consort = {
 			calyver_favor_big_gain_effect = yes
 			add_opinion = {
@@ -2143,25 +2161,20 @@ consort_play.1002 = {
 							opinion = 20
 						}
 						show_as_tooltip = {
-							if = {
-								limit = {
-									is_landed = no
+							scope:harem_liege = {
+								create_title_and_vassal_change = {
+									type = granted
+									save_scope_as = change
+									add_claim_on_loss = no
 								}
-								scope:harem_liege = {
-									create_title_and_vassal_change = {
-										type = granted
-										save_scope_as = change
-										add_claim_on_loss = no
+								scope:worst_title = {
+									change_title_holder = {
+										holder = scope:consort_relative
+										change = scope:change
 									}
-									scope:worst_title = {
-										change_title_holder = {
-											holder = scope:consort_relative
-											change = scope:change
-										}
-									}
-									resolve_title_and_vassal_change = scope:change
 								}
-							}	
+								resolve_title_and_vassal_change = scope:change
+							}
 						}
 					}
 				}
@@ -2172,25 +2185,18 @@ consort_play.1002 = {
 			limit = {
 				exists = scope:worst_title
 			}
-			if = {
-				limit = {
-					scope:consort_relative = {
-						is_landed = no
-					}
-				}
-				scope:harem_liege = {	
-					send_interface_toast = {
-						type = event_generic_neutral
-						left_icon = scope:consort_relative
-						title = harem_politics.0008.a.tt
-						consort_gp_promote_relative_effect = yes
-						stress_impact = {
-							greedy = medium_stress_impact_gain # But, titles
-							diligent = medium_stress_impact_gain # But, I like managing stuff
-							arrogant = medium_stress_impact_gain # But, my titles
-							lazy = minor_stress_impact_loss
-							generous = minor_stress_impact_loss
-						}
+			scope:harem_liege = {	
+				send_interface_toast = {
+					type = event_generic_neutral
+					left_icon = scope:consort_relative
+					title = harem_politics.0008.a.tt
+					consort_gp_promote_relative_effect = yes
+					stress_impact = {
+						greedy = medium_stress_impact_gain # But, titles
+						diligent = medium_stress_impact_gain # But, I like managing stuff
+						arrogant = medium_stress_impact_gain # But, my titles
+						lazy = minor_stress_impact_loss
+						generous = minor_stress_impact_loss
 					}
 				}
 			}
