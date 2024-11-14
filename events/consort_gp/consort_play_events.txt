@@ -165,6 +165,12 @@ scripted_effect consort_gp_promote_relative_effect = {
 				target = scope:harem_liege
 				modifier = received_title_barony
 			}
+			if = { #Your relative gives you influence
+				limit = {
+					government_allows = administrative
+				}
+				change_influence = miniscule_influence_gain
+			}
 		}
 		else_if = {
 			limit = { scope:worst_title.tier = tier_county }
@@ -172,12 +178,24 @@ scripted_effect consort_gp_promote_relative_effect = {
 				target = scope:harem_liege
 				modifier = received_title_county
 			}
+			if = { #Your relative gives you influence
+				limit = {
+					government_allows = administrative
+				}
+				change_influence = minor_influence_gain
+			}
 		}
 		else_if = {
 			limit = { scope:worst_title.tier = tier_duchy }
 			add_opinion = {
 				target = scope:harem_liege
 				modifier = received_title_duchy
+			}
+			if = { #Your relative gives you influence
+				limit = {
+					government_allows = administrative
+				}
+				change_influence = medium_influence_gain
 			}
 		}
 		
@@ -194,7 +212,12 @@ scripted_effect consort_gp_promote_relative_effect = {
 				allied_through_target = scope:consort
 			}
 		}
-		else = {
+		else_if = {
+			limit = {
+				NOT = {
+					is_allied_to = scope:harem_liege
+				}
+			}
 			add_truce_both_ways = {
 				character = scope:harem_liege
 				years = 4
@@ -853,7 +876,7 @@ consort_play.0005 = {
 						any_child = {
 							this = scope:consort
 						}
-						add = 15
+						add = 50
 					}
 					modifier = { #Same dynasty
 						exists = dynasty
@@ -871,13 +894,6 @@ consort_play.0005 = {
 						exists = scope:consort.house.house_head
 						this = scope:consort.house.house_head
 						add = 15
-					}
-					modifier = { #Opinion
-						opinion = {
-							target = scope:consort
-							value >= low_positive_opinion
-						}
-						add = 20
 					}
 					modifier = { #Landed
 						is_landed = yes
@@ -2102,7 +2118,7 @@ consort_play.1002 = {
 		show_as_unavailable = { 
 			trigger_if = {
 				limit = {
-					scope:consort_relative = {
+					scope:consort_relative ?= {
 						highest_held_title_tier = tier_county
 					}
 				}
