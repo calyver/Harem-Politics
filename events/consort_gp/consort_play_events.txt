@@ -2264,21 +2264,10 @@ consort_play.1002 = {
 
 	#Promote relative
 	option = {
-		name = {
-			text = {
-				first_valid = {
-					triggered_desc = {
-						trigger = { 
-							exists = scope:worst_title
-						}
-						desc = harem_politics.0008.a
-					}
-					desc = consort_play.1002.c
-				}
-			}
-		}
+		name = harem_politics.0008.a
 		trigger = {
 			exists = scope:consort_relative
+			exists = scope:worst_title
 			exists = local_var:requested_relative_promotion
 			trigger_if = {
 				limit = {
@@ -2315,8 +2304,17 @@ consort_play.1002 = {
 							tier = tier_county
 							count >= 4
 						}
+						any_held_title = {
+							this = scope:worst_title
+						}
 					}
 				}
+			}
+			trigger_else = {
+				scope:consort_relative = {
+					any_held_title = { count = 0 }
+				}
+				exists = scope:worst_title
 			}
 		}
 		show_as_unavailable = { 
@@ -2403,44 +2401,39 @@ consort_play.1002 = {
 			}
 		}
 
-		if = {
-			limit = {
-				exists = scope:worst_title
-			}
-			scope:harem_liege = {	
-				send_interface_toast = {
-					type = event_generic_neutral
-					left_icon = scope:consort_relative
-					title = harem_politics.0008.a.tt
-					consort_gp_promote_relative_effect = yes
-					if = { #Stress gains unless you are over your domain limit
-						limit = {
-							OR = {
-								AND = {
-									scope:worst_title.tier = tier_duchy
-									any_held_title = {
-										tier = tier_duchy
-										is_head_of_faith = no
-										is_noble_family_title = no
-										count <= 2
-									}
-								}
-								AND = {
-									scope:worst_title.tier = tier_county
-									domain_size <= domain_limit
+		scope:harem_liege = {	
+			send_interface_toast = {
+				type = event_generic_neutral
+				left_icon = scope:consort_relative
+				title = harem_politics.0008.a.tt
+				consort_gp_promote_relative_effect = yes
+				if = { #Stress gains unless you are over your domain limit
+					limit = {
+						OR = {
+							AND = {
+								scope:worst_title.tier = tier_duchy
+								any_held_title = {
+									tier = tier_duchy
+									is_head_of_faith = no
+									is_noble_family_title = no
+									count <= 2
 								}
 							}
-						}
-						stress_impact = {
-							greedy = medium_stress_impact_gain # But, titles
-							diligent = medium_stress_impact_gain # But, I like managing stuff
-							arrogant = medium_stress_impact_gain # But, my titles
+							AND = {
+								scope:worst_title.tier = tier_county
+								domain_size <= domain_limit
+							}
 						}
 					}
 					stress_impact = {
-						lazy = minor_stress_impact_loss
-						generous = minor_stress_impact_loss
+						greedy = medium_stress_impact_gain # But, titles
+						diligent = medium_stress_impact_gain # But, I like managing stuff
+						arrogant = medium_stress_impact_gain # But, my titles
 					}
+				}
+				stress_impact = {
+					lazy = minor_stress_impact_loss
+					generous = minor_stress_impact_loss
 				}
 			}
 		}
