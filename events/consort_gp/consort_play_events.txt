@@ -684,6 +684,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 		}
 	}
 	is_available_healthy_ai_adult = yes
+	is_hostage = no
 
 	NOR = {
 		has_trait = ill
@@ -829,7 +830,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 }
 
 scripted_trigger is_valid_for_target_consort = {
-	is_courtier_of = scope:liege
+	is_courtier_of = scope:harem_liege
 	is_physically_able_adult = yes
 
 	has_variable = favor
@@ -952,17 +953,17 @@ consort_play.0005 = {
 
 		if = {
 			limit = {
-				scope:liege = {
+				scope:harem_liege = {
 					any_consort = {
 						is_valid_for_target_consort = yes
 					}
 					any_consort = {
 						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-						count => 3
+						count >= 3
 					}
 				}
 			}
-			scope:liege = {
+			scope:harem_liege = {
 				every_consort = {
 					limit = {
 						is_valid_for_target_consort = yes
@@ -2476,12 +2477,12 @@ consort_play.1002 = {
 				exists = scope:harem_liege.top_liege
 			}
 			scope:harem_liege.top_liege = {
-				save_scope_as = liege
+				save_scope_as = liege_scope
 			}
 		}
 		else = {
 			scope:harem_liege = {
-				save_scope_as = liege
+				save_scope_as = liege_scope
 			}
 		}
 		#Scope:consort_relative becomes ladmin
@@ -2494,7 +2495,7 @@ consort_play.1002 = {
 								is_noble_family_title = yes
 							}
 							top_liege ?= {
-								this = scope:liege
+								this = scope:liege_scope
 							}
 						}
 					}
@@ -2505,39 +2506,39 @@ consort_play.1002 = {
 				}
 			}
 			hidden_effect  = {
-				scope:harem_liege.top_liege = {
+				if = {
+					limit = {
+						is_lowborn = yes
+					}
+					create_cadet_branch = yes
+				}
+				if = {
+					limit = {
+						scope:consort_relative = {
+							NOT = {
+								is_courtier_of = scope:harem_liege
+							}
+						}
+					}
+				}
+				scope:harem_liege = {
 					add_courtier = scope:consort_relative
-					return_to_court = yes
+					if = {
+						limit = {
+							is_foreign_court_guest = yes
+						}
+						return_to_court = yes
+					}
 				}
 			}
 			create_noble_family_effect = yes
-			hidden_effect = {
-				# Return any escaped courtiers.
-				every_in_list = {
-					list = courtiers_list
-					scope:consort_relative = { add_courtier = prev }
-				}
-				# And boot any new autogenned arrivals.
-				every_courtier = {
-					limit = {
-						is_lowborn = yes
-						NOR = {
-							is_in_list = courtiers_list
-							is_close_or_extended_family_of = scope:consort_relative
-							is_consort_of = scope:consort_relative
-							has_important_relationship_trigger = { CHARACTER = scope:consort_relative }
-						}
-					}
-					silent_disappearance_effect = yes
-				}
-			}
 			create_title_and_vassal_change = {
 				type = swear_fealty
 				add_claim_on_loss = no
 				save_scope_as = title_change
 			}
 			change_liege = {
-				liege = scope:harem_liege.top_liege
+				liege = scope:liege_scope
 				change = scope:title_change
 			}
 			resolve_title_and_vassal_change = scope:title_change
