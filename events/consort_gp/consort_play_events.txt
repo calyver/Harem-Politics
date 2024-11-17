@@ -828,6 +828,40 @@ scripted_trigger valid_relative_promotion_trigger = {
 	}
 }
 
+scripted_trigger is_valid_for_target_consort = {
+	is_courtier_of = scope:liege
+	is_physically_able_adult = yes
+
+	has_variable = favor
+
+	NOR = {		
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+		
+		has_relation_nemesis = scope:consort
+		this = scope:consort
+	}
+
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+	
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+
 consort_play.0005 = {
 	type = character_event
 	title = consort_play.1001.t.pleasant_conversation_success
@@ -915,6 +949,101 @@ consort_play.0005 = {
 				save_scope_as = consort_relative
 			}
 		}
+
+		if = {
+			limit = {
+				scope:liege = {
+					any_consort = {
+						is_valid_for_target_consort = yes
+					}
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+						count => 3
+					}
+				}
+			}
+			scope:liege = {
+				every_consort = {
+					limit = {
+						is_valid_for_target_consort = yes
+					}
+					add_to_list = good_consort_list
+				}
+			}
+			random_in_list = {
+				list = good_consort_list
+				weight = {
+					base = 10
+					modifier = { #Hook
+						has_hook = scope:consort
+						add = 20
+					}
+					modifier = { #Friends
+						OR = {	
+							has_relation_potential_friend = scope:consort
+							has_relation_potential_lover = scope:consort
+						}
+						add = 5
+					}
+					modifier = { #Friends
+						OR = {	
+							has_relation_friend = scope:consort
+							has_relation_lover = scope:consort
+						}
+						add = 10
+					}
+					modifier = { #Friends
+						OR = {	
+							has_relation_best_friend = scope:consort
+							has_relation_soulmate = scope:consort
+						}
+						add = 20
+					}
+
+					modifier = { #Rank
+						exists = scope:harem_liege.primary_spouse
+						this = scope:harem_liege.primary_spouse
+						add = 15
+					}
+					modifier = { #Rank
+						has_court_position = grand_consort_court_position
+						add = 10
+					}
+					modifier = { #Rank
+						is_spouse_of = scope:harem_liege
+						NOR = {
+							AND = {
+								exists = scope:harem_liege.primary_spouse
+								this = scope:harem_liege.primary_spouse
+							}
+							has_court_position = grand_consort_court_position
+						}
+						add = 5
+					}
+
+					modifier = { #Favor
+						has_variable = favor
+						var:favor <= forgotten_consort_upper_limit
+						add = 15
+					}
+					modifier = { #Favor
+						has_variable = favor
+						var:favor <= unfavored_consort_upper_limit
+						add = 10
+					}
+
+					#Opinion
+					opinion_modifier = {
+						who = scope:consort
+						opinion_target = prev
+						min = -30
+						max = 30
+						multiplier = 0.3
+					}
+				}
+				save_scope_as = good_consort
+			}
+		}
 	}
 	
 	#Continue with the conversation
@@ -983,6 +1112,30 @@ consort_play.0005 = {
 		}
 		set_local_variable = {
 			name = requested_relative_promotion
+			value = yes
+		}
+		scope:harem_liege = {
+			trigger_event = {
+				id = consort_play.1002
+				days = 1
+			}
+		}
+
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Speak highly of Consort
+	option = {
+		name = consort_play.0005.d
+		custom_tooltip = consort_play.0005.d.tt
+		trigger = {
+			exists = scope:good_consort
+		}
+
+		set_local_variable = {
+			name = praised_fellow_consort
 			value = yes
 		}
 		scope:harem_liege = {
@@ -1381,6 +1534,12 @@ consort_play.1002 = {
 	type = character_event
 	title = {
 		first_valid = {
+			triggered_desc = { #Words of Praise
+				trigger = {
+					exists = local_var:praised_fellow_consort
+				}
+				desc = consort_play.1002.t.praise
+			}
 			triggered_desc = { #A bold request
 				trigger = {
 					exists = local_var:requested_promotion
@@ -1394,6 +1553,12 @@ consort_play.1002 = {
 	}
 	desc = {
 		first_valid = {
+			triggered_desc = { #Words of Praise
+				trigger = {
+					exists = local_var:praised_fellow_consort
+				}
+				desc = consort_play.1002.desc.praise
+			}
 			triggered_desc = { #A bold request
 				trigger = {
 					exists = local_var:requested_relative_promotion
@@ -1447,6 +1612,13 @@ consort_play.1002 = {
   		}
 	}
 
+	lower_left_portrait = { 	
+		trigger = {
+			exists = scope:good_consort
+			exists = local_var:praised_fellow_consort
+		}
+		character = scope:good_consort
+	}
 	lower_center_portrait = { 	
 		trigger = {
 			exists = scope:consort_relative
@@ -2101,7 +2273,7 @@ consort_play.1002 = {
 						}
 						desc = harem_politics.0008.a
 					}
-					#desc = consort_play.1002.b.ss
+					desc = consort_play.1002.c
 				}
 			}
 		}
