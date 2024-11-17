@@ -811,7 +811,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 				AND = { #Promote to Noble Family
 					government_allows = administrative
 					highest_held_title_tier >= tier_kingdom
-					gold >= 400
+					gold >= 500
 				}
 			}
 		}
@@ -1127,28 +1127,28 @@ consort_play.0005 = {
 	}
 
 	#Speak highly of Consort
-	option = {
-		name = consort_play.0005.d
-		custom_tooltip = consort_play.0005.d.tt
-		trigger = {
-			exists = scope:good_consort
-		}
+	# option = {
+	# 	name = consort_play.0005.d
+	# 	custom_tooltip = consort_play.0005.d.tt
+	# 	trigger = {
+	# 		exists = scope:good_consort
+	# 	}
 
-		set_local_variable = {
-			name = praised_fellow_consort
-			value = yes
-		}
-		scope:harem_liege = {
-			trigger_event = {
-				id = consort_play.1002
-				days = 1
-			}
-		}
+	# 	set_local_variable = {
+	# 		name = praised_fellow_consort
+	# 		value = yes
+	# 	}
+	# 	scope:harem_liege = {
+	# 		trigger_event = {
+	# 			id = consort_play.1002
+	# 			days = 1
+	# 		}
+	# 	}
 
-		ai_chance = {
-			base = 50
-		}
-	}
+	# 	ai_chance = {
+	# 		base = 50
+	# 	}
+	# }
 }
 ##################
 ##Visiting Liege##
@@ -2264,21 +2264,10 @@ consort_play.1002 = {
 
 	#Promote relative
 	option = {
-		name = {
-			text = {
-				first_valid = {
-					triggered_desc = {
-						trigger = { 
-							exists = scope:worst_title
-						}
-						desc = harem_politics.0008.a
-					}
-					desc = consort_play.1002.c
-				}
-			}
-		}
+		name = harem_politics.0008.a
 		trigger = {
 			exists = scope:consort_relative
+			exists = scope:worst_title
 			exists = local_var:requested_relative_promotion
 			trigger_if = {
 				limit = {
@@ -2315,8 +2304,17 @@ consort_play.1002 = {
 							tier = tier_county
 							count >= 4
 						}
+						any_held_title = {
+							this = scope:worst_title
+						}
 					}
 				}
+			}
+			trigger_else = {
+				scope:consort_relative = {
+					any_held_title = { count = 0 }
+				}
+				exists = scope:worst_title
 			}
 		}
 		show_as_unavailable = { 
@@ -2403,45 +2401,154 @@ consort_play.1002 = {
 			}
 		}
 
-		if = {
-			limit = {
-				exists = scope:worst_title
-			}
-			scope:harem_liege = {	
-				send_interface_toast = {
-					type = event_generic_neutral
-					left_icon = scope:consort_relative
-					title = harem_politics.0008.a.tt
-					consort_gp_promote_relative_effect = yes
-					if = { #Stress gains unless you are over your domain limit
-						limit = {
-							OR = {
-								AND = {
-									scope:worst_title.tier = tier_duchy
-									any_held_title = {
-										tier = tier_duchy
-										is_head_of_faith = no
-										is_noble_family_title = no
-										count <= 2
-									}
-								}
-								AND = {
-									scope:worst_title.tier = tier_county
-									domain_size <= domain_limit
+		scope:harem_liege = {	
+			send_interface_toast = {
+				type = event_generic_neutral
+				left_icon = scope:consort_relative
+				title = harem_politics.0008.a.tt
+				consort_gp_promote_relative_effect = yes
+				if = { #Stress gains unless you are over your domain limit
+					limit = {
+						OR = {
+							AND = {
+								scope:worst_title.tier = tier_duchy
+								any_held_title = {
+									tier = tier_duchy
+									is_head_of_faith = no
+									is_noble_family_title = no
+									count <= 2
 								}
 							}
-						}
-						stress_impact = {
-							greedy = medium_stress_impact_gain # But, titles
-							diligent = medium_stress_impact_gain # But, I like managing stuff
-							arrogant = medium_stress_impact_gain # But, my titles
+							AND = {
+								scope:worst_title.tier = tier_county
+								domain_size <= domain_limit
+							}
 						}
 					}
 					stress_impact = {
-						lazy = minor_stress_impact_loss
-						generous = minor_stress_impact_loss
+						greedy = medium_stress_impact_gain # But, titles
+						diligent = medium_stress_impact_gain # But, I like managing stuff
+						arrogant = medium_stress_impact_gain # But, my titles
 					}
 				}
+				stress_impact = {
+					lazy = minor_stress_impact_loss
+					generous = minor_stress_impact_loss
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	#Set up an estate for relative
+	option = {
+		name = consort_play.1002.d
+		trigger = {
+			exists = local_var:requested_relative_promotion
+			scope:consort_relative ?= {
+				any_held_title = { count = 0 }
+			}
+			scope:harem_liege = {
+				government_allows = administrative
+				highest_held_title_tier >= tier_kingdom
+			}
+		}
+		show_as_unavailable = { 
+			exists = local_var:requested_relative_promotion
+			scope:consort_relative ?= {
+				any_held_title = { count = 0 }
+			}
+			scope:harem_liege = {
+				government_allows = administrative
+				highest_held_title_tier >= tier_kingdom
+			}
+			NOT = { 
+				gold >= 500 
+			}
+		}
+		
+		#Scope:consort_relative becomes ladmin
+		scope:consort_relative = {
+			if = {
+				limit = {
+					scope:consort_relative.house ?= {
+						any_house_member = {
+							any_held_title = {
+								is_noble_family_title = yes
+							}
+							top_liege = {
+								this = scope:harem_liege.top_liege
+							}
+						}
+					}
+				}
+				found_cadet_house_decision_effect = {
+					CHARACTER = scope:consort_relative
+					PRESTIGE = major_prestige_gain
+				}
+			}
+			# Note our courtiers so that they don't escape.
+			every_courtier = { add_to_list = courtiers_list }
+			# Change liege
+			destroy_laamp_effect = { ADVENTURER = scope:consort_relative }
+			hidden_effect  = {
+				scope:harem_liege.top_liege = {
+					add_courtier = scope:consort_relative
+					return_to_court = yes
+				}
+			}
+			create_noble_family_effect = yes
+			hidden_effect = {
+				# Return any escaped courtiers.
+				every_in_list = {
+					list = courtiers_list
+					scope:consort_relative = { add_courtier = prev }
+				}
+				# And boot any new autogenned arrivals.
+				every_courtier = {
+					limit = {
+						is_lowborn = yes
+						NOR = {
+							is_in_list = courtiers_list
+							is_close_or_extended_family_of = scope:consort_relative
+							is_consort_of = scope:consort_relative
+							has_important_relationship_trigger = { CHARACTER = scope:consort_relative }
+						}
+					}
+					silent_disappearance_effect = yes
+				}
+			}
+			create_title_and_vassal_change = {
+				type = swear_fealty
+				add_claim_on_loss = no
+				save_scope_as = title_change
+			}
+			change_liege = {
+				liege = scope:harem_liege.top_liege
+				change = scope:title_change
+			}
+			resolve_title_and_vassal_change = scope:title_change
+			change_government = administrative_government
+			hidden_effect = {
+				if = {
+					limit = {
+						NOT = {
+							domicile.domicile_location = {
+								this = scope:harem_liege.capital_province
+							}
+						}
+					}
+					domicile = {
+						move_domicile = scope:harem_liege.capital_province
+					}
+				}
+			}
+			add_character_modifier = {
+				modifier = ep3_administrative_outsider_modifier
+				years = 15
 			}
 		}
 
@@ -2459,9 +2566,9 @@ consort_play.1002 = {
 						trigger = { 
 							exists = local_var:requested_promotion
 						}
-						desc = consort_play.1002.d.requested_promotion
+						desc = consort_play.1002.z.requested_promotion
 					}
-					desc = consort_play.1002.d.generic
+					desc = consort_play.1002.z.generic
 				}
 			}
 		}
