@@ -743,7 +743,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 									holder ?= {
 										OR = {
 											this = scope:harem_liege
-											is_vassal_or_below_of = scope:harem_liege
+											is_vassal_of = scope:harem_liege
 										}
 									}
 									percent >= 0.50
@@ -907,6 +907,10 @@ consort_play.0005 = {
 				}
 				scope:harem_liege = {
 					gold > 0
+					NOR = {
+						government_has_flag = government_is_republic
+						government_has_flag = government_is_theocracy
+					}
 				}
 			}
 			every_close_family_member = {
@@ -1128,28 +1132,28 @@ consort_play.0005 = {
 	}
 
 	#Speak highly of Consort
-	option = {
-		name = consort_play.0005.d
-		custom_tooltip = consort_play.0005.d.tt
-		trigger = {
-			exists = scope:good_consort
-		}
+	# option = {
+	# 	name = consort_play.0005.d
+	# 	custom_tooltip = consort_play.0005.d.tt
+	# 	trigger = {
+	# 		exists = scope:good_consort
+	# 	}
 
-		set_local_variable = {
-			name = praised_fellow_consort
-			value = yes
-		}
-		scope:harem_liege = {
-			trigger_event = {
-				id = consort_play.1002
-				days = 1
-			}
-		}
+	# 	set_local_variable = {
+	# 		name = praised_fellow_consort
+	# 		value = yes
+	# 	}
+	# 	scope:harem_liege = {
+	# 		trigger_event = {
+	# 			id = consort_play.1002
+	# 			days = 1
+	# 		}
+	# 	}
 
-		ai_chance = {
-			base = 50
-		}
-	}
+	# 	ai_chance = {
+	# 		base = 50
+	# 	}
+	# }
 }
 ##################
 ##Visiting Liege##
@@ -1543,7 +1547,10 @@ consort_play.1002 = {
 			}
 			triggered_desc = { #A bold request
 				trigger = {
-					exists = local_var:requested_promotion
+					OR = {	
+						exists = local_var:requested_relative_promotion
+						exists = scope:worst_title
+					}
 				}
 				desc = consort_play.1002.t.request
 			}
@@ -1562,7 +1569,7 @@ consort_play.1002 = {
 			}
 			triggered_desc = { #A bold request
 				trigger = {
-					exists = local_var:requested_relative_promotion
+					exists = scope:worst_title
 				}
 				desc = consort_play.1002.desc.relative_promotion
 			}
@@ -1688,7 +1695,14 @@ consort_play.1002 = {
 						save_scope_as = worst_title
 					}
 				}
-				else = { # Find a valid county to give away
+				else_if = { # Find a valid county to give away
+					limit = {
+						any_held_title = {
+							tier = tier_county
+							NOT = { THIS = scope:harem_liege.capital_county }
+							count >= 3
+						}
+					}
 					ordered_held_title = {
 						limit = {
 							tier = tier_county
@@ -1707,6 +1721,7 @@ consort_play.1002 = {
 					scope:consort_relative = {
 						is_landed = yes
 						is_vassal_of = scope:harem_liege
+						highest_held_title_tier <= tier_county
 					}
 				}
 				scope:consort_relative = {
@@ -2296,6 +2311,9 @@ consort_play.1002 = {
 							}
 							gold >= create_duchy_title_value_harem_politics
 						}
+						trigger_else = {
+							scope:worst_title.holder ?= scope:harem_liege
+						}
 					}
 				}
 				trigger_else = {
@@ -2315,6 +2333,7 @@ consort_play.1002 = {
 				scope:consort_relative = {
 					any_held_title = { count = 0 }
 				}
+				scope:worst_title.holder ?= scope:harem_liege
 			}
 		}
 		show_as_unavailable = { 
