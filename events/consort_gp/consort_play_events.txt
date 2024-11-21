@@ -900,7 +900,14 @@ consort_play.0005 = {
 		animation = personality_honorable
 	}
 
-	lower_right_portrait = {
+	lower_left_portrait = {
+		trigger = {
+			exists = scope:good_consort
+		}
+		character = scope:good_consort
+	}
+
+	lower_center_portrait = {
 		trigger = {
 			exists = scope:consort_relative
 		}
@@ -998,7 +1005,7 @@ consort_play.0005 = {
 					base = 10
 					modifier = { #Hook
 						has_hook = scope:consort
-						add = 20
+						add = 25
 					}
 					modifier = { #Friends
 						OR = {	
@@ -1136,6 +1143,9 @@ consort_play.0005 = {
 			name = requested_relative_promotion
 			value = yes
 		}
+		scope:consort_relative = {
+			save_scope_as = visit_target
+		}
 		scope:harem_liege = {
 			trigger_event = {
 				id = consort_play.1002
@@ -1149,28 +1159,31 @@ consort_play.0005 = {
 	}
 
 	#Speak highly of Consort
-	# option = {
-	# 	name = consort_play.0005.d
-	# 	custom_tooltip = consort_play.0005.d.tt
-	# 	trigger = {
-	# 		exists = scope:good_consort
-	# 	}
+	option = {
+		name = consort_play.0005.d
+		custom_tooltip = consort_play.0005.d.tt
+		trigger = {
+			exists = scope:good_consort
+		}
 
-	# 	set_local_variable = {
-	# 		name = praised_fellow_consort
-	# 		value = yes
-	# 	}
-	# 	scope:harem_liege = {
-	# 		trigger_event = {
-	# 			id = consort_play.1002
-	# 			days = 1
-	# 		}
-	# 	}
+		set_local_variable = {
+			name = praised_fellow_consort
+			value = yes
+		}
+		scope:good_consort = {
+			save_scope_as = visit_target
+		}
+		scope:harem_liege = {
+			trigger_event = {
+				id = consort_play.1002
+				days = 1
+			}
+		}
 
-	# 	ai_chance = {
-	# 		base = 50
-	# 	}
-	# }
+		ai_chance = {
+			base = 50
+		}
+	}
 }
 ##################
 ##Visiting Liege##
@@ -1637,19 +1650,15 @@ consort_play.1002 = {
   		}
 	}
 
-	lower_left_portrait = { 	
-		trigger = {
-			exists = scope:good_consort
-			exists = local_var:praised_fellow_consort
-		}
-		character = scope:good_consort
-	}
 	lower_center_portrait = { 	
 		trigger = {
-			exists = scope:consort_relative
-			exists = scope:worst_title
+			exists = scope:visit_target
+			OR = {	
+				exists = scope:worst_title
+				exists = local_var:praised_fellow_consort
+			}
 		}
-		character = scope:consort_relative
+		character = scope:visit_target
 	}
 	
 	trigger = {
@@ -1769,6 +1778,7 @@ consort_play.1002 = {
 			NOR = {	
 				exists = local_var:requested_harem_promotion
 				exists = scope:worst_title
+				exists = local_var:praised_fellow_consort
 			}
 		}
 
@@ -2429,6 +2439,71 @@ consort_play.1002 = {
 			}
 		}
 
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	#I should see good_consort more often
+	option = {
+		name = consort_play.1002.d
+		trigger = {
+			exists = scope:good_consort
+			exists = local_var:praised_fellow_consort
+		}
+
+		scope:good_consort = {
+			calyver_favor_moderate_gain_effect = yes
+			if = {
+				limit = { can_set_relation_potential_friend_trigger = { CHARACTER = scope:consort } }
+				set_relation_potential_friend = scope:consort
+			}
+			add_opinion = {
+				target = scope:consort
+				modifier = friendliness_opinion
+				opinion = 10
+			}
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_generic_good
+					title = praised_consort_t
+					right_icon = scope:harem_liege
+					left_icon = scope:consort
+					custom_tooltip = praised_consort_desc
+					show_as_tooltip = {
+						calyver_favor_moderate_gain_effect = yes
+					}
+				}
+			}
+		}
+		scope:harem_liege = {
+			stress_impact = {
+				shy = minor_stress_impact_gain
+				paranoid = minor_stress_impact_gain
+			}
+		}
+
+		scope:consort = {
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_generic_good
+					title = good_consort_visit_t
+					right_icon = scope:harem_liege
+					left_icon = scope:good_consort
+					show_as_tooltip = {
+						scope:good_consort = {
+							calyver_favor_moderate_gain_effect = yes
+						}
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:harem_liege
+				modifier = pleased_opinion
+				opinion = 5
+			}
+		}
+		
 		ai_chance = {
 			base = 50
 		}
