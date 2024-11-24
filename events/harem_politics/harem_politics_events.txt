@@ -3618,28 +3618,17 @@ scripted_trigger harem_politics_valid_promotion_consort_trigger = {
 	is_courtier_of = root
 	is_demoted_consort_trigger = no
 
-	trigger_if = {
-		limit = {
-			is_concubine = yes
-		}
-		root = {
-			OR = {
-				#Can be promoted to spouse
+	OR = {
+		AND = {
+			is_concubine_of = root
+			root = {
 				allowed_more_spouses = yes
-				AND = { #Can be the GC
-					highest_held_title_tier >= tier_kingdom
-					NOT = {
-						government_has_flag = government_is_tribal
-					}
-				}
 			}
 		}
-	}
-	trigger_else = {
 		root = {
-			highest_held_title_tier >= tier_kingdom
-			NOT = {
-				government_has_flag = government_is_tribal
+			can_appoint_char_to_court_position = {
+				CHAR = prev
+				COURT_POS = grand_consort_court_position
 			}
 		}
 	}
@@ -3655,6 +3644,7 @@ scripted_trigger harem_politics_valid_promotion_consort_trigger = {
 		has_relation_nemesis = root
 
 		has_character_modifier = forgotten_consort_modifier
+		has_character_flag = flag_new_consort
 	}
 	OR = {
 		any_child = {
@@ -4053,23 +4043,15 @@ harem_politics.0004 = {
 	trigger = {
 		OR = {		
 			AND = { #Promote a consort to Grand Consort
-				gold >= minor_gold_value
-				highest_held_title_tier >= tier_kingdom
-				NOT = {
-					government_has_flag = government_is_tribal
-				}
+				gold > 0
+				can_employ_court_position_type = grand_consort_court_position
 				NOT = { employs_court_position = grand_consort_court_position }
-				OR = {	
-					AND = {
-						accepts_polygamy = no
-						any_concubine = {
-							harem_politics_valid_promotion_consort_trigger = yes
-						}
-					}
-					AND = {
-						accepts_polygamy = yes
-						any_spouse = {
-							harem_politics_valid_promotion_consort_trigger = yes
+				any_consort = {
+					harem_politics_valid_promotion_consort_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
 						}
 					}
 				}
@@ -4094,16 +4076,28 @@ harem_politics.0004 = {
 		save_scope_as = harem_liege
 		if = {
 			limit = {
-				gold >= minor_gold_value
-				highest_held_title_tier >= tier_kingdom
+				gold > 0
+				can_employ_court_position_type = grand_consort_court_position
 				NOT = { employs_court_position = grand_consort_court_position }
-				any_spouse = {
+				any_consort = {
 					harem_politics_valid_promotion_consort_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
+						}
+					}
 				}
 			}
-			every_spouse = {
+			every_consort = {
 				limit = {
 					harem_politics_valid_promotion_consort_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
+						}
+					}
 				}
 				add_to_list = potential_consorts_list
 			}
@@ -4111,22 +4105,20 @@ harem_politics.0004 = {
 		
 		if = {
 			limit = {
-				OR = {
-					allowed_more_spouses = yes
-					AND = {
-						gold >= minor_gold_value
-						highest_held_title_tier >= tier_kingdom
-						NOT = { employs_court_position = grand_consort_court_position }
-						accepts_polygamy = no
-					}
-				}
+				allowed_more_spouses = yes
 				any_concubine = {
 					harem_politics_valid_promotion_consort_trigger = yes
+					NOT = {
+						is_in_list = potential_consorts_list
+					}
 				}
 			}
 			every_concubine = {
 				limit = {
 					harem_politics_valid_promotion_consort_trigger = yes
+					NOT = {
+						is_in_list = potential_consorts_list
+					}
 				}
 				add_to_list = potential_consorts_list
 			}
@@ -4580,48 +4572,16 @@ harem_politics.0004 = {
 	option = { # Promote them to Grand Consort
 		name = harem_politics.0004.b
 		trigger = {
-			gold >= minor_gold_value
-			highest_held_title_tier >= tier_kingdom
-			NOT = {
-				government_has_flag = government_is_tribal
-			}
-			OR = {	
-				AND = { #If polygamy is not accepted, consort must be a conc
-					accepts_polygamy = no
-					scope:loved_consort = {
-						is_concubine = yes
-					}
-				}
-				AND = { #If accepted polygamy, consort must be a secondary spouse
-					accepts_polygamy = yes
-					scope:loved_consort = {
-						is_spouse_of = root
-					}
-				}
+			gold > 0
+			can_appoint_char_to_court_position = {
+				CHAR = scope:loved_consort
+				COURT_POS = grand_consort_court_position
 			}
 			NOT = { employs_court_position = grand_consort_court_position }
 		}
 		appoint_court_position = {
 			recipient = scope:loved_consort
 			court_position = grand_consort_court_position
-		}
-		if = {
-			limit = {
-				has_trait = just
-				OR = {
-					has_imprisonment_reason = scope:loved_consort
-					scope:loved_consort = {
-						any_secret = {
-							exists = secret_owner
-							is_known_by = root
-							is_criminal_for = secret_owner
-						}
-					}
-				}
-			}
-			stress_impact = {
-				just = minor_stress_impact_gain
-			}
 		}
 		ai_chance = {
 			base = 0
@@ -9279,7 +9239,7 @@ scripted_trigger harem_politics_ambitious_consort_trigger = {
 	is_physically_able_ai = yes
 	is_healthy = yes
 	NOR = { 
-		has_character_flag = requested_favor_flag
+		#has_character_flag = requested_favor_flag
 
 		has_opinion_modifier = {
 			target = root
@@ -9372,7 +9332,15 @@ harem_politics.0008 = {
 	        	tier = tier_barony
 	        	is_capital_barony = no
 	        	is_leased_out = no
-	        	NOT = { THIS = ROOT.capital_barony }
+				NOR = { 
+					THIS = ROOT.capital_barony 
+					title_province = { 
+						OR = {
+							has_holding_type = city_holding 
+							has_holding_type = church_holding
+						}
+					}
+				}
 	        }
 	        any_held_title = {
 	        	count >= 4
@@ -9689,7 +9657,15 @@ harem_politics.0008 = {
         			tier = tier_barony
         			is_capital_barony = no
         			is_leased_out = no
-        			NOT = { THIS = ROOT.capital_barony }
+        			NOR = { 
+						THIS = ROOT.capital_barony 
+						title_province = { 
+							OR = {
+								has_holding_type = city_holding 
+								has_holding_type = church_holding
+							}
+						}
+					}
         		}
         	}
         	ordered_held_title = {
@@ -9697,7 +9673,15 @@ harem_politics.0008 = {
 	        		tier = tier_barony
 	        		is_capital_barony = no
         			is_leased_out = no
-        			NOT = { THIS = ROOT.capital_barony }
+        			NOR = { 
+						THIS = ROOT.capital_barony 
+						title_province = { 
+							OR = {
+								has_holding_type = city_holding 
+								has_holding_type = church_holding
+							}
+						}
+					}
 	        	}
 	        	order_by = {
 	        		value = 0
@@ -9797,19 +9781,26 @@ harem_politics.0008 = {
 					}
 					if = {
 						limit = {
-							is_close_family_of = scope:meddling_relative
+							NOT = {
+								is_allied_to = root
+							}
 						}
-						create_alliance = {
-							target = root
-							allied_through_owner = root
-							allied_through_target = scope:meddling_relative
+						if = {
+							limit = {
+								is_close_family_of = scope:meddling_relative
+							}
+							create_alliance = {
+								target = root
+								allied_through_owner = root
+								allied_through_target = scope:meddling_relative
+							}
 						}
-					}
-					else = {
-						add_truce_both_ways = {
-							character = root
-							years = 4
-							name = TRUCE_HAREM
+						else = {
+							add_truce_both_ways = {
+								character = root
+								years = 4
+								name = TRUCE_HAREM
+							}
 						}
 					}
 				}
@@ -9827,10 +9818,17 @@ harem_politics.0008 = {
 				}
 			}
 		}
+		if = { #Stress gains unless you are over your domain limit
+			limit = {
+				domain_size <= domain_limit
+			}
+			stress_impact = {
+				greedy = medium_stress_impact_gain # But, titles
+				diligent = medium_stress_impact_gain # But, I like managing stuff
+				arrogant = medium_stress_impact_gain # But, my titles
+			}
+		}
 		stress_impact = {
-			greedy = medium_stress_impact_gain # But, titles
-			diligent = medium_stress_impact_gain # But, I like managing stuff
-			arrogant = medium_stress_impact_gain # But, my titles
 			lazy = minor_stress_impact_loss
 			generous = minor_stress_impact_loss
 		}
@@ -11466,7 +11464,7 @@ scripted_effect chosen_consort_effect = {
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = root }
-					factor = 0
+					factor = 0.7
 				}
 				if = {
 					limit = {
@@ -11539,7 +11537,7 @@ scripted_effect chosen_consort_effect = {
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = root }
-					factor = 0
+					factor = 0.7
 				}
 				add_opinion = {
 					target = root
@@ -11671,7 +11669,7 @@ scripted_effect deviant_consort_effect = {
 			}
 			modifier = {
 				NOT = { is_attracted_to_gender_of = root }
-				factor = 0
+				factor = 0.7
 			}
 			if = {
 				limit = {
@@ -20954,7 +20952,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:first_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:first_consort }
@@ -21017,7 +21015,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:first_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:first_consort }
@@ -21217,7 +21215,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:second_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:second_consort }
@@ -21280,7 +21278,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:second_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:second_consort }
@@ -21479,7 +21477,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:first_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:first_consort }
@@ -21535,7 +21533,7 @@ harem_politics.0020 = {
 				}
 				modifier = {
 					NOT = { scope:second_consort = { is_attracted_to_gender_of = root } }
-					factor = 0
+					factor = 0.7
 				}
 				modifier = {
 					NOT = { is_attracted_to_gender_of = scope:second_consort }
@@ -24218,7 +24216,7 @@ scripted_effect consort_performance_effect = {
 			}
 			modifier = {
 				NOT = { $CONSORT$ = { is_attracted_to_gender_of = root } }
-				factor = 0
+				factor = 0.7
 			}
 			modifier = {
 				NOT = { is_attracted_to_gender_of = $CONSORT$ }
@@ -26883,15 +26881,13 @@ scripted_trigger harem_politics_valid_ruler_relative_trigger = {
 		has_trait = content
 		has_trait = humble
 
-		any_ally = {
-			this = root
-		}
+		is_allied_to = root
 
 		is_close_family_of = root
 	}
 }
 
-scripted_trigger harem_politics_valid_promotion_consort_trigger = {
+scripted_trigger harem_politics_valid_promotion_consort_0029_trigger = {
 	is_physically_able_ai_adult = yes
 	is_courtier_of = root
 
@@ -26901,11 +26897,11 @@ scripted_trigger harem_politics_valid_promotion_consort_trigger = {
 		harem_politics_valid_ruler_relative_trigger = yes
 	}
 
-	NAND = {
-		exists = root.primary_spouse
-		this = root.primary_spouse
-	}
-	NOT = { 
+	NOR = {
+		AND = {
+			exists = root.primary_spouse
+			this = root.primary_spouse
+		}
 		has_character_flag = flag_considered_consort
 	}
 
@@ -27013,7 +27009,7 @@ harem_politics.0029 = {
 		OR = {
 			AND = { #Concubine to spouse
 				any_concubine = {
-					harem_politics_valid_promotion_consort_trigger = yes
+					harem_politics_valid_promotion_consort_0029_trigger = yes
 				}
 				allowed_more_spouses = yes
 			}
@@ -27021,23 +27017,14 @@ harem_politics.0029 = {
 				NOT = { 
 					employs_court_position = grand_consort_court_position
 				}
-				highest_held_title_tier >= tier_kingdom
-				NOT = {
-					government_has_flag = government_is_tribal
-				}
 				gold > 0
-				OR = {
-					AND = { #Concubine
-						any_concubine = {
-							harem_politics_valid_promotion_consort_trigger = yes
+				any_consort = {
+					harem_politics_valid_promotion_consort_0029_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
 						}
-						accepts_polygamy = no
-					}
-					AND = { #Spouse
-						any_spouse = {
-							harem_politics_valid_promotion_consort_trigger = yes
-						}
-						accepts_polygamy = yes
 					}
 				}
 			}
@@ -27053,13 +27040,13 @@ harem_politics.0029 = {
 		if = {
 			limit = {
 				any_concubine = {
-					harem_politics_valid_promotion_consort_trigger = yes
+					harem_politics_valid_promotion_consort_0029_trigger = yes
 				}
 				allowed_more_spouses = yes
 			}
 			every_concubine = {
 				limit = {
-					harem_politics_valid_promotion_consort_trigger = yes
+					harem_politics_valid_promotion_consort_0029_trigger = yes
 				}
 				add_to_list = consort_list
 			}
@@ -27069,39 +27056,35 @@ harem_politics.0029 = {
 				NOT = { 
 					employs_court_position = grand_consort_court_position
 				}
-				highest_held_title_tier >= tier_kingdom
-				NOT = {
-					government_has_flag = government_is_tribal
-				}
+				can_employ_court_position_type = grand_consort_court_position
 				gold > 0
-			}
-			if = {
-				limit = {
-					any_concubine = {
-						harem_politics_valid_promotion_consort_trigger = yes
+				any_consort = {
+					harem_politics_valid_promotion_consort_0029_trigger = yes
+					NOT = {
+						is_in_list = consort_list
 					}
-					accepts_polygamy = no
-				}
-				every_concubine = {
-					limit = {
-						harem_politics_valid_promotion_consort_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
+						}
 					}
-					add_to_list = consort_list
 				}
 			}
-			if = {
+			every_consort = {
 				limit = {
-					any_spouse = {
-						harem_politics_valid_promotion_consort_trigger = yes
+					harem_politics_valid_promotion_consort_0029_trigger = yes
+					NOT = {
+						is_in_list = consort_list
 					}
-					accepts_polygamy = yes
-				}
-				every_spouse = {
-					limit = {
-						harem_politics_valid_promotion_consort_trigger = yes
+					root = {
+						can_appoint_char_to_court_position = {
+							CHAR = prev
+							COURT_POS = grand_consort_court_position
+						}
 					}
-					add_to_list = consort_list
 				}
+				add_to_list = consort_list
 			}
 		}
 
@@ -27128,7 +27111,7 @@ harem_politics.0029 = {
 							value <= 0
 						}
 					}
-					add = 10
+					add = 15
 				}
 				modifier = { #Kings won't stand a relative being a mere concubine
 					any_close_family_member = {
@@ -27339,25 +27322,11 @@ harem_politics.0029 = {
 			NOT = {
 				employs_court_position = grand_consort_court_position
 			}
-			highest_held_title_tier >= tier_kingdom
-			NOT = {
-				government_has_flag = government_is_tribal
+			can_appoint_char_to_court_position = {
+				CHAR = scope:target_consort
+				COURT_POS = grand_consort_court_position
 			}
 			gold > 0
-			OR = {
-				AND = {
-					accepts_polygamy = yes
-					scope:target_consort = {
-						is_married = yes
-					}
-				}
-				AND = {
-					accepts_polygamy = no
-					scope:target_consort = {
-						is_concubine = yes
-					}
-				}
-			}
 		}
 		scope:sender = {
 			add_opinion = {
@@ -28138,6 +28107,7 @@ scripted_trigger harem_politics_valid_vassal_trigger = {
 	is_physically_able_ai_adult = yes
 	is_travelling = no
 	is_at_war = no
+	is_vassal_of = root
 	
 	accepts_harems = yes
 
@@ -28148,6 +28118,9 @@ scripted_trigger harem_politics_valid_vassal_trigger = {
 		has_relation_nemesis = root
 
 		has_hook = root
+
+		government_has_flag = government_is_republic
+		government_has_flag = government_is_theocracy
 	}
 
 	root = {
@@ -29091,18 +29064,23 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 	harem_politics_valid_vassal_trigger = yes
 
 	OR = {	
-		AND = {
+		AND = { #Promote count to duke
 			highest_held_title_tier = tier_county
 			any_held_title = { #Not many titles
 				tier = tier_county
-				count <= 2
+				count <= 3
 			}
 			primary_title = {
 				de_jure_liege = {
 					OR = {
-						AND = {
-							exists = holder
-							holder = root
+						holder ?= {
+							this = root
+							any_held_title = {
+								tier = tier_duchy
+								is_head_of_faith = no
+								is_noble_family_title = no
+								count >= 2
+							}
 						}
 						AND = {
 							is_title_created = no
@@ -29110,8 +29088,16 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 								filter = {
 									tier = tier_county
 								}
-								holder = root
+								holder ?= {
+									OR = {
+										this = root
+										is_vassal_or_below_of = root
+									}
+								}
 								percent >= 0.50
+							}
+							root = {
+								gold >= create_duchy_title_value_harem_politics
 							}
 						}
 					}
@@ -29123,14 +29109,10 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 				}
 			}	
 			root = {
-				any_held_title = {
-					tier = tier_duchy
-					count >= 3
-				}
-				gold >= create_duchy_title_value_harem_politics
+				highest_held_title_tier >= tier_kingdom
 			}
 		}
-		AND = {	
+		AND = {	#Promote baron to count
 			highest_held_title_tier = tier_barony
 			primary_title = {
 				de_jure_liege = {
@@ -29144,13 +29126,9 @@ scripted_trigger harem_politics_valid_consort_landed_relative_trigger = {
 					tier = tier_county
 					count >= 4
 				}
+				highest_held_title_tier >= tier_duchy
 			}
 		}
-	}
-
-	NOR = {
-		government_has_flag = government_is_republic
-		government_has_flag = government_is_theocracy
 	}
 }
 
@@ -29173,7 +29151,12 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 								filter = {
 									tier = tier_county
 								}
-								holder = root
+								holder ?= {
+									OR = {
+										this = root
+										is_vassal_or_below_of = root
+									}
+								}
 								percent >= 0.50
 							}
 						}
@@ -29188,8 +29171,7 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 				scope:consort_relative = {
 					primary_title = {
 						de_jure_liege = {
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 					}
 				}
@@ -29215,15 +29197,13 @@ scripted_effect harem_politics_create_or_grant_title_effect = {
 					limit = {
 						any_in_de_jure_hierarchy = {
 							tier = tier_county
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 					}
 					every_in_de_jure_hierarchy = {
 						limit = {
 							tier = tier_county
-							exists = holder
-							holder = root
+							holder ?= root
 						}
 						change_title_holder = {
 							holder = scope:consort_relative
@@ -29389,7 +29369,9 @@ harem_politics.0031 = {
 			add = 0.2
 			any_held_title = {
 				tier = tier_duchy
-				count >= 4
+				is_head_of_faith = no
+				is_noble_family_title = no
+				count >= 3
 			}
 		}
 		modifier = { #Many counties
@@ -29646,10 +29628,31 @@ harem_politics.0031 = {
 			title = harem_politics.0008.a.tt
 			harem_politics_create_or_grant_title_effect = { TITLE = scope:gift_title }
 		}
+		if = { #Stress gains unless you are over your domain limit
+			limit = {
+				OR = {
+					AND = {
+						scope:gift_title.tier = tier_duchy
+						any_held_title = {
+							tier = tier_duchy
+							is_head_of_faith = no
+							is_noble_family_title = no
+							count <= 2
+						}
+					}
+					AND = {
+						scope:gift_title.tier = tier_county
+						domain_size <= domain_limit
+					}
+				}
+			}
+			stress_impact = {
+				greedy = medium_stress_impact_gain # But, titles
+				diligent = medium_stress_impact_gain # But, I like managing stuff
+				arrogant = medium_stress_impact_gain # But, my titles
+			}
+		}
 		stress_impact = {
-			greedy = medium_stress_impact_gain # But, titles
-			diligent = medium_stress_impact_gain # But, I like managing stuff
-			arrogant = medium_stress_impact_gain # But, my titles
 			lazy = minor_stress_impact_loss
 			generous = minor_stress_impact_loss
 		}

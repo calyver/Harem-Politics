@@ -1,0 +1,580 @@
+﻿#Visit Liege
+visit_liege_interaction = {
+	category = interaction_category_harem
+	icon = icon_marriage
+
+	desc = visit_liege_interaction_desc #Check
+
+	is_shown = {
+		scope:actor = {
+			court_owner ?= {
+				highest_held_title_tier >= tier_county
+				is_landed_or_landless_administrative = yes
+				any_consort = {
+					is_available_allow_travelling = yes
+					is_courtier_of = scope:actor.court_owner
+					count >= 3
+				}
+				any_consort = {
+					this = scope:actor
+				}
+			}
+			NOR = {
+				exists = scope:is_being_divorced
+				exists = scope:is_being_set_aside
+			}
+			exists = scope:actor.court_owner.location
+			location ?= scope:actor.court_owner.location
+		}
+		OR = {
+			scope:actor = scope:recipient
+			scope:recipient = scope:actor.court_owner
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:recipient = { is_available_healthy_adult = yes }
+		scope:actor = { is_available_healthy_adult = yes }
+		custom_tooltip = {
+			text = already_did_this_consort_play_tooltip
+			scope:actor = {
+				NOT = {
+					has_character_flag = visited_liege_flag
+				}
+			}
+		}
+		scope:actor = {
+			trigger_if = {
+				limit = {
+					this = scope:recipient
+				}
+				custom_tooltip = {
+					text = you_are_busy_consort_play_tooltip
+					can_be_visited_trigger = yes
+				}
+			}
+		}
+		scope:recipient = {
+			trigger_if = {
+				limit = {
+					NOT = {
+						this = scope:actor
+					}
+				}
+				custom_tooltip = {
+					text = they_are_busy_consort_play_tooltip
+					can_be_visited_trigger = yes
+				}
+			}
+		}
+		scope:recipient = {
+			trigger_if = {
+				limit = {
+					NOT = {
+						this = scope:actor
+					}
+				}
+				custom_tooltip = {
+					text = epidemic_bride_show
+					NOR = {
+						realm_has_any_epidemic = {
+							SIZE = 1
+							INTENSITY = minor
+						}
+						capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+					}
+				}
+				custom_tooltip = {
+					text = seclusion_bride_show
+					NOR = {
+						has_character_modifier = isolating_modifier
+					}
+				}
+			}
+		}
+	}
+
+	auto_accept = yes
+
+	on_accept = {
+		scope:actor = {
+			custom_tooltip = visit_liege_effect_tooltilp
+			add_character_flag = {
+				flag = visited_liege_flag
+				years = 2
+			}
+			add_character_flag = {
+				flag = is_visiting_harem_character_flag
+				days = 50
+			}
+			save_scope_as = consort
+			court_owner = {
+				save_scope_as = harem_liege
+				add_character_flag = {
+					flag = is_being_visited_character_flag
+					days = 50
+				}
+			}
+			random_list = {
+				100 = { #You reach your liege
+					custom_tooltip = visit_liege_positive_tooltilp
+					#Liege's opinion of actor
+					opinion_modifier = { 
+						WHO = scope:harem_liege
+						opinion_target = scope:actor
+						min = -20
+						max = 15
+						multiplier = 0.50
+					}
+					#Rank
+					modifier = {
+						scope:harem_liege.primary_spouse ?= {
+							this = scope:actor
+						}
+						add = 40
+					}
+					modifier = {
+						has_court_position = grand_consort_court_position
+						add = 30
+					}
+					modifier = {
+						is_spouse_of = scope:harem_liege
+						NOR = {
+							this = scope:harem_liege.primary_spouse
+							has_court_position = grand_consort_court_position
+						}
+						add = 30
+					}
+					#Favor
+					modifier = {
+						has_character_modifier = favored_consort_modifier
+						add = 10
+					}
+					modifier = {
+						has_character_modifier = beloved_consort_modifier
+						add = 15
+					}
+					modifier = {
+						has_character_modifier = favor_boost_modifier
+						add = 25
+					}
+					#Relationship with liege
+					modifier = {
+						OR = {
+							has_relation_potential_lover = scope:harem_liege
+							has_relation_potential_friend = scope:harem_liege
+						}
+						add = 5
+					}
+					modifier = {
+						OR = {
+							has_relation_lover = scope:harem_liege
+							has_relation_friend = scope:harem_liege
+						}
+						add = 15
+					}
+					modifier = {
+						OR = {
+							has_relation_soulmate = scope:harem_liege
+							has_relation_best_friend = scope:harem_liege
+						}
+						add = 25
+					}
+
+					#Too few consorts
+					modifier = {
+						scope:harem_liege = {
+							any_consort = {
+								is_courtier_of = prev
+								count <= 5
+							}
+						}
+						add = 10
+					}
+					#Liege's stress
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 1
+						}
+						add = -10
+					}
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 2
+						}
+						add = -10
+					}
+					modifier = {
+						scope:harem_liege = {
+							stress_level >= 3
+						}
+						add = -10
+					}
+					#Children
+					# modifier = {
+					# 	any_child = {
+					# 		is_alive = yes
+					# 		is_child_of = scope:harem_liege
+					# 	}
+					# 	every_child = {
+					# 		is_alive = yes
+					# 		is_child_of = scope:harem_liege
+					# 		add = 5
+					# 	}
+					# }
+					#Pregnancy
+					modifier = {
+						has_trait = pregnant
+						pregnancy_assumed_father ?= {
+							this = scope:harem_liege
+						}
+						add = 15
+					}
+					#Family connections
+					modifier = {
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = scope:harem_liege
+								is_councillor_of = scope:harem_liege
+								AND = { #Or belongs to the same realm
+									government_has_flag = government_is_administrative
+									exists = scope:harem_liege.top_liege
+									top_liege ?= {
+										this = scope:harem_liege.top_liege
+									}
+									house ?= {
+										is_powerful_family = yes
+										is_dominant_family = no
+									}
+								}
+							}
+						}
+						add = 15
+					}
+					modifier = {
+						any_close_family_member = {
+							OR = {	
+								is_liege_or_above_of = scope:harem_liege
+								AND = { #Or belongs to the same realm
+									government_has_flag = government_is_administrative
+									exists = scope:harem_liege.top_liege
+									top_liege ?= {
+										this = scope:harem_liege.top_liege
+									}
+									house ?= {
+										is_dominant_family = yes
+									}
+								}
+							}
+						}
+						add = 50
+					}
+					#Liege's traits
+					modifier = {
+						scope:harem_liege = {
+							has_trait = trusting
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = gregarious
+						}
+						add = 15
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = lustful
+						}
+						add = 15
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = lifestyle_reveler
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = { has_trait = irritable }
+						add = -15
+					}
+					#Consort's traits
+					modifier = {
+						scope:consort = { has_trait = irritable }
+						add = -15
+					}
+					#Liege has too few children
+					modifier = {
+						scope:harem_liege = {
+							any_child = {
+								is_alive = yes
+								NOT = {
+									has_trait = bastard
+								}
+								count < 3
+							}
+						}
+						add = 10
+					}
+
+					scope:harem_liege = {
+						trigger_event = {
+							id = consort_play.1000
+							days = { 5 10 }
+						}	
+					}
+					show_as_tooltip = {
+						stress_impact = {
+							shy = minor_stress_impact_gain
+						}
+					}
+				}
+				1 = { #Servants stop you
+					custom_tooltip = visit_liege_negative_tooltilp
+					#Liege's opinion of actor
+					opinion_modifier = { 
+						WHO = scope:harem_liege
+						opinion_target = scope:actor
+						min = -15
+						max = 20
+						multiplier = -0.50
+					}
+					#Rank
+					modifier = {
+						is_concubine = yes
+						add = 5
+					}
+					#Favor
+					modifier = {
+						has_character_modifier = unfavored_consort_modifier
+						add = 10
+					}
+					modifier = {
+						has_character_modifier = forgotten_consort_modifier
+						add = 15
+					}
+
+					#Relationship with liege
+					modifier = {
+						has_relation_potential_rival = scope:harem_liege
+						add = 5
+					}
+					modifier = {
+						OR = {	
+							has_relation_rival = scope:harem_liege
+							scope:harem_liege = {
+								has_relation_grudge = scope:actor
+							}
+						}
+						add = 15
+					}
+					modifier = {
+						has_relation_nemesis = scope:harem_liege
+						add = 25
+					}
+
+					#Too many consorts
+					modifier = {
+						scope:harem_liege = {
+							any_consort = {
+								is_courtier_of = prev
+								count >= 8
+							}
+						}
+						add = 10
+					}
+					#Liege's traits
+					modifier = {
+						scope:harem_liege = {
+							has_trait = craven
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = shy
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = chaste
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = paranoid
+						}
+						add = 10
+					}
+					modifier = {
+						scope:harem_liege = {
+							has_trait = reclusive
+						}
+						add = 10
+					}
+
+					#New consorts will be seen as eager to climb
+					modifier = {
+						has_character_flag = flag_new_consort
+						add = 15
+					}
+
+					#Lowborn
+					modifier = {
+						is_lowborn = yes
+						add = 5
+					}
+
+					trigger_event = {
+						id = consort_play.0002
+						days = { 5 10 }
+					}
+				}
+			}
+		}
+	}
+	
+	# AI
+	ai_will_do = {
+		base = 0
+	}
+}
+
+pay_respects_interaction = {
+	category = interaction_category_harem
+	use_diplomatic_range = no
+	icon = icon_marriage
+
+	desc = divorce_character_interaction_desc #Check
+
+	is_shown = {
+		scope:actor = {
+			exists = court_owner
+			court_owner = {
+				highest_held_title_tier >= tier_county
+				any_consort = {
+					is_available_allow_travelling = yes
+					is_courtier_of = scope:actor.court_owner
+					count >= 3
+				}
+			}
+			OR = {
+				AND = { # Concubines can pay respects to any spouse
+					is_concubine_of = court_owner
+					court_owner = {
+						any_consort = {
+							is_available_allow_travelling = yes
+							is_courtier_of = prev
+							OR = {
+								is_spouse_of = prev
+								#has_court_position = grand_consort_court_position
+							}
+							NOT = {
+								this = scope:actor
+							}
+						}
+					}
+				}
+				AND = { # Secondary spouses can pay respects to the PS or the GC
+					is_spouse_of = court_owner
+					court_owner = {
+						any_consort = {
+							is_available_allow_travelling = yes
+							is_courtier_of = prev
+							OR = {
+								AND = {
+									exists = prev.primary_spouse
+									is_spouse_of = prev.primary_spouse
+								}
+								#has_court_position = grand_consort_court_position
+							}
+							NOT = {
+								this = scope:actor
+							}
+						}
+					}
+				}
+			}
+		}
+		scope:recipient = {
+			this = scope:actor
+		}
+
+
+	#	scope:actor = {
+	#		is_ai = no
+	#
+	#		exists = court_owner
+	#		court_owner = {
+	#			any_consort = {
+	#				this = scope:actor
+	#			}
+	#			any_consort = {
+	#				count >= 3
+	#			}
+	#		}
+	#
+	#		exists = court_owner.primary_spouse
+	#			NOT = {
+	#			this = court_owner.primary_spouse
+	#		}
+	#	
+	#		any_consort = {
+	#			count = 1
+	#		}
+	#	}
+	#	scope:recipient = {
+	#	
+	#		exists = court_owner.primary_spouse
+	#		this = court_owner.primary_spouse
+	#
+	#		exists = court_owner
+	#		court_owner = {
+	#			any_consort = {
+	#				this = scope:actor
+	#			}
+	#			any_courtier = {
+	#				this = scope:actor
+	#			}
+	#		}
+	#		NOT = {
+	#			this = scope:actor
+	#		}
+	#	}
+	}
+
+	is_valid_showing_failures_only = {
+		#scope:recipient = { is_available_allow_travelling = yes }
+		scope:actor = { is_available_allow_travelling = yes }
+	}
+
+	auto_accept = yes
+
+	on_accept = {
+		custom_tooltip = pay_respects_decision_effect_tooltip
+		scope:actor = {
+			save_scope_as = homage_subordinate
+			court_owner = {
+				save_scope_as = harem_liege
+			}
+			trigger_event = {
+				id = consort_play.0004
+				days = { 5 10 }
+			}
+		}
+		#scope:recipient = {
+		#	save_scope_as = homage_authority
+		#	trigger_event = {
+		#		id = consort_play.0002
+		#		days = 3
+		#	}
+		#}
+	}
+	
+	# AI
+	ai_will_do = {
+		base = 0
+	}
+}
