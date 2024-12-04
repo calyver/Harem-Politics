@@ -362,6 +362,45 @@ favor_points = {
 
 	##Additions##
 	
+	#########Little competition#########
+	#Number of consorts
+	if = {
+		limit = { 
+			scope:harem_liege = { 
+				any_consort = { 
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+					count <= 6
+				}
+			}
+		}
+		add = {
+			#desc = favor_subtraction_many_consorts
+			value = 2
+			if = {
+				limit = {
+					scope:harem_liege = { 
+						any_consort = { 
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							count <= 5
+						}
+					}
+				}
+				add = 1
+			}
+			if = {
+				limit = {
+					scope:harem_liege = { 
+						any_consort = { 
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							count <= 4
+						}
+					}
+				}
+				add = 1
+			}
+		}
+	}
+
 	#########New consorts#########
 	if = {
 		limit = { 
@@ -384,7 +423,7 @@ favor_points = {
 						}
 					}
 				}
-				add = 2
+				add = 3
 			}
 		}
 	}
@@ -932,6 +971,7 @@ favor_points = {
 					root = {  
 						any_close_family_member = {
 							is_landed_or_landless_administrative = yes
+							max_military_strength < scope:harem_liege.max_military_strength
 							OR = {
 								is_powerful_vassal_of = scope:harem_liege
 								is_councillor_of = scope:harem_liege
@@ -941,6 +981,19 @@ favor_points = {
 									OR = {	
 										is_powerful_vassal_of = scope:harem_liege.liege
 										is_councillor_of = scope:harem_liege.liege
+									}
+								}
+							}
+							NAND = { #Dominant families have another calculation
+								government_allows = administrative
+								house ?= { is_dominant_family = yes }
+								OR = {
+									AND = {
+										exists = scope:harem_liege.top_liege
+										top_liege ?= scope:harem_liege.top_liege
+									}
+									AND = {
+										is_vassal_or_below_of = scope:harem_liege
 									}
 								}
 							}
@@ -992,31 +1045,9 @@ favor_points = {
 		}
 		add = {
 			#desc = favor_diplomacy
-			value = 2
-			if = {
-				limit = { 
-					root = {
-						diplomacy >= 15
-					}
-				}
-				add = 6
-			}
-			if = {
-				limit = { 
-					root = {
-						diplomacy >= 17
-					}
-				}
-				add = 2
-			}
-			if = {
-				limit = { 
-					root = {
-						diplomacy >= 21
-					}
-				}
-				add = 2
-			}
+			value = root.diplomacy
+			divide = 2
+			round = yes
 		}
 	}
 
@@ -1995,7 +2026,7 @@ favor_points = {
 			scope:harem_liege = { 
 				any_consort = { 
 					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-					count >= 5
+					count >= 7
 				}
 			}
 		}
