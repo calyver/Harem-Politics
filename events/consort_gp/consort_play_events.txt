@@ -787,7 +787,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 			top_liege ?= scope:harem_liege.top_liege
 		}
 	}
-	is_available_healthy_ai_adult = yes
+	is_available_healthy_adult = yes
 	is_hostage = no
 
 	NOR = {
@@ -812,7 +812,7 @@ scripted_trigger valid_relative_promotion_trigger = {
 	}
 	trigger_else = { faith_dominant_gender_male_or_equal = yes }
 
-	#Unlanded or lowly vassal
+	#Landed
 	trigger_if = {
 		limit = {
 			is_landed = yes
@@ -891,8 +891,20 @@ scripted_trigger valid_relative_promotion_trigger = {
 			government_has_flag = government_is_theocracy
 		}
 	}
-	trigger_else = {
-		any_held_title = { count = 0 }
+	trigger_else_if = { #Unlanded noble
+		limit = {
+			is_lowborn = no
+			any_held_title = { count = 0 }
+		}
+		NOR = {
+			any_consort = {
+				is_ruler = yes
+			}
+			has_trait = monk
+			has_trait = devoted
+			has_trait = order_member
+			has_council_position = councillor_court_chaplain
+		}
 		scope:harem_liege = {
 			OR = {
 				any_held_title = {
@@ -921,6 +933,31 @@ scripted_trigger valid_relative_promotion_trigger = {
 			}
 		}
 	}
+	trigger_else = { #Lowborn
+		is_lowborn = yes
+		any_held_title = { count = 0 }
+		NOT = {
+			any_consort = {
+				is_ruler = yes
+			}
+		}
+		trigger_if = {
+			limit = {
+				OR = {	
+					is_councillor = yes
+					has_any_court_position = yes
+				}
+			}
+			OR = {	
+				is_courtier_of = scope:harem_liege
+				top_liege ?= scope:harem_liege
+			}
+		}
+		scope:harem_liege = {
+			gold >= 20
+			highest_held_title_tier >= tier_duchy
+		}
+	}
 
 	trigger_if = {
 		limit = {
@@ -930,6 +967,10 @@ scripted_trigger valid_relative_promotion_trigger = {
 		NOT = {
 			dynasty = scope:harem_liege.dynasty
 		}
+	}
+
+	scope:harem_liege = {
+		gold > 0
 	}
 }
 
@@ -1038,7 +1079,7 @@ consort_play.0005 = {
 						any_child = {
 							this = scope:consort
 						}
-						add = 50
+						add = 60
 					}
 					modifier = { #Same dynasty
 						exists = dynasty
@@ -1789,6 +1830,7 @@ consort_play.1002 = {
 				exists = local_var:requested_relative_promotion
 				scope:consort_relative = {
 					valid_relative_promotion_trigger = yes
+					is_lowborn = no
 				}
 			}
 			if = {
@@ -2427,6 +2469,7 @@ consort_play.1002 = {
 		trigger = {
 			scope:consort_relative ?= {
 				valid_relative_promotion_trigger = yes
+				is_lowborn = no
 			}
 			exists = scope:worst_title
 		}
@@ -2558,21 +2601,15 @@ consort_play.1002 = {
 
 	#Promote relative to noble status
 	option = {
-		name = harem_politics.0008.a
+		name = consort_play.1002.d #Check
+		#Also add event decription and check the event title
+		#And courtly vassals will have a negative opinion of their liege for promoting a lowborn, but less than giving a lowborn a title
 		trigger = {
 			scope:consort_relative ?= {
 				valid_relative_promotion_trigger = yes
 				is_lowborn = yes
-				any_liege_or_above = {
-					OR = {	
-						this = scope:harem_liege
-						AND = {
-							exists = scope:harem_liege.top_liege
-							top_liege ?= scope:harem_liege.top_liege
-						}
-					}
-				}
 			}
+			exists = local_var:requested_relative_promotion
 		}
 		show_as_unavailable = { 
 			exists = local_var:requested_relative_promotion
@@ -2581,7 +2618,7 @@ consort_play.1002 = {
 			}
 		}
 		scope:consort = {
-			calyver_favor_minor_gain_effect = yes
+			calyver_favor_medium_gain_effect = yes
 			add_opinion = {
 				target = scope:harem_liege
 				modifier = grateful_opinion
@@ -2593,7 +2630,82 @@ consort_play.1002 = {
 			}
 		}
 		hidden_effect = {
+			scope:consort_relative = {
+				add_short_term_gold = 10
+				create_dynamic_title = {
+					tier = duchy
+					name = relative_promotion_title_name #Check
+				}
+				create_title_and_vassal_change = {
+					type = created
+					save_scope_as = change
+					add_claim_on_loss = no
+				}
+				scope:new_title = {
+					set_capital_county = scope:harem_liege.capital_county
+					set_landless_title = yes
+					set_destroy_on_gain_same_tier = yes
+					set_no_automatic_claims = yes
+					set_can_be_named_after_dynasty = no
+					change_title_holder = {
+						holder = prev
+						change = scope:change
+					}
+				}
+				resolve_title_and_vassal_change = scope:change
+				scope:new_title = {
+					generate_coa = yes
+				}
+				destroy_title = scope:new_title
+				if = { #Promote their relatives too
+					limit = {
+						any_close_family_member = {
+							is_lowborn = yes
+						}
+					}
+					every_close_family_member = {
+						limit = {
+							is_lowborn = yes
+						}
+						set_house = scope:consort_relative.house
+					}
+				}
+				if = { #Add their relatives to court
+					limit = {
+						any_close_family_member = {
+							NOT = {
+								is_courtier_of = root
+							}
+							OR = {
+								top_liege ?= scope:harem_liege
+								NOR = {
+									is_councillor = yes
+									has_any_court_position = yes
+								}
+							}
+						}
+					}
+					every_close_family_member = {
+						limit = {
+							NOT = {
+								is_courtier_of = root
+							}
+							OR = {
+								top_liege ?= scope:harem_liege
+								NOR = {
+									is_councillor = yes
+									has_any_court_position = yes
+								}
+							}
+						}
+						scope:harem_liege = {
+							add_courtier = prev
+						}
+					}
+				}
+			}
 			scope:harem_liege = {
+				add_courtier = scope:consort_relative
 				every_consort = {
 					limit = {
 						AND = {
@@ -2623,7 +2735,7 @@ consort_play.1002 = {
 					right_icon = scope:harem_liege
 					left_icon = scope:consort_relative
 					show_as_tooltip = {
-						calyver_favor_minor_gain_effect = yes	
+						calyver_favor_medium_gain_effect = yes
 					}
 					scope:consort_relative = {
 						add_opinion = {
@@ -2632,50 +2744,48 @@ consort_play.1002 = {
 							opinion = 10
 						}
 						show_as_tooltip = {
-							
+							set_house = scope:consort_relative.house
+							if = {
+								limit = {
+									exists = scope:consort.house
+									house ?= scope:consort.house
+								}
+								scope:consort = {
+									set_house = scope:consort_relative.house
+								}
+							}
 						}
 					}
 				}
-			}
-			scope:consort_relative = {
-				create_dynamic_title = {
-					tier = duchy
-					name = ennoblement_title_name #Check
-				}
-				create_title_and_vassal_change = {
-					type = created
-					save_scope_as = change
-					add_claim_on_loss = no
-				}
-				scope:new_title = {
-					set_capital_county = scope:harem_liege.capital_county
-					set_landless_title = yes
-					set_destroy_on_gain_same_tier = yes
-					set_no_automatic_claims = yes
-					set_can_be_named_after_dynasty = no
-					change_title_holder = {
-						holder = prev
-						change = scope:change
-					}
-				}
-				resolve_title_and_vassal_change = scope:change
-				scope:new_title = {
-					generate_coa = yes
-				}
-				destroy_title = scope:new_title
-			}
-			scope:harem_liege = {
-				add_courtier = scope:consort_relative
 			}
 		}
 
 		scope:harem_liege = {	
 			send_interface_toast = {
-				type = event_generic_neutral #Check
-				left_icon = scope:consort_relative #Check
+				type = event_generic_neutral
+				left_icon = scope:consort_relative
 				title = harem_politics.0008.a.tt #Check
-				scope:consort_relative = {
-					#custom_tooltip = add_custom_tooltip
+				stress_impact = {
+					greedy = medium_stress_impact_gain # But, gold
+					arrogant = medium_stress_impact_gain # But, commoners
+					generous = minor_stress_impact_loss
+				}
+				remove_short_term_gold = 20
+				show_as_tooltip = {
+					scope:consort_relative = {
+						set_house = scope:consort_relative.house
+					}
+					scope:consort = {
+						if = {
+							limit = {
+								exists = scope:consort_relative.house
+								house ?= scope:consort_relative.house
+							}
+							scope:consort = {
+								set_house = scope:consort_relative.house
+							}
+						}
+					}
 				}
 			}
 		}
