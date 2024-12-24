@@ -1733,6 +1733,12 @@ consort_play.1002 = {
 					OR = {	
 						exists = local_var:requested_harem_promotion
 						exists = scope:worst_title
+						AND = {
+							scope:consort_relative ?= {
+								is_lowborn = yes
+							}
+							exists = local_var:requested_relative_promotion
+						}
 					}
 				}
 				desc = consort_play.1002.t.request
@@ -1754,7 +1760,16 @@ consort_play.1002 = {
 				trigger = {
 					exists = scope:worst_title
 				}
-				desc = consort_play.1002.desc.relative_promotion
+				desc = consort_play.1002.desc.land_relative_promotion
+			}
+			triggered_desc = { #A bold request
+				trigger = {
+					scope:consort_relative ?= {
+						is_lowborn = yes
+					}
+					exists = local_var:requested_relative_promotion
+				}
+				desc = consort_play.1002.desc.lowborn_relative_promotion
 			}
 			triggered_desc = { #A bold request
 				trigger = {
@@ -2604,6 +2619,8 @@ consort_play.1002 = {
 		name = consort_play.1002.d #Check
 		#Also add event decription and check the event title
 		#And courtly vassals will have a negative opinion of their liege for promoting a lowborn, but less than giving a lowborn a title
+		#Also see the last option's effects when this option is available
+		#And add a flag to stop consorts from requesting favors every year
 		trigger = {
 			scope:consort_relative ?= {
 				valid_relative_promotion_trigger = yes
@@ -2784,6 +2801,27 @@ consort_play.1002 = {
 							scope:consort = {
 								set_house = scope:consort_relative.house
 							}
+						}
+					}
+				}
+			}
+			#Courtly vassals won't like it
+			if = {
+				limit = {
+					any_vassal = { 
+						has_vassal_stance = courtly
+						count >= 1
+					}
+				}
+				custom_tooltip = elevate_relative_courtly_vassal_penalty #Check
+				hidden_effect = {
+					every_vassal = {
+						limit = { 
+							has_vassal_stance = courtly
+						}
+						add_opinion = {
+							target = scope:actor
+							modifier = elevate_lowborn_vassal_opinion
 						}
 					}
 				}
