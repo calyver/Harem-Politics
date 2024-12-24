@@ -1824,6 +1824,12 @@ consort_play.1002 = {
 			OR = {	
 				exists = scope:worst_title
 				exists = local_var:praised_fellow_consort
+				AND = {
+					scope:consort_relative ?= {
+						is_lowborn = yes
+					}
+					exists = local_var:requested_relative_promotion
+				}
 			}
 		}
 		character = scope:visit_target
@@ -2684,6 +2690,35 @@ consort_play.1002 = {
 						limit = {
 							is_lowborn = yes
 						}
+						add_to_list = target_relatives_list
+					}
+				}
+				if = { #And consorts
+					limit = {
+						any_consort = {
+							is_lowborn = yes
+							is_parent_of = scope:consort
+						}
+					}
+					every_consort = {
+						limit = {
+							is_lowborn = yes
+							is_parent_of = scope:consort
+						}
+						add_to_list = target_relatives_list
+					}
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = target_relatives_list
+							count >= 1
+						}
+					}
+					every_in_list = {
+						limit = {
+							is_lowborn = yes
+						}
 						set_house = scope:consort_relative.house
 					}
 				}
@@ -2698,6 +2733,9 @@ consort_play.1002 = {
 								NOR = {
 									is_councillor = yes
 									has_any_court_position = yes
+									any_consort = {
+										is_landed = yes
+									}
 								}
 							}
 						}
@@ -2712,9 +2750,61 @@ consort_play.1002 = {
 								NOR = {
 									is_councillor = yes
 									has_any_court_position = yes
+									any_consort = {
+										is_landed = yes
+									}
 								}
 							}
 						}
+						add_to_list = relatives_to_add_list
+					}
+				}
+				if = { #And consorts
+					limit = {
+						any_consort = {
+							NOT = {
+								is_courtier_of = root
+							}
+							OR = {
+								top_liege ?= scope:harem_liege
+								NOR = {
+									is_councillor = yes
+									has_any_court_position = yes
+									any_consort = {
+										is_landed = yes
+									}
+								}
+							}
+						}
+					}
+					every_consort = {
+						limit = {
+							NOT = {
+								is_courtier_of = root
+							}
+							OR = {
+								top_liege ?= scope:harem_liege
+								NOR = {
+									is_councillor = yes
+									has_any_court_position = yes
+									any_consort = {
+										is_landed = yes
+									}
+								}
+							}
+						}
+						add_to_list = relatives_to_add_list
+					}
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = relatives_to_add_list
+							count >= 1
+						}
+					}
+					every_in_list = {
+						list = relatives_to_add_list
 						scope:harem_liege = {
 							add_courtier = prev
 						}
@@ -2777,29 +2867,39 @@ consort_play.1002 = {
 			}
 		}
 
-		scope:harem_liege = {	
-			send_interface_toast = {
-				type = event_generic_neutral
-				left_icon = scope:consort_relative
-				title = harem_politics.0008.a.tt #Check
+		scope:harem_liege = {
+			show_as_tooltip = {
 				stress_impact = {
 					greedy = medium_stress_impact_gain # But, gold
 					arrogant = medium_stress_impact_gain # But, commoners
 					generous = minor_stress_impact_loss
 				}
 				remove_short_term_gold = 20
-				show_as_tooltip = {
-					scope:consort_relative = {
-						set_house = scope:consort_relative.house
+			}	
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_generic_neutral
+					left_icon = scope:consort_relative
+					title = harem_politics.0008.a.tt #Check
+					stress_impact = {
+						greedy = medium_stress_impact_gain # But, gold
+						arrogant = medium_stress_impact_gain # But, commoners
+						generous = minor_stress_impact_loss
 					}
-					scope:consort = {
-						if = {
-							limit = {
-								exists = scope:consort_relative.house
-								house ?= scope:consort_relative.house
-							}
-							scope:consort = {
-								set_house = scope:consort_relative.house
+					remove_short_term_gold = 20
+					show_as_tooltip = {
+						scope:consort_relative = {
+							set_house = scope:consort_relative.house
+						}
+						scope:consort = {
+							if = {
+								limit = {
+									exists = scope:consort_relative.house
+									house ?= scope:consort_relative.house
+								}
+								scope:consort = {
+									set_house = scope:consort_relative.house
+								}
 							}
 						}
 					}
@@ -2820,7 +2920,7 @@ consort_play.1002 = {
 							has_vassal_stance = courtly
 						}
 						add_opinion = {
-							target = scope:actor
+							target = scope:harem_liege
 							modifier = elevate_lowborn_vassal_opinion
 						}
 					}
