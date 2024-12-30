@@ -494,3 +494,356 @@ stop_favor_boost_consort_interaction = {
 		}
 	}
 }
+
+#Bestow Nobility#
+bestow_nobility_interaction = {
+	category = interaction_category_diplomacy
+	desc = bestow_nobility_interaction_desc
+	icon = icon_personal #Check
+
+	cost = {
+		prestige = major_prestige_value
+		gold = major_gold_value
+	}
+
+	auto_accept = yes
+
+	is_shown = {
+		scope:actor = {
+			is_physically_able = yes
+			is_landed_or_landless_administrative = yes
+			is_lowborn = no
+		}
+		scope:recipient = {
+			is_lowborn = yes
+			OR = {
+				is_consort_of = scope:actor
+				is_knight_of = scope:actor
+				any_court_position_employer = scope:actor
+				is_councillor_of = scope:actor
+				any_close_family_member = {
+					is_consort_of = scope:actor
+				}
+			}
+			is_courtier_of = scope:actor
+			trigger_if = {
+				limit = {
+					NOT = {
+						character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
+					}
+				}
+				is_consort_of = scope:actor
+			}
+		}
+	}
+	is_valid_showing_failures_only = {
+		scope:recipient = { 
+			is_busy_in_events_localised = yes
+			is_available = yes
+		}
+	}
+
+	on_accept = {
+		scope:actor = {
+			save_scope_value_as = {
+				name = target_gold
+				value = major_gold_value
+				divide = 2
+			}
+		}
+		scope:recipient = {
+			if = {
+				limit = {
+					is_consort_of = scope:actor
+					NOT = {
+						character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
+					}
+					any_close_family_member = {
+						NOT = {
+							is_child_of = scope:actor
+						}
+						character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
+						OR = {
+							any_liege_or_above = {
+								this = scope:actor
+							}
+							AND = {
+								exists = scope:actor.top_liege
+								top_liege ?= scope:actor.top_liege
+							}
+						}
+						is_lowborn = yes
+					}
+				}
+				random_close_family_member = {
+					limit = {
+						NOT = {
+							is_child_of = scope:actor
+						}
+						character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
+						OR = {
+							any_liege_or_above = {
+								this = scope:actor
+							}
+							AND = {
+								exists = scope:actor.top_liege
+								top_liege ?= scope:actor.top_liege
+							}
+						}
+						is_lowborn = yes
+					}
+					weight = {
+						base = 1
+						modifier = {
+							is_parent_of = scope:recipient
+							add = 49
+						}
+						modifier = {
+							is_sibling_of = scope:recipient
+							add = 24
+						}
+					}
+					save_scope_as = target
+				}
+			}
+			else = {
+				save_scope_as = target
+			}
+		}
+		scope:target = {
+			if = {
+				limit = {
+					is_knight_of = scope:actor
+				}
+			}
+			if = {
+				limit = {
+					is_councillor_of = scope:actor
+				}
+			}
+			if = {
+				limit = {
+					any_court_position_employer = scope:actor
+				}
+			}
+			hidden_effect = {
+				scope:consort_relative = {
+					add_short_term_gold = target_gold
+					create_dynamic_title = {
+						tier = duchy
+						name = NEW_CREATED_TITLE_NAME
+					}
+					create_title_and_vassal_change = {
+						type = created
+						save_scope_as = change
+						add_claim_on_loss = no
+					}
+					scope:new_title = {
+						set_capital_county = scope:actor.capital_county
+						set_landless_title = yes
+						set_destroy_on_gain_same_tier = yes
+						set_no_automatic_claims = yes
+						set_can_be_named_after_dynasty = no
+						change_title_holder = {
+							holder = prev
+							change = scope:change
+						}
+					}
+					resolve_title_and_vassal_change = scope:change
+					scope:new_title = {
+						generate_coa = yes
+					}
+					destroy_title = scope:new_title
+					if = { #Promote their relatives too
+						limit = {
+							any_close_family_member = {
+								is_lowborn = yes
+							}
+						}
+						every_close_family_member = {
+							limit = {
+								is_lowborn = yes
+							}
+							add_to_list = target_relatives_list
+						}
+					}
+					if = { #And consorts
+						limit = {
+							NOT = {
+								this = scope:recipient
+							}
+							any_consort = {
+								is_lowborn = yes
+								is_parent_of = scope:recipient
+							}
+						}
+						every_consort = {
+							limit = {
+								is_lowborn = yes
+								is_parent_of = scope:recipient
+							}
+							add_to_list = target_relatives_list
+						}
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = target_relatives_list
+								count >= 1
+							}
+						}
+						every_in_list = {
+							list = target_relatives_list
+							limit = {
+								is_lowborn = yes
+							}
+							set_house = scope:target.house
+						}
+					}
+					if = { #Add their relatives to court
+						limit = {
+							any_close_family_member = {
+								NOT = {
+									is_courtier_of = scope:actor
+								}
+								OR = {
+									top_liege ?= scope:actor
+									NOR = {
+										is_councillor = yes
+										has_any_court_position = yes
+										any_consort = {
+											is_landed = yes
+										}
+									}
+								}
+							}
+						}
+						every_close_family_member = {
+							limit = {
+								NOT = {
+									is_courtier_of = scope:actor
+								}
+								OR = {
+									top_liege ?= scope:actor
+									NOR = {
+										is_councillor = yes
+										has_any_court_position = yes
+										any_consort = {
+											is_landed = yes
+										}
+									}
+								}
+							}
+							add_to_list = relatives_to_add_list
+						}
+					}
+					if = { #And consorts
+						limit = {
+							any_consort = {
+								NOT = {
+									is_courtier_of = scope:actor
+								}
+								OR = {
+									top_liege ?= scope:actor
+									NOR = {
+										is_councillor = yes
+										has_any_court_position = yes
+										any_consort = {
+											is_landed = yes
+										}
+									}
+								}
+							}
+						}
+						every_consort = {
+							limit = {
+								NOT = {
+									is_courtier_of = scope:actor
+								}
+								OR = {
+									top_liege ?= scope:actor
+									NOR = {
+										is_councillor = yes
+										has_any_court_position = yes
+										any_consort = {
+											is_landed = yes
+										}
+									}
+								}
+							}
+							add_to_list = relatives_to_add_list
+						}
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = relatives_to_add_list
+								count >= 1
+							}
+						}
+						every_in_list = {
+							list = relatives_to_add_list
+							scope:actor = {
+								add_courtier = prev
+							}
+						}
+					}
+				}
+				scope:actor = {
+					add_courtier = scope:target
+					# every_consort = {
+					# 	limit = {
+					# 		AND = {
+					# 			NOR = {
+					# 				this = scope:consort
+					# 				any_close_or_extended_family_member = {
+					# 					this = scope:consort
+					# 				}
+					# 				has_relation_best_friend = scope:consort
+					# 				has_relation_friend = scope:consort
+					# 				has_relation_lover = scope:consort
+					# 				has_relation_soulmate = scope:consort
+					# 			}
+					# 			harem_politics_evil_consort_trigger = yes
+					# 		}
+					# 	}
+					# 	add_opinion = {
+					# 		target = scope:consort
+					# 		modifier = envy_consort_opinion
+					# 	}
+					# }
+				}
+				# scope:consort = {
+				# 	send_interface_toast = {
+				# 		type = event_generic_good
+				# 		title = good_consort_visit_t
+				# 		right_icon = scope:harem_liege
+				# 		left_icon = scope:consort_relative
+				# 		show_as_tooltip = {
+				# 			calyver_favor_medium_gain_effect = yes
+				# 		}
+				# 		scope:consort_relative = {
+				# 			add_opinion = {
+				# 				target = scope:consort
+				# 				modifier = grateful_opinion
+				# 				opinion = 10
+				# 			}
+				# 			show_as_tooltip = {
+				# 				set_house = scope:consort_relative.house
+				# 				if = {
+				# 					limit = {
+				# 						exists = scope:consort.house
+				# 						house ?= scope:consort.house
+				# 					}
+				# 					scope:consort = {
+				# 						set_house = scope:consort_relative.house
+				# 					}
+				# 				}
+				# 			}
+				# 		}
+				# 	}
+				# }
+			}
+		}
+	}
+}
