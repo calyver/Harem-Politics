@@ -184,6 +184,11 @@ arrange_marriage_interaction = {
 						limit = {
 							is_alive = yes
 							NOT = { is_in_list = characters }
+							OR = {
+								top_liege = scope:actor
+								house.house_head = scope:actor
+								dynasty.dynast = scope:actor
+							}
 							trigger_if = {
 								limit = {
 									is_concubine = yes
@@ -199,6 +204,11 @@ arrange_marriage_interaction = {
 							limit = {
 								is_alive = yes
 								NOT = { is_in_list = characters }
+								OR = {
+									top_liege = scope:actor
+									house.house_head = scope:actor
+									dynasty.dynast = scope:actor
+								}
 								trigger_if = {
 									limit = {
 										is_concubine = yes
@@ -336,23 +346,39 @@ arrange_marriage_interaction = {
 				}
 			}
 		}
-		#allow landless adventurers to marry only within their camp, or with Contact list courtiers (after using request_marriage option in contact_list_request_interaction)
+		#allow landless adventurers to marry only within their camp, or with Contact list courtiers (after using request_marriage option in contact_list_request_interaction), or prieviously betrothed characters
 		trigger_if = {
 			limit = {
 				scope:actor = {
 					is_landless_adventurer = yes
 				}
-				scope:recipient = {
-					is_betrothed = no
-				}
 			}
 			trigger_if = {
 				limit = {
-					scope:actor = {
-						is_landless_adventurer = yes
-						is_target_in_variable_list = {
-							name = contact_list_marriage
-							target = scope:recipient
+					OR = {
+						scope:actor = {
+							is_target_in_variable_list = {
+								name = contact_list_marriage
+								target = scope:recipient
+							}
+						}
+						scope:recipient = {
+							is_betrothed = yes
+							betrothed = {
+								OR = {
+									scope:actor = this
+									scope:secondary_actor ?= this
+								}
+							}
+						}
+						scope:secondary_recipient ?= {
+							is_betrothed = yes
+							betrothed = {
+								OR = {
+									scope:actor = this
+									scope:secondary_actor ?= this
+								}
+							}
 						}
 					}
 				}
