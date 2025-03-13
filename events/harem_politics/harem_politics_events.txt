@@ -30438,12 +30438,9 @@ harem_politics.0032 = {
 			}
 		}
 		hidden_effect = {
+			add_courtier = scope:mei_pin
 			if = {
-				limit = { is_travelling = no }
-				add_courtier = scope:mei_pin
-			}
-			else = {
-				add_courtier = scope:mei_pin
+				limit = { is_travelling = yes }
 				add_to_entourage_court_and_activity_effect = {
 					CHAR_TO_ADD = scope:mei_pin 
 					NEW_COURT_OWNER = root
@@ -33392,6 +33389,460 @@ scripted_trigger harem_politics_troublesome_consort_trigger = {
 # 		}
 # 	}
 # }
+
+############################################
+##The Empress Dowager lectures the Empress##
+############################################
+scripted_trigger harem_politics_langhua_trigger = {
+	is_physically_able_ai = yes
+
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+
+	is_courtier_of = root
+
+	NOR = { 
+		has_opinion_modifier = {
+			target = root
+			modifier = forced_me_concubine_marriage_opinion
+		}
+		
+		has_trait = ill
+		has_trait = wounded
+
+		has_trait = pregnant
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_character_modifier = forgotten_consort_modifier
+	}
+	is_travelling = no
+	trigger_if = { #If there's an available PS, they are the PS
+		limit = {
+			exists = root.primary_spouse
+		}
+		this = root.primary_spouse
+	}
+	trigger_else = { #Else, they're the GC
+		has_court_position = grand_consort_court_position
+	}
+	OR = { #Isn't forgotten
+		AND = {
+			has_variable = favor
+			var:favor >= unfavored_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
+scripted_trigger harem_politics_zhenhuan_trigger = {
+	is_physically_able_ai = yes
+
+	harem_politics_punished_consort_trigger = no
+
+	is_courtier_of = root
+
+	NOR = { 
+		this = $LANGHUA$
+
+		has_trait = ill
+		has_trait = wounded
+
+		has_trait = pregnant
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_relation_best_friend = $LANGHUA$
+		has_relation_friend = $LANGHUA$
+		has_relation_lover = $LANGHUA$
+		has_relation_soulmate = $LANGHUA$
+
+		has_trait = generous
+		has_trait = content
+		has_trait = lazy
+		has_trait = humble
+		has_trait = shy
+		has_trait = craven
+	}
+	trait_compatibility = {
+		target = $LANGHUA$
+		value <= low_negative_trait_compatibility
+	}
+	is_travelling = no
+}
+
+harem_politics.0036 = {
+	type = character_event
+	title = harem_politics.0036.t
+	desc = harem_politics.0036.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	left_portrait = {
+		character = scope:langhua
+		animation = shame
+	}
+	right_portrait  = {
+		character = scope:zhen_huan
+		animation = disapproval
+	}
+	
+	trigger = {
+		is_travelling = no
+		accepts_harems = yes
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 3
+		}
+		any_consort = {
+			harem_politics_langhua_trigger = yes
+			save_temporary_scope_as = temporary_langhua
+		}
+		any_parent = {
+			harem_politics_zhenhuan_trigger = { LANGHUA = scope:temporary_langhua }
+		}
+		NOR = {
+        	any_consort = {
+	        	has_character_flag = flag_mei
+	        }
+			has_character_flag = had_zhenhuan_event_flag
+	    }
+		is_physically_able_adult = yes
+		is_at_war = no
+		is_landed_or_landless_administrative = yes
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		random_consort = { #Find Langhua
+			limit = {
+				harem_politics_langhua_trigger = yes
+			}
+			save_scope_as = langhua
+		}
+
+		random_parent = {
+			limit = {
+				harem_politics_zhenhuan_trigger = { LANGHUA = scope:langhua }
+			}
+			weight = {
+				base = 10
+				modifier = {
+					sex_same_as = scope:langhua
+					add = 15
+				}
+				compatibility_modifier = { #Trait compatibility
+					compatibility_target = scope:langhua
+					min = -40
+					max = 40
+					multiplier = -1
+				}
+				
+			}
+			save_scope_as = zhen_huan
+		}
+		
+		hidden_effect = {
+			scope:zhen_huan = {
+				add_opinion = {
+					target = scope:langhua
+					modifier = frustrated_opinion
+					opinion = -10
+				}
+			}
+			scope:langhua = {
+				add_opinion = {
+					target = scope:zhen_huan
+					modifier = frustrated_opinion
+					opinion = -10
+				}
+			}
+		}
+	}
+	
+	option = { #Side with the Empress
+        name = harem_politics.0036.a
+		scope:langhua = {
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+			#They gain a bit of favor
+			calyver_favor_minor_gain_effect = yes
+		}
+		scope:zhen_huan = {
+			add_opinion = {
+				target = root
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_trait = humble
+						has_trait = content
+					}
+					has_trait = vengeful
+				}
+				if = {
+					limit = {
+						NOR = { 
+							has_relation_grudge = scope:langhua
+							has_relation_rival = scope:langhua
+							has_relation_nemesis = scope:langhua
+						}
+					}
+					set_relation_grudge = {
+						REASON = consort_rival_reason
+						target = scope:langhua
+					}
+				}
+			}
+		}
+
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+			shy = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 50
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_boldness = 0.1
+				ai_compassion = -0.15
+   			}
+			opinion_modifier = {
+				opinion_target = scope:langhua
+				min = -20
+				max = 20
+				multiplier = 0.2
+			}
+			compatibility_modifier = { #Trait compatibility
+				compatibility_target = scope:langhua
+				min = -25
+				max = 25
+				multiplier = 1
+			}
+
+            modifier = { #Favor
+				scope:langhua = { 
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:langhua = { 
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 10
+			}
+			modifier = { #Favor
+				scope:langhua = { 
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 15
+			}
+
+			modifier = { #The PS
+				primary_spouse ?= scope:langhua
+				add = 10
+			}
+
+			modifier = {
+				has_trait = craven
+				add = -15
+			}
+			modifier = {
+				has_trait = shy
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+        }
+    }
+	
+	option = { #Side with the Empress Dowager
+        name = harem_politics.0036.b
+		scope:zhen_huan = {
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+		}
+		scope:langhua = {
+			add_opinion = {
+				target = root
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_trait = humble
+						has_trait = content
+					}
+					has_trait = vengeful
+				}
+				if = {
+					limit = {
+						NOR = { 
+							has_relation_grudge = scope:zhen_huan
+							has_relation_rival = scope:zhen_huan
+							has_relation_nemesis = scope:zhen_huan
+						}
+					}
+					set_relation_grudge = {
+						REASON = consort_rival_reason
+						target = scope:zhen_huan
+					}
+				}
+			}
+			#They lose a bit of favor
+			calyver_favor_minor_loss_effect = yes
+		}
+
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+			shy = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 50
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_boldness = 0.1
+				ai_compassion = -0.15
+   			}
+			opinion_modifier = {
+				opinion_target = scope:zhen_huan
+				min = -20
+				max = 20
+				multiplier = 0.2
+			}
+			compatibility_modifier = { #Trait compatibility
+				compatibility_target = scope:zhen_huan
+				min = -25
+				max = 25
+				multiplier = 1
+			}
+
+            modifier = { #Favor
+				scope:langhua = { 
+					has_character_modifier = unfavored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Favor
+				scope:langhua = { 
+					has_character_modifier = forgotten_consort_modifier
+				}
+				add = 10
+			}
+
+			modifier = { #The ancestors
+				OR = {
+					faith = { has_doctrine = tenet_ancestor_worship }
+					culture = { has_cultural_tradition = tradition_mystical_ancestors }
+				}
+				add = 20
+			}
+
+			modifier = {
+				has_trait = craven
+				add = -15
+			}
+			modifier = {
+				has_trait = shy
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+        }
+    }
+
+	option = { # Stay away from it
+        name = harem_politics.0036.c
+        
+		scope:langhua = {
+			add_opinion = {
+				target = root
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+		}
+		scope:zhen_huan = {
+			add_opinion = {
+				target = root
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+		}
+		add_character_flag = {
+			flag = had_zhenhuan_event_flag
+			years = 2
+		}
+        stress_impact = {
+        	lazy = minor_stress_impact_loss
+			diligent = minor_stress_impact_gain
+        }
+        ai_chance = {
+            base = 50
+            ai_value_modifier = {
+				ai_honor = -0.1
+				ai_boldness = -0.1
+				ai_energy = -0.1
+				ai_compassion = 0.1
+   			}
+			
+			modifier = {
+				has_trait = craven
+				add = 10
+			}
+			modifier = {
+				has_trait = shy
+				add = 10
+			}
+			modifier = {
+				has_trait = forgiving
+				add = 10
+			}
+			modifier = {
+				has_trait = compassionate
+				add = 10
+			}
+			modifier = {
+				has_trait = lazy
+				add = 10
+			}
+			modifier = {
+				has_trait = diligent
+				add = -15
+			}
+        }
+    }
+}
 
 #########################
 ##Imprisoning a consort##
