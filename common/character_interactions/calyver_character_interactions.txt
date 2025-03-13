@@ -41,15 +41,28 @@
 	}
 
 	ai_will_do = {
-		base = 100
+		base = 0
 
-		modifier = { #AI only does it if current primary_spouse is hated and another spouse is preferred.
-			factor = 0
+		modifier = {
+			add = 100
+			scope:recipient = {
+				is_lowborn = no
+				sum_of_all_skills_value > scope:actor.primary_spouse.sum_of_all_skills_value
+			}
+			scope:actor = {
+				NOR = {
+					has_relation_friend = scope:actor.primary_spouse
+					has_relation_lover = scope:actor.primary_spouse
+				}
+			}
+		}
+		modifier = { #AI does it if current primary_spouse is hated and another spouse is preferred.
+			add = 100
 			NOT = {
 				scope:actor = {
 					opinion = {
 						target = scope:actor.primary_spouse
-						value < -50
+						value <= -50
 					}
 					opinion = {
 						target = scope:recipient
