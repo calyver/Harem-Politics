@@ -1,8 +1,7 @@
-version="1.0"
+version="0.1"
 tags={
-	"Events"
 	"Gameplay"
 	"Historical"
 }
 name="Harem-Politics"
-supported_version="1.12.5"
+supported_version="1.15.0"
