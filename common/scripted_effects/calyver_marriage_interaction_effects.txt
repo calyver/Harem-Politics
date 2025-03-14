@@ -3180,9 +3180,32 @@ set_primary_spouse_effect = {
 					}
 					num_sinful_traits = 0
 					is_lowborn = no
+					scope:recipient = {
+						OR = {
+							num_sinful_traits >= 1
+							is_lowborn = yes
+						}
+					}
 				}
-				scope:actor = {
-					add_legitimacy = medium_legitimacy_loss
+				scope:actor = { #Losing legitimacy based on the new PS
+					add_legitimacy = {
+						value = 0
+						if = {
+							limit = {
+								scope:recipient = {
+									is_lowborn = yes
+								}
+								scope:previous_primary_spouse = {
+									is_lowborn = no
+								}
+							}
+							add = medium_legitimacy_loss
+							multiply = scope:actor.primary_title.tier
+						}
+						else = {
+							add = miniscule_legitimacy_loss
+						}
+					}
 				}
 			}
 		}
