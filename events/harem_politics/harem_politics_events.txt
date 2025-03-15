@@ -14154,6 +14154,15 @@ scripted_trigger harem_politics_xin_trigger = {
 			exists = root.primary_spouse
 			this = root.primary_spouse
 		}
+
+		this = $QI$
+
+		has_relation_best_friend = $QI$
+		has_relation_friend = $QI$
+
+		has_relation_soulmate = $QI$
+		has_relation_lover = $QI$
+		has_relation_potential_lover = $QI$
 		
 		has_trait = pregnant
 		has_trait = ill
@@ -14202,16 +14211,6 @@ scripted_trigger harem_politics_qi_trigger = {
 	}
 
 	NOR = {
-		this = $XIN$
-
-		has_relation_best_friend = $XIN$
-		has_relation_friend = $XIN$
-		has_relation_potential_friend = $XIN$
-
-		has_relation_soulmate = $XIN$
-		has_relation_lover = $XIN$
-		has_relation_potential_lover = $XIN$
-
 		AND = {
 			exists = root.primary_spouse
 			this = root.primary_spouse
@@ -14280,12 +14279,11 @@ harem_politics.0013 = {
 			count >= 4
 		}
 		any_consort = {
-			harem_politics_xin_trigger = yes
-			save_temporary_scope_as = reference_xin_guiren
+			harem_politics_qi_trigger = yes
+			save_temporary_scope_as = reference_qi_pin
 		}
 		any_consort = {
-			NOT = { this = scope:reference_xin_guiren }
-			harem_politics_qi_trigger = { XIN = scope:reference_xin_guiren }
+			harem_politics_xin_trigger = { QI = scope:reference_qi_pin }
 		}
 		NOR = {
 			has_character_flag = flag_qi_pin_xin_guiren_event
@@ -14323,51 +14321,7 @@ harem_politics.0013 = {
 		save_scope_as = harem_liege
 		every_consort = {
 			limit = {
-				harem_politics_xin_trigger = yes
-			}
-			add_to_list = xin_guiren_list
-		}
-		
-		random_in_list = { #Noble Lady Xin
-			list = xin_guiren_list
-			weight = {
-				base = 10
-				modifier = {
-					has_character_modifier = unfavored_consort_modifier
-					add = 10
-				}
-				modifier = {
-					has_character_modifier = forgotten_consort_modifier
-					add = 20
-				}
-				modifier = {
-					is_lowborn = yes
-					add = 30
-				}
-				modifier = {
-					has_trait = shy
-					add = 10
-				}
-				modifier = {
-					has_trait = craven
-					add = 10
-				}
-				modifier = {
-					has_court_position = grand_consort_court_position
-					add = -15
-				}
-				modifier = {
-					is_concubine = yes
-					add = 15
-				}
-			}
-			save_scope_as = xin_guiren
-		}
-		
-		every_consort = {
-			limit = {
-				NOT = { this = scope:xin_guiren }
-				harem_politics_qi_trigger = { XIN = scope:xin_guiren }
+				harem_politics_qi_trigger = yes
 			}
 			add_to_list = qi_pin_list
 		}
@@ -14457,25 +14411,71 @@ harem_politics.0013 = {
 					has_character_modifier = scheming_consort_modifier
 					add = 10
 				}
-				modifier = {
-					has_relation_potential_rival = scope:xin_guiren
-					add = 5
-				}
-				modifier = {
-					has_relation_rival = scope:xin_guiren
-					add = 10
-				}
-				modifier = {
-					has_relation_nemesis = scope:xin_guiren
-					add = 20
-				}
-				opinion_modifier = {
-					opinion_target = scope:xin_guiren
-					multiplier = -0.20
-				}
 			}
 			save_scope_as = qi_pin
 		}
+
+		every_consort = {
+			limit = {
+				harem_politics_xin_trigger = { QI = scope:qi_pin }
+			}
+			add_to_list = xin_guiren_list
+		}
+		
+		random_in_list = { #Noble Lady Xin
+			list = xin_guiren_list
+			weight = {
+				base = 10
+				modifier = {
+					has_character_modifier = unfavored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = forgotten_consort_modifier
+					add = 20
+				}
+				modifier = {
+					is_lowborn = yes
+					add = 30
+				}
+				modifier = {
+					has_trait = shy
+					add = 10
+				}
+				modifier = {
+					has_trait = craven
+					add = 10
+				}
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = -15
+				}
+				modifier = {
+					is_concubine = yes
+					add = 15
+				}
+
+				modifier = {
+					has_relation_potential_rival = scope:qi_pin
+					add = 5
+				}
+				modifier = {
+					has_relation_rival = scope:qi_pin
+					add = 10
+				}
+				modifier = {
+					has_relation_nemesis = scope:qi_pin
+					add = 20
+				}
+				opinion_modifier = {
+					who = scope:qi_pin
+					opinion_target = this
+					multiplier = -0.20
+				}
+			}
+			save_scope_as = xin_guiren
+		}
+		
 		had_sex_with_effect = {
 			CHARACTER = scope:xin_guiren
 			PREGNANCY_CHANCE = pregnancy_chance
@@ -19685,7 +19685,7 @@ harem_politics.0019 = {
 				}
 				opinion_modifier = { #Opinion
 					WHO = scope:yu_daying
-					opinion_target = prev
+					opinion_target = this
 					min = 0
 					max = 50
 					multiplier = -0.50
