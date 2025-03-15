@@ -3524,49 +3524,59 @@ make_primary_spouse_effect = {
 				limit = {
 					is_valid_for_legitimacy_change = yes
 				}
-				if = { #Legitimacy loss#
+				if = { #Do they have the same status?
 					limit = {
-						scope:previous_primary_spouse ?= {
-							is_lowborn = yes
-						}
-						scope:new_primary_spouse = {
-							is_lowborn = no
-						}
-					}
-					#No legitimacy loss, even if the new PS is sinful
-					add_legitimacy = minor_legitimacy_gain
-				}
-				else_if = {
-					limit = {
-						NOR = {
-							has_character_flag = dead_main_spouse_flag
-							has_character_flag = flag_lowborn_exception
-						}
-					}
-					if = { #Larger loss if the new one is a lowborn#
-						limit = {
-							scope:previous_primary_spouse ?= {
-								is_lowborn = no
+						OR = {
+							AND = {
+								scope:previous_primary_spouse ?= {
+									is_lowborn = yes
+								}
+								scope:new_primary_spouse = {
+									is_lowborn = yes
+								}
 							}
-							scope:new_primary_spouse = {
-								is_lowborn = yes
+							AND = {
+								scope:previous_primary_spouse ?= {
+									is_lowborn = no
+								}
+								scope:new_primary_spouse = {
+									is_lowborn = no
+								}
 							}
 						}
-						add_legitimacy = {
-							value = medium_legitimacy_loss
-							multiply = $PARTNER$.primary_title.tier
-						}
 					}
-					else_if = {
+					if = { #Are both sinful or virtuous?
 						limit = {
-							scope:previous_primary_spouse ?= {
-								is_lowborn = no
+							scope:previous_primary_spouse ?= {	
+								num_sinful_traits = scope:new_primary_spouse.num_sinful_traits
 							}
 						}
 						add_legitimacy = {
 							value = miniscule_legitimacy_loss
 							multiply = scope:actor.primary_title.tier
 						}
+					}
+					else_if = { #Is the new one more sinful?
+						limit = {
+							scope:previous_primary_spouse ?= {	
+								num_sinful_traits < scope:new_primary_spouse.num_sinful_traits
+							}
+						}
+						add_legitimacy = minor_legitimacy_gain
+					}
+				}
+				else_if = { #Does the previous PS outrank the new one?
+					limit = {
+						scope:previous_primary_spouse ?= {
+							is_lowborn = no
+						}
+						scope:new_primary_spouse = {
+							is_lowborn = yes
+						}
+					}
+					add_legitimacy = {
+						value = minor_legitimacy_gain
+						multiply = scope:actor.primary_title.tier
 					}
 				}
 			}
