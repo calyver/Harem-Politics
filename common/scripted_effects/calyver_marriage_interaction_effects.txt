@@ -3013,7 +3013,6 @@ less_verbose_divorce_effect = {
 
 #Setting a new primary spouse
 #Setting a new primary spouse
-#Setting a new primary spouse
 set_primary_spouse_effect = {
 	if = {
 		limit = {
@@ -3377,10 +3376,26 @@ set_primary_spouse_effect = {
 				custom_tooltip = set_primary_spouse_interaction_toast_changed
 			}
 		}
-		if = {
-			limit = 
-				scope:actor.primary_spouse ?= {
-					is_lowborn = no
+		#Vassals opinion
+		if = { #Do they have the same status?
+			limit = {
+				OR = {
+					AND = {
+						scope:actor.previous_primary_spouse ?= {
+							is_lowborn = no
+						}
+						scope:recipient = {
+							is_lowborn = no
+						}
+					}
+					AND = {
+						scope:actor.previous_primary_spouse ?= {
+							is_lowborn = yes
+						}
+						scope:recipient = {
+							is_lowborn = yes
+						}
+					}
 				}
 			}
 			every_vassal_or_below = {
@@ -3397,6 +3412,34 @@ set_primary_spouse_effect = {
 				add_opinion = {
 					target = scope:actor
 					modifier = demoted_primary_spouse_vassal_opinion
+				}
+			}
+		}
+		else_if = { #Does the previous one outrank the new one?
+			limit = {
+				scope:actor.previous_primary_spouse ?= {
+					is_lowborn = no
+				}
+				scope:recipient = {
+					is_lowborn = yes
+				}
+			}
+			every_vassal_or_below = {
+				limit = { has_vassal_stance = courtly }
+				custom = every_courtly_vassal
+				add_opinion = {
+					target = scope:actor
+					modifier = demoted_primary_spouse_vassal_opinion
+					opinion = -50
+				}
+			}
+			every_vassal_or_below = {
+				limit = { has_vassal_stance = glory_hound }
+				custom = every_glory_hound_vassal
+				add_opinion = {
+					target = scope:actor
+					modifier = demoted_primary_spouse_vassal_opinion
+					opinion = -30
 				}
 			}
 		}
