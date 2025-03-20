@@ -1166,6 +1166,134 @@ grand_consort_task_instill_virtues = {
 		}
 	}
 
+	on_yearly = {
+		save_scope_as = grand_consort_position_holder
+		liege_or_court_owner = { save_scope_as = notification_character }
+		scope:notification_character = {
+			random_list = {
+				8 = { #Impressing a neighboring ruler
+					trigger = {
+						any_neighboring_top_liege_realm_owner = {
+							highest_held_title_tier >= tier_county
+							opinion = {
+								target = scope:notification_character
+								value <= 0
+							}
+						}
+					}
+					#High aptitude
+					modifier = {
+						
+					}
+					random_neighboring_top_liege_realm_owner = {
+						limit = {
+							highest_held_title_tier >= tier_county
+							opinion = {
+								target = scope:notification_character
+								value <= 0
+							}
+						}
+						weight = {
+							base = 10
+							modifier = { #Tier difference
+								tier_difference = {
+									target = scope:notification_character
+									value >= 0
+								}
+								add = 5
+							}
+							opinion_modifier = { #Opinion
+								WHO = this
+								opinion_target = scope:notification_character
+								multiplier = -0.1
+							}
+							modifier = { #Faith hostility
+								faith = {
+									faith_hostility_level = {
+										target = scope:notification_character.faith
+										value >= faith_astray_level
+									}
+								}
+								add = 5
+							}
+							modifier = { #Faith hostility
+								faith = {
+									faith_hostility_level = {
+										target = scope:notification_character.faith
+										value >= faith_hostile_level
+									}
+								}
+								add = 5
+							}
+							modifier = { #Claimants
+								any_claim = {
+									tier >= tier_county
+									any_de_jure_top_liege = {
+										this = scope:notification_character
+									}
+								}
+								add = 5
+							}
+							modifier = { #Monogamous characters are more intrigued by rulers with many consorts
+								accepts_harems = no
+								add = 5
+							}
+							modifier = { #Strong rulers
+								max_military_strength >= scope:notification_charactermax_military_strength
+								add = 10
+							}
+							modifier = { #Already impressed
+								has_opinion_modifier = {
+									modifier = impressed_opinion
+									target = scope:notification_character
+								}
+								add = -3
+							}
+							modifier = { #Captured their relative
+								has_opinion_modifier = {
+									modifier = forced_family_concubine_marriage_opinion
+									target = scope:notification_character
+								}
+								add = -9
+							}
+							save_scope_as = ruler_scope
+						}
+					}
+				}
+				8 = { #Impressing someone in the realm
+
+				}
+				76 = { #Nothing
+
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:ruler_scope
+				}
+				scope:ruler_scope = {
+					add_opinion = {
+						modifier = impressed_opinion
+						target = root
+						opinion = 10
+					}
+				}
+				send_interface_toast = {
+					type = event_generic_good
+					title = successful_consort_skills_t
+					left_icon = scope:consort_1
+					right_icon = scope:grand_consort_position_holder
+					custom_tooltip = successful_consort_skills_desc
+					show_as_tooltip = {
+						scope:consort_1 = {
+							add_learning_skill = 1
+						}
+					}
+				}
+			}
+		}
+	}
+
 	ai_will_do = {
 		value = 25
 
@@ -1200,7 +1328,7 @@ grand_consort_task_promote_harmony = {
 	# Monthly cost for the task
 	cost = {
 		round = no
-		gold = {
+		prestige = {
 			add = {
 				value = monthly_court_position_task_cost
 				desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
@@ -1229,22 +1357,22 @@ grand_consort_task_promote_harmony = {
 		terrible = {
 		}
 		poor = {
-			monthly_prestige = 0.05
+			stress_loss_mult = 0.05
 		}
 		average = {
-			stress_loss_mult = 0.1
+			stress_loss_mult = 0.10
 		}
 		good = {
 			stress_loss_mult = 0.15
 		}
 		excellent = {
-			stress_loss_mult = 0.15
+			stress_loss_mult = 0.20
 		}
 	}
 
 	employee_modifier = {
 		diplomacy = 2
-		owned_personal_scheme_success_chance_growth_add = 5
+		owned_personal_scheme_success_chance_growth_add = 10
 	}
 
 	on_start = {
