@@ -326,25 +326,30 @@ grand_consort_task_instill_virtues = {
 		save_scope_as = grand_consort_position_holder
 		liege_or_court_owner = { save_scope_as = notification_character }
 		scope:notification_character = {
-			random_list = {
-				7 = { #Success
+			random = {
+				chance = { #Success
+					value = 7
 					#Number of consorts
-					modifier = {
-						scope:notification_character = {
-							any_consort = {
-								is_courtier_of = prev
-								is_imprisoned = no
-								count >= 7
+					if = {
+						limit = {
+							scope:notification_character = {
+								any_consort = {
+									is_courtier_of = prev
+									is_imprisoned = no
+									count >= 7
+								}
 							}
 						}
 						add = 2
 					}
 					#High aptitude
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value >= 4
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value >= 4
+							}	
+						}
 						add = {
 							value = 4
 							if = {
@@ -357,17 +362,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = 2
+								add = 1
 							}
 						}
 					}
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value = 5
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value = 5
+							}	
+						}
 						add = {
-							value = 3
+							value = 2
 							if = {
 								limit = {
 									scope:notification_character = {
@@ -378,17 +385,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = 2
+								add = 1
 							}
 						}
 					}
 
 					#Low aptitude
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value <= 2
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value <= 2
+							}
+						}
 						add = {
 							value = -4
 							if = {
@@ -401,17 +410,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = -2
+								add = -1
 							}
 						}
 					}
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value = 1
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value = 1
+							}
 						}	
 						add = {
-							value = -3
+							value = -2
 							if = {
 								limit = {
 									scope:notification_character = {
@@ -422,15 +433,17 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = -2
+								add = -1
 							}
 						}
 					}
 
 					#Poet trait
-					modifier = {
-						scope:grand_consort_position_holder = {
-							has_trait = poet
+					if = {
+						limit = {
+							scope:grand_consort_position_holder = {
+								has_trait = poet
+							}
 						}
 						add = {
 							value = 1
@@ -448,7 +461,18 @@ grand_consort_task_instill_virtues = {
 							}
 						}
 					}
-					
+				}
+				#Effect
+				if = {
+					limit = {
+						any_consort = {
+							is_courtier_of = scope:notification_character
+							is_imprisoned = no	
+							NOT = {
+								has_character_flag = had_grand_consort_effect_flag
+							}
+						}
+					}
 					random_consort = {
 						limit = {
 							is_courtier_of = scope:notification_character
@@ -567,7 +591,7 @@ grand_consort_task_instill_virtues = {
 								add = -8
 								accepts_harems = no
 							}
-
+	
 							#Instructing someone they like more
 							opinion_modifier = {
 								who = scope:grand_consort_position_holder
@@ -579,222 +603,222 @@ grand_consort_task_instill_virtues = {
 						}
 						save_scope_as = consort_1
 					}
-					if = {
-						limit = {
-							exists = scope:consort_1
+				}
+				if = {
+					limit = {
+						exists = scope:consort_1
+					}
+					scope:consort_1 = {
+						add_character_flag = {
+							flag = had_grand_consort_effect_flag
+							years = 1
 						}
-						scope:consort_1 = {
-							add_character_flag = {
-								flag = had_grand_consort_effect_flag
-								years = 1
+						random_list = {
+							50 = { #Learning
+								modifier = { #Traits
+									has_trait = education_learning_1
+									add = 10
+								}
+								modifier = { #Traits
+									has_trait = education_learning_2
+									add = 15
+								}
+								modifier = { #Traits
+									OR = {	
+										has_trait = education_learning_3
+										has_trait = education_learning_4
+										has_trait = education_learning_5
+									}
+									add = 20
+								}
+								
+								modifier = { #Intellect
+									add = 10
+									has_trait = intellect_good_1
+								}
+								modifier = { #Intellect
+									add = 15
+									has_trait = intellect_good_2
+								}
+								modifier = { #Intellect
+									add = 20
+									has_trait = intellect_good_3
+								}
+								modifier = { #Already affected
+									add = -2
+									has_character_flag = had_positive_learning_flag
+								}
+								add_learning_skill = 1
+								add_character_flag = {
+									flag = had_positive_learning_flag
+									years = 1
+								}
+								if = {
+									limit = {
+										scope:notification_character = {
+											is_ai = no
+										}
+									}
+									scope:notification_character = {
+										send_interface_toast = {
+											type = event_generic_good
+											title = successful_consort_skills_t
+											left_icon = scope:consort_1
+											right_icon = scope:grand_consort_position_holder
+											custom_tooltip = successful_consort_skills_desc
+											show_as_tooltip = {
+												scope:consort_1 = {
+													add_learning_skill = 1
+												}
+											}
+										}
+									}
+								}
 							}
-							random_list = {
-								50 = { #Learning
-									modifier = { #Traits
-										has_trait = education_learning_1
-										add = 10
-									}
-									modifier = { #Traits
-										has_trait = education_learning_2
-										add = 15
-									}
-									modifier = { #Traits
-										OR = {	
-											has_trait = education_learning_3
-											has_trait = education_learning_4
-											has_trait = education_learning_5
-										}
-										add = 20
-									}
-									
-									modifier = { #Intellect
-										add = 10
-										has_trait = intellect_good_1
-									}
-									modifier = { #Intellect
-										add = 15
-										has_trait = intellect_good_2
-									}
-									modifier = { #Intellect
-										add = 20
-										has_trait = intellect_good_3
-									}
-									modifier = { #Already affected
-										add = -2
-										has_character_flag = had_positive_learning_flag
-									}
-									add_learning_skill = 1
-									add_character_flag = {
-										flag = had_positive_learning_flag
-										years = 1
-									}
-									if = {
-										limit = {
-											scope:notification_character = {
-												is_ai = no
-											}
-										}
-										scope:notification_character = {
-											send_interface_toast = {
-												type = event_generic_good
-												title = successful_consort_skills_t
-												left_icon = scope:consort_1
-												right_icon = scope:grand_consort_position_holder
-												custom_tooltip = successful_consort_skills_desc
-												show_as_tooltip = {
-													scope:consort_1 = {
-														add_learning_skill = 1
-													}
-												}
-											}
-										}
-									}
+							50 = { #Diplomacy
+								modifier = { #Traits
+									has_trait = education_diplomacy_1
+									add = 10
 								}
-								50 = { #Diplomacy
-									modifier = { #Traits
-										has_trait = education_diplomacy_1
-										add = 10
+								modifier = { #Traits
+									has_trait = education_diplomacy_2
+									add = 15
+								}
+								modifier = { #Traits
+									OR = {	
+										has_trait = education_diplomacy_3
+										has_trait = education_diplomacy_4
+										has_trait = education_diplomacy_5
 									}
-									modifier = { #Traits
-										has_trait = education_diplomacy_2
-										add = 15
-									}
-									modifier = { #Traits
-										OR = {	
-											has_trait = education_diplomacy_3
-											has_trait = education_diplomacy_4
-											has_trait = education_diplomacy_5
-										}
-										add = 20
-									}
-									
-									modifier = { #Beauty
-										add = 10
-										has_trait = beauty_good_1
-									}
-									modifier = { #Intellect
-										add = 15
-										has_trait = beauty_good_2
-									}
-									modifier = { #Intellect
-										add = 20
-										has_trait = beauty_good_3
-									}
+									add = 20
+								}
+								
+								modifier = { #Beauty
+									add = 10
+									has_trait = beauty_good_1
+								}
+								modifier = { #Intellect
+									add = 15
+									has_trait = beauty_good_2
+								}
+								modifier = { #Intellect
+									add = 20
+									has_trait = beauty_good_3
+								}
 
-									modifier = { #Traits
-										add = 5
-										has_trait = gregarious
-									}
-									modifier = { #Traits
-										add = -5
-										has_trait = shy
-									}
-									modifier = { #Traits
-										add = -5
-										has_trait = craven
-									}
-									modifier = { #Already affected
-										add = -2
-										has_character_flag = had_positive_diplomacy_flag
-									}
-									add_diplomacy_skill = 1
-									add_character_flag = {
-										flag = had_positive_diplomacy_flag
-										years = 1
-									}
-									if = {
-										limit = {
-											scope:notification_character = {
-												is_ai = no
-											}
-										}
+								modifier = { #Traits
+									add = 5
+									has_trait = gregarious
+								}
+								modifier = { #Traits
+									add = -5
+									has_trait = shy
+								}
+								modifier = { #Traits
+									add = -5
+									has_trait = craven
+								}
+								modifier = { #Already affected
+									add = -2
+									has_character_flag = had_positive_diplomacy_flag
+								}
+								add_diplomacy_skill = 1
+								add_character_flag = {
+									flag = had_positive_diplomacy_flag
+									years = 1
+								}
+								if = {
+									limit = {
 										scope:notification_character = {
-											send_interface_toast = {
-												type = event_generic_good
-												title = successful_consort_skills_t
-												left_icon = scope:consort_1
-												right_icon = scope:grand_consort_position_holder
-												custom_tooltip = successful_consort_skills_desc
-												show_as_tooltip = {
-													scope:consort_1 = {
-														add_diplomacy_skill = 1
-													}
+											is_ai = no
+										}
+									}
+									scope:notification_character = {
+										send_interface_toast = {
+											type = event_generic_good
+											title = successful_consort_skills_t
+											left_icon = scope:consort_1
+											right_icon = scope:grand_consort_position_holder
+											custom_tooltip = successful_consort_skills_desc
+											show_as_tooltip = {
+												scope:consort_1 = {
+													add_diplomacy_skill = 1
 												}
 											}
 										}
 									}
 								}
-								5 = { #Become a poet
-									trigger = {
-										OR = {
-											diplomacy >= high_skill_rating
-											learning >= high_skill_rating
-										}
-										NOR = {
-											has_trait = poet
-											scope:notification_character = {
-												any_consort = {
-													is_courtier_of = prev
-													has_trait = poet
-													count >= 2
-												}
-											}
-										}
+							}
+							5 = { #Become a poet
+								trigger = {
+									OR = {
+										diplomacy >= high_skill_rating
+										learning >= high_skill_rating
 									}
-									#Poet trait
-									modifier = {
-										scope:grand_consort_position_holder = {
-											has_trait = poet
-										}
-										add = 2
-									}
-									modifier = { #Skills
-										add = 5
-										OR = {
-											diplomacy >= very_high_skill_rating
-											learning >= very_high_skill_rating
-										}
-									}
-									modifier = { #Education
-										add = 5
-										OR = {	
-											has_trait = education_learning_4
-											has_trait = education_diplomacy_4
-											has_trait = education_learning_5
-											has_trait = education_diplomacy_5
-										}
-									}
-									modifier = { #Intellect
-										add = 5
-										has_trait = intellect_good_1
-									}
-									modifier = { #Intellect
-										add = 10
-										has_trait = intellect_good_2
-									}
-									modifier = { #Intellect
-										add = 15
-										has_trait = intellect_good_3
-									}
-									add_trait = poet
-	
-									if = {
-										limit = {
-											scope:notification_character = {
-												is_ai = no
-											}
-										}
+									NOR = {
+										has_trait = poet
 										scope:notification_character = {
-											send_interface_toast = {
-												type = event_generic_good
-												title = successful_consort_skills_t
-												left_icon = scope:consort_1
-												right_icon = scope:grand_consort_position_holder
-												custom_tooltip = successful_consort_skills_desc
-												show_as_tooltip = {
-													scope:consort_1 = {
-														add_trait = poet
-													}
+											any_consort = {
+												is_courtier_of = prev
+												has_trait = poet
+												count >= 2
+											}
+										}
+									}
+								}
+								#Poet trait
+								modifier = {
+									scope:grand_consort_position_holder = {
+										has_trait = poet
+									}
+									add = 2
+								}
+								modifier = { #Skills
+									add = 5
+									OR = {
+										diplomacy >= very_high_skill_rating
+										learning >= very_high_skill_rating
+									}
+								}
+								modifier = { #Education
+									add = 5
+									OR = {	
+										has_trait = education_learning_4
+										has_trait = education_diplomacy_4
+										has_trait = education_learning_5
+										has_trait = education_diplomacy_5
+									}
+								}
+								modifier = { #Intellect
+									add = 5
+									has_trait = intellect_good_1
+								}
+								modifier = { #Intellect
+									add = 10
+									has_trait = intellect_good_2
+								}
+								modifier = { #Intellect
+									add = 15
+									has_trait = intellect_good_3
+								}
+								add_trait = poet
+
+								if = {
+									limit = {
+										scope:notification_character = {
+											is_ai = no
+										}
+									}
+									scope:notification_character = {
+										send_interface_toast = {
+											type = event_generic_good
+											title = successful_consort_skills_t
+											left_icon = scope:consort_1
+											right_icon = scope:grand_consort_position_holder
+											custom_tooltip = successful_consort_skills_desc
+											show_as_tooltip = {
+												scope:consort_1 = {
+													add_trait = poet
 												}
 											}
 										}
@@ -804,24 +828,32 @@ grand_consort_task_instill_virtues = {
 						}
 					}
 				}
-				7 = { #Failure
+			}
+
+			random = {
+				chance = { #Failure
+					value = 7
 					#Number of consorts
-					modifier = {
-						scope:notification_character = {
-							any_consort = {
-								is_courtier_of = prev
-								is_imprisoned = no
-								count >= 7
+					if = {
+						limit = {
+							scope:notification_character = {
+								any_consort = {
+									is_courtier_of = prev
+									is_imprisoned = no
+									count >= 7
+								}
 							}
 						}
 						add = 2
 					}
 					#High aptitude
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value >= 4
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value >= 4
+							}	
+						}
 						add = {
 							value = -4
 							if = {
@@ -834,17 +866,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = -2
+								add = -1
 							}
 						}
 					}
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value = 5
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value = 5
+							}	
+						}
 						add = {
-							value = -3
+							value = -2
 							if = {
 								limit = {
 									scope:notification_character = {
@@ -855,17 +889,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = -2
+								add = -1
 							}
 						}
 					}
 
 					#Low aptitude
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value <= 2
-						}	
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value <= 2
+							}
+						}
 						add = {
 							value = 4
 							if = {
@@ -878,17 +914,19 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = 2
+								add = 1
 							}
 						}
 					}
-					modifier = {
-						aptitude = {
-							court_position = grand_consort_court_position
-							value = 1
+					if = {
+						limit = {
+							aptitude = {
+								court_position = grand_consort_court_position
+								value = 1
+							}
 						}	
 						add = {
-							value = 3
+							value = 2
 							if = {
 								limit = {
 									scope:notification_character = {
@@ -899,11 +937,23 @@ grand_consort_task_instill_virtues = {
 										}
 									}
 								}
-								add = 2
+								add = 1
 							}
 						}
 					}
-					
+				}
+				#Effect
+				if = {
+					limit = {
+						any_consort = {
+							is_courtier_of = scope:notification_character
+							is_imprisoned = no	
+							NOR = {
+								has_character_modifier = poor_tutelage_modifier
+								has_character_modifier = misguided_diplomacy_modifier
+							}
+						}
+					}
 					random_consort = {
 						limit = {
 							is_courtier_of = scope:notification_character
@@ -979,7 +1029,7 @@ grand_consort_task_instill_virtues = {
 								add = 8
 								accepts_harems = no
 							}
-
+	
 							#Ruining someone they don't like
 							opinion_modifier = {
 								who = scope:grand_consort_position_holder
@@ -991,120 +1041,120 @@ grand_consort_task_instill_virtues = {
 						}
 						save_scope_as = consort_1
 					}
-					if = {
-						limit = {
-							exists = scope:consort_1
+				}
+				if = {
+					limit = {
+						exists = scope:consort_1
+					}
+					scope:consort_1 = {
+						add_character_flag = {
+							flag = had_grand_consort_effect_flag
+							years = 1
 						}
-						scope:consort_1 = {
-							add_character_flag = {
-								flag = had_grand_consort_effect_flag
-								years = 1
-							}
-							random_list = {
-								50 = { #Learning
-									modifier = { #Traits
-										has_trait = education_learning_1
-										add = 15
-									}
-									modifier = { #Traits
-										has_trait = education_learning_2
-										add = 10
-									}
-									
-									modifier = { #Intellect
-										add = 10
-										has_trait = intellect_bad_1
-									}
-									modifier = { #Intellect
-										add = 15
-										has_trait = intellect_bad_2
-									}
-									modifier = { #Intellect
-										add = 20
-										has_trait = intellect_bad_3
-									}
-									modifier = { #Already affected
-										add = -5
-										has_character_modifier = poor_tutelage_modifier
-									}
-									add_character_modifier = {
-										modifier = poor_tutelage_modifier
-										months = 9
-									}
-									if = {
-										limit = {
-											scope:notification_character = {
-												is_ai = no
-											}
-										}
+						random_list = {
+							50 = { #Learning
+								modifier = { #Traits
+									has_trait = education_learning_1
+									add = 15
+								}
+								modifier = { #Traits
+									has_trait = education_learning_2
+									add = 10
+								}
+								
+								modifier = { #Intellect
+									add = 10
+									has_trait = intellect_bad_1
+								}
+								modifier = { #Intellect
+									add = 15
+									has_trait = intellect_bad_2
+								}
+								modifier = { #Intellect
+									add = 20
+									has_trait = intellect_bad_3
+								}
+								modifier = { #Already affected
+									add = -5
+									has_character_modifier = poor_tutelage_modifier
+								}
+								add_character_modifier = {
+									modifier = poor_tutelage_modifier
+									months = 9
+								}
+								if = {
+									limit = {
 										scope:notification_character = {
-											send_interface_toast = {
-												type = event_generic_bad
-												title = failure_consort_skills_t
-												left_icon = scope:consort_1
-												right_icon = scope:grand_consort_position_holder
-												custom_tooltip = failure_consort_skills_desc
-												show_as_tooltip = {
-													scope:consort_1 = {
-														add_character_modifier = {
-															modifier = poor_tutelage_modifier
-															months = 9
-														}
+											is_ai = no
+										}
+									}
+									scope:notification_character = {
+										send_interface_toast = {
+											type = event_generic_bad
+											title = failure_consort_skills_t
+											left_icon = scope:consort_1
+											right_icon = scope:grand_consort_position_holder
+											custom_tooltip = failure_consort_skills_desc
+											show_as_tooltip = {
+												scope:consort_1 = {
+													add_character_modifier = {
+														modifier = poor_tutelage_modifier
+														months = 9
 													}
 												}
 											}
 										}
 									}
 								}
-								50 = { #Diplomacy
-									modifier = { #Traits
-										has_trait = education_diplomacy_1
-										add = 15
-									}
-									modifier = { #Traits
-										has_trait = education_diplomacy_2
-										add = 10
-									}
-									
-									modifier = { #Beauty
-										add = 10
-										has_trait = beauty_bad_1
-									}
-									modifier = { #Beauty
-										add = 15
-										has_trait = beauty_bad_2
-									}
-									modifier = { #Beauty
-										add = 20
-										has_trait = beauty_bad_3
-									}
-									modifier = { #Already affected
-										add = -5
-										has_character_modifier = misguided_diplomacy_modifier
-									}
-									add_character_modifier = {
-										modifier = misguided_diplomacy_modifier
-										months = 9
-									}
-									if = {
-										limit = {
-											scope:notification_character = {
-												is_ai = no
-											}
-										}
+							}
+							50 = { #Diplomacy
+								modifier = { #Traits
+									has_trait = education_diplomacy_1
+									add = 15
+								}
+								modifier = { #Traits
+									has_trait = education_diplomacy_2
+									add = 10
+								}
+								
+								modifier = { #Beauty
+									add = 10
+									has_trait = beauty_bad_1
+								}
+								modifier = { #Beauty
+									add = 15
+									has_trait = beauty_bad_2
+								}
+								modifier = { #Beauty
+									add = 20
+									has_trait = beauty_bad_3
+								}
+								modifier = { #Already affected
+									add = -5
+									has_character_modifier = misguided_diplomacy_modifier
+								}
+								add_character_modifier = {
+									modifier = misguided_diplomacy_modifier
+									months = 9
+								}
+								if = {
+									limit = {
 										scope:notification_character = {
-											send_interface_toast = {
-												type = event_generic_bad
-												title = failure_consort_skills_t
-												left_icon = scope:consort_1
-												right_icon = scope:grand_consort_position_holder
-												custom_tooltip = failure_consort_skills_desc
-												show_as_tooltip = {
-													scope:consort_1 = {
-														add_character_modifier = {
-															modifier = misguided_diplomacy_modifier
-															months = 9
-														}
+											is_ai = no
+										}
+									}
+									scope:notification_character = {
+										send_interface_toast = {
+											type = event_generic_bad
+											title = failure_consort_skills_t
+											left_icon = scope:consort_1
+											right_icon = scope:grand_consort_position_holder
+											custom_tooltip = failure_consort_skills_desc
+											show_as_tooltip = {
+												scope:consort_1 = {
+													add_character_modifier = {
+														modifier = misguided_diplomacy_modifier
+														months = 9
 													}
 												}
 											}
@@ -1115,23 +1165,30 @@ grand_consort_task_instill_virtues = {
 						}
 					}
 				}
-				86 = { #Nothing
+			}
+
+			random = {
+				chance = { #Failure
+					value = 86
 					#Number of consorts
-					modifier = {
-						scope:notification_character = {
-							any_consort = {
-								is_courtier_of = prev
-								is_imprisoned = no
-								count >= 7
+					if = {
+						limit = {
+							scope:notification_character = {
+								any_consort = {
+									is_courtier_of = prev
+									is_imprisoned = no
+									count >= 7
+								}
 							}
 						}
 						add = -4
 					}
-
 					#Poet trait
-					modifier = {
-						scope:grand_consort_position_holder = {
-							has_trait = poet
+					if = {
+						limit = {
+							scope:grand_consort_position_holder = {
+								has_trait = poet
+							}
 						}
 						add = {
 							value = -1
@@ -1150,18 +1207,24 @@ grand_consort_task_instill_virtues = {
 						}
 					}
 
-					modifier = {
-						NOT = {
-							any_consort = {
-								OR = {
-									diplomacy <= high_skill_rating
-									learning <= high_skill_rating
+					if = {
+						limit = {
+							scope:notification_character = {
+								NOT = {
+									any_consort = {
+										OR = {
+											diplomacy <= high_skill_rating
+											learning <= high_skill_rating
+										}
+									}
 								}
 							}
 						}
 						add = 15
 					}
+					
 				}
+				#Effect
 			}
 		}
 	}
