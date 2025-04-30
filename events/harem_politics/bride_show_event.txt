@@ -160,7 +160,7 @@ scripted_effect bride_show_next_candidate_effect = {
 						list = elegible_candidates
 						count = 0
 					}
-					any_in_list = { #Or in case all of them are children
+					any_in_list = { #Or in case all of them are teens
 						list = elegible_candidates
 						is_adult = no
 						count >= 3
@@ -428,7 +428,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					is_adult = yes
 					add = 25
 				}
-				modifier = { #Non-courtiers are preferred
+				modifier = { #Just in case
 					NOT = { is_courtier_of = root }
 					add = 100
 				}
@@ -449,7 +449,10 @@ scripted_effect bride_show_next_candidate_effect = {
 				}
 				modifier = { #More if it was set
 					any_close_or_extended_family_member = {
-						is_vassal_of = root
+						OR = {	
+							is_vassal_of = root
+							is_tributary_of = root
+						}
 					}
 					exists = local_var:family_background_important
 					add = 20
@@ -464,12 +467,22 @@ scripted_effect bride_show_next_candidate_effect = {
 					}
 					add = 10
 				}
+				modifier = { #Child of tributaries are preferred
+					any_close_family_member = {
+						is_tributary_of = root
+					}
+					add = 15
+				}
 				modifier = { #More if it was set
 					any_close_family_member = {
 						OR = {
 							is_powerful_vassal_of = root
 							is_councillor_of = root
 							is_parent_of = root
+							AND = {
+								is_tributary_of = root
+								is_lowborn = no
+							}
 						}
 					}
 					exists = local_var:family_background_important
@@ -477,7 +490,7 @@ scripted_effect bride_show_next_candidate_effect = {
 				}
 				modifier = { #Noble rank
 					any_close_family_member = {
-						highest_held_title_tier <= tier_duchy
+						highest_held_title_tier >= tier_county
 					}
 					add = 5
 				}
@@ -517,11 +530,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					add = 15
 				}
 				modifier = { #Trait considerations
-					OR = {
-						has_trait = beauty_good
-						has_trait = intellect_good
-						has_trait = physique_good
-					}
+					num_of_good_genetic_traits >= 1
 					add = 5
 				}
 				modifier = { #Trait considerations - beauty is important
@@ -676,7 +685,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					harem_politics_evil_consort_trigger = yes
 					add = 15
 				}
-				modifier = { #Parents would leave their children
+				modifier = { #Parents would not leave their children
 					any_child = {
 						even_if_dead = yes
 						count = 0
@@ -691,19 +700,8 @@ scripted_effect bride_show_next_candidate_effect = {
 					add = 40
 				}
 				modifier = { #Characters that believe in concubinage are more elegible
-					AND = {
-						root = {
-							OR = {
-								accepts_concubinage = yes
-								accepts_polygamy = yes
-							}
-						}
-						OR = {
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
-					}
-					add = 20
+					accepts_harems = yes
+					add = 10
 				}
 			}
 			save_scope_as = potential_candidate
@@ -954,6 +952,49 @@ bride_show.0004 = {
 		
 		hidden_effect = {
 			#Set up lists
+			if = {
+				limit = {
+					any_tributary = {
+						has_variable = will_send_candidates_to
+						var:will_send_candidates_to = root
+						OR = {
+							AND = {
+								exists = local_var:tributary_relatives
+								any_close_family_member = {
+									harem_politics_eligible_bride_show_candidate_trigger = yes
+								}
+							}
+							AND = {
+								exists = local_var:tributary_relatives
+								any_courtier = {
+									harem_politics_eligible_bride_show_candidate_trigger = yes
+								}
+							}
+						}
+					}
+				}
+				every_tributary = {
+					limit = {
+						has_variable = will_send_candidates_to
+						var:will_send_candidates_to = root
+						OR = {
+							AND = {
+								exists = local_var:tributary_relatives
+								any_close_family_member = {
+									harem_politics_eligible_bride_show_candidate_trigger = yes
+								}
+							}
+							AND = {
+								exists = local_var:tributary_relatives
+								any_courtier = {
+									harem_politics_eligible_bride_show_candidate_trigger = yes
+								}
+							}
+						}
+					}
+					add_to_list = bride_show_event_vassal_list
+				}
+			}
 			if = {
 				limit = {
 					government_has_flag = government_is_administrative
@@ -3013,6 +3054,257 @@ bride_show.0008 = {
 
 	option = {
 		name = bride_show.0007.a
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+bride_show.1000 = { 
+	type = character_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					is_female = yes
+				}
+				desc = bride_show.0001_f.t
+			}
+			desc = bride_show.0001_m.t
+		}
+		desc = bride_show.0001.t
+	}
+	desc = bride_show.0001.desc
+	theme = realm
+	
+	right_portrait = { 	
+		character = root
+		animation = personality_rational
+	}
+	
+	# Do not invite tributaries
+	option = {
+		name = bride_show.0001.a
+
+		ai_chance = {
+			base = 15
+		}
+	}
+
+	#Invite tributaries' relatives
+	option = {
+		name = bride_show.0001.b
+
+		trigger = {
+			any_tributary = {
+				any_close_family_member = {
+					harem_politics_eligible_bride_show_candidate_trigger = yes
+				}
+			}
+		}
+		custom_tooltip = bride_show_tributary_opinion_effect_tooltip
+
+		add_prestige = medium_prestige_loss
+
+		set_local_variable = {
+			name = tributary_relatives
+			value = yes
+		}
+
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Invite all of a tributaries' eligible courtiers
+	option = {
+		name = bride_show.0001.b
+
+		trigger = {
+			any_tributary = {
+				any_courtier = {
+					harem_politics_eligible_bride_show_candidate_trigger = yes
+				}
+			}
+		}
+		custom_tooltip = bride_show_tributary_opinion_effect_tooltip
+
+		add_prestige = minor_prestige_loss
+		
+		set_local_variable = {
+			name = tributary_court
+			value = yes
+		}
+
+		ai_chance = {
+			base = 1
+		}
+	}
+	after = {
+		if = {
+			limit = {
+				OR = {
+					exists = local_var:tributary_court
+					exists = local_var:tributary_relatives
+				}
+			}
+			every_tributary = {
+				limit = {
+					OR = {
+						AND = {
+							exists = local_var:tributary_relatives
+							any_close_family_member = {
+								harem_politics_eligible_bride_show_candidate_trigger = yes
+							}
+						}
+						AND = {
+							exists = local_var:tributary_relatives
+							any_courtier = {
+								harem_politics_eligible_bride_show_candidate_trigger = yes
+							}
+						}
+					}
+				}
+				if = {
+					limit = { 
+						OR = { 
+							culture = { has_cultural_pillar = heritage_east_slavic }
+							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+							culture = { has_cultural_tradition = tradition_legalistic }
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+					}
+					add_opinion = {
+						target = scope:liege
+						modifier = bride_show_vassal_opinion
+					}
+				}
+				else_if = {
+					limit = {
+						NOR = { 
+							culture = { has_cultural_pillar = heritage_east_slavic }
+							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+							culture = { has_cultural_tradition = tradition_legalistic }
+							accepts_concubinage = yes
+							accepts_polygamy = yes
+						}
+					}
+					add_opinion = {
+						target = scope:liege
+						modifier = bride_show_monogamous_vassal_opinion
+					}
+				}
+				trigger_event = {
+					id = bride_show.1001
+					days = { 2 7 }
+				}
+			}
+		}
+		trigger_event = {
+			id = bride_show.0001
+			days = { 10 14 }
+		}
+	}
+}
+
+bride_show.1001 = {
+	type = letter_event
+	opening = {
+		first_valid = {
+			triggered_desc = { #Imperial decree
+			    trigger = {
+					scope:liege = {
+						highest_held_title_tier = tier_empire
+					}
+				}
+				desc = bride_show.imperial.desc
+			}
+			triggered_desc = { #Royal decree
+			    trigger = {
+					scope:liege = {
+						highest_held_title_tier = tier_kingdom
+					}
+				}
+				desc = bride_show.royal.desc
+			}
+			triggered_desc = { #Princely decree
+			    trigger = {
+					scope:liege = {
+						any_parent = {
+							highest_held_title_tier >= tier_kingdom
+						}
+					}
+				}
+				desc = bride_show.princely.desc
+			}
+			desc = bride_show.noble.desc
+		}
+	}
+	desc = {
+		desc = bride_show.0007.desc.start
+		first_valid = {
+			triggered_desc = { #Neutral
+			    trigger = {
+					scope:liege = {
+						allowed_to_marry_same_sex_trigger = yes
+					}
+				}
+				desc = bride_show.0007.desc.individual
+			}
+			triggered_desc = { #Bachelor
+			    trigger = {
+					scope:liege = {
+						is_female = yes
+					}
+				}
+				desc = bride_show.0007.desc.bachelor
+			}
+			#Maiden
+			desc = bride_show.0007.desc.maiden
+		}
+		desc = bride_show.0007.desc.end
+	}
+	sender = scope:liege
+
+	#Accept it
+	option = {
+		name = bride_show.0007.a
+		set_variable = {
+			name = will_send_candidates_to
+			value = scope:liege
+			months = 2
+		}
+		# Accepting it is akin to being treated as a vassal
+		add_prestige = medium_prestige_loss
+		ai_chance = {
+			base = 1
+		}
+	}
+
+	#Decline it
+	option = {
+		name = bride_show.0007.b
+		# Depending on the suzerain's rank, you will gain prestige
+		if = {
+			limit = {
+				scope:liege = {
+					highest_held_title_tier = tier_empire
+				}
+			}
+			add_prestige = medium_prestige_gain
+		}
+		else_if = {
+			limit = {
+				scope:liege = {
+					highest_held_title_tier = tier_kingdom
+				}
+			}
+			add_prestige = minor_prestige_gain
+		}
+		else = {
+			add_prestige = miniscule_prestige_gain
+		}
 		ai_chance = {
 			base = 1
 		}
