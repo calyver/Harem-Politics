@@ -961,13 +961,14 @@ bride_show.0004 = {
 							AND = {
 								exists = local_var:tributary_relatives
 								any_close_family_member = {
-									harem_politics_eligible_bride_show_candidate_trigger = yes
+									is_courtier_of = prev
+									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 								}
 							}
 							AND = {
 								exists = local_var:tributary_relatives
 								any_courtier = {
-									harem_politics_eligible_bride_show_candidate_trigger = yes
+									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 								}
 							}
 						}
@@ -981,13 +982,14 @@ bride_show.0004 = {
 							AND = {
 								exists = local_var:tributary_relatives
 								any_close_family_member = {
-									harem_politics_eligible_bride_show_candidate_trigger = yes
+									is_courtier_of = prev
+									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 								}
 							}
 							AND = {
 								exists = local_var:tributary_relatives
 								any_courtier = {
-									harem_politics_eligible_bride_show_candidate_trigger = yes
+									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 								}
 							}
 						}
@@ -3098,7 +3100,8 @@ bride_show.1000 = {
 		trigger = {
 			any_tributary = {
 				any_close_family_member = {
-					harem_politics_eligible_bride_show_candidate_trigger = yes
+					is_courtier_of = prev
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 				}
 			}
 		}
@@ -3123,7 +3126,7 @@ bride_show.1000 = {
 		trigger = {
 			any_tributary = {
 				any_courtier = {
-					harem_politics_eligible_bride_show_candidate_trigger = yes
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 				}
 			}
 		}
@@ -3154,13 +3157,14 @@ bride_show.1000 = {
 						AND = {
 							exists = local_var:tributary_relatives
 							any_close_family_member = {
-								harem_politics_eligible_bride_show_candidate_trigger = yes
+								is_courtier_of = prev
+								harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 							}
 						}
 						AND = {
 							exists = local_var:tributary_relatives
 							any_courtier = {
-								harem_politics_eligible_bride_show_candidate_trigger = yes
+								harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
 							}
 						}
 					}
@@ -3267,6 +3271,149 @@ bride_show.1001 = {
 	}
 	sender = scope:liege
 
+	trigger = {
+		OR = {
+			AND = {
+				exists = local_var:tributary_relatives
+				any_close_family_member = {
+					is_courtier_of = root
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+			}
+			AND = {
+				exists = local_var:tributary_relatives
+				any_courtier = {
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+			}
+		}
+	}
+	immediate = {
+		if = {
+			limit = {
+				exists = local_var:tributary_relatives
+				any_close_family_member = {
+					is_courtier_of = root
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+			}
+			every_close_family_member = {
+				limit = {
+					is_courtier_of = root
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+				add_to_temporary_list = tributary_candidates
+			}
+		}
+		else_if = {
+			limit = {
+				exists = local_var:tributary_court
+				any_courtier = {
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+			}
+			any_courtier = {
+				limit = {
+					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = scope:liege }
+				}
+				add_to_temporary_list = tributary_candidates
+			}
+		}
+		save_scope_value_as = {
+			name = while_count_value
+			value = {
+				value = 1
+				if = {
+					limit = { #The weaker you are, the more candidates you must send
+						tier_difference = {
+							target = scope:liege
+							value = -2
+						}
+						any_in_list = {
+							list = tributary_candidates
+							count >= 2
+						}
+					}
+					add = 1
+				}
+				else_if = {
+					limit = { #The weaker you are, the more candidates you must send
+						tier_difference = {
+							target = scope:liege
+							value = -3
+						}
+						any_in_list = {
+							list = tributary_candidates
+							count >= 3
+						}
+					}
+					add = 2
+				}
+			}
+		}
+		while = {
+			count = scope:while_count_value
+			random_in_list = {
+				list = tributary_candidates
+				weight = {
+					base = 6
+					modifier = { #Suzerains would demand more legitimate heirs
+						OR = {
+							has_any_bastard_trait_trigger = yes
+							has_trait = bastard_founder
+						}
+						add = -5
+					}
+					modifier = {
+						is_child_of = root
+						add = 3
+					}
+					modifier = { #Suzerains would demand more legitimate heirs
+						is_child_of = root
+						NOT = { 
+							has_trait = child_of_concubine 
+						}
+						add = 2
+					}
+					modifier = {
+						is_close_family_of = root
+						add = 5
+					}
+					modifier = {
+						exists = house
+						add = 5
+					}
+					modifier = {
+						num_of_good_genetic_traits >= 1
+						add = 5
+					}
+					modifier = {
+						num_of_good_genetic_traits >= 2
+						add = 5
+					}
+					modifier = {
+						is_adult = yes
+						add = 10
+					}
+					modifier = {
+						num_virtuous_traits >= 1
+						num_sinful_traits = 0
+						add = 5
+					}
+					modifier = { #Allow tributaries to keep their most important courtiers
+						NOR = {
+							is_knight = yes
+							is_councillor_of = root
+							has_any_court_position = yes
+						}
+						add = 5
+					}
+				}
+				add_to_temporary_list = to_send_candidates_list
+			}
+		}
+	}
+
 	#Accept it
 	option = {
 		name = bride_show.0007.a
@@ -3277,8 +3424,35 @@ bride_show.1001 = {
 		}
 		# Accepting it is akin to being treated as a vassal
 		add_prestige = medium_prestige_loss
+		hidden_effect = {
+			scope:liege = {
+				every_in_list = {
+					list = to_send_candidates_list
+					add_to_list = tributaries_list
+				}
+				if = {
+					limit = {
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = bride_show.1001.t
+						right_icon = root
+						custom_tooltip = bride_show_tributary_accepted_desc
+					}
+				}
+			}
+		}
 		ai_chance = {
-			base = 1
+			base = 10
+			modifier = {
+				is_obedient_to = scope:liege
+				add = 20
+			}
+			modifier = {
+				NOT = { is_obedient_to = scope:liege }
+				add = -20
+			}
 		}
 	}
 
@@ -3305,8 +3479,85 @@ bride_show.1001 = {
 		else = {
 			add_prestige = miniscule_prestige_gain
 		}
+		hidden_effect = {
+			scope:liege = {
+				if = {
+					limit = {
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_bad
+						title = bride_show.1001.t
+						right_icon = root
+						custom_tooltip = bride_show_tributary_refused_desc
+					}
+				}
+			}
+		}
 		ai_chance = {
-			base = 1
+			base = 10
+			modifier = { #Is obedient
+				is_obedient_to = scope:liege
+				add = -20
+			}
+			modifier = { #Is not obedient
+				NOT = { is_obedient_to = scope:liege }
+				add = 20
+			}
+			modifier = { #Kings are less likely to send their relatives
+				highest_held_title_tier >= tier_kingdom
+				add = 10
+			}
+			#Traits
+			modifier = {
+				has_trait = shy
+				NOT = { is_obedient_to = scope:liege }
+				add = -10
+			}
+			modifier = {
+				has_trait = craven
+				NOT = { is_obedient_to = scope:liege }
+				add = -10
+			}
+			modifier = {
+				has_trait = loyal
+				NOT = { is_obedient_to = scope:liege }
+				add = -10
+			}
+			modifier = { #A scared vassal won't decline
+				add = -20
+				NOT = { is_obedient_to = scope:liege }
+				dread_modified_ai_boldness = {
+					dreaded_character = scope:liege
+					value <= -20
+				}
+			}
+			modifier = { #A scared vassal won't decline
+				add = -30
+				NOT = { is_obedient_to = scope:liege }
+				dread_modified_ai_boldness = {
+					dreaded_character = scope:liege
+					value <= -50
+				}
+			}
+			modifier = { #A scared vassal won't decline
+				add = -25
+				NOT = { is_obedient_to = scope:liege }
+				dread_modified_ai_boldness = {
+					dreaded_character = scope:liege
+					value <= -75
+				}
+			}
+			modifier = {
+				has_government = herder_government
+				add = -10
+			}
+			opinion_modifier = { #Opinion
+				opinion_target = scope:liege
+				min = -15
+				max = 15
+				multiplier = 0.15
+			}
 		}
 	}
 }
