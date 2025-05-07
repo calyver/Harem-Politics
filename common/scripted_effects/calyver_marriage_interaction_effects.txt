@@ -1,10 +1,7 @@
-﻿calyver_marriage_interaction_on_accept_effect = {
+﻿marriage_interaction_on_accept_effect = {
 	#Use hook
 	if = {
-		limit = { 
-			exists = scope:hook 
-			always = scope:hook 
-		}
+		limit = { always = scope:hook }
 		scope:actor = {
 			use_hook = scope:recipient
 		}
@@ -65,15 +62,16 @@
 							}
 						}
 					}
-					else_if = { #Else, only non-tribal rulers will lose legitimacy for marrying a lowborn secondary spouse
+					else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
 						limit = {
 							primary_spouse ?= { 
 								NOT = { 
 									this = scope:secondary_recipient 
 								}
 							}
-							NOT = {
+							NOR = {
 								government_has_flag = government_is_tribal
+								government_has_flag = government_is_nomadic
 							}
 						}
 						send_interface_toast = {
@@ -81,7 +79,7 @@
 							title = married_lowborn_toast
 							left_icon = scope:actor
 							add_legitimacy = {
-								value = miniscule_legitimacy_loss
+								value = -5
 								multiply = scope:actor.primary_title.tier
 							}
 						}
@@ -149,15 +147,16 @@
 							}
 						}
 					}
-					else_if = { #Else, only non-tribal rulers will lose legitimacy for marrying a lowborn secondary spouse
+					else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
 						limit = {
 							primary_spouse ?= { 
 								NOT = { 
 									this = scope:secondary_actor 
 								}
 							}
-							NOT = {
+							NOR = {
 								government_has_flag = government_is_tribal
+								government_has_flag = government_is_nomadic
 							}
 						}
 						send_interface_toast = {
@@ -165,7 +164,7 @@
 							title = married_lowborn_toast
 							left_icon = scope:actor
 							add_legitimacy = {
-								value = miniscule_legitimacy_loss
+								value = -5
 								multiply = scope:actor.primary_title.tier
 							}
 						}
@@ -192,6 +191,49 @@
 							years = 10
 						}
 					}
+				}
+			}
+		}
+		else = { # If they're not a lowborn AND you and the recipient are both Nomad we may give you some Legitimacy
+			if = {
+				limit = {
+					is_valid_for_nomadic_legitimacy_change = yes
+					scope:recipient = { government_has_flag = government_is_nomadic }
+					mpo_lower_nomad_authority_trigger = { CHARACTER = scope:recipient } # Only if recipient has higher Dominance than you
+				}
+				add_legitimacy = medium_legitimacy_gain
+			}
+		}
+	}
+	
+	#No longer Herder
+	if = {
+		limit = {
+			scope:secondary_recipient = {
+				is_landed = yes
+				government_has_flag = government_is_herder
+			}
+		}
+		scope:actor = {
+			switch = {
+				trigger = has_government
+				feudal_government = {
+					scope:secondary_recipient = { change_government = feudal_government }
+				}
+				tribal_government = {
+					scope:secondary_recipient = { change_government = tribal_government }
+				}
+				clan_government = {
+					scope:secondary_recipient = { change_government = clan_government }
+				}
+				nomad_government = {
+					scope:secondary_recipient = { change_government = nomad_government }
+				}
+				administrative_government = {
+					scope:secondary_recipient = { change_government = administrative_government }
+				}
+				landless_adventurer_government = {
+					scope:secondary_recipient = { change_government = landless_adventurer_government }
 				}
 			}
 		}
@@ -227,7 +269,6 @@
 	# A Grand Wedding was promised
 	if = {
 		limit = {
-			exists = scope:grand_wedding_promise
 			scope:grand_wedding_promise = yes
 		}
 		set_grand_wedding_betrothal_variables = {
@@ -286,20 +327,14 @@
 				every_consort = {
 					# If the spouse themselves does not believe in polygamy...
 					limit = {
-						NOR = {
-							accepts_polygamy = yes
-							accepts_concubinage = yes
-						}
+						accepts_harems = no
 					}
 
 					#... then family members who also do not believe in polygamy aren't happy about having a relative forced into polygamous union with you.
 					every_close_family_member = {
 						if = {
 							limit = { 
-								NOR = {
-									accepts_polygamy = yes
-									accepts_concubinage = yes
-								}
+								accepts_harems = no
 							}
 							add_opinion = {
 								target = scope:secondary_actor
