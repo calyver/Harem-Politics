@@ -224,12 +224,40 @@ harem_politics_valid_bride_show_subject_trigger = {
 		}
 	}
 	is_imprisoned = no
-	trigger_if = {
+	trigger_if = { #Tributary requirements
 		limit = {
-			root = {	
-				government_has_flag = government_is_nomadic
+			NOT = {
+				is_vassal_of = root
 			}
 		}
-		is_obedient_to = root
+		trigger_if = { #For a nomad's tributaries, what matters it their obedience.
+			limit = {
+				root = {	
+					government_has_flag = government_is_nomadic
+				}
+			}
+			is_obedient_to = root
+		}
+		trigger_else_if = { #Else, if they rank the same as their suzerain, they need to dread them
+			limit = {
+				highest_held_title_tier = root.highest_held_title_tier
+			}
+			has_dread_level_towards = {
+				target = root
+				level >= 1
+			}
+		}
+		trigger_else_if = { #Else, they need to dread them more
+			limit = {
+				highest_held_title_tier > root.highest_held_title_tier
+			}
+			has_dread_level_towards = {
+				target = root
+				level >= 2
+			}
+		}
+		trigger_else = { #Or nothing :)
+			always = yes
+		}
 	}
 }
