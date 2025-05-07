@@ -1,0 +1,67 @@
+﻿mpo_valid_widow_marrier_trigger = {
+	#Is a playable character or primary_heir
+	OR = {
+		root.primary_heir ?= this
+		AND = {
+			highest_held_title_tier >= tier_county
+			is_playable_character = yes
+			OR = {
+				#Root is wandering landless
+				root = {
+					is_ruler = no
+					NOT = {
+						exists = liege
+					}
+				}
+				#Is root's liege
+				root.liege ?= this
+				#Is root's top liege
+				root.top_liege ?= this
+				#root has no primary heir
+				NOT = {
+					exists = root.primary_heir
+				}
+				#root's primary heir is not of house
+				NOT = {
+					exists = root.primary_heir.house
+				}
+				AND = {
+					exists = root.house
+					NOT = {
+						root.house = root.primary_heir.house
+					}
+				}
+			}
+			
+		}
+	}
+	
+	OR = {
+		has_trait = nomadic_philosophy
+		culture = {
+			has_cultural_pillar = heritage_mongolic
+		}
+		culture = {
+			has_cultural_pillar = heritage_turkic
+		}
+		faith.religion = faith:tengri_pagan.religion
+	}
+	#Can have multiple wives or concubines
+	accepts_harems = yes
+	is_male = yes
+	is_adult = yes
+	NOR = {
+		has_trait = celibate
+		has_trait = eunuch
+		has_trait = devoted
+	}
+	#Has a free slot for a wife or concubine
+	OR = {
+		allowed_more_spouses = yes
+		allowed_more_concubines = yes
+	}
+	#Can marry the widow
+	NOT = {
+		relation_with_character_is_incestuous_in_my_faith_trigger = { CHARACTER = scope:widow }
+	}
+}
