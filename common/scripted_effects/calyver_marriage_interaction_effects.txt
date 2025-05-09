@@ -1030,10 +1030,14 @@ concubine_on_accept_effect = {
 }
 
 make_concubine_harem_politics_effect = {
+	# First save the scopes with specific names for House Unity
+	$CHARACTER$ = { save_scope_as = harem_actor }
+	$TARGET$ = { save_scope_as = harem_recipient }
+
 	if = {
 		limit = {
 			has_demoted_or_divorced_opinion_trigger = {
-				TARGET = scope:actor
+				TARGET = $CHARACTER$
 			}
 		}
 		spouse_demotion_effect = yes
@@ -1044,9 +1048,9 @@ make_concubine_harem_politics_effect = {
 				is_landed = no
 			}
 			add_character_flag = {
-				flag = flag_new_consort
-				years = 2
-			}
+					flag = flag_new_consort
+					years = 2
+				}
 		}
 		if = {
 			limit = {
@@ -1055,10 +1059,10 @@ make_concubine_harem_politics_effect = {
 			remove_variable = favor
 		}
 		
-		# If we're a clan this interaction affects unity
+		# Now we can use the saved scopes for House Unity
 		add_clan_unity_interaction_effect = {
-			CHARACTER = scope:actor
-			TARGET = scope:recipient
+			CHARACTER = scope:harem_actor
+			TARGET = scope:harem_recipient
 			VALUE = minor_unity_gain
 			DESC = clan_unity_concubinage.desc
 			REVERSE_NON_HOUSE_TARGET = no
@@ -1071,6 +1075,10 @@ make_concubine_harem_politics_effect = {
 		craven = miniscule_stress_impact_loss
 		chaste = miniscule_stress_impact_loss
 	}
+
+	# Clean up our temporary scopes
+	clear_saved_scope = harem_actor
+	clear_saved_scope = harem_recipient
 }
 
 former_consort_forced_concubine_effect = {
