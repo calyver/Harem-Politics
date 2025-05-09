@@ -4791,13 +4791,42 @@ concubine_offer_on_accept_effect = {
 		if = {
 			# Victim is angry for being forced into concubinage.
 			limit = {
-				is_imprisoned = yes
+				OR = {
+					has_trait = celibate
+					is_imprisoned = yes
+				}
+			}
+			hidden_effect = {
+				if = {
+					limit = {
+						any_consort = {
+							NOT = { this = scope:recipient }
+							count >= 1
+						}
+					}
+					every_consort = {
+						limit = {
+							NOT = { this = scope:recipient }
+						}
+						scope:secondary_actor = {
+							former_consort_forced_concubine_effect = {
+								PARTNER = prev
+								CONSORT = scope:secondary_actor
+							}
+						}
+					}
+				}
 			}
 			add_character_flag = {
 				flag = block_release_from_prison_event
 				days = 3
 			}
-			release_from_prison = yes
+			if = {
+				limit = {
+					is_imprisoned = yes
+				}
+				release_from_prison = yes
+			}
 			add_opinion = {
 				target = scope:actor
 				modifier = forced_me_concubine_marriage_opinion
@@ -4805,44 +4834,49 @@ concubine_offer_on_accept_effect = {
 
 			# Family members of victim are also angry that you've forced them into concubinage.
 			every_close_family_member = {
+				limit = { 
+					NOT = { this = scope:actor } # Don't hate yourself.
+				}
+				custom = all_family_members
+				add_opinion = {
+					target = scope:actor
+					modifier = forced_family_concubine_marriage_opinion
+				}
+				hidden_effect = {
+					send_interface_message = {
+						type = msg_family_became_concubine
+						title = msg_close_family_member_taken_as_concubine_title
+						right_icon = scope:actor
+						left_icon = scope:secondary_actor
+						show_as_tooltip = { scope:actor = { make_concubine = scope:secondary_actor } }
+					}
+				}
+
+				# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
 				if = {
 					limit = { 
-						NOT = { this = scope:actor } # Don't hate yourself.
+						OR = {
+							NOT = { accepts_concubinage = yes }
+							NOT = { faith = { has_doctrine = tenet_polyamory } }
+							AND = {
+								allowed_to_marry_same_sex_trigger = no
+								scope:recipient = { sex_same_as = scope:secondary_actor }
+							}
+						}
 					}
 					add_opinion = {
 						target = scope:actor
-						modifier = forced_family_concubine_marriage_opinion
-					}
-					hidden_effect = {
-						send_interface_message = {
-							type = msg_family_became_concubine
-							title = msg_close_family_member_offered_as_concubine_title
-							right_icon = scope:recipient
-							left_icon = scope:secondary_actor
-							show_as_tooltip = { scope:recipient = { make_concubine = scope:secondary_actor } }
-						}
-					}
-
-					# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
-					if = {
-						limit = { 
-							OR = {
-								NOT = { accepts_concubinage = yes }
-								NOT = { faith = { has_doctrine = tenet_polyamory } }
-								AND = {
-									allowed_to_marry_same_sex_trigger = no
-									scope:recipient = { sex_same_as = scope:secondary_actor }
-								}
-							}
-						}
-						add_opinion = {
-							target = scope:actor
-							modifier = relative_in_blasphemous_union_opinion
-						}
+						modifier = relative_in_blasphemous_union_opinion
 					}
 				}
 			}
-					
+				
+			# Not up to them anymore...
+			if = {
+				limit = { has_trait = celibate }
+				remove_trait = celibate
+			}
+			
 			# Spouses, if any exist, are also furious.
 			if = {
 				limit = {
@@ -4851,6 +4885,29 @@ concubine_offer_on_accept_effect = {
 					NOT = { any_spouse = { this = scope:recipient } }
 				}
 				every_spouse = {
+					hidden_effect = {
+						if = {
+							limit = {
+								primary_spouse ?= {
+									this = scope:secondary_actor
+								}
+								any_spouse = {
+									count >= 2
+								}
+							}
+							add_character_flag = {
+								flag = flag_lowborn_exception
+								days = 2
+							}
+							scope:secondary_actor = {
+								new_primary_spouse_divorce_effect = {
+									PREVIOUS_PS = scope:secondary_actor
+									PARTNER = prev
+								}
+							}
+							remove_character_flag = flag_lowborn_exception
+						}
+					}
 					add_opinion = {
 						target = scope:actor
 						modifier = forced_spouse_concubine_marriage_opinion
@@ -4872,6 +4929,7 @@ concubine_offer_on_accept_effect = {
 					NOT = { any_consort = { this = scope:recipient } }
 				}
 				this.concubinist = {
+					remove_concubine = scope:secondary_actor # no additional opinion hit, no scripted effect
 					if = {
 						limit = {
 							NOT = {
@@ -4882,15 +4940,11 @@ concubine_offer_on_accept_effect = {
 							target = scope:actor
 							modifier = stole_concubine_opinion
 						}
-						remove_concubine = scope:secondary_actor # no additional opinion hit, no scripted effect
 						save_scope_value_as = { # For tooltips in the coming event
 							name = was_concubine
 							value = yes
 						}
 						trigger_event = marriage_interaction.0043
-					}
-					else = {
-						remove_concubine = scope:secondary_actor # no additional opinion hit, no scripted effect
 					}
 				}
 			}
@@ -4915,6 +4969,11 @@ concubine_offer_on_accept_effect = {
 					}
 				}
 			}
+			clear_demoted_consort_divorce_modifiers_effect = yes
+		}
+		make_concubine_harem_politics_effect = {
+			CHARACTER = scope:recipient
+			TARGET = scope:secondary_actor
 		}
 		if = {
 			limit = {
