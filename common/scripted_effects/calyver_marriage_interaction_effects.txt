@@ -5153,3 +5153,106 @@ vassals_dislike_marry_lowborn_effect = {
 		}
 	}
 }
+
+marriage_legitimacy_rank_effect = {
+    # RULER = character getting legitimacy (actor in marriage/PARTNER in PS change)
+    # OTHER = character whose relatives we check (spouse/PS being evaluated)
+    
+    if = {
+        limit = {
+            $RULER$ = {
+                is_valid_for_legitimacy_change = yes
+                NOT = { has_character_flag = marriage_legitimacy_flag }
+            }
+            $OTHER$ = {
+                is_lowborn = no
+            }
+        }
+        $RULER$ = {
+            add_character_flag = marriage_legitimacy_flag
+            
+            # Create a temporary list for potential highest ranked characters
+            $OTHER$ = {
+                # Check relatives first
+                every_close_family_member = {
+                    limit = {
+                        is_landed = yes
+                        OR = {
+                            # Include relatives that outrank RULER
+                            tier_difference = {
+                                target = $RULER$
+                                value > 0
+                            }
+                            # Or are same rank
+                            tier_difference = {
+                                target = $RULER$
+                                value = 0
+                            }
+                        }
+                    }
+                    add_to_temporary_list = this
+                }
+                
+                # If no qualifying relatives found, check if OTHER qualifies
+                if = {
+                    limit = {
+                        is_landed = yes
+                        OR = {
+                            # Include OTHER if they outrank RULER
+                            tier_difference = {
+                                target = $RULER$
+                                value > 0
+                            }
+                            # Or are same rank
+                            tier_difference = {
+                                target = $RULER$
+                                value = 0
+                            }
+                        }
+                    }
+                    add_to_temporary_list = this
+                }
+                
+                # Choose highest ranked from the list
+                ordered_in_list = {
+                    order_by = highest_held_title_tier
+                    save_scope_as = highest_ranked_relative
+                }
+            }
+            
+            # Apply legitimacy based on rank comparison
+            if = {
+                limit = {
+                    exists = scope:highest_ranked_relative
+                    scope:highest_ranked_relative = {
+                        tier_difference = {
+                            target = $RULER$
+                            value > 0  # Must outrank RULER
+                        }
+                    }
+                }
+                # Marrying above rank - medium gain multiplied by tier
+                add_legitimacy = {
+                    value = medium_legitimacy_gain
+                    multiply = scope:highest_ranked_relative.primary_title.tier
+                }
+            }
+            else_if = {
+                limit = {
+                    exists = scope:highest_ranked_relative
+                    scope:highest_ranked_relative = {
+                        tier_difference = {
+                            target = $RULER$
+                            value = 0  # Same rank
+                        }
+                    }
+                }
+                # Same rank marriage - minor gain multiplied by tier
+                add_legitimacy = {
+                    value = minor_legitimacy_gain
+                    multiply = scope:highest_ranked_relative.primary_title.tier
+                }
+            }
+        }
+    }
+}
