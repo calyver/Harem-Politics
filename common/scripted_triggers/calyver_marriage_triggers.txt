@@ -139,3 +139,32 @@ can_become_concubine_of_character_trigger = {
 	is_adult = yes
 	could_marry_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, recent divorce, allowed to marry, no illegal incest etc.
 }
+
+valid_marriage_legitimacy_rank_trigger = {
+	# ROOT = character being checked (either OTHER or their relative)
+	# RULER = character getting legitimacy
+	
+	is_landed = yes
+	OR = {
+		# Outranks RULER
+		tier_difference = {
+			target = $RULER$
+			value > 0
+		}
+		# Same rank
+		tier_difference = {
+			target = $RULER$
+			value = 0
+		}
+		# Special case: King/Emperor for Emperor+ (including future hegemony)
+		AND = {
+			OR = {
+				highest_held_title_tier = tier_kingdom
+				highest_held_title_tier = tier_empire
+			}
+			$RULER$ = {
+				highest_held_title_tier >= tier_empire
+			}
+		}
+	}
+}
