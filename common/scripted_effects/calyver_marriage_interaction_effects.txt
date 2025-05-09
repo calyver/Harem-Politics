@@ -5162,130 +5162,79 @@ marriage_legitimacy_rank_effect = {
         limit = {
             $RULER$ = {
                 is_valid_for_legitimacy_change = yes
-                NOT = { has_character_flag = marriage_legitimacy_flag }
+                NOR = { 
+					has_character_flag = marriage_legitimacy_flag 
+					government_has_flag = government_is_nomadic
+				}
             }
             $OTHER$ = {
                 is_lowborn = no
+                OR = {
+                    valid_marriage_legitimacy_rank_trigger = { RULER = $RULER$ }
+                    any_close_family_member = {
+                        valid_marriage_legitimacy_rank_trigger = { RULER = $RULER$ }
+                    }
+                }
             }
         }
-        $RULER$ = {
-            add_character_flag = marriage_legitimacy_flag
-            
-            # Create a temporary list for potential highest ranked characters
-            $OTHER$ = {
-                # Check relatives first
-                every_close_family_member = {
-                    limit = { 
-                        is_landed = yes
-                        OR = {
-                            # Include relatives that outrank RULER
-                            tier_difference = {
-                                target = $RULER$
-                                value > 0
-                            }
-                            # Or are same rank
-                            tier_difference = {
-                                target = $RULER$
-                                value = 0
-                            }
-                            # Special case: King's relative for Emperor
-                            AND = {
-                                highest_held_title_tier = tier_kingdom
-                                $RULER$ = {
-                                    highest_held_title_tier = tier_empire
-                                }
-                            }
-                        }
-                    }
-                    add_to_temporary_list = marriage_rank_candidates
-                }
-                
-                # If no qualifying relatives found, check if OTHER qualifies
-                if = {
-                    limit = {
-                        is_landed = yes
-                        NAND = {  # Only check OTHER if no qualifying relatives found
-                            any_in_list = {
-                                list = marriage_rank_candidates
-                                always = yes
-                            }
-                        }
-                        OR = {
-                            # Include OTHER if they outrank RULER
-                            tier_difference = {
-                                target = $RULER$
-                                value > 0
-                            }
-                            # Or are same rank
-                            tier_difference = {
-                                target = $RULER$
-                                value = 0
-                            }
-                            # Special case: King for Emperor
-                            AND = {
-                                highest_held_title_tier = tier_kingdom
-                                $RULER$ = {
-                                    highest_held_title_tier = tier_empire
-                                }
-                            }
-                        }
-                    }
-                    add_to_temporary_list = marriage_rank_candidates
-                }
-                
-                # Choose highest ranked from the list
-                ordered_in_list = {
-                    list = marriage_rank_candidates
-                    order_by = highest_held_title_tier
-                    save_scope_as = highest_ranked_relative
-                }
-            }
-            
-            # Apply legitimacy based on rank comparison
+        
+        # Add OTHER to the list if they qualify
+        $OTHER$ = {
             if = {
                 limit = {
-                    exists = scope:highest_ranked_relative
+                    valid_marriage_legitimacy_rank_trigger = { RULER = $RULER$ }
+                }
+                add_to_temporary_list = ranked_candidates
+            }
+            
+            # Add OTHER's close family members to the list if they qualify
+            if = {
+                limit = {
+                    any_close_family_member = {
+                        valid_marriage_legitimacy_rank_trigger = { RULER = $RULER$ }
+                    }
+                }
+                every_close_family_member = {
+                    limit = {
+                        valid_marriage_legitimacy_rank_trigger = { RULER = $RULER$ }
+                    }
+                    add_to_temporary_list = ranked_candidates
+                }
+            }
+        }
+        
+        # Get highest ranked character from the list
+        ordered_in_list = {
+            list = ranked_candidates
+            order_by = highest_held_title_tier
+            max = 1
+            save_scope_as = highest_ranked_relative
+        }
+        
+        # Apply legitimacy gain based on rank difference
+        $RULER$ = {
+            if = {
+                limit = {
                     scope:highest_ranked_relative = {
                         tier_difference = {
                             target = $RULER$
-                            value > 0  # Must outrank RULER
+                            value > 0
                         }
                     }
                 }
-                # Marrying above rank - medium gain multiplied by tier
                 add_legitimacy = {
                     value = medium_legitimacy_gain
-                    multiply = scope:highest_ranked_relative.primary_title.tier
+                    multiply = scope:highest_ranked_relative.highest_held_title_tier
                 }
             }
-            else_if = {
-                limit = {
-                    exists = scope:highest_ranked_relative
-                    OR = {
-                        # Same rank marriage
-                        scope:highest_ranked_relative = {
-                            tier_difference = {
-                                target = $RULER$
-                                value = 0
-                            }
-                        }
-                        # Special case: Emperor marrying King's relative
-                        AND = {
-                            $RULER$ = {
-                                highest_held_title_tier = tier_empire
-                            }
-                            scope:highest_ranked_relative = {
-                                highest_held_title_tier = tier_kingdom
-                            }
-                        }
-                    }
-                }
-                # Same rank or Emperor-King case - minor gain multiplied by tier
+            else = {
+                # Same rank or special case for emperor marrying king/emperor
                 add_legitimacy = {
                     value = minor_legitimacy_gain
-                    multiply = scope:highest_ranked_relative.primary_title.tier
+                    multiply = scope:highest_ranked_relative.highest_held_title_tier
                 }
             }
+            add_character_flag = marriage_legitimacy_flag
         }
     }
 }
