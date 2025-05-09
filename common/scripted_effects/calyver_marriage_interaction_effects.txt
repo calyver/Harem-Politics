@@ -5175,7 +5175,7 @@ marriage_legitimacy_rank_effect = {
             $OTHER$ = {
                 # Check relatives first
                 every_close_family_member = {
-                    limit = {
+                    limit = { 
                         is_landed = yes
                         OR = {
                             # Include relatives that outrank RULER
@@ -5188,15 +5188,28 @@ marriage_legitimacy_rank_effect = {
                                 target = $RULER$
                                 value = 0
                             }
+                            # Special case: King's relative for Emperor
+                            AND = {
+                                highest_held_title_tier = tier_kingdom
+                                $RULER$ = {
+                                    highest_held_title_tier = tier_empire
+                                }
+                            }
                         }
                     }
-                    add_to_temporary_list = this
+                    add_to_temporary_list = marriage_rank_candidates
                 }
                 
                 # If no qualifying relatives found, check if OTHER qualifies
                 if = {
                     limit = {
                         is_landed = yes
+                        NAND = {  # Only check OTHER if no qualifying relatives found
+                            any_in_list = {
+                                list = marriage_rank_candidates
+                                always = yes
+                            }
+                        }
                         OR = {
                             # Include OTHER if they outrank RULER
                             tier_difference = {
@@ -5208,13 +5221,21 @@ marriage_legitimacy_rank_effect = {
                                 target = $RULER$
                                 value = 0
                             }
+                            # Special case: King for Emperor
+                            AND = {
+                                highest_held_title_tier = tier_kingdom
+                                $RULER$ = {
+                                    highest_held_title_tier = tier_empire
+                                }
+                            }
                         }
                     }
-                    add_to_temporary_list = this
+                    add_to_temporary_list = marriage_rank_candidates
                 }
                 
                 # Choose highest ranked from the list
                 ordered_in_list = {
+                    list = marriage_rank_candidates
                     order_by = highest_held_title_tier
                     save_scope_as = highest_ranked_relative
                 }
@@ -5240,14 +5261,26 @@ marriage_legitimacy_rank_effect = {
             else_if = {
                 limit = {
                     exists = scope:highest_ranked_relative
-                    scope:highest_ranked_relative = {
-                        tier_difference = {
-                            target = $RULER$
-                            value = 0  # Same rank
+                    OR = {
+                        # Same rank marriage
+                        scope:highest_ranked_relative = {
+                            tier_difference = {
+                                target = $RULER$
+                                value = 0
+                            }
+                        }
+                        # Special case: Emperor marrying King's relative
+                        AND = {
+                            $RULER$ = {
+                                highest_held_title_tier = tier_empire
+                            }
+                            scope:highest_ranked_relative = {
+                                highest_held_title_tier = tier_kingdom
+                            }
                         }
                     }
                 }
-                # Same rank marriage - minor gain multiplied by tier
+                # Same rank or Emperor-King case - minor gain multiplied by tier
                 add_legitimacy = {
                     value = minor_legitimacy_gain
                     multiply = scope:highest_ranked_relative.primary_title.tier
