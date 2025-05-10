@@ -3373,6 +3373,83 @@ offer_concubine = {
 		evaluate_action_increasing_house_unity = {
 			VALUE = 100
 		}
+
+		# Harem Politics modifiers
+		modifier = {
+			scope:recipient = {
+				has_trait = paranoid
+			}
+			add = -200
+			desc = AI_PARANOID_TRAIT_REASON
+		}
+		modifier = {
+			scope:recipient = {
+				has_trait = chaste
+			}
+			add = -50
+			desc = AI_CHASTE_TRAIT_REASON
+		}
+		modifier = {
+			scope:recipient = {
+				has_trait = celibate
+			}
+			add = -75
+			desc = AI_CELIBATE_TRAIT_REASON
+		}
+		modifier = {
+			add = -50
+			scope:actor = {
+				exists = house
+				top_liege ?= scope:recipient
+				government_has_flag = government_is_administrative
+			}
+			scope:recipient = {
+				exists = house
+				house != scope:recipient.house
+				government_has_flag = government_is_administrative
+			}
+			desc = AI_TOP_LIEGE_REASON
+		}
+		modifier = {
+			add = -25
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+				exists = top_liege
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				top_liege ?= scope:actor.top_liege
+				exists = house
+				house = {
+					is_powerful_family_trigger = yes
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			desc = AI_POWERFUL_HOUSE_REASON
+		}
+		modifier = {
+			add = -35
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+				exists = top_liege
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				top_liege ?= scope:actor.top_liege
+				exists = house
+				house = {
+					is_dominant_family_trigger = yes
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			desc = AI_DOMINANT_HOUSE_REASON
+		}
 	}
 
 	ai_potential = {
@@ -3388,7 +3465,7 @@ offer_concubine = {
 
 	ai_will_do = {
 		base = 0
-		
+
 		modifier = { # Basic Filtering
 			add = 100
 			scope:recipient = {
@@ -3540,6 +3617,87 @@ offer_concubine = {
 				NOR = {
 					has_relation_friend = scope:actor
 					has_relation_best_friend = scope:actor
+				}
+			}
+		}
+
+		# Harem Politics modifiers
+		modifier = { # More likely if both are administrative and recipient's house is important
+			add = 50
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				house ?= {
+					OR = {
+						is_powerful_family_trigger = yes
+						is_dominant_family_trigger = yes
+					}
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+			}
+		}
+		modifier = { # More likely if both are administrative and recipient's house is important
+			add = 75
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				house ?= {
+					any_house_member = {
+						is_independent_ruler = yes
+						government_has_flag = government_is_administrative
+						any_vassal_or_below = {
+							this = scope:actor
+						}
+					}
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+			}
+		}
+		modifier = { # More likely if the secondary_actor is not actor's child
+			add = 25
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				house ?= {
+					OR = {
+						is_powerful_family_trigger = yes
+						is_dominant_family_trigger = yes
+						any_house_member = {
+							is_independent_ruler = yes
+							government_has_flag = government_is_administrative
+							any_vassal_or_below = {
+								this = scope:actor
+							}
+						}
+					}
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+				NOT = {
+					is_child_of = scope:actor
 				}
 			}
 		}
