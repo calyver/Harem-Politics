@@ -3396,39 +3396,35 @@ offer_concubine = {
 			add = -75
 			desc = AI_CELIBATE_TRAIT_REASON
 		}
+
 		modifier = {
 			add = -50
 			scope:actor = {
 				exists = house
-				top_liege ?= scope:recipient
-				government_has_flag = government_is_administrative
-			}
-			scope:recipient = {
-				exists = house
-				house != scope:recipient.house
-				government_has_flag = government_is_administrative
-			}
-			desc = AI_TOP_LIEGE_REASON
-		}
-		modifier = {
-			add = -25
-			scope:actor = {
-				government_has_flag = government_is_administrative
-				exists = house
 				exists = top_liege
+				top_liege.house ?= {
+					any_house_member = {
+						this = scope:recipient
+					}
+				}
+				government_has_flag = government_is_administrative
 			}
 			scope:recipient = {
-				government_has_flag = government_is_administrative
-				top_liege ?= scope:actor.top_liege
 				exists = house
-				house = {
-					is_powerful_family_trigger = yes
-					NOT = {
-						this = scope:actor.house
+				house != scope:actor.house
+				government_has_flag = government_is_administrative
+				OR = { # Same realm check
+					top_liege ?= scope:actor.top_liege
+					AND = {
+						exists = top_liege
+						top_liege = scope:actor.top_liege
 					}
 				}
 			}
-			desc = AI_POWERFUL_HOUSE_REASON
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+			}
+			desc = AI_TOP_LIEGE_REASON
 		}
 		modifier = {
 			add = -35
@@ -3436,11 +3432,14 @@ offer_concubine = {
 				government_has_flag = government_is_administrative
 				exists = house
 				exists = top_liege
+				top_liege.house ?= {
+					NOT = { this = scope:actor.house }
+				}
 			}
 			scope:recipient = {
 				government_has_flag = government_is_administrative
-				top_liege ?= scope:actor.top_liege
 				exists = house
+				top_liege ?= scope:actor.top_liege
 				house = {
 					is_dominant_family_trigger = yes
 					NOT = {
@@ -3448,7 +3447,36 @@ offer_concubine = {
 					}
 				}
 			}
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+			}
 			desc = AI_DOMINANT_HOUSE_REASON
+		}
+		modifier = {
+			add = -25
+			scope:actor = {
+				government_has_flag = government_is_administrative
+				exists = house
+				exists = top_liege
+				top_liege.house ?= {
+					NOT = { this = scope:actor.house }
+				}
+			}
+			scope:recipient = {
+				government_has_flag = government_is_administrative
+				exists = house
+				top_liege ?= scope:actor.top_liege
+				house = {
+					is_powerful_family_trigger = yes
+					NOT = {
+						this = scope:actor.house
+					}
+				}
+			}
+			scope:secondary_actor = {
+				house ?= scope:actor.house
+			}
+			desc = AI_POWERFUL_HOUSE_REASON
 		}
 	}
 
@@ -3627,9 +3655,11 @@ offer_concubine = {
 			scope:actor = {
 				government_has_flag = government_is_administrative
 				exists = house
+				exists = top_liege
 			}
 			scope:recipient = {
 				government_has_flag = government_is_administrative
+				top_liege ?= scope:actor.top_liege
 				house ?= {
 					OR = {
 						is_powerful_family_trigger = yes
@@ -3649,56 +3679,27 @@ offer_concubine = {
 			scope:actor = {
 				government_has_flag = government_is_administrative
 				exists = house
+				exists = top_liege
 			}
 			scope:recipient = {
 				government_has_flag = government_is_administrative
-				house ?= {
-					any_house_member = {
-						is_independent_ruler = yes
-						government_has_flag = government_is_administrative
-						any_vassal_or_below = {
-							this = scope:actor
-						}
-					}
-					NOT = {
-						this = scope:actor.house
-					}
-				}
-			}
-			scope:secondary_actor = {
-				house ?= scope:actor.house
-			}
-		}
-		modifier = { # More likely if the secondary_actor is not actor's child
-			add = 25
-			scope:actor = {
-				government_has_flag = government_is_administrative
-				exists = house
-			}
-			scope:recipient = {
-				government_has_flag = government_is_administrative
-				house ?= {
-					OR = {
-						is_powerful_family_trigger = yes
-						is_dominant_family_trigger = yes
-						any_house_member = {
-							is_independent_ruler = yes
-							government_has_flag = government_is_administrative
-							any_vassal_or_below = {
-								this = scope:actor
+				OR = { # Same realm check
+					this = scope:actor.top_liege
+					AND = {
+						top_liege ?= scope:actor.top_liege
+						house ?= {
+							any_house_member = {
+								this = scope:actor.top_liege
+							}
+							NOT = {
+								this = scope:actor.house
 							}
 						}
 					}
-					NOT = {
-						this = scope:actor.house
-					}
 				}
 			}
 			scope:secondary_actor = {
 				house ?= scope:actor.house
-				NOT = {
-					is_child_of = scope:actor
-				}
 			}
 		}
 	}
