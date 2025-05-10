@@ -5060,65 +5060,12 @@ concubine_offer_on_accept_effect = {
 
 				if = {
 					limit = {
-						government_has_flag = government_has_influence
-						exists = house
-						exists = top_liege
 						NOT = { has_character_flag = received_influence_offer_concubine_flag }
-						scope:secondary_actor = {
-							house ?= scope:actor.house
-						}
-						scope:recipient = {
-							government_has_flag = government_has_influence
-							exists = house
-
-							OR = { # Same realm check
-								top_liege ?= scope:actor.top_liege
-								this = scope:actor.top_liege
-							}
-							
-							house = {
-								NOT = { this = scope:actor.house }
-								OR = {
-									AND = {
-										OR = {
-											is_powerful_family = yes
-											is_dominant_family = yes
-										}
-									}
-									any_house_member = {
-										this = scope:actor.top_liege
-									}
-								}
-							}
-						}
 					}
-					change_influence = {
-						value = 20
-						if = {
-							limit = {
-								scope:recipient = {
-									is_independent_ruler = yes
-									this = scope:actor.top_liege
-								}
-								scope:secondary_actor = {
-									is_close_family_of = scope:actor
-								}
-							}
-							multiply = 2
-						}
-						else_if = {
-							limit = {
-								scope:recipient.house = {
-									OR = {	
-										is_dominant_family = yes
-										any_house_member = {
-											this = scope:actor.top_liege
-										}
-									}
-								}
-							}
-							multiply = 1.5
-						}
+					gain_influence_harem_politics_effect = {
+						RECIPIENT = scope:actor
+						CHARACTER = scope:recipient
+						TARGET = scope:secondary_actor
 					}
 					add_character_flag = {
 						flag = received_influence_offer_concubine_flag
@@ -5620,6 +5567,77 @@ child_demotion_effect = {
 				}
 				else = {
 					add_trait = child_of_concubine_male
+				}
+			}
+		}
+	}
+}
+
+gain_influence_harem_politics_effect = {
+	# RECIPIENT is the character receiving fluence
+	# TARGET is offered consort
+	# CHARACTER is the character receiving the TARGET
+	$RECIPIENT$ = {
+		if = {
+			limit = {
+				government_has_flag = government_has_influence
+				exists = house
+				exists = top_liege
+				NOT = { has_character_flag = received_influence_offer_concubine_flag }
+				$TARGET$ = {
+					house ?= $RECIPIENT$.house
+				}
+				$CHARACTER$ = {
+					government_has_flag = government_has_influence
+					exists = house
+
+					OR = { # Same realm check
+						top_liege ?= $RECIPIENT$.top_liege
+						this = $RECIPIENT$.top_liege
+					}
+					
+					house = {
+						NOT = { this = $RECIPIENT$.house }
+						OR = {
+							AND = {
+								OR = {
+									is_powerful_family = yes
+									is_dominant_family = yes
+								}
+							}
+							any_house_member = {
+								this = $RECIPIENT$.top_liege
+							}
+						}
+					}
+				}
+			}
+			change_influence = {
+				value = 20
+				if = {
+					limit = {
+						$CHARACTER$ = {
+							is_independent_ruler = yes
+							this = $RECIPIENT$.top_liege
+						}
+						$TARGET$ = {
+							is_close_family_of = $RECIPIENT$
+						}
+					}
+					multiply = 2
+				}
+				else_if = {
+					limit = {
+						$CHARACTER$.house = {
+							OR = {	
+								is_dominant_family = yes
+								any_house_member = {
+									this = $RECIPIENT$.top_liege
+								}
+							}
+						}
+					}
+					multiply = 1.5
 				}
 			}
 		}
