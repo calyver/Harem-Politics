@@ -13,9 +13,11 @@ demand_concubine_interaction = {
 			if = {
 				limit = { 
 					NAND = {
-						government_has_flag = government_is_administrative 
+						scope:actor = {
+							government_has_flag = government_has_influence 
+						}
 						scope:recipient = {
-							government_has_flag = government_is_administrative 
+							government_has_flag = government_has_influence 
 							is_vassal_or_below_of = scope:actor
 						}
 					}
@@ -105,24 +107,31 @@ demand_concubine_interaction = {
 			value = 0
 			if = {
 				limit = { 
-					government_has_flag = government_is_administrative 
+					scope:actor = {
+						government_has_flag = government_has_influence 
+						exists = house
+					}
 					scope:recipient = {
-						government_has_flag = government_is_administrative 
+						government_has_flag = government_has_influence 
 						is_vassal_or_below_of = scope:actor
+						exists = house
+						house = {	
+							NOT = { this = scope:actor.house}
+						}
 					}
 				}
 				add = {
-					if = {
+					if = { # Demanding to the Imperial Family
 						limit = {
-							scope:recipient = {
-								exists = house
+							scope:recipient.house = {
 								any_house_member = {
 									is_independent_ruler = yes
-									government_has_flag = government_is_administrative 
-									any_vassal_or_below = {
-										OR = {
-											this = scope:actor
-											this = scope:recipient
+										government_has_flag = government_has_influence 
+										any_vassal_or_below = {
+											OR = {
+												this = scope:actor
+												this = scope:recipient
+											}
 										}
 									}
 								}
@@ -132,7 +141,7 @@ demand_concubine_interaction = {
 					}
 					else_if = {
 						limit = {
-							scope:recipient.house ?= {
+							scope:recipient.house = {
 								is_dominant_family = yes
 							}
 						}
@@ -140,7 +149,7 @@ demand_concubine_interaction = {
 					}
 					else_if = {
 						limit = {
-							scope:recipient.house ?= {
+							scope:recipient.house = {
 								is_powerful_family = yes
 							}
 						}
@@ -148,10 +157,12 @@ demand_concubine_interaction = {
 					}
 					else_if = {
 						limit = {
-							house ?= {
-								is_powerful_family = no
+							scope:actor = {
+								house = {
+									is_powerful_family = no
+								}
 							}
-							scope:recipient.house ?= {
+							scope:recipient.house = {
 								is_powerful_family = no
 							}
 						}
