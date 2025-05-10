@@ -5575,3 +5575,98 @@ demand_concubine_interaction_on_accept_effect = {
 		}
 	}
 }
+
+child_consort_trait_manager_effect = {
+	# PARENT_1 is the "actor" (the partner/ruler)
+	# PARENT_2 is the "recipient" (the concubine/spouse)
+	
+	$PARENT_2$ = {
+		# Check if PARENT_2 is PARENT_1's consort
+		if = {
+			limit = {
+				is_consort_of = $PARENT_1$
+				any_child = {
+					is_child_of = $PARENT_1$
+					is_alive = yes
+					OR = {
+						has_any_bastard_trait_trigger = yes
+						has_trait = bastard_founder
+					}
+				}
+			}
+			every_child = {
+				limit = {
+					is_child_of = $PARENT_1$
+					is_alive = yes
+				}
+				if = {
+					limit = {
+						has_any_bastard_trait_trigger = yes
+					}
+					remove_all_bastard_traits = yes
+				}
+				if = {
+					limit = {
+						has_trait = bastard_founder
+					}
+					remove_trait = bastard_founder
+				}
+				if = {
+					limit = {
+						$PARENT_2$ = {
+							is_concubine_of = $PARENT_1$
+						}
+					}
+					if = {
+						limit = {
+							$PARENT_2$ = {
+								is_female = yes
+							}
+						}
+						add_trait = child_of_concubine_female
+					}
+					else = {
+						add_trait = child_of_concubine_male
+					}
+				}
+				else_if = {
+					limit = {
+						$PARENT_1$ = {
+							is_concubine_of = $PARENT_2$
+						}
+					}
+					if = {
+						limit = {
+							$PARENT_1$ = {
+								is_female = yes
+							}
+						}
+						add_trait = child_of_concubine_female
+					}
+					else = {
+						add_trait = child_of_concubine_male
+					}
+				}
+				else_if = {
+					limit = {
+						$PARENT_1$ = {
+							is_spouse_of = $PARENT_2$
+						}
+					}
+					if = {
+						limit = {
+							has_trait = child_of_concubine_female
+						}
+						remove_trait = child_of_concubine_female
+					}
+					else_if = {
+						limit = {
+							has_trait = child_of_concubine_male
+						}
+						remove_trait = child_of_concubine_male
+					}
+				}
+			}
+		}
+	}
+}
