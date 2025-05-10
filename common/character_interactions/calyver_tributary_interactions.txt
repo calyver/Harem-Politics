@@ -7,6 +7,164 @@ demand_concubine_interaction = {
 
 	desc = demand_concubine_interaction_desc
 
+	cost = {
+		prestige = {
+			value = 0
+			if = {
+				limit = { 
+					NAND = {
+						government_has_flag = government_is_administrative 
+						scope:recipient = {
+							government_has_flag = government_is_administrative 
+							is_vassal_or_below_of = scope:actor
+						}
+					}
+				}
+				add = {
+					if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value >= 3
+								}
+							}
+						}
+						add = miniscule_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 2
+								}
+							}
+						}
+						add = minor_prestige_value	
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 1
+								}
+							}
+						}
+						add = 100	
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 0
+								}
+							}
+						}
+						add = medium_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = -1
+								}
+							}
+						}
+						add = major_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = -2
+								}
+							}
+						}
+						add = massive_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value <= -3
+								}
+							}
+						}
+						add = monumental_prestige_value
+					}
+				}
+			}
+		}
+		influence = {
+			value = 0
+			if = {
+				limit = { 
+					government_has_flag = government_is_administrative 
+					scope:recipient = {
+						government_has_flag = government_is_administrative 
+						is_vassal_or_below_of = scope:actor
+					}
+				}
+				add = {
+					if = {
+						limit = {
+							scope:recipient = {
+								exists = house
+								any_house_member = {
+									is_independent_ruler = yes
+									government_has_flag = government_is_administrative 
+									any_vassal_or_below = {
+										OR = {
+											this = scope:actor
+											this = scope:recipient
+										}
+									}
+								}
+							}
+						}
+						add = monumental_influence_value
+					}
+					else_if = {
+						limit = {
+							scope:recipient.house ?= {
+								is_dominant_family = yes
+							}
+						}
+						add = massive_influence_value
+					}
+					else_if = {
+						limit = {
+							scope:recipient.house ?= {
+								is_powerful_family = yes
+							}
+						}
+						add = major_influence_value
+					}
+					else_if = {
+						limit = {
+							house ?= {
+								is_powerful_family = no
+							}
+							scope:recipient.house ?= {
+								is_powerful_family = no
+							}
+						}
+						add = medium_influence_value
+					}
+					else = {
+						add = minor_influence_value
+					}
+				}
+			}
+		}
+	}
+
 	ai_targets = {
 		ai_recipients = tributaries
 		ai_recipients = vassals
