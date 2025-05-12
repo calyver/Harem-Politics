@@ -303,27 +303,29 @@ harem_politics_valid_bride_show_subject_trigger = {
 
 harem_politics_is_valid_bride_show_subject_trigger = {
     harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
-	if = {
+	trigger_if = {
 		limit = {
 			$OVERLORD$ = {
 				government_has_flag = government_is_nomadic
 			}
 		}
 		#Nothing else to check
+		always = yes
 	}
-    else_if = { # Dukes
+    trigger_else_if = { # Dukes
         limit = { $OVERLORD$ = { highest_held_title_tier = tier_duchy } }
-        if = { # Only sovereigns can host a bride show
+        trigger_if = { # Only sovereigns can host a bride show
             limit = { 
 				$OVERLORD$ = { 
 					government_allows = administrative
-					is_governor = no 
-					is_independent_ruler = yes
 				}
 			}
-            #Nothing else to check
+            $OVERLORD$ = {
+				is_governor = no
+				is_independent_ruler = yes
+			}
         }
-        else_if = { # Feudal/Clan/Tribal Duke
+        trigger_else_if = { # Feudal/Clan/Tribal Duke
             limit = { 
 				$OVERLORD$ = { 
 					NOR = { 
@@ -332,7 +334,7 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					} 
 				} 
 			}
-            if = { # Low Authority
+            trigger_if = { # Low Authority
                 limit = { 
 					$OVERLORD$ = { 
 						OR = { 
@@ -341,14 +343,17 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 						}
 					} 
 				}
-				if = {
+				trigger_if = {
 					limit = {
 						is_vassal_of = $OVERLORD$
 					}
 					is_powerful_vassal = no
 				}
+				trigger_else = { #Nothing else to check
+					always = yes
+				}
             }
-			else_if = { #Limited Authority+
+			trigger_else_if = { #Limited Authority+
 				limit = {
 					$OVERLORD$ = {
 						NOR = {
@@ -358,29 +363,38 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					}
 				}
 				#Nothing else to check
+				always = yes
+			}
+			trigger_else = { #Nothing else to check
+				always = yes
 			}
         }
+		trigger_else = { #Nothing else to check
+			always = no
+		}
     }
-    else_if = { # Kings
+    trigger_else_if = { # Kings
         limit = { $OVERLORD$ = { highest_held_title_tier = tier_kingdom } }
-        if = { # Administrative King
+        trigger_if = { # Administrative King
             limit = { 
 				$OVERLORD$ = { 
 					government_allows = administrative 
-					is_independent_ruler = yes
 				} 
 			}
-            if = { # Low Imperial Bureaucracy
+			$OVERLORD$ = {
+				is_independent_ruler = yes
+			}
+            trigger_if = { # Low Imperial Bureaucracy
                 limit = { 
 					$OVERLORD$ = { 
 						has_realm_law = imperial_bureaucracy_0 
 					} 
 				}
-				if = {
+				trigger_if = {
 					limit = {
 						is_vassal_of = $OVERLORD$
 					}
-					if = {
+					trigger_if = {
 						limit = { 
 							government_allows = administrative 
 						}
@@ -389,187 +403,52 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 							is_powerful_family = no
 						}
 					}
-					else = {
+					trigger_else = {
 						is_powerful_vassal = no
 						highest_held_title_tier <= tier_county
 					}
 				}
-				else = { #Nothing else to check
-
+				trigger_else = { #Nothing else to check
+					always = yes
 				}
             }
-            else_if = { # Limited Imperial Bureaucracy
+            trigger_else_if = { # Limited Imperial Bureaucracy
                 limit = { 
 					$OVERLORD$ = { 
 						has_realm_law = imperial_bureaucracy_1 
 					} 
 				}
-				if = {
+				trigger_if = {
 					limit = {
 						is_vassal_of = $OVERLORD$
 					}
-					if = {
+					trigger_if = {
 						limit = { government_allows = administrative }
 						house ?= { 
 							is_dominant_family = no 
 						}
 					}
-					else = { is_powerful_vassal = no }
+					trigger_else = { is_powerful_vassal = no }
 				}
-				else = { #Nothing else to check
-
+				trigger_else = { #Nothing else to check
+					always = yes
 				}
             }
-            else_if = { # High Imperial Bureaucracy+
-                limit = { 
-					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = imperial_bureaucracy_2 
-							has_realm_law = imperial_bureaucracy_3 
-						} 
-					} 
-				}
+            trigger_else = { # High Imperial Bureaucracy+
                 #Nothing else to check
+				always = yes
             }
         }
-        else_if = { # Feudal/Clan/Tribal King
+        trigger_else_if = { # Feudal/Clan/Tribal King
             limit = { 
 				$OVERLORD$ = {
-					NOR = { 
+					NOR = {
 						government_allows = administrative 
 						government_has_flag = government_is_nomadic 
-					} 
-				} 
-			}
-            if = { # Low Authority
-                limit = { 
-					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = crown_authority_0 
-							has_realm_law = tribal_authority_0 
-						} 
-					} 
-				}
-				if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					is_powerful_vassal = no
-					highest_held_title_tier <= tier_county
-				}
-            }
-            else_if = { # Limited Authority
-                limit = { 
-					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = crown_authority_1 
-							has_realm_law = tribal_authority_1 
-						} 
-					} 
-				}
-				if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					is_powerful_vassal = no
-				}
-				else = { #Nothing else to check
-
-				}
-            }
-			else = { #Nothing else to check
-
-			}
-        }
-    }
-    else_if = { # Emperors
-        limit = { 
-			$OVERLORD$ = { 
-				highest_held_title_tier = tier_empire 
-			} 
-		}
-        if = { # Administrative Emperor
-            limit = { 
-				$OVERLORD$ = { 
-					government_allows = administrative 
-				} 
-			}
-            if = { # Low Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_0 
-					} 
-				}
-				if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					if = {
-						limit = {
-							government_allows = administrative
-						}
-						house ?= { 
-							is_dominant_family = no 
-							is_powerful_family = no
-						}
-					}
-					else = {
-						is_powerful_vassal = no
-						highest_held_title_tier <= tier_duchy
-					}
-				}
-				else = { #Nothing else to check
-
-				}
-            }
-            else_if = { # Limited Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_1 
-					} 
-				}
-				if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					if = {
-						limit = {
-							government_allows = administrative
-						}
-						house ?= { 
-							is_dominant_family = no
-						}
-					}
-					else = {
-						is_powerful_vassal = no
-					}
-				}
-				else = { #Nothing else to check
-
-				}
-            }
-            else_if = { # High Imperial Bureaucracy+
-                limit = { 
-					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = imperial_bureaucracy_2 
-							has_realm_law = imperial_bureaucracy_3 
-						} 
-					} 
-				}
-                always = yes
-            }
-        }
-        else_if = { # Feudal/Clan/Tribal Emperor
-            limit = { 
-				$OVERLORD$ = { 
-					NOR = {
-						government_allows = administrative
-						government_has_flag = government_is_nomadic
 					}
 				} 
 			}
-            if = { # Low Authority
+            trigger_if = { # Low Authority
                 limit = { 
 					$OVERLORD$ = { 
 						OR = {
@@ -578,18 +457,144 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 						}
 					} 
 				}
-				if = {
+				trigger_if = {
+					limit = {
+						is_vassal_of = $OVERLORD$
+					}
+					is_powerful_vassal = no
+					highest_held_title_tier <= tier_county
+				}
+				trigger_else = { #Nothing else to check
+					always = yes
+				}
+            }
+            trigger_else_if = { # Limited Authority
+                limit = { 
+					$OVERLORD$ = { 
+						OR = { 
+							has_realm_law = crown_authority_1 
+							has_realm_law = tribal_authority_1 
+						} 
+					} 
+				}
+				trigger_if = {
+					limit = {
+						is_vassal_of = $OVERLORD$
+					}
+					is_powerful_vassal = no
+				}
+				trigger_else = { #Nothing else to check
+					always = yes
+				}
+            }
+			trigger_else = { #Nothing else to check
+				always = yes
+			}
+        }
+		trigger_else = { #Nothing else to check
+			always = no
+		}
+    }
+    trigger_else_if = { # Emperors
+        limit = { 
+			$OVERLORD$ = { 
+				highest_held_title_tier = tier_empire 
+			} 
+		}
+        trigger_if = { # Administrative Emperor
+            limit = { 
+				$OVERLORD$ = { 
+					government_allows = administrative 
+				} 
+			}
+            trigger_if = { # Low Imperial Bureaucracy
+                limit = { 
+					$OVERLORD$ = { 
+						has_realm_law = imperial_bureaucracy_0 
+					} 
+				}
+				trigger_if = {
+					limit = {
+						is_vassal_of = $OVERLORD$
+					}
+					trigger_if = {
+						limit = {
+							government_allows = administrative
+						}
+						house ?= { 
+							is_dominant_family = no 
+							is_powerful_family = no
+						}
+					}
+					trigger_else = {
+						is_powerful_vassal = no
+						highest_held_title_tier <= tier_duchy
+					}
+				}
+				trigger_else = { #Nothing else to check
+					always = yes
+				}
+            }
+            trigger_else_if = { # Limited Imperial Bureaucracy
+                limit = { 
+					$OVERLORD$ = { 
+						has_realm_law = imperial_bureaucracy_1 
+					} 
+				}
+				trigger_if = {
+					limit = {
+						is_vassal_of = $OVERLORD$
+					}
+					trigger_if = {
+						limit = {
+							government_allows = administrative
+						}
+						house ?= { 
+							is_dominant_family = no
+						}
+					}
+					trigger_else = {
+						is_powerful_vassal = no
+					}
+				}
+				trigger_else = { #Nothing else to check
+					always = yes
+				}
+            }
+            trigger_else = { # High Imperial Bureaucracy+
+                always = yes
+            }
+        }
+        trigger_else_if = { # Feudal/Clan/Tribal Emperor
+            limit = { 
+				$OVERLORD$ = { 
+					NOR = {
+						government_allows = administrative
+						government_has_flag = government_is_nomadic
+					}
+				} 
+			}
+            trigger_if = { # Low Authority
+                limit = { 
+					$OVERLORD$ = { 
+						OR = {
+							has_realm_law = crown_authority_0
+							has_realm_law = tribal_authority_0
+						}
+					} 
+				}
+				trigger_if = {
 					limit = {
 						is_vassal_of = $OVERLORD$
 					}
 					is_powerful_vassal = no
 					highest_held_title_tier <= tier_duchy
 				}
-				else = { #Nothing else to check
+				trigger_else = { #Nothing else to check
 					always = yes
 				}
             }
-            else_if = { # Limited Authority
+            trigger_else_if = { # Limited Authority
                 limit = { 
 					$OVERLORD$ = { 
 						OR = {
@@ -598,17 +603,20 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 						}
 					} 
 				}
-				if = {
+				trigger_if = {
 					limit = {
 						is_vassal_of = $OVERLORD$
 					}
 					is_powerful_vassal = no
 				}
-				else = { #Nothing else to check
+				trigger_else = { #Nothing else to check
 					always = yes
 				}
             }
-            else = { always = yes }
+            trigger_else = { always = yes }
         }
+		trigger_else = { #Nothing else to check
+			always = no
+		}
     }
 }
