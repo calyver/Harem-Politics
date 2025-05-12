@@ -3418,96 +3418,69 @@ offer_concubine = {
 		}
 
 		modifier = {
-			add = {
-				value = -150
-				if = {
-					limit = {
-						scope:recipient = {
-							has_trait = ambitious
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines < number_of_desired_concubines
-						}
-					}
-					add = 25
-				}
-			}
 			scope:actor = {
-				exists = house
-				exists = top_liege
 				government_has_flag = government_has_influence
+				exists = top_liege
 			}
 			scope:recipient = {
 				exists = house
-				house != scope:actor.house
 				government_has_flag = government_has_influence
-				OR = { # Same realm check
-					this = scope:actor.top_liege # Recipient is actor's top liege
-					AND = {
-						top_liege ?= scope:actor.top_liege # Same top liege
-						exists = scope:actor.top_liege.house
-						house ?= scope:actor.top_liege.house # Recipient is member of top liege's house
-					}
-				}
-			}
-			scope:secondary_actor.house ?= scope:actor.house
-			desc = AI_TOP_LIEGE_REASON
-		}
-		modifier = {
-			add = {
-				value = -125
-				if = {
-					limit = {
-						scope:recipient = {
-							has_trait = ambitious
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines < number_of_desired_concubines
-						}
-					}
-					add = 25
-				}
-			}
-			scope:actor = {
-				government_has_flag = government_has_influence
-				exists = house
-				exists = top_liege
-				top_liege.house ?= {
-					NOT = { this = scope:actor.house }
-				}
-			}
-			scope:recipient = {
-				government_has_flag = government_has_influence
-				exists = house
-				top_liege ?= {
+				OR = {
 					this = scope:actor.top_liege
-					house ?= {
-						NOT = { this = scope:recipient.house }
-					}
+					top_liege ?= scope:actor.top_liege
 				}
-				house = {
-					is_dominant_family = yes
-					NOT = {
-						this = scope:actor.house
+				house ?= {
+					OR = {
+						is_powerful_family = yes
+						is_dominant_family = yes
 					}
 				}
 			}
 			scope:secondary_actor.house ?= scope:actor.house
-			desc = AI_DOMINANT_HOUSE_REASON
-		}
-		modifier = {
 			add = {
-				value = -100
+				value = -120
+				if = {
+					limit = {
+						scope:actor = {
+							exists = house
+							exists = top_liege
+							government_has_flag = government_has_influence
+						}
+						scope:recipient = {
+							exists = house
+							house != scope:actor.house
+							government_has_flag = government_has_influence
+							OR = { # Imperial Family check
+								this = scope:actor.top_liege # Recipient is actor's top liege
+								AND = {
+									top_liege ?= scope:actor.top_liege # Same top liege
+									exists = scope:actor.top_liege.house
+									house ?= scope:actor.top_liege.house # Recipient is member of top liege's house
+								}
+							}
+						}
+					}
+					add = -30 # Strong penalty for Imperial Family
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							government_has_flag = government_has_influence
+							exists = house
+							exists = top_liege
+						}
+						scope:recipient = {
+							government_has_flag = government_has_influence
+							exists = house
+							top_liege ?= scope:actor.top_liege # Same realm check
+							house = {
+								is_dominant_family = yes
+								NOT = { this = scope:actor.house }
+							}
+						}
+					}
+					add = -15 # Penalty for dominant family
+				}
 				if = {
 					limit = {
 						scope:recipient = {
@@ -3522,35 +3495,10 @@ offer_concubine = {
 							number_of_concubines < number_of_desired_concubines
 						}
 					}
-					add = 25
+					add = 15
 				}
 			}
-			scope:actor = {
-				government_has_flag = government_has_influence
-				exists = house
-				exists = top_liege
-				top_liege.house ?= {
-					NOT = { this = scope:actor.house }
-				}
-			}
-			scope:recipient = {
-				government_has_flag = government_has_influence
-				exists = house
-				top_liege ?= {
-					this = scope:actor.top_liege
-					house ?= {
-						NOT = { this = scope:recipient.house }
-					}
-				}
-				house = {
-					is_powerful_family = yes
-					NOT = {
-						this = scope:actor.house
-					}
-				}
-			}
-			scope:secondary_actor.house ?= scope:actor.house
-			desc = AI_POWERFUL_HOUSE_REASON
+			desc = AI_FAMILY_STATUS_REASON
 		}
 		modifier = {
 			add = 40
