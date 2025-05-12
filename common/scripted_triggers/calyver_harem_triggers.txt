@@ -169,3 +169,93 @@ accepts_concubinage = {
 		}
 	}
 }
+
+is_head_of_the_harem_trigger = {
+	is_female = yes
+	liege ?= {
+		this = $LIEGE$
+	}
+	trigger_if = {
+		limit = {
+			$LIEGE$.religion = religion:islam_religion
+		}
+		trigger_if = { #Liege's mother is always the head of the harem
+			limit = {
+				$LIEGE$.mother ?= {
+					is_alive = yes
+				}
+			}
+			this = $LIEGE$.mother
+		}
+		trigger_else_if = { #Unmarried paternal aunt
+			limit = {
+				$LIEGE$ = {
+					father ?= {
+						any_sibling = {
+							is_female = yes
+							is_alive = yes
+							is_married = no
+						}
+					}
+				}
+
+			}
+			any_sibling = {
+				any_child = {
+					this = $LIEGE$
+				}
+			}
+			is_alive = yes
+			is_married = no
+		}
+		trigger_else_if = { #The primary spouse
+			limit = {
+				$LIEGE$ = {
+					exists = $LIEGE$.primary_spouse
+				}
+			}
+			this = $LIEGE$.primary_spouse
+		}
+		trigger_else_if = { #The grand consort
+			limit = {
+				$LIEGE$ = {
+					employs_court_position = grand_consort_court_position
+				}
+			}
+			has_court_position = grand_consort_court_position
+		}
+		trigger_else = { #Just any spouse
+			is_spouse_of = $LIEGE$
+		}
+	}
+	trigger_else = {
+		trigger_if = { #The primary spouse
+			limit = {
+				$LIEGE$ = {
+					exists = $LIEGE$.primary_spouse
+				}
+			}
+			this = $LIEGE$.primary_spouse
+		}
+		trigger_else_if = { #The grand consort
+			limit = {
+				$LIEGE$ = {
+					employs_court_position = grand_consort_court_position
+				}
+			}
+			has_court_position = grand_consort_court_position
+		}
+		trigger_else_if = { #Liege's mother
+			limit = {
+				$LIEGE$.mother ?= {
+					is_alive = yes
+				}
+			}
+			this = $LIEGE$.mother
+		}
+		trigger_else = { #Just any spouse
+			is_spouse_of = $LIEGE$
+		}
+	}
+}
+
