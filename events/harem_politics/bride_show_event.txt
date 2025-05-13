@@ -15,14 +15,16 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 	is_married = no
 	is_concubine = no
 	is_imprisoned = no
-	OR = {
-		AND = { #If they aren't betrothed, you can arrange a marriage with them
+	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
+		limit = {
 			age = 15
-			exists = betrothed
-			root = {
-				is_ai = no
-			}
 		}
+		exists = betrothed
+		root = {
+			is_ai = no
+		}
+	}
+	trigger_else = {
 		age >= 16
 	}
 	age <= 22
@@ -88,26 +90,30 @@ scripted_trigger bride_show_viable_candidate_trigger = {
 
 		has_trait = pregnant
 	}
-	OR = { #Beauty parameters
-		AND = { #Beauty matters
-			NOT = { 
-				has_trait = beauty_bad
+	trigger_if = { #Beauty parameters
+		limit = {
+			OR = { #Tributaries would never send ugly candidates
+				exists = local_var:beauty_important
+				court_owner ?= {
+					is_tributary_of = scope:liege
+				}
 			}
-			exists = local_var:beauty_important
 		}
-		NOT = { 
-			exists = local_var:beauty_important
+		NOT = {
+			has_trait = beauty_bad
 		}
 	}
-	OR = { #Intellect parameters
-		AND = { #Intellect matters
-			NOT = { 
-				has_trait = intellect_bad
+	trigger_if = { #Intellectual parameters
+		limit = {
+			OR = { #Tributaries would never send stupid candidates
+				exists = local_var:personality_skills_important
+				court_owner ?= {
+					is_tributary_of = scope:liege
+				}
 			}
-			exists = local_var:personality_skills_important
 		}
-		NOT = { 
-			exists = local_var:personality_skills_important
+		NOT = {
+			has_trait = intellect_bad
 		}
 	}
 	can_take_as_concubine_character_trigger = { CHARACTER = root }
@@ -2960,33 +2966,187 @@ bride_show.0007 = {
 		}
 	}
 	desc = {
-		desc = bride_show.0007.desc.start
 		first_valid = {
-			triggered_desc = { #Neutral
-			    trigger = {
-					scope:liege = {
-						allowed_to_marry_same_sex_trigger = yes
-					}
+			triggered_desc = { #Vassals
+				trigger = {
+					is_vassal_of = scope:liege
 				}
-				desc = bride_show.0007.desc.individual
+				desc = bride_show.0007.start_vassal.desc
 			}
-			triggered_desc = { #Bachelor
-			    trigger = {
-					scope:liege = {
-						is_female = yes
-					}
-				}
-				desc = bride_show.0007.desc.bachelor
-			}
-			#Maiden
-			desc = bride_show.0007.desc.maiden
+			#Tributaries
+			desc = bride_show.0007.start_tributary.desc
 		}
-		desc = bride_show.0007.desc.end
+		desc = bride_show.0007.desc.request
+		first_valid = {
+			triggered_desc = { #Vassal
+				trigger = {
+					is_vassal_of = scope:liege
+				}
+				desc = bride_show.0007.end_vassal.desc
+			}
+			#Tributary
+			desc = bride_show.0007.end_tributary.desc
+		}
 	}
 	sender = scope:liege
 
+	trigger = {
+		harem_politics_is_valid_bride_show_subject_trigger = {
+			OVERLORD = scope:liege
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = { 
+				is_vassal_of = scope:liege
+				OR = { 
+					culture = { has_cultural_pillar = heritage_east_slavic }
+					culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+					culture = { has_cultural_tradition = tradition_legalistic }
+					accepts_concubinage = yes
+					accepts_polygamy = yes
+				}
+			}
+			add_opinion = {
+				target = scope:liege
+				modifier = bride_show_vassal_opinion
+				opinion = -20
+			}
+		}
+		else_if = {
+			limit = {
+				NOR = { 
+					culture = { has_cultural_pillar = heritage_east_slavic }
+					culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+					culture = { has_cultural_tradition = tradition_legalistic }
+					accepts_concubinage = yes
+					accepts_polygamy = yes
+				}
+			}
+			add_opinion = {
+				target = scope:liege
+				modifier = bride_show_monogamous_vassal_opinion
+				opinion = -30
+			}
+		}
+	}
+
+	#There's nothing I can do
 	option = {
 		name = bride_show.0007.a
+		trigger = {
+			is_vassal_of = scope:liege
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+	#I shall accept it
+	option = {
+		name = bride_show.0007.b
+		trigger = {
+			NOT = {
+				is_vassal_of = scope:liege
+			}
+		}
+		# Accepting it is akin to being treated as a vassal
+		add_prestige = medium_prestige_loss
+		scope:liege = {
+			hidden_effect = {
+				if = {
+					limit = {
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = bride_show.0007.b.t
+						right_icon = root
+						custom_tooltip = bride_show.0007.b.desc
+						if = {
+							limit = {
+								root.highest_held_title_tier >= tier_empire
+							}
+							add_prestige = medium_prestige_value
+						}
+						else_if = {
+							limit = {
+								root.highest_held_title_tier = tier_kingdom
+							}
+							add_prestige = minor_prestige_value
+						}
+					}
+				}
+				else = {
+					if = {
+						limit = {
+							root.highest_held_title_tier >= tier_empire
+						}
+						add_prestige = medium_prestige_value
+					}
+					else_if = {
+						limit = {
+							root.highest_held_title_tier = tier_kingdom
+						}
+						add_prestige = minor_prestige_value
+					}
+				}
+			}
+		}
+		set_local_variable = {
+			name = tributary_bride_show
+			value = scope:liege
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+	#I shall refuse!
+	option = {
+		name = bride_show.0007.c
+		trigger = {
+			NOT = {
+				is_vassal_of = scope:liege
+			}
+		}
+		if = {
+			limit = {
+				scope:liege.highest_held_title_tier >= tier_empire
+			}
+			add_prestige = medium_prestige_gain
+		}
+		else_if = {
+			limit = {
+				scope:liege.highest_held_title_tier >= tier_kingdom
+			}
+			add_prestige = minor_prestige_gain
+		}
+		else = {
+			add_prestige = miniscule_prestige_gain
+		}
+		scope:liege = {
+			hidden_effect = {
+				if = {
+					limit = {
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_bad
+						title = bride_show.0007.c.t
+						right_icon = root
+						custom_tooltip = bride_show.0007.c.desc
+					}
+				}
+				add_opinion = {
+					target = root
+					modifier = upset_opinion
+					opinion = -15
+				}
+			}
+		}
+		stress_impact = {
+			arrogant = minor_stress_impact_gain
+		}
 		ai_chance = {
 			base = 1
 		}
@@ -3084,139 +3244,74 @@ bride_show.0008 = {
 
 bride_show.1000 = { 
 	type = character_event
-	title = {
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					is_female = yes
-				}
-				desc = bride_show.0001_f.t
-			}
-			desc = bride_show.0001_m.t
-		}
-		desc = bride_show.0001.t
-	}
-	desc = bride_show.0001.desc
+	title = bride_show.1000.t
+	desc = bride_show.1000.desc
 	theme = realm
 	
-	right_portrait = { 	
+	left_portrait = { 	
 		character = root
-		animation = personality_rational
+		animation = personality_greedy
+	}
+	right_portrait = {
+		character = scope:tributary_scope
+		animation = disapproval
 	}
 	
-	# Do not invite tributaries
-	option = {
-		name = bride_show.0001.a
-
-		ai_chance = {
-			base = 15
-		}
-	}
-
-	#Invite tributaries' relatives
-	option = {
-		name = bride_show.0001.b
-
-		trigger = {
-			prestige > medium_prestige_value
-		}
-		custom_tooltip = bride_show_tributary_opinion_effect_tooltip
-
-		add_prestige = medium_prestige_loss
-
-		set_local_variable = {
-			name = tributary_relatives
-			value = yes
-		}
-
-		ai_chance = {
-			base = 1
-		}
-	}
-
-	#Invite all of a tributaries' eligible courtiers
-	option = {
-		name = bride_show.0001.b
-
-		trigger = {
-			any_tributary = {
-				any_courtier = {
-					harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
+	immediate = {
+		ordered_in_list = {
+			list = bride_show_preliminary_list
+			limit = {
+				harem_politics_is_valid_bride_show_subject_trigger = {
+					OVERLORD = root
 				}
 			}
+			order_by = primary_title.tier
+			save_scope_as = tributary_scope
+		}
+	}
+
+	#Invite tributaries' courtiers
+	option = {
+		name = bride_show.1000.a
+		trigger = {
+			prestige > minor_prestige_value
 		}
 		custom_tooltip = bride_show_tributary_opinion_effect_tooltip
-
 		add_prestige = minor_prestige_loss
-		
 		set_local_variable = {
 			name = tributary_court
 			value = yes
 		}
 
 		ai_chance = {
-			base = 1
+			base = 15
 		}
 	}
+
+	#Do not invite them
+	option = {
+		name = bride_show.1000.c
+
+		ai_chance = {
+			base = 15
+		}
+	}
+
 	after = {
 		if = {
 			limit = {
-				OR = {
-					exists = local_var:tributary_court
-					exists = local_var:tributary_relatives
-				}
+				exists = local_var:tributary_court
 			}
-			every_tributary = {
+			every_in_list = {
+				list = bride_show_preliminary_list
 				limit = {
-					OR = {
-						AND = {
-							exists = local_var:tributary_relatives
-							any_close_family_member = {
-								is_courtier_of = prev
-								harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-							}
-						}
-						AND = {
-							exists = local_var:tributary_relatives
-							any_courtier = {
-								harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-							}
-						}
-					}
-				}
-				if = {
-					limit = { 
-						OR = { 
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-							culture = { has_cultural_tradition = tradition_legalistic }
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
-					}
-					add_opinion = {
-						target = scope:liege
-						modifier = bride_show_vassal_opinion
-					}
-				}
-				else_if = {
-					limit = {
-						NOR = { 
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-							culture = { has_cultural_tradition = tradition_legalistic }
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
-					}
-					add_opinion = {
-						target = scope:liege
-						modifier = bride_show_monogamous_vassal_opinion
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = root
 					}
 				}
 				trigger_event = {
-					id = bride_show.1001
-					days = { 2 7 }
+					id = bride_show.0007
+					days = 2
 				}
 			}
 		}

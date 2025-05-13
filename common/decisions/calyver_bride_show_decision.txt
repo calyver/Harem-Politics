@@ -1108,6 +1108,9 @@
 						}
 					}
 				}
+				# else = { #Event to tell you no subjects are available
+
+				# }
 			}
 			else = { #Non-nomadic rulers
 				if = { #At least 3 vassals are necessary to make tributary optional
@@ -1128,57 +1131,66 @@
 				}
 			}
 
-			every_in_list = {
-				list = bride_show_preliminary_list
-				if = {
-					limit = { 
-						OR = { 
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-							culture = { has_cultural_tradition = tradition_legalistic }
-							accepts_concubinage = yes
-							accepts_polygamy = yes
-						}
+			if = {
+				limit = {
+					any_in_list = {
+						list = bride_show_preliminary_list
+						is_vassal_of = scope:liege
 					}
+				}
+				every_in_list = {
+					list = bride_show_preliminary_list
 					if = {
 						limit = { 
-							NOT = { has_vassal_stance = courtly }
+							is_vassal_of = scope:liege
+							OR = { 
+								culture = { has_cultural_pillar = heritage_east_slavic }
+								culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+								culture = { has_cultural_tradition = tradition_legalistic }
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
+						}
+						if = {
+							limit = { 
+								NOT = { has_vassal_stance = courtly }
+							}
+							add_opinion = {
+								target = scope:liege
+								modifier = bride_show_vassal_opinion
+							}
+						}
+						else = {
+							add_opinion = {
+								target = scope:liege
+								modifier = bride_show_courtly_vassal_opinion
+							}
+						}
+					}
+					else_if = {
+						limit = {
+							NOR = { 
+								culture = { has_cultural_pillar = heritage_east_slavic }
+								culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+								culture = { has_cultural_tradition = tradition_legalistic }
+								accepts_concubinage = yes
+								accepts_polygamy = yes
+							}
 						}
 						add_opinion = {
 							target = scope:liege
-							modifier = bride_show_vassal_opinion
+							modifier = bride_show_monogamous_vassal_opinion
 						}
 					}
-					else = {
-						add_opinion = {
-							target = scope:liege
-							modifier = bride_show_courtly_vassal_opinion
+	
+					if = {
+						limit = {
+							is_ai = no
 						}
-					}
-				}
-				else_if = {
-					limit = {
-						NOR = { 
-							culture = { has_cultural_pillar = heritage_east_slavic }
-							culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-							culture = { has_cultural_tradition = tradition_legalistic }
-							accepts_concubinage = yes
-							accepts_polygamy = yes
+						trigger_event = {
+							id = bride_show.0007
+							days = 1 
 						}
-					}
-					add_opinion = {
-						target = scope:liege
-						modifier = bride_show_monogamous_vassal_opinion
-					}
-				}
-
-				if = {
-					limit = {
-						is_ai = no
-					}
-					trigger_event = {
-						id = bride_show.0007
-						days = 1 
 					}
 				}
 			}
