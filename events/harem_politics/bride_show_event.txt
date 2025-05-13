@@ -2999,36 +2999,86 @@ bride_show.0007 = {
 	immediate = {
 		save_scope_as = subject_scope
 		if = {
-			limit = { 
+			limit = {
 				is_vassal_of = scope:liege
-				OR = { 
-					culture = { has_cultural_pillar = heritage_east_slavic }
-					culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-					culture = { has_cultural_tradition = tradition_legalistic }
-					accepts_concubinage = yes
-					accepts_polygamy = yes
+			}
+			if = {
+				limit = {
+					OR = { 
+						culture = { has_cultural_pillar = heritage_east_slavic }
+						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+						culture = { has_cultural_tradition = tradition_legalistic }
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+				}
+				if = {
+					limit = {
+						has_vassal_stance = courtly
+					}
+					add_opinion = {
+						target = scope:liege
+						modifier = bride_show_vassal_opinion
+						opinion = 5
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:liege
+						modifier = bride_show_vassal_opinion
+						opinion = -10
+					}
 				}
 			}
-			add_opinion = {
-				target = scope:liege
-				modifier = bride_show_vassal_opinion
-				opinion = -20
+			else_if = {
+				limit = {
+					NOR = { 
+						culture = { has_cultural_pillar = heritage_east_slavic }
+						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+						culture = { has_cultural_tradition = tradition_legalistic }
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+				}
+				add_opinion = {
+					target = scope:liege
+					modifier = bride_show_vassal_opinion
+					opinion = -20
+				}
 			}
 		}
-		else_if = {
-			limit = {
-				NOR = { 
-					culture = { has_cultural_pillar = heritage_east_slavic }
-					culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-					culture = { has_cultural_tradition = tradition_legalistic }
-					accepts_concubinage = yes
-					accepts_polygamy = yes
+		else = {
+			if = {
+				limit = {
+					OR = { 
+						culture = { has_cultural_pillar = heritage_east_slavic }
+						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+						culture = { has_cultural_tradition = tradition_legalistic }
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+				}
+				add_opinion = {
+					target = scope:liege
+					modifier = bride_show_vassal_opinion
+					opinion = -20
 				}
 			}
-			add_opinion = {
-				target = scope:liege
-				modifier = bride_show_monogamous_vassal_opinion
-				opinion = -30
+			else_if = {
+				limit = {
+					NOR = { 
+						culture = { has_cultural_pillar = heritage_east_slavic }
+						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+						culture = { has_cultural_tradition = tradition_legalistic }
+						accepts_concubinage = yes
+						accepts_polygamy = yes
+					}
+				}
+				add_opinion = {
+					target = scope:liege
+					modifier = bride_show_vassal_opinion
+					opinion = -30
+				}
 			}
 		}
 	}
@@ -3098,15 +3148,76 @@ bride_show.0007 = {
 			name = tributary_bride_show
 			value = scope:liege
 		}
+		stress_impact = {
+			arrogant = minor_stress_impact_gain
+			brave = minor_stress_impact_gain
+		}
 		ai_chance = {
 			base = 10
-			modifier = {
-				is_obedient_to = scope:liege
-				add = 20
+			ai_value_modifier = {
+				ai_boldness = -0.5
+				ai_greed = -0.15
+			}
+			opinion_modifier = {
+				opinion_target = scope:liege
+				multiplier = 1
+				max = 30
 			}
 			modifier = {
+				is_obedient_to = scope:liege
+				scope:liege = {
+					government_has_flag = government_is_nomadic
+				}
+				add = 500
+			}
+			modifier = { #A scared tributary won't decline
+				add = 100
 				NOT = { is_obedient_to = scope:liege }
-				add = -20
+				has_dread_level_towards = {
+					target = scope:liege
+					level >= 1
+				}
+			}
+			modifier = { #A scared tributary won't decline
+				add = 100
+				NOT = { is_obedient_to = scope:liege }
+				has_dread_level_towards = {
+					target = scope:liege
+					level >= 2
+				}
+			}
+
+			modifier = {
+				has_trait = arrogant
+				add = -25
+			}
+			modifier = {
+				has_trait = brave
+				add = -25
+			}
+			modifier = {
+				has_trait = disloyal
+				add = -15
+			}
+			modifier = {
+				has_trait = loyal
+				add = 15
+			}
+			modifier = {
+				has_trait = craven
+				add = 25
+			}
+
+			modifier = { #Kings are less likely to send their relatives
+				highest_held_title_tier >= tier_kingdom
+				add = -10
+			}
+			modifier = {
+				accepts_harem_politics = no
+				scope:liege = {
+					accepts_harem_politics = yes
+				}
+				add = -25
 			}
 		}
 	}
@@ -3154,71 +3265,68 @@ bride_show.0007 = {
 			}
 		}
 		stress_impact = {
-			arrogant = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
 		}
 		ai_chance = {
-			base = 10
-			modifier = { #Is obedient
-				is_obedient_to = scope:liege
-				add = -100
+			base = 20
+			ai_value_modifier = {
+				ai_boldness = -0.5
+				ai_greed = -0.15
 			}
-			modifier = { #Is not obedient
-				NOT = { is_obedient_to = scope:liege }
+			opinion_modifier = {
+				opinion_target = scope:liege
+				multiplier = -1
+				max = 30
+			}
+			modifier = {
+				NOT = {	
+					is_obedient_to = scope:liege
+				}
+				scope:liege = {
+					government_has_flag = government_is_nomadic
+				}
+				add = 100
+			}
+			modifier = { #A non-intimidated tributary will decline
 				add = 50
-			}
-			modifier = { #Kings are less likely to send their relatives
-				highest_held_title_tier >= tier_kingdom
-				add = 10
-			}
-			#Traits
-			modifier = {
-				has_trait = shy
 				NOT = { is_obedient_to = scope:liege }
-				add = -10
+				has_dread_level_towards = {
+					target = scope:liege
+					level = 0
+				}
+			}
+
+			modifier = {
+				has_trait = arrogant
+				add = 25
 			}
 			modifier = {
-				has_trait = craven
-				NOT = { is_obedient_to = scope:liege }
-				add = -10
+				has_trait = brave
+				add = 25
+			}
+			modifier = {
+				has_trait = disloyal
+				add = 15
 			}
 			modifier = {
 				has_trait = loyal
-				NOT = { is_obedient_to = scope:liege }
-				add = -10
-			}
-			modifier = { #A scared vassal won't decline
-				add = -25
-				NOT = { is_obedient_to = scope:liege }
-				has_dread_level_towards = {
-					target = scope:liege
-					level = 1
-				}
-			}
-			modifier = { #A scared vassal won't decline
-				add = -50
-				NOT = { is_obedient_to = scope:liege }
-				has_dread_level_towards = {
-					target = scope:liege
-					level = 2
-				}
-			}
-			modifier = { #A scared vassal won't decline
-				add = -25
-				NOT = { is_obedient_to = scope:liege }
-				dread_modified_ai_boldness = {
-					dreaded_character = scope:liege
-					value <= -75
-				}
+				add = -15
 			}
 			modifier = {
-				has_government = herder_government
-				add = -10
+				has_trait = craven
+				add = -25
 			}
-			opinion_modifier = { #Opinion
-				opinion_target = scope:liege
-				min = -15
-				max = 15
-				multiplier = 0.15
+
+			modifier = { #Kings are less likely to send their relatives
+				highest_held_title_tier >= tier_kingdom
+				add = 15
+			}
+			modifier = {
+				accepts_harem_politics = no
+				scope:liege = {
+					accepts_harem_politics = yes
+				}
+				add = 25
 			}
 		}
 	}

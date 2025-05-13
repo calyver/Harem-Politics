@@ -225,21 +225,52 @@ harem_politics_valid_bride_show_subject_trigger = {
 		}
 	}
 	is_imprisoned = no
-	trigger_if = { #Tributary requirements
+	trigger_if = {
+		limit = {
+			$OVERLORD$ = {
+				government_allows = administrative
+			}
+			government_allows = administrative
+			is_vassal_of = $OVERLORD$
+		}
+		NOT = {
+			house ?= {
+				any_house_member = {
+					is_liege_or_above_of = $OVERLORD$
+				}
+			}
+		}
+	}
+	trigger_else = {
+		any_close_family_member = {
+			NOR = {
+				is_liege_or_above_of = $OVERLORD$
+				any_tributary = {
+					this = $OVERLORD$
+				}
+			}
+		}
+	}
+}
+harem_politics_minimum_valid_subject_requirements_trigger = {
+	harem_politics_valid_bride_show_subject_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	trigger_if = { #For a nomad's subjects, what matters it their obedience.
+		limit = {
+			$OVERLORD$ = {	
+				government_has_flag = government_is_nomadic
+			}
+		}
+		is_obedient_to = $OVERLORD$
+	}
+	trigger_else_if = { #Tributary requirements
 		limit = {
 			NOT = {
 				is_vassal_of = $OVERLORD$
 			}
 		}
-		trigger_if = { #For a nomad's tributaries, what matters it their obedience.
-			limit = {
-				$OVERLORD$ = {	
-					government_has_flag = government_is_nomadic
-				}
-			}
-			is_obedient_to = $OVERLORD$
-		}
-		trigger_else_if = { #Else, if they rank the same as their suzerain, they need to dread them
+		trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
 			limit = {
 				highest_held_title_tier = $OVERLORD$.highest_held_title_tier
 			}
@@ -269,35 +300,16 @@ harem_politics_valid_bride_show_subject_trigger = {
 				}
 			}
 		}
-		trigger_else = { #Or nothing :)
-			always = no
-		}
-	}
-	trigger_if = {
-		limit = {
-			$OVERLORD$ = {
-				government_allows = administrative
-			}
-			government_allows = administrative
-			is_vassal_of = $OVERLORD$
-		}
-		NOT = {
-			house ?= {
-				any_house_member = {
-					is_liege_or_above_of = $OVERLORD$
-				}
+		trigger_else = { #Or lower tier than their suzerain
+			highest_held_title_tier < $OVERLORD$.highest_held_title_tier
+			opinion = {
+				target = $OVERLORD$
+				value >= -10
 			}
 		}
 	}
-	trigger_else = {
-		any_close_family_member = {
-			NOR = {
-				is_liege_or_above_of = $OVERLORD$
-				any_tributary = {
-					this = $OVERLORD$
-				}
-			}
-		}
+	trigger_else = { #Vassals are always valid
+		always = yes
 	}
 }
 
