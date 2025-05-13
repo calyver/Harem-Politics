@@ -10,123 +10,6 @@ scripted_trigger agrees_with_bride_show = {
 	}
 }
 
-scripted_trigger bride_show_viable_candidate_trigger = {
-	is_healthy = yes
-	is_married = no
-	is_concubine = no
-	is_imprisoned = no
-	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
-		limit = {
-			age = 15
-		}
-		exists = betrothed
-		root = {
-			is_ai = no
-		}
-	}
-	trigger_else = {
-		age >= 16
-	}
-	age <= 22
-	NOR = {
-		AND = { #If you betrothed them already, why should they participate?
-			exists = betrothed
-			betrothed = { is_close_family_of = root }
-		}
-		has_council_position = councillor_court_chaplain
-		is_close_family_of = root
-		has_trait = devoted
-		has_trait = celibate
-		has_trait = lunatic_1
-		has_trait = lunatic_genetic
-		has_trait = possessed_1
-		has_trait = possessed_genetic
-		has_trait = lisping
-		has_trait = stuttering
-		has_trait = scaly
-		has_trait = clubfooted
-		has_trait = hunchbacked
-		has_trait = wheezing
-		has_trait = spindly
-		has_trait = one_eyed
-		has_trait = one_legged
-		has_trait = disfigured
-		has_trait = eunuch
-		has_trait = adulterer
-		has_trait = fornicator
-		has_trait = deviant
-		has_trait = murderer
-		has_trait = kinslayer_1
-		has_trait = kinslayer_2
-		has_trait = kinslayer_3
-		has_trait = incestuous
-		has_trait = excommunicated
-		has_trait = drunkard
-		has_trait = hashishiyah
-		has_trait = wounded
-		has_trait = sickly
-		has_trait = infirm
-		has_trait = incapable
-		has_trait = inbred
-		has_trait = maimed
-		has_trait = blind
-		has_trait = ill
-		has_trait = bubonic_plague
-		has_trait = cancer
-		has_trait = consumption
-		has_trait = great_pox
-		has_trait = gout_ridden
-		has_trait = leper
-		has_trait = lovers_pox
-		has_trait = pneumonic
-		has_trait = smallpox
-		has_trait = typhus
-		has_trait = dwarf
-		has_trait = physique_bad_3	#Weak candidates wouln't make it to the capital without getting sick.
-		
-		has_trait = dysentery
-		has_trait = ergotism
-		has_trait = measles
-
-		has_trait = pregnant
-	}
-	trigger_if = { #Beauty parameters
-		limit = {
-			OR = { #Tributaries would never send ugly candidates
-				exists = local_var:beauty_important
-				court_owner ?= {
-					is_tributary_of = scope:liege
-				}
-			}
-		}
-		NOT = {
-			has_trait = beauty_bad
-		}
-	}
-	trigger_if = { #Intellectual parameters
-		limit = {
-			OR = { #Tributaries would never send stupid candidates
-				exists = local_var:personality_skills_important
-				court_owner ?= {
-					is_tributary_of = scope:liege
-				}
-			}
-		}
-		NOT = {
-			has_trait = intellect_bad
-		}
-	}
-	can_take_as_concubine_character_trigger = { CHARACTER = root }
-	NOT = {
-		any_heir_title = {
-			place_in_line_of_succession = {
-				target = prev
-				value <= 2
-			}
-		}
-	}
-}
-
 scripted_trigger can_have_four_candidates_trigger = {
 	OR = {
 		highest_held_title_tier = tier_empire
@@ -138,7 +21,11 @@ scripted_trigger can_have_four_candidates_trigger = {
 
 scripted_effect bride_show_add_to_candidate_list_effect = {
 	if = {
-		limit = { bride_show_viable_candidate_trigger = yes }
+		limit = { 
+			bride_show_viable_candidate_trigger = {
+				OVERLORD = scope:liege
+			} 
+		}
 		add_to_list = elegible_candidates
 	}
 }
@@ -777,7 +664,11 @@ bride_show.0001 = {
 			value = yes
 		}
 		ai_chance = { #The AI will always choose this
-			base = 15
+			base = 20
+			modifier = {
+				gold < minor_gold_value
+				factor = 0
+			}
 		}
 	}
 
@@ -785,13 +676,13 @@ bride_show.0001 = {
 	option = {
 		name = bride_show.0001.b
 		ai_chance = {
-			base = 1
+			base = 5
 		}
 	}
 	after = {
 		trigger_event = {
 			id = bride_show.0002
-			days = { 4 8 }
+			days = { 5 10 }
 		}
 	}
 }
@@ -847,22 +738,26 @@ bride_show.0002 = {
 			name = beauty_important
 			value = yes
 		}
-		ai_chance = {
-			base = 1
+		ai_chance = { #The AI will always choose this
+			base = 20
+			modifier = {
+				gold < minor_gold_value
+				factor = 0
+			}
 		}
 	}
 
 	#It's irrelevant
 	option = {
 		name = bride_show.0001.b
-		ai_chance = { #The AI will always choose this
-			base = 15
+		ai_chance = {
+			base = 1
 		}
 	}
 	after = {
 		trigger_event = {
 			id = bride_show.0003
-			days = { 4 8 }
+			days = { 5 10 }
 		}
 	}
 }
@@ -923,9 +818,46 @@ bride_show.0003 = {
 		}
 	}
 	after = {
+		if = {
+			limit = {
+				any_vassal = {
+					harem_politics_minimum_valid_subject_requirements_trigger = {
+						OVERLORD = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
+					}
+				}
+			}
+			every_vassal = {
+				limit = {
+					harem_politics_minimum_valid_subject_requirements_trigger = {
+						OVERLORD = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
+					}
+				}
+				root = {
+					add_to_variable_list = {
+						name = bride_show_subject_list
+						target = prev
+						days = 30
+					}
+				}
+				trigger_event = {
+					id = bride_show.0007
+					days = 9
+				}
+			}
+		}
 		trigger_event = {
 			id = bride_show.0004
-			days = { 20 30 }
+			days = { 10 20 }
 		}
 	}
 }
@@ -958,289 +890,18 @@ bride_show.0004 = {
 		
 		hidden_effect = {
 			#Set up lists
-			if = {
-				limit = {
-					any_tributary = {
-						has_variable = will_send_candidates_to
-						var:will_send_candidates_to = root
-						OR = {
-							AND = {
-								exists = local_var:tributary_relatives
-								any_close_family_member = {
-									is_courtier_of = prev
-									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-								}
-							}
-							AND = {
-								exists = local_var:tributary_relatives
-								any_courtier = {
-									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-								}
-							}
-						}
-					}
-				}
-				every_tributary = {
-					limit = {
-						has_variable = will_send_candidates_to
-						var:will_send_candidates_to = root
-						OR = {
-							AND = {
-								exists = local_var:tributary_relatives
-								any_close_family_member = {
-									is_courtier_of = prev
-									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-								}
-							}
-							AND = {
-								exists = local_var:tributary_relatives
-								any_courtier = {
-									harem_politics_eligible_bride_show_candidate_trigger = { LIEGE = root }
-								}
-							}
-						}
-					}
-					add_to_list = bride_show_event_vassal_list
-				}
-			}
-			if = {
-				limit = {
-					government_has_flag = government_is_administrative
-				}
-				if = { #Dukes
-					limit = {
-						highest_held_title_tier = tier_duchy
-					}
-					if = { #With low authority, they need at least 3 non-powerful vassals
-						limit = {
-							has_realm_law = imperial_bureaucracy_0
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #With limited authority, they need 3 non-dominant vassals
-						limit = {
-							has_realm_law = imperial_bureaucracy_1
-						}
-						every_vassal = {
-							limit = {
-								house ?= { is_dominant_family = no }
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
-				else_if = { #Kings
-					limit = {
-						highest_held_title_tier = tier_kingdom
-					}
-					if = { #With low authority, they need at least 3 non-powerful counts
-						limit = {
-							has_realm_law = imperial_bureaucracy_0
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_county
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #With limited authority, they need 3 non-dominant dukes or below
-						limit = {
-							has_realm_law = imperial_bureaucracy_1
-						}
-						every_vassal = {
-							limit = {
-								house ?= { is_dominant_family = no }
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
-				else_if = { #Emperors
-					limit = {
-						highest_held_title_tier = tier_empire
-					}
-					if = { #With low authority, they need at least 3 non-powerful dukes
-						limit = {
-							has_realm_law = imperial_bureaucracy_0
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_duchy
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #With limited authority, they need 3 non-dominant kings or below
-						limit = {
-							has_realm_law = imperial_bureaucracy_1
-						}
-						every_vassal = {
-							limit = {
-								house ?= { is_dominant_family = no }
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
+			# Vassals
 
-				if = { #With high authority, just any vassal
-					limit = {
-						OR = {
-							has_realm_law = imperial_bureaucracy_2
-							has_realm_law = imperial_bureaucracy_3
-						}
-					}
-					every_vassal = {
-						limit = {
-							NOT = {
-								is_in_list = bride_show_event_vassal_list
-							}
-						}
-						add_to_list = bride_show_event_vassal_list
-					}
-				}
-			}
-			else_if = {
-				limit = {
-					NOT = {
-						government_has_flag = government_is_administrative
-					}
-				}
-				if = { #Dukes
-					limit = {
-						highest_held_title_tier = tier_duchy
-					}
-					if = { #If ruler is a duke with low authority, they need at least 3 non-powerful vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_0
-								has_realm_law = tribal_authority_0
-							}
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #If ruler is a duke with limited authority, they need 3 vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_1
-								has_realm_law = tribal_authority_1
-							}
-						}
-						every_vassal = {
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
-				else_if = { #Kings
-					limit = {
-						highest_held_title_tier = tier_kingdom
-					}
-					if = { #If ruler is a king with low authority, they need at least 3 non-powerful vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_0
-								has_realm_law = tribal_authority_0
-							}
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_county
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #If ruler is a king with low authority, they need at least 3 non-powerful vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_1
-								has_realm_law = tribal_authority_1
-							}
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
-				else_if = { #Emperors
-					limit = {
-						highest_held_title_tier = tier_empire
-					}
-					if = { #If ruler is an emperor with low authority, they need at least 3 non-powerful vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_0
-								has_realm_law = tribal_authority_0
-							}
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_duchy
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-					else_if = { #If ruler is an emperor with low authority, they need at least 3 non-powerful vassals
-						limit = {
-							OR = {
-								has_realm_law = crown_authority_1
-								has_realm_law = tribal_authority_1
-							}
-						}
-						every_vassal = {
-							limit = {
-								is_powerful_vassal = no
-							}
-							add_to_list = bride_show_event_vassal_list
-						}
-					}
-				}
-
-				if = {
-					limit = {
-						OR = {
-							has_realm_law = crown_authority_2
-							has_realm_law = crown_authority_3
-							has_realm_law = tribal_authority_2
-							has_realm_law = tribal_authority_3
-						}
-					}
-					every_vassal = {
-						limit = {
-							NOT = {
-								is_in_list = bride_show_event_vassal_list
-							}
-						}
-						add_to_list = bride_show_event_vassal_list
-					}
-				}
-			}
 			every_in_list = {
-				list = bride_show_event_vassal_list
-				limit = { 
-					NOR = { 
-						government_has_flag = government_is_theocracy
-						is_at_war_with = root
-						any_close_family_member = { #You can't make demands to the imperial family
-							is_liege_or_above_of = root
-						}
+				variable = bride_show_subject_list
+				limit = {
+					harem_politics_minimum_valid_subject_requirements_trigger = {
+						OVERLORD = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
 					}
 				}
 				every_courtier = {
@@ -2994,6 +2655,15 @@ bride_show.0007 = {
 		harem_politics_is_valid_bride_show_subject_trigger = {
 			OVERLORD = scope:liege
 		}
+		trigger_if = { #For a nomad's vassals, what matters it their obedience.
+			limit = {
+				scope:liege = {	
+					government_has_flag = government_is_nomadic
+				}
+				is_vassal_of = scope:liege
+			}
+			is_obedient_to = scope:liege
+		}
 	}
 
 	immediate = {
@@ -3142,6 +2812,11 @@ bride_show.0007 = {
 						add_prestige = minor_prestige_value
 					}
 				}
+				add_to_variable_list = {
+					name = bride_show_subject_list
+					target = root
+					days = 60
+				}
 			}
 		}
 		set_local_variable = {
@@ -3213,9 +2888,9 @@ bride_show.0007 = {
 				add = -10
 			}
 			modifier = {
-				accepts_harem_politics = no
+				accepts_harems = no
 				scope:liege = {
-					accepts_harem_politics = yes
+					accepts_harems = yes
 				}
 				add = -25
 			}
@@ -3322,9 +2997,9 @@ bride_show.0007 = {
 				add = 15
 			}
 			modifier = {
-				accepts_harem_politics = no
+				accepts_harems = no
 				scope:liege = {
-					accepts_harem_politics = yes
+					accepts_harems = yes
 				}
 				add = 25
 			}
@@ -3459,7 +3134,10 @@ bride_show.1000 = {
 					is_vassal_of = scope:liege
 				}
 			}
-			order_by = primary_title.tier
+			order_by = {
+				value = primary_title.tier
+				add = dominance_value
+			}
 			save_scope_as = tributary_scope
 		}
 	}
@@ -3477,6 +3155,28 @@ bride_show.1000 = {
 			name = tributary_court
 			value = yes
 		}
+		every_in_list = {
+			list = bride_show_preliminary_list
+			if = {
+				limit = {
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = root
+					}
+					NOT = {
+						is_vassal_of = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
+					}
+				}
+				trigger_event = {
+					id = bride_show.0007
+					days = 26
+				}
+			}
+		}
 
 		ai_chance = {
 			base = 15
@@ -3493,29 +3193,14 @@ bride_show.1000 = {
 	}
 
 	after = {
-		if = {
-			limit = {
-				exists = local_var:tributary_court
-			}
-			every_in_list = {
-				list = bride_show_preliminary_list
-				limit = {
-					harem_politics_is_valid_bride_show_subject_trigger = {
-						OVERLORD = root
-					}
-					NOT = {
-						is_vassal_of = scope:liege
-					}
-				}
-				trigger_event = {
-					id = bride_show.0007
-					days = 2
-				}
-			}
-		}
 		trigger_event = {
 			id = bride_show.0001
 			days = { 10 14 }
+		}
+		clear_saved_scope = tributary_scope
+		every_in_list = {
+			list = bride_show_preliminary_list
+			remove_from_list = bride_show_preliminary_list
 		}
 	}
 }

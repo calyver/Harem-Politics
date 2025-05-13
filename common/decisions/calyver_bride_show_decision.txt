@@ -1029,7 +1029,7 @@
 			if = {
 				limit = {
 					any_vassal = {
-						harem_politics_is_valid_bride_show_subject_trigger = {
+						harem_politics_minimum_valid_subject_requirements_trigger = {
 							OVERLORD = scope:liege
 						}
 						count >= 1
@@ -1037,7 +1037,7 @@
 				}
 				every_vassal = {
 					limit = {
-						harem_politics_is_valid_bride_show_subject_trigger = {
+						harem_politics_minimum_valid_subject_requirements_trigger = {
 							OVERLORD = scope:liege
 						}
 					}
@@ -1050,12 +1050,22 @@
 						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
 						}
+						any_courtier = {
+							bride_show_viable_candidate_trigger = {
+								OVERLORD = scope:liege
+							} 
+						}
 					}
 				}
 				every_tributary = {
 					limit = {
 						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
+						}
+						any_courtier = {
+							bride_show_viable_candidate_trigger = {
+								OVERLORD = scope:liege
+							} 
 						}
 					}
 					add_to_list = bride_show_preliminary_list
@@ -1066,40 +1076,73 @@
 				limit = {
 					government_has_flag = government_is_nomadic
 				}
-				if = { #We have enough subjects!
+				if = { #Are they all vassals?
 					limit = {
 						any_in_list = {
 							list = bride_show_preliminary_list
+							is_vassal_of = scope:liege
 							count >= 4
 						}
+						any_in_list = {
+							list = bride_show_preliminary_list
+							NOT = {
+								is_vassal_of = scope:liege
+							}
+							any_courtier = {
+								bride_show_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								} 
+							}
+							count >= 1
+						}
 					}
-					if = { #Are they all vassals?
+					#Then tributaries are optional
+					trigger_event = bride_show.1000
+				}
+				else = {
+					if = {
 						limit = {
 							any_in_list = {
 								list = bride_show_preliminary_list
-								is_vassal_of = scope:liege
-								count >= 4
-							}
-							any_in_list = {
-								list = bride_show_preliminary_list
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
 								NOT = {
 									is_vassal_of = scope:liege
 								}
-								count >= 1
+								any_courtier = {
+									bride_show_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									} 
+								}
 							}
 						}
-						trigger_event = bride_show.1000
-					}
-					else = {
-						trigger_event = {
-							id = bride_show.0001
-							days = { 7 10 }
+						every_in_list = {
+							list = bride_show_preliminary_list
+							limit = {
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								NOT = {
+									is_vassal_of = scope:liege
+								}
+								any_courtier = {
+									bride_show_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									} 
+								}
+							}
+							trigger_event = {
+								id = bride_show.0007
+								days = 26
+							}
 						}
 					}
+					trigger_event = {
+						id = bride_show.0001
+						days = { 7 10 }
+					}
 				}
-				# else = { #Event to tell you no subjects are available
-
-				# }
 			}
 			else = { #Non-nomadic rulers
 				if = { #At least 3 vassals are necessary to make tributary optional
@@ -1114,12 +1157,55 @@
 							NOT = {
 								is_vassal_of = scope:liege
 							}
+							any_courtier = {
+								bride_show_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								} 
+							}
 							count >= 1
 						}
 					}
 					trigger_event = bride_show.1000
 				}
 				else = {
+					if = {
+						limit = {
+							any_in_list = {
+								list = bride_show_preliminary_list
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								NOT = {
+									is_vassal_of = scope:liege
+								}
+								any_courtier = {
+									bride_show_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									} 
+								}
+							}
+						}
+						every_in_list = {
+							list = bride_show_preliminary_list
+							limit = {
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								NOT = {
+									is_vassal_of = scope:liege
+								}
+								any_courtier = {
+									bride_show_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									} 
+								}
+							}
+							trigger_event = {
+								id = bride_show.0007
+								days = 26
+							}
+						}
+					}
 					trigger_event = {
 						id = bride_show.0001
 						days = { 7 10 }

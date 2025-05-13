@@ -121,29 +121,31 @@ harem_politics_target_outranks_consort_trigger = {
 	}
 }
 
-harem_politics_eligible_bride_show_candidate_trigger = {
+bride_show_viable_candidate_trigger = {
 	is_healthy = yes
 	is_married = no
 	is_concubine = no
 	is_imprisoned = no
-	OR = {
-		AND = { #If they aren't betrothed, you can arrange a marriage with them
+	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
+		limit = {
 			age = 15
-			exists = betrothed
-			$LIEGE$ = {
-				is_ai = no
-			}
 		}
+		exists = betrothed
+		$OVERLORD$ = {
+			is_ai = no
+		}
+	}
+	trigger_else = {
 		age >= 16
 	}
 	age <= 22
 	NOR = {
 		AND = { #If you betrothed them already, why should they participate?
 			exists = betrothed
-			betrothed = { is_close_family_of = $LIEGE$ }
+			betrothed = { is_close_family_of = $OVERLORD$ }
 		}
 		has_council_position = councillor_court_chaplain
-		is_close_family_of = $LIEGE$
+		is_close_family_of = $OVERLORD$
 		has_trait = devoted
 		has_trait = celibate
 		has_trait = lunatic_1
@@ -198,11 +200,34 @@ harem_politics_eligible_bride_show_candidate_trigger = {
 		has_trait = measles
 
 		has_trait = pregnant
-
-		has_trait = beauty_bad
-		has_trait = intellect_bad
 	}
-	can_take_as_concubine_character_trigger = { CHARACTER = $LIEGE$ }
+	trigger_if = { #Beauty parameters
+		limit = {
+			OR = { #Tributaries would never send ugly candidates
+				exists = local_var:beauty_important
+				court_owner ?= {
+					is_tributary_of = scope:liege
+				}
+			}
+		}
+		NOT = {
+			has_trait = beauty_bad
+		}
+	}
+	trigger_if = { #Intellectual parameters
+		limit = {
+			OR = { #Tributaries would never send stupid candidates
+				exists = local_var:personality_skills_important
+				court_owner ?= {
+					is_tributary_of = scope:liege
+				}
+			}
+		}
+		NOT = {
+			has_trait = intellect_bad
+		}
+	}
+	can_take_as_concubine_character_trigger = { CHARACTER = $OVERLORD$ }
 	NOT = {
 		any_heir_title = {
 			place_in_line_of_succession = {
@@ -264,52 +289,54 @@ harem_politics_minimum_valid_subject_requirements_trigger = {
 		}
 		is_obedient_to = $OVERLORD$
 	}
-	trigger_else_if = { #Tributary requirements
-		limit = {
-			NOT = {
-				is_vassal_of = $OVERLORD$
-			}
-		}
-		trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
+	trigger_else = { #Non-nomadic requirements
+		trigger_if = { #Tributary requirements
 			limit = {
-				highest_held_title_tier = $OVERLORD$.highest_held_title_tier
-			}
-			OR = {
-				has_dread_level_towards = {
-					target = $OVERLORD$
-					level >= 1
+				NOT = {
+					is_vassal_of = $OVERLORD$
 				}
+			}
+			trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
+				limit = {
+					highest_held_title_tier = $OVERLORD$.highest_held_title_tier
+				}
+				OR = {
+					has_dread_level_towards = {
+						target = $OVERLORD$
+						level >= 1
+					}
+					opinion = {
+						target = $OVERLORD$
+						value >= 15
+					}
+				}
+			}
+			trigger_else_if = { #Else, they need to dread them more
+				limit = {
+					highest_held_title_tier > $OVERLORD$.highest_held_title_tier
+				}
+				OR = {
+					has_dread_level_towards = {
+						target = $OVERLORD$
+						level >= 2
+					}
+					opinion = {
+						target = $OVERLORD$
+						value >= 30
+					}
+				}
+			}
+			trigger_else = { #Or lower tier than their suzerain
+				highest_held_title_tier < $OVERLORD$.highest_held_title_tier
 				opinion = {
 					target = $OVERLORD$
-					value >= 15
+					value >= -10
 				}
 			}
 		}
-		trigger_else_if = { #Else, they need to dread them more
-			limit = {
-				highest_held_title_tier > $OVERLORD$.highest_held_title_tier
-			}
-			OR = {
-				has_dread_level_towards = {
-					target = $OVERLORD$
-					level >= 2
-				}
-				opinion = {
-					target = $OVERLORD$
-					value >= 30
-				}
-			}
+		trigger_else = { #Vassals are always valid
+			always = yes
 		}
-		trigger_else = { #Or lower tier than their suzerain
-			highest_held_title_tier < $OVERLORD$.highest_held_title_tier
-			opinion = {
-				target = $OVERLORD$
-				value >= -10
-			}
-		}
-	}
-	trigger_else = { #Vassals are always valid
-		always = yes
 	}
 }
 
