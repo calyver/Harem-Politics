@@ -818,45 +818,8 @@ bride_show.0003 = {
 		}
 	}
 	after = {
-		if = {
-			limit = {
-				any_vassal = {
-					harem_politics_minimum_valid_subject_requirements_trigger = {
-						OVERLORD = scope:liege
-					}
-					any_courtier = {
-						bride_show_viable_candidate_trigger = {
-							OVERLORD = scope:liege
-						} 
-					}
-				}
-			}
-			every_vassal = {
-				limit = {
-					harem_politics_minimum_valid_subject_requirements_trigger = {
-						OVERLORD = scope:liege
-					}
-					any_courtier = {
-						bride_show_viable_candidate_trigger = {
-							OVERLORD = scope:liege
-						} 
-					}
-				}
-				root = {
-					add_to_variable_list = {
-						name = bride_show_subject_list
-						target = prev
-						days = 30
-					}
-				}
-				trigger_event = {
-					id = bride_show.0007
-					days = 9
-				}
-			}
-		}
 		trigger_event = {
-			id = bride_show.0004
+			id = bride_show.1001
 			days = { 10 20 }
 		}
 	}
@@ -2655,14 +2618,10 @@ bride_show.0007 = {
 		harem_politics_is_valid_bride_show_subject_trigger = {
 			OVERLORD = scope:liege
 		}
-		trigger_if = { #For a nomad's vassals, what matters it their obedience.
-			limit = {
-				scope:liege = {	
-					government_has_flag = government_is_nomadic
-				}
-				is_vassal_of = scope:liege
-			}
-			is_obedient_to = scope:liege
+		any_courtier = {
+			bride_show_viable_candidate_trigger = {
+				OVERLORD = scope:liege
+			} 
 		}
 	}
 
@@ -2758,6 +2717,13 @@ bride_show.0007 = {
 		name = bride_show.0007.a
 		trigger = {
 			is_vassal_of = scope:liege
+		}
+		scope:liege = {
+			add_to_variable_list = {
+				name = bride_show_subject_list
+				target = root
+				days = 30
+			}
 		}
 		ai_chance = {
 			base = 1
@@ -2941,7 +2907,7 @@ bride_show.0007 = {
 		ai_chance = {
 			base = 20
 			ai_value_modifier = {
-				ai_boldness = -0.5
+				ai_boldness = -0.15
 				ai_greed = -0.15
 			}
 			opinion_modifier = {
@@ -3116,11 +3082,6 @@ bride_show.1000 = {
 			NOT = {
 				is_vassal_of = scope:liege
 			}
-			any_courtier = {
-				bride_show_viable_candidate_trigger = {
-					OVERLORD = scope:liege
-				} 
-			}
 			count >= 1
 		}
 	}
@@ -3130,11 +3091,6 @@ bride_show.1000 = {
 			limit = {
 				NOT = {
 					is_vassal_of = scope:liege
-				}
-				any_courtier = {
-					bride_show_viable_candidate_trigger = {
-						OVERLORD = scope:liege
-					} 
 				}
 			}
 			order_by = {
@@ -3163,11 +3119,6 @@ bride_show.1000 = {
 					}
 					NOT = {
 						is_vassal_of = scope:liege
-					}
-					any_courtier = {
-						bride_show_viable_candidate_trigger = {
-							OVERLORD = scope:liege
-						} 
 					}
 				}
 				trigger_event = {
@@ -3200,6 +3151,75 @@ bride_show.1000 = {
 		every_in_list = {
 			list = bride_show_preliminary_list
 			remove_from_list = bride_show_preliminary_list
+		}
+	}
+}
+
+##Managing the eligible subjects##
+bride_show.1001 = { 
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				any_in_list = {
+					list = bride_show_preliminary_list
+					count >= 1
+				}
+			}
+			every_in_list = {
+				remove_from_list = bride_show_preliminary_list
+			}
+		}
+		if = {
+			limit = {
+				any_vassal = {
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = scope:liege
+					}
+					count >= 1
+				}
+			}
+			every_vassal = {
+				limit = {
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+				trigger_event = bride_show.0007
+			}
+		}
+		if = {
+			limit = {
+				any_tributary = {
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
+					}
+					count >= 1
+				}
+				exists = local_var:bride_show_tributary_participation
+			}
+			every_tributary = {
+				limit = {
+					harem_politics_is_valid_bride_show_subject_trigger = {
+						OVERLORD = scope:liege
+					}
+					any_courtier = {
+						bride_show_viable_candidate_trigger = {
+							OVERLORD = scope:liege
+						} 
+					}
+				}
+				trigger_event = bride_show.0007
+			}
+		}
+		trigger_event = {
+			id = bride_show.0004
+			days = 1
 		}
 	}
 }
