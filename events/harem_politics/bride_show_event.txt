@@ -879,12 +879,13 @@ bride_show.0004 = {
 						bride_show_add_to_candidate_list_effect = yes
 					}
 					##Send notification##
-					if = {
-						limit = {
-							is_ai = no
-						}
-						trigger_event = bride_show.1002
-					}
+					# if = {
+					# 	limit = {
+					# 		is_ai = no
+					# 	}
+					# 	trigger_event = bride_show.1002
+					# }
+					trigger_event = bride_show.1002
 				}
 			}
 			#Let's go!
@@ -3230,22 +3231,6 @@ bride_show.1002 = {
 				any_in_list = {
 					list = elegible_candidates
 					is_courtier_of = root
-					count = 1
-				}
-			}
-			random_in_list = {
-				list = elegible_candidates
-				limit = {
-					is_courtier_of = root
-				}
-				save_scope_as = drafted_candidate
-			}
-		}
-		else_if = {
-			limit = {
-				any_in_list = {
-					list = elegible_candidates
-					is_courtier_of = root
 					count > 1
 				}
 			}
@@ -3261,6 +3246,7 @@ bride_show.1002 = {
 				order_by = {
 					value = bride_show_candidate_weights_for_root_value
 				}
+				add_to_list = summoned_courtiers_list
 				root = {
 					change_variable = {
 						name = num_courtiers_summoned
@@ -3277,6 +3263,15 @@ bride_show.1002 = {
 				}
 			}
 		}
+		else = {
+			random_in_list = {
+				list = elegible_candidates
+				limit = {
+					is_courtier_of = root
+				}
+				save_scope_as = drafted_candidate
+			}
+		}
 
 		send_interface_toast = {
 			type = event_generic_neutral
@@ -3284,7 +3279,7 @@ bride_show.1002 = {
 				first_valid = {
 					triggered_desc = {
 						trigger = {
-							root = {
+							scope:liege = {
 								is_female = yes
 							}
 						}
@@ -3300,7 +3295,7 @@ bride_show.1002 = {
 					triggered_desc = { #There was only 1
 						trigger = {
 							any_in_list = {
-								list = elegible_candidates
+								list = summoned_courtiers_list
 								is_courtier_of = root
 								count = 1
 							}
