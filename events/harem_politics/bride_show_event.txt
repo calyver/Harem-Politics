@@ -12,7 +12,7 @@ scripted_trigger agrees_with_bride_show = {
 
 scripted_trigger can_have_four_candidates_trigger = {
 	OR = {
-		highest_held_title_tier = tier_empire
+		highest_held_title_tier >= tier_empire
 		any_vassal = {
 			count >= 9
 		}
@@ -56,7 +56,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					any_in_list = { #Or in case all of them are teens
 						list = elegible_candidates
 						is_adult = no
-						count >= 3
+						count = all
 					}
 				}
 			}
@@ -820,7 +820,7 @@ bride_show.0003 = {
 	after = {
 		trigger_event = {
 			id = bride_show.1001
-			days = { 10 20 }
+			days = { 10 15 }
 		}
 	}
 }
@@ -854,44 +854,53 @@ bride_show.0004 = {
 		hidden_effect = {
 			#Set up lists
 			# Vassals
-
-			every_in_list = {
-				variable = bride_show_subject_list
+			if = {
 				limit = {
-					harem_politics_minimum_valid_subject_requirements_trigger = {
-						OVERLORD = scope:liege
-					}
-					any_courtier = {
-						bride_show_viable_candidate_trigger = {
-							OVERLORD = scope:liege
-						} 
-					}
-				}
-				every_courtier = {
-					bride_show_add_to_candidate_list_effect = yes
-				}
-				##Send notification##
-				if = {
-					limit = {
-						is_ai = no
-					}
-					send_interface_toast = {
-						type = event_generic_neutral
-						title = {
-							first_valid = {
-								triggered_desc = {
-									trigger = {
-										root = {
-											is_female = yes
-										}
-									}
-									desc = bride_show.0005_f.t
-								}
-								desc = bride_show.0005_m.t
-							}
+					any_in_list = {
+						variable = bride_show_subject_list
+						any_courtier = {
+							bride_show_viable_candidate_trigger = {
+								OVERLORD = scope:liege
+							} 
 						}
-						right_icon = scope:liege
-						custom_tooltip = bride_show_courtiers_desc
+						count >= 1
+					}
+				}
+				every_in_list = {
+					variable = bride_show_subject_list
+					limit = {
+						any_courtier = {
+							bride_show_viable_candidate_trigger = {
+								OVERLORD = scope:liege
+							} 
+						}
+					}
+					every_courtier = {
+						bride_show_add_to_candidate_list_effect = yes
+					}
+					##Send notification##
+					if = {
+						limit = {
+							is_ai = no
+						}
+						send_interface_toast = {
+							type = event_generic_neutral
+							title = {
+								first_valid = {
+									triggered_desc = {
+										trigger = {
+											root = {
+												is_female = yes
+											}
+										}
+										desc = bride_show.0005_f.t
+									}
+									desc = bride_show.0005_m.t
+								}
+							}
+							right_icon = scope:liege
+							custom_tooltip = bride_show_courtiers_desc
+						}
 					}
 				}
 			}
@@ -3077,7 +3086,7 @@ bride_show.1000 = {
 		any_in_list = {
 			list = bride_show_preliminary_list
 			harem_politics_is_valid_bride_show_subject_trigger = {
-				OVERLORD = root
+				OVERLORD = scope:liege
 			}
 			NOT = {
 				is_vassal_of = scope:liege
@@ -3110,22 +3119,9 @@ bride_show.1000 = {
 		custom_tooltip = bride_show_tributary_invite_effect_tooltip
 		custom_tooltip = bride_show_tributary_opinion_effect_tooltip
 		add_prestige = minor_prestige_loss
-		every_in_list = {
-			list = bride_show_preliminary_list
-			if = {
-				limit = {
-					harem_politics_is_valid_bride_show_subject_trigger = {
-						OVERLORD = root
-					}
-					NOT = {
-						is_vassal_of = scope:liege
-					}
-				}
-				trigger_event = {
-					id = bride_show.0007
-					days = 26
-				}
-			}
+		set_local_variable = {
+			name = bride_show_tributary_participation
+			value = yes
 		}
 
 		ai_chance = {
@@ -3167,6 +3163,7 @@ bride_show.1001 = {
 				}
 			}
 			every_in_list = {
+				list = bride_show_preliminary_list
 				remove_from_list = bride_show_preliminary_list
 			}
 		}
