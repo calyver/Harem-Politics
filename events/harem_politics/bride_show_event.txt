@@ -883,24 +883,7 @@ bride_show.0004 = {
 						limit = {
 							is_ai = no
 						}
-						send_interface_toast = {
-							type = event_generic_neutral
-							title = {
-								first_valid = {
-									triggered_desc = {
-										trigger = {
-											root = {
-												is_female = yes
-											}
-										}
-										desc = bride_show.0005_f.t
-									}
-									desc = bride_show.0005_m.t
-								}
-							}
-							right_icon = scope:liege
-							custom_tooltip = bride_show_courtiers_desc
-						}
+						trigger_event = bride_show.1002
 					}
 				}
 			}
@@ -3227,6 +3210,225 @@ bride_show.1001 = {
 		trigger_event = {
 			id = bride_show.0004
 			days = 1
+		}
+	}
+}
+
+bride_show.1002 = {
+	hidden = yes
+	trigger = {
+		any_courtier = {
+			bride_show_viable_candidate_trigger = {
+				OVERLORD = scope:liege
+			}
+		}
+	}
+	immediate = {
+		if = {
+			limit = {
+				any_in_list = {
+					list = elegible_candidates
+					is_courtier_of = root
+					count = 1
+				}
+			}
+			random_in_list = {
+				list = elegible_candidates
+				limit = {
+					is_courtier_of = root
+				}
+				save_scope_as = drafted_candidate
+			}
+		}
+		else_if = {
+			limit = {
+				any_in_list = {
+					list = elegible_candidates
+					is_courtier_of = root
+					count > 1
+				}
+			}
+			set_variable = {
+				name = num_other_courtiers_summoned
+				value = 0
+			}
+			ordered_in_list = {
+				list = elegible_candidates
+				limit = {
+					is_courtier_of = root
+				}
+				weight = {
+					base = 1
+					modifier = { #Noble
+						is_lowborn = no
+						add = 1
+					}
+					modifier = { #Beauty
+						has_trait = beauty_good
+						add = {
+							value = 1
+							if = {
+								limit = {
+									has_trait = beauty_good_2
+								}
+								add = 1
+							}
+							if = {
+								limit = {
+									has_trait = beauty_good_3
+								}
+								add = 1
+							}
+						}
+					}
+					modifier = { #Intellect
+						has_trait = intellect_good
+						add = {
+							value = 1
+							if = {
+								limit = {
+									has_trait = intellect_good_2
+								}
+								add = 1
+							}
+							if = {
+								limit = {
+									has_trait = intellect_good_3
+								}
+								add = 1
+							}
+						}
+					}
+					modifier = { #Physique
+						has_trait = physique_good
+						add = {
+							value = 1
+							if = {
+								limit = {
+									has_trait = physique_good_2
+								}
+								add = 1
+							}
+							if = {
+								limit = {
+									has_trait = physique_good_3
+								}
+								add = 1
+							}
+						}
+					}
+					modifier = { #Beauty
+						num_of_good_genetic_traits >= 1
+						add = {
+							value = 1
+							if = {
+								limit = {
+									num_of_good_genetic_traits >= 2
+								}
+								add = 1
+							}
+							if = {
+								limit = {
+									num_of_good_genetic_traits >= 3
+								}
+								add = 1
+							}
+						}
+					}
+					modifier = { #Rare traits
+						has_trait = fecund
+						add = 2
+					}
+					modifier = { #Rare traits
+						has_trait = pure_blooded
+						add = 4
+					}
+					modifier = {
+						is_knight = yes
+						add = {
+							value = 5
+							if = {
+								limit = {
+									is_acclaimed = yes
+								}
+								add = 5
+							}
+						}
+					}
+					modifier = {
+						has_any_court_position = yes
+						add = {
+							value = 10
+							if = {
+								limit = {
+									has_court_position = court_physician_court_position
+								}
+								add = 10
+							}
+						}
+					}
+					modifier = { #Councillors
+						is_councillor = yes
+						add = 15
+					}
+					modifier = { #Close relatives
+						is_close_family_of = root
+						add = { #Children
+							value = 75
+							if = {
+								limit = {
+									is_child_of = root
+								}
+								add = 25
+							}
+						}
+					}
+				}
+				save_scope_as = drafted_candidate
+			}
+		}
+
+		send_interface_toast = {
+			type = event_generic_neutral
+			title = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							root = {
+								is_female = yes
+							}
+						}
+						desc = bride_show.0005_f.t
+					}
+					desc = bride_show.0005_m.t
+				}
+			}
+			right_icon = scope:liege
+			left_icon = scope:drafted_candidate
+			desc = {
+				first_valid = {
+					triggered_desc = { #There was only 1
+						trigger = {
+							any_in_local_list = {
+								list = subject_candidate_list
+								count = 0
+							}
+						}
+						desc = bride_show_1_courtiers_desc
+					}
+					triggered_desc = { #There was only 1
+						trigger = {
+							any_in_local_list = {
+								list = subject_candidate_list
+								count >= 1
+							}
+						}
+						desc = bride_show_more_courtiers_desc
+					}
+					#There were several
+					desc = siege.0002.several_captured
+				}
+			}
 		}
 	}
 }
