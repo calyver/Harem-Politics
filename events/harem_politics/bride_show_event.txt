@@ -26,7 +26,13 @@ scripted_effect bride_show_add_to_candidate_list_effect = {
 				OVERLORD = scope:liege
 			} 
 		}
-		add_to_list = elegible_candidates
+		scope:liege = {
+			add_to_variable_list = {
+				name = elegible_candidates
+				target = prev
+				days = 10
+			}
+		}
 	}
 }
 
@@ -50,11 +56,11 @@ scripted_effect bride_show_next_candidate_effect = {
 			limit = { 
 				OR = { 
 					any_in_list = {
-						list = elegible_candidates
+						variable = elegible_candidates
 						count = 0
 					}
 					any_in_list = { #Or in case all of them are teens
-						list = elegible_candidates
+						variable = elegible_candidates
 						is_adult = no
 						count = all
 					}
@@ -303,14 +309,20 @@ scripted_effect bride_show_next_candidate_effect = {
 				}
 			}
 			scope:bride = {
-				add_to_list = elegible_candidates
+				scope:liege = {
+					add_to_variable_list = {
+						name = elegible_candidates
+						target = prev
+						days = 10
+					}
+				}
 				add_to_list = chosen_candidate_list
 				add_character_flag = created_bride_flag
 			}
 			clear_saved_scope = bride
 		}
 		random_in_list = {
-			list = elegible_candidates
+			variable = elegible_candidates
 			weight = {
 				base = 35
 				modifier = { #Non-rejected consorts are preferred
@@ -3239,20 +3251,23 @@ bride_show.1001 = {
 bride_show.1002 = {
 	hidden = yes
 	trigger = {
-		any_courtier = {
-			bride_show_viable_candidate_trigger = {
-				OVERLORD = scope:liege
+		scope:liege = {
+			any_in_list = {
+				variable = elegible_candidates
+				is_courtier_of = root
+				count >= 1
 			}
-			is_in_list = elegible_candidates
 		}
 	}
 	immediate = {
 		if = {
 			limit = {
-				any_in_list = {
-					list = elegible_candidates
-					is_courtier_of = root
-					count > 1
+				scope:liege = {
+					any_in_list = {
+						variable = elegible_candidates
+						is_courtier_of = root
+						count > 1
+					}
 				}
 			}
 			set_variable = {
@@ -3260,7 +3275,7 @@ bride_show.1002 = {
 				value = 0
 			}
 			ordered_in_list = {
-				list = elegible_candidates
+				variable = elegible_candidates
 				limit = {
 					is_courtier_of = root
 				}
@@ -3286,7 +3301,7 @@ bride_show.1002 = {
 		}
 		else = {
 			random_in_list = {
-				list = elegible_candidates
+				variable = elegible_candidates
 				limit = {
 					is_courtier_of = root
 				}
