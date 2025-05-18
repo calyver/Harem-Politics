@@ -13,13 +13,21 @@
 				}
 				add = 75 # AI counts aren't particularly important
 			}
-			if = {
+			if = { #Less drama for only polygamous rulers
 				limit = {
-					government_has_flag = government_is_tribal
 					accepts_polygamy = yes
 					accepts_concubinage = no
 				}
-				add = 50 # Tribal rulers don't have a well-defined harem
+				add = 25
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					OR = {
+						government_has_flag = government_is_nomadic
+						government_has_flag = government_is_tribal
+					}
+				}
+				add = 50
 			}
 			if = {
 				limit = {
@@ -68,32 +76,62 @@ random_yearly_everyone_pulse = {
 consort_events_on_actions = {
 	random_events = {	# A single event will be picked to fire
 		
-		chance_to_happen = 60	# A percentage chance determining whether the events involved will be evaluated at all
-
-		chance_of_no_event = {
+		chance_to_happen = { # A percentage chance determining whether the events involved will be evaluated at all
 			value = 0
 			if = {
 				limit = {
-					AND = {
+					OR = {
+						is_landed_or_landless_administrative = yes
 						any_consort = {
-							is_ai = yes
+							is_landed_or_landless_administrative = yes
 						}
-						is_ai = yes
 					}
 				}
-				add = 60 # Consorts of AI rulers aren't particularly important
+				add = 65
 			}
-			if = {
+		}
+
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
-					government_has_flag = government_is_tribal
-					accepts_polygamy = yes
-					accepts_concubinage = no
+					is_ai = yes
+					NOT = {
+						any_consort = {
+							is_ai = no
+						}
+					}
 				}
-				add = 25 # Tribal rulers don't have a well-defined harem
+				add = 60
+			}
+			if = { #Less drama for only polygamous rulers
+				limit = {
+					any_consort = {
+						is_landed_or_landless_administrative = yes
+						accepts_polygamy = yes
+						accepts_concubinage = no
+					}
+				}
+				add = 25
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					any_consort = {
+						is_landed_or_landless_administrative = yes
+						OR = {
+							government_has_flag = government_is_nomadic
+							government_has_flag = government_is_tribal
+						}
+					}
+				}
+				add = 50
 			}
 			if = {
 				limit = {
-					accepts_harems = no
+					any_consort = {
+						is_landed_or_landless_administrative = yes
+						accepts_harems = no
+					}
 				}
 				add = 100 # Monogamous rulers don't apply
 			}
