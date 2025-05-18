@@ -180,8 +180,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					save_scope_as = bride
 				}
 			}
-			else_if = {
-				limit = { is_female = yes }
+			else = {
 				create_character = {
 					location = root.capital_province
 					template = potential_bride_character
@@ -303,300 +302,314 @@ scripted_effect bride_show_next_candidate_effect = {
 			}
 			scope:bride = {
 				add_to_list = elegible_candidates_list
-				add_to_list = chosen_candidate_list
+				add_to_list = created_candidates_list
 				add_character_flag = created_bride_flag
 			}
 			clear_saved_scope = bride
 		}
-		random_in_list = {
-			list = elegible_candidates_list
-			weight = {
-				base = 35
-				modifier = { #Non-rejected consorts are preferred
-					is_demoted_consort_trigger = no
-					add = 40
-				}
-				modifier = { #Ready to be consorts are preferred
-					is_adult = yes
-					add = 25
-				}
-				modifier = { #Just in case
-					NOT = { is_courtier_of = root }
-					add = 100
-				}
-				modifier = { #Powerful candidates are preferred
-					is_lowborn = no
-					add = 10
-				}
-				modifier = { #More if it was set
-					exists = local_var:family_background_important
-					is_lowborn = no
-					add = 20
-				}
-				modifier = { #Children of vassals are preferred
-					any_close_or_extended_family_member = {
-						is_vassal_of = root
-					}
-					add = 10
-				}
-				modifier = { #More if it was set
-					any_close_or_extended_family_member = {
-						OR = {	
-							is_vassal_of = root
-							is_tributary_of = root
-						}
-					}
-					exists = local_var:family_background_important
-					add = 20
-				}
-				modifier = { #Child of powerful vassals are preferred
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-						}
-					}
-					add = 10
-				}
-				modifier = { #Child of tributaries are preferred
-					any_close_family_member = {
-						is_tributary_of = root
-					}
-					add = 15
-				}
-				modifier = { #More if it was set
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-							AND = {
-								is_tributary_of = root
-								is_lowborn = no
-							}
-						}
-					}
-					exists = local_var:family_background_important
-					add = 100
-				}
-				modifier = { #Noble rank
-					any_close_family_member = {
-						highest_held_title_tier >= tier_county
-					}
-					add = 5
-				}
-				modifier = { #Noble rank - preference for powerful background
-					any_close_family_member = {
-						highest_held_title_tier >= tier_county
-					}
-					exists = local_var:family_background_important
-					add = 5
-				}
-				modifier = { #Ducal rank - preference for powerful background
-					any_close_family_member = {
-						highest_held_title_tier >= tier_duchy
-					}
-					exists = local_var:family_background_important
-					add = 5
-				}
-				modifier = { #Royal rank - preference for powerful background
-					any_close_family_member = {
-						highest_held_title_tier >= tier_kingdom
-					}
-					exists = local_var:family_background_important
-					add = 10
-				}
-				modifier = { #Imperial rank - preference for powerful background
-					any_close_family_member = {
-						highest_held_title_tier = tier_empire
-					}
-					exists = local_var:family_background_important
-					add = 5
-				}
-				modifier = { #Nepotism wins if family background is important
-					any_close_or_extended_family_member = {
-						is_close_or_extended_family_of = root
-					}
-					exists = local_var:family_background_important
-					add = 15
-				}
-				modifier = { #Trait considerations
-					num_of_good_genetic_traits >= 1
-					add = 5
-				}
-				modifier = { #Trait considerations - beauty is important
-					OR = {
-						has_trait = beauty_good_1
-						has_trait = physique_good_1
-					}
-					exists = local_var:beauty_important
-					add = 20
-				}
-				modifier = { #Trait considerations - beauty is important
-					OR = {
-						has_trait = beauty_good_2
-						has_trait = physique_good_2
-					}
-					exists = local_var:beauty_important
-					add = 25
-				}
-				modifier = { #Trait considerations - beauty is important
-					OR = {
-						has_trait = beauty_good_3
-						has_trait = physique_good_3
-					}
-					exists = local_var:beauty_important
-					add = 30
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_sinful_traits > 0
-					exists = local_var:personality_skills_important
-					add = -10
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_sinful_traits >= 2
-					exists = local_var:personality_skills_important
-					add = -10
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_sinful_traits >= 3
-					exists = local_var:personality_skills_important
-					add = -10
-				}
-				modifier = { #Bonus for virtuous candidates - if virtuous traits matter
-					AND = {
-						num_sinful_traits = 0
-						num_virtuous_traits >= 1
-					}
-					exists = local_var:personality_skills_important
-					add = 5
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_virtuous_traits >= 1
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_virtuous_traits >= 2
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Virtuous traits are encouraged - if they were chosen
-					num_virtuous_traits >= 3
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Skill considerations - if they were chosen
-					OR = {
-						stewardship >= 9
-						diplomacy >= 9
-						learning >= 9
-					}
-					exists = local_var:personality_skills_important
-					add = 5
-				}
-				modifier = { #Skill considerations - if they were chosen
-					OR = {
-						stewardship >= 13
-						diplomacy >= 13
-						learning >= 13
-					}
-					exists = local_var:personality_skills_important
-					add = 5
-				}
-				modifier = { #Skill considerations - if they were chosen
-					OR = {
-						stewardship >= 17
-						diplomacy >= 17
-						learning >= 17
-					}
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Bonus - skill considerations - if they were chosen
-					AND = {
-						stewardship >= 13
-						diplomacy >= 13
-						learning >= 13
-					}
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = content
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = calm
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = gregarious
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = compassionate
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = forgiving
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = honest
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen - bonus for non-scheming consorts
-					harem_politics_evil_consort_trigger = no
-					exists = local_var:personality_skills_important
-					add = 10
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = intellect_good_1
-					exists = local_var:personality_skills_important
-					add = 20
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = intellect_good_2
-					exists = local_var:personality_skills_important
-					add = 25
-				}
-				modifier = { #Trait considerations - if they were chosen
-					has_trait = intellect_good_3
-					exists = local_var:personality_skills_important
-					add = 30
-				}
-				modifier = { #Scheming consorts will try their best to be chosen... and they make the harem interesting
-					harem_politics_evil_consort_trigger = yes
-					add = 15
-				}
-				modifier = { #Parents would not leave their children
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 40
-				}
-				modifier = { #Virginity is valuable
-					any_spouse = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 40
-				}
-				modifier = { #Characters that believe in concubinage are more elegible
-					accepts_harems = yes
-					add = 10
+		if = {
+			limit = {
+				any_in_list = {
+					list = elegible_candidates_list
+					count = 1
 				}
 			}
-			save_scope_as = potential_candidate
+			random_in_list = {
+				list = elegible_candidates_list
+				save_scope_as = potential_candidate
+			}
+		}
+		else = {
+			random_in_list = {
+				list = elegible_candidates_list
+				weight = {
+					base = 35
+					modifier = { #Non-rejected consorts are preferred
+						is_demoted_consort_trigger = no
+						add = 40
+					}
+					modifier = { #Ready to be consorts are preferred
+						is_adult = yes
+						add = 25
+					}
+					modifier = { #Just in case
+						NOT = { is_courtier_of = root }
+						add = 100
+					}
+					modifier = { #Powerful candidates are preferred
+						is_lowborn = no
+						add = 10
+					}
+					modifier = { #More if it was set
+						exists = local_var:family_background_important
+						is_lowborn = no
+						add = 20
+					}
+					modifier = { #Children of vassals are preferred
+						any_close_or_extended_family_member = {
+							is_vassal_of = root
+						}
+						add = 10
+					}
+					modifier = { #More if it was set
+						any_close_or_extended_family_member = {
+							OR = {	
+								is_vassal_of = root
+								is_tributary_of = root
+							}
+						}
+						exists = local_var:family_background_important
+						add = 20
+					}
+					modifier = { #Child of powerful vassals are preferred
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+								is_parent_of = root
+							}
+						}
+						add = 10
+					}
+					modifier = { #Child of tributaries are preferred
+						any_close_family_member = {
+							is_tributary_of = root
+						}
+						add = 15
+					}
+					modifier = { #More if it was set
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+								is_parent_of = root
+								AND = {
+									is_tributary_of = root
+									is_lowborn = no
+								}
+							}
+						}
+						exists = local_var:family_background_important
+						add = 100
+					}
+					modifier = { #Noble rank
+						any_close_family_member = {
+							highest_held_title_tier >= tier_county
+						}
+						add = 5
+					}
+					modifier = { #Noble rank - preference for powerful background
+						any_close_family_member = {
+							highest_held_title_tier >= tier_county
+						}
+						exists = local_var:family_background_important
+						add = 5
+					}
+					modifier = { #Ducal rank - preference for powerful background
+						any_close_family_member = {
+							highest_held_title_tier >= tier_duchy
+						}
+						exists = local_var:family_background_important
+						add = 5
+					}
+					modifier = { #Royal rank - preference for powerful background
+						any_close_family_member = {
+							highest_held_title_tier >= tier_kingdom
+						}
+						exists = local_var:family_background_important
+						add = 10
+					}
+					modifier = { #Imperial rank - preference for powerful background
+						any_close_family_member = {
+							highest_held_title_tier = tier_empire
+						}
+						exists = local_var:family_background_important
+						add = 5
+					}
+					modifier = { #Nepotism wins if family background is important
+						any_close_or_extended_family_member = {
+							is_close_or_extended_family_of = root
+						}
+						exists = local_var:family_background_important
+						add = 15
+					}
+					modifier = { #Trait considerations
+						num_of_good_genetic_traits >= 1
+						add = 5
+					}
+					modifier = { #Trait considerations - beauty is important
+						OR = {
+							has_trait = beauty_good_1
+							has_trait = physique_good_1
+						}
+						exists = local_var:beauty_important
+						add = 20
+					}
+					modifier = { #Trait considerations - beauty is important
+						OR = {
+							has_trait = beauty_good_2
+							has_trait = physique_good_2
+						}
+						exists = local_var:beauty_important
+						add = 25
+					}
+					modifier = { #Trait considerations - beauty is important
+						OR = {
+							has_trait = beauty_good_3
+							has_trait = physique_good_3
+						}
+						exists = local_var:beauty_important
+						add = 30
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_sinful_traits > 0
+						exists = local_var:personality_skills_important
+						add = -10
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_sinful_traits >= 2
+						exists = local_var:personality_skills_important
+						add = -10
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_sinful_traits >= 3
+						exists = local_var:personality_skills_important
+						add = -10
+					}
+					modifier = { #Bonus for virtuous candidates - if virtuous traits matter
+						AND = {
+							num_sinful_traits = 0
+							num_virtuous_traits >= 1
+						}
+						exists = local_var:personality_skills_important
+						add = 5
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_virtuous_traits >= 1
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_virtuous_traits >= 2
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Virtuous traits are encouraged - if they were chosen
+						num_virtuous_traits >= 3
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Skill considerations - if they were chosen
+						OR = {
+							stewardship >= 9
+							diplomacy >= 9
+							learning >= 9
+						}
+						exists = local_var:personality_skills_important
+						add = 5
+					}
+					modifier = { #Skill considerations - if they were chosen
+						OR = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						exists = local_var:personality_skills_important
+						add = 5
+					}
+					modifier = { #Skill considerations - if they were chosen
+						OR = {
+							stewardship >= 17
+							diplomacy >= 17
+							learning >= 17
+						}
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Bonus - skill considerations - if they were chosen
+						AND = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = content
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = calm
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = gregarious
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = compassionate
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = forgiving
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = honest
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen - bonus for non-scheming consorts
+						harem_politics_evil_consort_trigger = no
+						exists = local_var:personality_skills_important
+						add = 10
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = intellect_good_1
+						exists = local_var:personality_skills_important
+						add = 20
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = intellect_good_2
+						exists = local_var:personality_skills_important
+						add = 25
+					}
+					modifier = { #Trait considerations - if they were chosen
+						has_trait = intellect_good_3
+						exists = local_var:personality_skills_important
+						add = 30
+					}
+					modifier = { #Scheming consorts will try their best to be chosen... and they make the harem interesting
+						harem_politics_evil_consort_trigger = yes
+						add = 15
+					}
+					modifier = { #Parents would not leave their children
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 40
+					}
+					modifier = { #Virginity is valuable
+						any_spouse = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 40
+					}
+					modifier = { #Characters that believe in concubinage are more elegible
+						accepts_harems = yes
+						add = 10
+					}
+				}
+				save_scope_as = potential_candidate
+			}
 		}
 	}
 
@@ -2483,28 +2496,33 @@ bride_show.0006 = {
 		}
 		
 		hidden_effect = {
-			every_in_list = {
-				list = chosen_candidate_list
-				if = {
-					limit = {
-						has_character_flag = created_bride_flag
+			if = {
+				limit = {
+					any_in_list = {
+						list = created_candidates_list
+						count >= 1
 					}
+				}
+				every_in_list = {
+					list = created_candidates_list
 					if = {
 						limit = {
-							NOT = {
-								exists = court_owner
+							has_character_flag = created_bride_flag
+						}
+						if = {
+							limit = {
+								NOT = {
+									exists = court_owner
+								}
+								has_character_flag = rejected_candidate_flag
 							}
-							has_character_flag = rejected_candidate_flag
+							death = {
+								death_reason = death_vanished
+							}
 						}
-						death = {
-							death_reason = death_vanished
+						else = {
+							remove_character_flag = created_bride_flag
 						}
-					}
-					if = {
-						limit = {
-							is_alive = yes
-						}
-						remove_character_flag = created_bride_flag
 					}
 				}
 			}
@@ -3367,7 +3385,7 @@ bride_show.1002 = {
 			}
 			else = {
 				custom_tooltip = bride_show_more_courtiers_desc
-				#remove_variable = num_courtiers_summoned
+				remove_variable = num_courtiers_summoned
 			}
 		}
 	}
