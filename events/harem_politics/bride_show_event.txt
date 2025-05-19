@@ -3084,22 +3084,19 @@ bride_show.0008 = {
 		first_valid = {
 			triggered_desc = { #Chosen as a spouse
 				trigger = {
-					exists = scope:candidate_marriage
-					scope:candidate_marriage = scope:potential_candidate
+					scope:candidate_marriage ?= scope:potential_candidate
 				}
 				desc = bride_show.married.desc
 			}
 			triggered_desc = { #Chosen as a consort
 				trigger = {
-					exists = scope:candidate_concubinage
-					scope:candidate_concubinage = scope:potential_candidate
+					scope:candidate_concubinage ?= scope:potential_candidate
 				}
 				desc = bride_show.concubine.desc
 			}
 			triggered_desc = { #Recruited to court
 				trigger = {
-					exists = scope:candidate_courtier
-					scope:candidate_courtier = scope:potential_candidate
+					scope:candidate_courtier ?= scope:potential_candidate
 				}
 				desc = bride_show.recruit.desc
 			}
@@ -3116,10 +3113,62 @@ bride_show.0008 = {
 					target = root
 					gold = scope:gold_to_pay
 				}
+				if = {
+					limit = {
+						scope:candidate_marriage ?= scope:potential_candidate
+					}
+					#Prestige
+					if = {
+						limit = {
+							highest_held_title_tier = tier_duchy
+						}
+						root = {
+							add_prestige = miniscule_prestige_value
+						}
+					}
+					else_if = {
+						limit = {
+							highest_held_title_tier = tier_kingdom
+						}
+						root = {
+							add_prestige = minor_prestige_value
+						}
+					}
+					else_if = {
+						limit = {
+							highest_held_title_tier >= tier_empire
+						}
+						root = {
+							add_prestige = medium_prestige_value
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						scope:candidate_concubinage ?= scope:potential_candidate
+					}
+					#Prestige
+					if = {
+						limit = {
+							highest_held_title_tier = tier_kingdom
+						}
+						root = {
+							add_prestige = miniscule_prestige_value
+						}
+					}
+					else_if = {
+						limit = {
+							highest_held_title_tier >= tier_empire
+						}
+						root = {
+							add_prestige = minor_prestige_value
+						}
+					}
+				}
 			}
 		}
 		gain_influence_harem_politics_effect = {
-			RECIPIENT = scope:potential_candidate.court_owner
+			RECIPIENT = root
 			CHARACTER = scope:liege
 			TARGET = scope:potential_candidate
 		}
