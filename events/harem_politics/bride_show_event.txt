@@ -1569,9 +1569,43 @@ bride_show.0005 = {
 				allowed_concubines = no
 			}
 			modifier = { #More likely if the candidate is noble
-				add = 10
+				add = -20
 				scope:potential_candidate = {
-					is_lowborn = no
+					is_lowborn = yes
+				}
+			}
+			modifier = { #More likely if root doesn't have enough spouses
+				add = 30
+				scope:liege = {
+					trigger_if = {
+						limit = {
+							primary_title.tier >= 5
+						}
+						any_spouse = {
+							count < 4
+						}
+					}
+					trigger_else_if = {
+						limit = {
+							primary_title.tier >= 4
+						}
+						any_spouse = {
+							count < 3
+						}
+					}
+					trigger_else_if = {
+						limit = {
+							primary_title.tier >= 3
+						}
+						any_spouse = {
+							count < 2
+						}
+					}
+					trigger_else = {
+						any_spouse = {
+							count < 1
+						}
+					}
 				}
 			}
 			modifier = { #Less likely if the candidate is lowborn and low legitimacy
@@ -1630,12 +1664,6 @@ bride_show.0005 = {
 					}
 				}
 			}
-			modifier = { #More likely if root isn't married
-				add = 15
-				any_spouse = {
-					count = 0
-				}
-			}
 			modifier = { #More likely if the candidate has nice traits
 				add = 5
 				scope:potential_candidate = {
@@ -1669,10 +1697,21 @@ bride_show.0005 = {
 			modifier = { #More likely if the candidate is virtuous
 				add = 5
 				scope:potential_candidate = {
-					OR = {
-						num_sinful_traits = 0
-						num_virtuous_traits >= 1
+					num_sinful_traits = 0
+				}
+			}
+			modifier = { #More likely if the candidate is virtuous
+				add = {
+					value = 10
+					if = {
+						limit = {
+							num_virtuous_traits >= 2
+						}
+						add = 10
 					}
+				}
+				scope:potential_candidate = {
+					num_virtuous_traits >= 1
 				}
 			}
 			modifier = { #More likely if the candidate isn't a criminal
@@ -1931,8 +1970,8 @@ bride_show.0005 = {
 					any_close_family_member = { is_vassal_of = root }
 				}
 			}
-			modifier = { #More likely if root doesn't have desired concubines
-				add = 40
+			modifier = { #More likely if root doesn't have min. of desired concubines
+				add = 60
 				number_of_concubines < number_of_desired_concubines
 			}
 			modifier = { #More likely if the number of concubines is inferior to the number of spouses
@@ -2392,7 +2431,7 @@ bride_show.0005 = {
 		ai_chance = {
 			base = 15
 			modifier = { #More likely if the candidate is not noble
-				add = 20
+				add = 15
 				scope:potential_candidate = {
 					is_lowborn = yes
 				}
