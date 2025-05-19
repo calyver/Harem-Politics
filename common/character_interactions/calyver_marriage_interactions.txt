@@ -3711,7 +3711,7 @@ offer_concubine = {
 		# Harem Politics modifiers
 		modifier = { # More likely if both are administrative and recipient's house is important
 			add = {
-				value = 50
+				value = 20
 				if = {
 					limit = {
 						scope:actor = {
@@ -3726,7 +3726,7 @@ offer_concubine = {
 							has_trait = content
 						}
 					}
-					add = -25
+					add = -15
 				}
 				if = {
 					limit = {
@@ -3758,8 +3758,9 @@ offer_concubine = {
 						is_powerful_family = yes
 						is_dominant_family = yes
 					}
-					NOT = {
+					NOR = {
 						this = scope:actor.house
+						this = scope:actor.top_liege.house
 					}
 				}
 			}
@@ -3767,7 +3768,7 @@ offer_concubine = {
 		}
 		modifier = { # More likely if both are administrative and recipient's house is important
 			add = {
-				value = 75
+				value = 30
 				if = {
 					limit = {
 						scope:actor = {
@@ -3782,7 +3783,7 @@ offer_concubine = {
 							has_trait = content
 						}
 					}
-					add = -25
+					add = -15
 				}
 				if = {
 					limit = {
@@ -3808,6 +3809,11 @@ offer_concubine = {
 			}
 			scope:recipient = {
 				government_has_flag = government_has_influence
+				house ?= {
+					NOT = {
+						this = scope:actor.house
+					}
+				}
 				OR = { # Same realm check
 					this = scope:actor.top_liege
 					AND = {
@@ -3816,14 +3822,77 @@ offer_concubine = {
 							any_house_member = {
 								this = scope:actor.top_liege
 							}
-							NOT = {
-								this = scope:actor.house
-							}
 						}
 					}
 				}
 			}
 			scope:secondary_actor.house ?= scope:actor.house
+		}
+
+		modifier = { #More likely if the recipient is a child
+			scope:recipient = {
+				is_child_of = scope:actor
+				reverse_opinion = {
+					target = scope:actor
+					value > -1
+				}
+				number_of_concubines < number_of_desired_concubines
+			}
+			add = {
+				value = 20
+				if = {
+					limit = {
+						scope:recipient = {
+							is_primary_heir_of = scope:actor
+						}
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						scope:actor.primary_title = {
+							place_in_line_of_succession = {
+								target = scope:recipient
+								value <= 3
+							}
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							any_child = {
+								is_alive = yes
+								count < 2
+							}
+						}
+					}
+					add = 5
+				}
+			}
+		}
+		modifier = { #More likely if the recipient is a relative
+			scope:recipient = {
+				is_close_family_of = scope:actor
+				reverse_opinion = {
+					target = scope:actor
+					value > -11
+				}
+				number_of_concubines < number_of_desired_concubines
+				NOT = { is_child_of = scope:actor }
+			}
+			add = {
+				value = 5
+				if = {
+					limit = {
+						scope:recipient = {
+							is_primary_heir_of = scope:actor
+						}
+					}
+					add = 10
+				}
+			}
 		}
 	}
 
