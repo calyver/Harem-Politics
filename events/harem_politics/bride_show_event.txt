@@ -62,7 +62,10 @@ scripted_effect bride_show_next_candidate_effect = {
 						scope:liege = { has_variable = beauty_important }
 						any_in_list = {
 							list = elegible_candidates_list
-							has_trait = beauty_good
+							OR = {	
+								has_trait = beauty_good
+								has_trait = physique_good
+							}
 							count = 0
 						}
 					}
@@ -1321,10 +1324,26 @@ bride_show.0005 = {
 	left_portrait = {
 		character = scope:potential_candidate
 		animation = flirtation
-	}	
+	}
+	lower_center_portrait = {
+		trigger = {
+			exists = scope:pc_court_owner
+		}
+		character = scope:pc_court_owner
+	}
 
 	immediate = {
-		save_scope_as = liege
+		if = {
+			limit = {
+				NOT = {
+					exists = scope:liege
+				}
+			}
+			save_scope_as = liege
+		}
+		scope:potential_candidate.court_owner ?= {
+			save_scope_as = pc_court_owner
+		}
 	}
 	
 	# Marry them
@@ -1368,31 +1387,6 @@ bride_show.0005 = {
 				target = scope:potential_candidate.court_owner
 				gold = bride_compensation_payment_value
 			}
-			#Prestige
-			if = {
-				limit = {
-					highest_held_title_tier = tier_duchy
-				}
-				scope:potential_candidate.court_owner = {
-					add_prestige = miniscule_prestige_value
-				}
-			}
-			else_if = {
-				limit = {
-					highest_held_title_tier = tier_kingdom
-				}
-				scope:potential_candidate.court_owner = {
-					add_prestige = minor_prestige_value
-				}
-			}
-			else_if = {
-				limit = {
-					highest_held_title_tier = tier_empire
-				}
-				scope:potential_candidate.court_owner = {
-					add_prestige = medium_prestige_value
-				}
-			}
 			scope:potential_candidate = {
 				save_scope_as = candidate_marriage
 				court_owner = {
@@ -1414,14 +1408,41 @@ bride_show.0005 = {
 								left_icon = scope:potential_candidate
 								custom_tooltip = chosen_spouse_d
 								
-								show_as_tooltip = {
-									scope:liege = { 
+
+								scope:liege = { 
+									show_as_tooltip = {
 										pay_short_term_gold = {
 											target = scope:potential_candidate.court_owner
 											gold = bride_compensation_payment_value
 										}
 									}
+									#Prestige
+									if = {
+										limit = {
+											highest_held_title_tier = tier_duchy
+										}
+										scope:potential_candidate.court_owner = {
+											add_prestige = miniscule_prestige_value
+										}
+									}
+									else_if = {
+										limit = {
+											highest_held_title_tier = tier_kingdom
+										}
+										scope:potential_candidate.court_owner = {
+											add_prestige = minor_prestige_value
+										}
+									}
+									else_if = {
+										limit = {
+											highest_held_title_tier >= tier_empire
+										}
+										scope:potential_candidate.court_owner = {
+											add_prestige = medium_prestige_value
+										}
+									}
 								}
+
 								gain_influence_harem_politics_effect = {
 									RECIPIENT = scope:potential_candidate.court_owner
 									CHARACTER = scope:liege
@@ -1745,23 +1766,6 @@ bride_show.0005 = {
 				target = scope:potential_candidate.court_owner
 				gold = bride_compensation_payment_value
 			}
-			#Prestige
-			if = {
-				limit = {
-					highest_held_title_tier = tier_kingdom
-				}
-				scope:potential_candidate.court_owner = {
-					add_prestige = miniscule_prestige_value
-				}
-			}
-			else_if = {
-				limit = {
-					highest_held_title_tier = tier_empire
-				}
-				scope:potential_candidate.court_owner = {
-					add_prestige = minor_prestige_value
-				}
-			}
 			scope:potential_candidate = {
 				save_scope_as = candidate_concubinage
 				court_owner = {
@@ -1783,14 +1787,33 @@ bride_show.0005 = {
 								left_icon = scope:potential_candidate
 								custom_tooltip = chosen_concubine_d
 								
-								show_as_tooltip = {
-									scope:liege = { 
+
+								scope:liege = { 
+									show_as_tooltip = {
 										pay_short_term_gold = {
 											target = scope:potential_candidate.court_owner
 											gold = bride_compensation_payment_value
 										}
 									}
+									#Prestige
+									if = {
+										limit = {
+											highest_held_title_tier = tier_kingdom
+										}
+										scope:potential_candidate.court_owner = {
+											add_prestige = miniscule_prestige_value
+										}
+									}
+									else_if = {
+										limit = {
+											highest_held_title_tier >= tier_empire
+										}
+										scope:potential_candidate.court_owner = {
+											add_prestige = minor_prestige_value
+										}
+									}
 								}
+
 								gain_influence_harem_politics_effect = {
 									RECIPIENT = scope:potential_candidate.court_owner
 									CHARACTER = scope:liege
