@@ -3125,23 +3125,10 @@ consort_events.0001 = {
 ############################
 ##Consort Hua tortures Xia##
 ############################
-consort_events.0002 = {
-	type = character_event
-	title = consort_events.0002.t
-	desc = consort_events.0002.desc
-	theme = family
-	override_background = {
-		reference = garden
-	}
-	
-	left_portrait = { 	
-		character = scope:valid_target_consort
-		animation = rage
-	}
-	right_portrait = { 	
-		character = scope:shen
-		animation = disgust
-	}
+
+####Error suppression - Hua Fei tortures Xia####
+consort_events.1002 = {
+	hidden = yes
 	
 	trigger = {
 		OR = {
@@ -3253,95 +3240,148 @@ consort_events.0002 = {
 				save_scope_as = partner
 			}
 		}
-
-		scope:partner = {
-			add_character_flag = {
-				flag = has_consort_event_flag
-				months = 5
+		if = {
+			limit = {
+				exists = scope:partner
 			}
-			random_consort = {
-				limit = {
-					shen_trigger = { PARTNER = scope:partner }
+			scope:partner = {
+				random_consort = {
+					limit = {
+						shen_trigger = { PARTNER = scope:partner }
+					}
+					weight = {
+						base = 10
+						modifier = {
+							has_character_flag = flag_new_consort
+							add = 20
+						}
+						modifier = {
+							has_character_modifier = unfavored_consort_modifier
+							add = 10
+						}
+						modifier = {
+							has_character_modifier = forgotten_consort_modifier
+							add = 20
+						}
+					}
+					save_scope_as = shen 
 				}
-				weight = {
-					base = 10
-					modifier = {
-						has_character_flag = flag_new_consort
-						add = 20
-					}
-					modifier = {
-						has_character_modifier = unfavored_consort_modifier
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = forgotten_consort_modifier
-						add = 20
-					}
-				}
-				save_scope_as = shen 
-			}
-			every_consort = {
-				add_to_list = xia_changzai_list
-			}
-			random_in_list = {
-				list = xia_changzai_list
-				limit = {
-					xia_changzai_trigger = { TARGET = scope:shen PARTNER = scope:partner }
-				}
-				weight = {
-					base = 10
-					modifier = {
-						has_trait = arrogant
-						add = 20
-					}
-					modifier = {
-						has_trait = ambitious
-						add = 15
-					}
-					modifier = {
-						has_character_flag = flag_new_consort
-						add = 20
-					}
-					modifier = {
-						has_character_modifier = beloved_consort_modifier
-						add = 20
-					}
-					modifier = {
-						has_character_modifier = favor_boost_modifier
-						add = 15
-					}
-					modifier = {
-						has_character_modifier = favored_consort_modifier
-						add = 10
-					}
-				}
-				save_scope_as = valid_target_consort
-			}
-			
-			scope:shen = {
 				if = {
-					limit = { 
-						NOR = { 
-							has_relation_rival = scope:valid_target_consort
-							has_relation_nemesis = scope:valid_target_consort
-							has_relation_potential_rival = scope:valid_target_consort
-						} 
+					limit = {
+						exists = scope:shen
 					}
-					set_relation_potential_rival = scope:valid_target_consort
+					every_consort = {
+						limit = {
+							xia_changzai_trigger = { TARGET = scope:shen PARTNER = scope:partner }
+						}
+						add_to_list = xia_changzai_list
+					}
+					random_in_list = {
+						list = xia_changzai_list
+						weight = {
+							base = 10
+							modifier = {
+								has_trait = arrogant
+								add = 20
+							}
+							modifier = {
+								has_trait = ambitious
+								add = 15
+							}
+							modifier = {
+								has_character_flag = flag_new_consort
+								add = 20
+							}
+							modifier = {
+								has_character_modifier = beloved_consort_modifier
+								add = 20
+							}
+							modifier = {
+								has_character_modifier = favor_boost_modifier
+								add = 15
+							}
+							modifier = {
+								has_character_modifier = favored_consort_modifier
+								add = 10
+							}
+						}
+						save_scope_as = valid_target_consort
+					}
 				}
-				add_opinion = {
-					target = scope:valid_target_consort
-					modifier = hatred_spouse_opinion
-				}
-			}
-			scope:valid_target_consort = {
-				add_opinion = {
-					target = scope:shen
-					modifier = hatred_spouse_opinion
+				if = {
+					limit = {
+						exists = scope:shen
+						exists = scope:valid_target_consort
+					}
+					add_character_flag = {
+						flag = has_consort_event_flag
+						months = 5
+					}
+					root = {
+						save_scope_as = secondary_actor
+						trigger_event = consort_events.0002
+					}
 				}
 			}
 		}
-		save_scope_as = secondary_actor
+	}
+}
+
+consort_events.0002 = {
+	type = character_event
+	title = consort_events.0002.t
+	desc = consort_events.0002.desc
+	theme = family
+	override_background = {
+		reference = garden
+	}
+	
+	left_portrait = { 	
+		character = scope:valid_target_consort
+		animation = rage
+	}
+	right_portrait = { 	
+		character = scope:shen
+		animation = disgust
+	}
+	
+	trigger = {
+		exists = scope:shen
+		exists = scope:valid_target_consort
+		any_consort = {
+			this = scope:partner
+		}
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				NOT = { exists = scope:secondary_actor }
+			}
+			save_scope_as = secondary_actor
+		}
+		scope:shen = {
+			if = {
+				limit = { 
+					NOR = { 
+						has_relation_rival = scope:valid_target_consort
+						has_relation_nemesis = scope:valid_target_consort
+						has_relation_potential_rival = scope:valid_target_consort
+					} 
+				}
+				set_relation_potential_rival = scope:valid_target_consort
+			}
+			add_opinion = {
+				target = scope:valid_target_consort
+				modifier = hatred_spouse_opinion
+			}
+		}
+		scope:valid_target_consort = {
+			add_opinion = {
+				target = scope:shen
+				modifier = hatred_spouse_opinion
+			}
+		}
 	}
 	
 	#Investigate the matter
