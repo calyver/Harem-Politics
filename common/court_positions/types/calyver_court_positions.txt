@@ -19,15 +19,76 @@
 	# How good is this character in this position? root scope is the holder of the court position
 	aptitude = {
 		value = 1
-		if = {
+		if = { #Related to liege
 			limit = {
+				trigger_if = {
+					limit = {
+						employer ?= {
+							government_has_flag = government_has_influence
+							exists = top_liege
+							exists = house
+						}
+					}
+					any_close_family_member = {
+						exists = house
+						government_has_flag = government_has_influence
+						OR = {
+							this = root.employer.top_liege
+							house ?= {
+								any_house_member = {
+									this = root.employer.top_liege
+								}
+								NOT = { this = root.employer.house }
+							}
+						}
+					}
+				}
+				trigger_else = {
+					exists = employer
+					any_close_family_member = {
+						is_liege_or_above_of = root.employer
+					}
+				}
+			}
+			add = { 
+				value = 100
+				desc = grand_consort_prominent_family_description
+			}
+		}
+		else_if = { #Related to dominant houses
+			limit = {
+				employer ?= {
+					government_has_flag = government_has_influence
+					exists = top_liege
+					exists = house
+				}
+				any_close_family_member = {
+					exists = house
+					government_has_flag = government_has_influence
+					top_liege ?= root.employer.top_liege
+					OR = {
+						this = root.employer.top_liege
+						house ?= {
+							is_dominant_family = yes
+							NOT = { this = root.employer.house }
+						}
+					}
+				}
+			}
+			add = { 
+				value = 75
+				desc = grand_consort_prominent_family_description
+			}
+		}
+		else_if = {
+			limit = {
+				exists = employer
 				any_close_family_member = {
 					OR = {
 						primary_title.tier >= tier_kingdom
-						is_councillor = yes
-						is_powerful_vassal = yes
+						is_councillor_of = root.employer
+						is_powerful_vassal_of = root.employer
 					}
-					#Add dominant family or powerful vassal of liege
 				}
 			}
 			add = { 
@@ -43,7 +104,7 @@
 				}
 			}
 			add = { 
-				value = 20
+				value = 25
 				desc = grand_consort_good_family_description 
 			}
 		}
@@ -55,7 +116,7 @@
 				}
 			}
 			add = { 
-				value = 10
+				value = 15
 				desc = grand_consort_decent_family_description
 			}
 		}
@@ -66,7 +127,7 @@
 				}
 			}
 			add = { 
-				value = 5
+				value = 10
 				desc = grand_consort_decent_family_description
 			}
 		}
@@ -521,7 +582,7 @@
 				has_trait = gluttonous
 			}
 			add = {
-				value = -5
+				value = -10
 				desc = court_position_gluttonous_trait
 			}
 		}
@@ -957,11 +1018,42 @@
 	}
 	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
 	candidate_score = {
-		value = 50
+		value = 75
 		add = scope:base_value
 		add = court_position_candidate_score_base_value
 		add = court_position_candidate_aptitude_value
 		scope:liege = {
+			# Big harems need help in management
+			if = {
+				limit = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count >= 6
+					}
+				}
+				add = {
+					value = 15
+					if = {
+						limit = {
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+								count >= 8
+							}
+						}
+						add = 10
+					}
+					if = { # More if we need a secondary spouse to take command among the secondary spouses
+						limit = {
+							any_spouse = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+								count >= 3
+							}
+							accepts_concubines = yes
+						}
+						add = 10
+					}
+				}
+			}
 			# Noble birth
 			if = {
 				limit = {
@@ -1102,7 +1194,7 @@
 						has_character_modifier = favor_boost_modifier
 					}
 				}
-				add = 15
+				add = 25
 			}
 			if = {
 				limit = {
