@@ -2126,27 +2126,8 @@ favor_points_subtractions = {
 			}
 			add = 2
 		}
-		if = { #If liege has less than 7 consorts and 2 favorites, they will be even more penalized
-			limit = { 
-				scope:harem_liege = {
-					any_consort = {
-						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-						count <= 6
-					}
-					any_consort = {
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_character_modifier = favor_boost_modifier
-							has_relation_lover = scope:harem_liege
-							AND = {
-								has_variable = favor
-								var:favor >= favorite_consort_lower_limit
-								var:favor < beloved_consort_lower_limit
-							}
-						}
-						count >= 2
-					}
-				}
+		if = {
+			limit = {
 				root = {
 					OR = {
 						has_character_modifier = favored_consort_modifier
@@ -2160,87 +2141,74 @@ favor_points_subtractions = {
 					}
 				}
 			}
-			add = 8
-		}
-		if = { #If there are more than 2 favorites
-			limit = { 
-				scope:harem_liege = {
-					any_consort = {
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_character_modifier = favor_boost_modifier
-							has_relation_lover = scope:harem_liege
-							AND = {
-								has_variable = favor
-								var:favor >= favorite_consort_lower_limit
-								var:favor < beloved_consort_lower_limit
-							}
+			if = { # If there are more than 2 favorites and less than 7 consorts
+				limit = {
+					scope:harem_liege = {
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+							count <= 6
 						}
-						count >= 3
+						any_consort = {
+							OR = {
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = favor_boost_modifier
+								has_relation_lover = scope:harem_liege
+								AND = {
+									has_variable = favor
+									var:favor >= favorite_consort_lower_limit
+									var:favor < beloved_consort_lower_limit
+								}
+							}
+							count >= 2
+						}
 					}
 				}
-				root = {
-					OR = {
-						has_character_modifier = favored_consort_modifier
-						has_character_modifier = favor_boost_modifier
-						has_relation_lover = scope:harem_liege
-						AND = {
-							has_variable = favor
-							var:favor >= favorite_consort_lower_limit
-							var:favor < beloved_consort_lower_limit
+				add = 8
+			}
+			if = { # There are more than 2 favorites
+				limit = {
+					scope:harem_liege = {
+						any_consort = {
+							OR = {
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = favor_boost_modifier
+								has_relation_lover = scope:harem_liege
+								AND = {
+									has_variable = favor
+									var:favor >= favorite_consort_lower_limit
+									var:favor < beloved_consort_lower_limit
+								}
+							}
+							count >= 3
 						}
 					}
+				}
+				add = 12
+				if = {
+					limit = { # There are more than 3 favorites
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_character_modifier = favor_boost_modifier
+									has_relation_lover = scope:harem_liege
+									AND = {
+										has_variable = favor
+										var:favor >= favorite_consort_lower_limit
+										var:favor < beloved_consort_lower_limit
+									}
+								}
+								count >= 4
+							}
+						}
+					}
+					add = 18
 				}
 			}
-			add = 12
 		}
-		if = { #If there are more than 2 favorites
-			limit = { 
-				scope:harem_liege = {
-					any_consort = {
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_character_modifier = favor_boost_modifier
-							has_relation_lover = scope:harem_liege
-							AND = {
-								has_variable = favor
-								var:favor >= favorite_consort_lower_limit
-								var:favor < beloved_consort_lower_limit
-							}
-						}
-						count >= 4
-					}
-				}
-				root = {
-					OR = {
-						has_character_modifier = favored_consort_modifier
-						has_character_modifier = favor_boost_modifier
-						has_relation_lover = scope:harem_liege
-						AND = {
-							has_variable = favor
-							var:favor >= favorite_consort_lower_limit
-							var:favor < beloved_consort_lower_limit
-						}
-					}
-				}
-			}
-			add = 18
-		}
-		if = { #If there are more than 1 beloved consort
-			limit = { 
-				scope:harem_liege = {
-					any_consort = {
-						OR = {
-							has_character_modifier = beloved_consort_modifier
-							has_relation_soulmate = scope:harem_liege
-							AND = {	
-								has_variable = favor
-								var:favor >= beloved_consort_lower_limit
-							}
-						}
-						count >= 2
-					}
-				}
+
+		if = {
+			limit = {
 				root = {
 					OR = {
 						has_character_modifier = beloved_consort_modifier
@@ -2252,35 +2220,42 @@ favor_points_subtractions = {
 					}
 				}
 			}
-			add = 28
-		}
-		if = { #If there are more than 1 beloved consort
-			limit = { 
-				scope:harem_liege = {
-					any_consort = {
-						OR = {
-							has_character_modifier = beloved_consort_modifier
-							has_relation_soulmate = scope:harem_liege
-							AND = {	
-								has_variable = favor
-								var:favor >= beloved_consort_lower_limit
+			if = { # There is more than a beloved consort
+				limit = {
+					scope:harem_liege = {
+						any_consort = {
+							OR = {
+								has_character_modifier = beloved_consort_modifier
+								has_relation_soulmate = scope:harem_liege
+								AND = {	
+									has_variable = favor
+									var:favor >= beloved_consort_lower_limit
+								}
 							}
-						}
-						count >= 3
-					}
-				}
-				root = {
-					OR = {
-						has_character_modifier = beloved_consort_modifier
-						has_relation_soulmate = scope:harem_liege
-						AND = {	
-							has_variable = favor
-							var:favor >= beloved_consort_lower_limit
+							count >= 2
 						}
 					}
 				}
+				add = 28
 			}
-			add = 48
+			if = { # There are more than 2 beloved consorts
+				limit = {
+					scope:harem_liege = {
+						any_consort = {
+							OR = {
+								has_character_modifier = beloved_consort_modifier
+								has_relation_soulmate = scope:harem_liege
+								AND = {	
+									has_variable = favor
+									var:favor >= beloved_consort_lower_limit
+								}
+							}
+							count >= 3
+						}
+					}
+				}
+				add = 48
+			}
 		}
 	}
 
