@@ -1711,6 +1711,28 @@ favor_points_additions = {
 		multiply = 0.5
 	}
 
+	#########War#########
+	if = {
+		limit = {
+			scope:harem_liege = {
+				is_at_war = yes
+			}
+		}
+		multiply = {
+			value = {
+				value = 0.7
+				if = {
+					limit = {
+						scope:harem_liege = {
+							any_character_war = { is_war_leader = scope:harem_liege }
+						}
+					}
+					add = -0.2
+				}
+			}
+		}
+	}
+
 	#########Balancing favor#########
 	if = {
 		limit = {
@@ -2145,76 +2167,58 @@ favor_points_subtractions = {
 	value = 0
 	subtract = {
 		#desc = favor_subtraction_base_loss
-		value = 4
-		if = { #More loss if neutral
-			limit = { 
-				root = {
-					has_variable = favor
-					var:favor >= neutral_consort_lower_limit
-				}
-			}
-			add = 4
-		}
-		if = {
-			limit = {
-				root = {
-					OR = {
-						has_character_modifier = favored_consort_modifier
-						has_character_modifier = favor_boost_modifier
-						has_relation_lover = scope:harem_liege
-						AND = {
-							has_variable = favor
-							var:favor >= favorite_consort_lower_limit
-							var:favor < beloved_consort_lower_limit
-						}
+		value = {
+			value = 4
+			if = { #More loss if neutral
+				limit = { 
+					root = {
+						has_variable = favor
+						var:favor >= neutral_consort_lower_limit
 					}
 				}
+				add = 4
 			}
-			if = { # If there are more than 2 favorites and less than 7 consorts
+			if = {
 				limit = {
-					scope:harem_liege = {
-						any_consort = {
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-							count <= 6
-						}
-						any_consort = {
-							OR = {
-								has_character_modifier = favored_consort_modifier
-								has_character_modifier = favor_boost_modifier
-								has_relation_lover = scope:harem_liege
-								AND = {
-									has_variable = favor
-									var:favor >= favorite_consort_lower_limit
-									var:favor < beloved_consort_lower_limit
-								}
+					root = {
+						OR = {
+							has_character_modifier = favored_consort_modifier
+							has_character_modifier = favor_boost_modifier
+							has_relation_lover = scope:harem_liege
+							AND = {
+								has_variable = favor
+								var:favor >= favorite_consort_lower_limit
+								var:favor < beloved_consort_lower_limit
 							}
-							count >= 2
 						}
 					}
 				}
-				add = 8
-			}
-			if = { # There are more than 2 favorites
-				limit = {
-					scope:harem_liege = {
-						any_consort = {
-							OR = {
-								has_character_modifier = favored_consort_modifier
-								has_character_modifier = favor_boost_modifier
-								has_relation_lover = scope:harem_liege
-								AND = {
-									has_variable = favor
-									var:favor >= favorite_consort_lower_limit
-									var:favor < beloved_consort_lower_limit
-								}
+				if = { # If there are more than 2 favorites and less than 7 consorts
+					limit = {
+						scope:harem_liege = {
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								count <= 6
 							}
-							count >= 3
+							any_consort = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_character_modifier = favor_boost_modifier
+									has_relation_lover = scope:harem_liege
+									AND = {
+										has_variable = favor
+										var:favor >= favorite_consort_lower_limit
+										var:favor < beloved_consort_lower_limit
+									}
+								}
+								count >= 2
+							}
 						}
 					}
+					add = 8
 				}
-				add = 12
-				if = {
-					limit = { # There are more than 3 favorites
+				if = { # There are more than 2 favorites
+					limit = {
 						scope:harem_liege = {
 							any_consort = {
 								OR = {
@@ -2227,63 +2231,83 @@ favor_points_subtractions = {
 										var:favor < beloved_consort_lower_limit
 									}
 								}
-								count >= 4
+								count >= 3
 							}
 						}
 					}
-					add = 18
+					add = 12
+					if = {
+						limit = { # There are more than 3 favorites
+							scope:harem_liege = {
+								any_consort = {
+									OR = {
+										has_character_modifier = favored_consort_modifier
+										has_character_modifier = favor_boost_modifier
+										has_relation_lover = scope:harem_liege
+										AND = {
+											has_variable = favor
+											var:favor >= favorite_consort_lower_limit
+											var:favor < beloved_consort_lower_limit
+										}
+									}
+									count >= 4
+								}
+							}
+						}
+						add = 18
+					}
 				}
 			}
-		}
 
-		if = {
-			limit = {
-				root = {
-					OR = {
-						has_character_modifier = beloved_consort_modifier
-						has_relation_soulmate = scope:harem_liege
-						AND = {	
-							has_variable = favor
-							var:favor >= beloved_consort_lower_limit
-						}
-					}
-				}
-			}
-			if = { # There is more than a beloved consort
+			if = {
 				limit = {
-					scope:harem_liege = {
-						any_consort = {
-							OR = {
-								has_character_modifier = beloved_consort_modifier
-								has_relation_soulmate = scope:harem_liege
-								AND = {	
-									has_variable = favor
-									var:favor >= beloved_consort_lower_limit
-								}
+					root = {
+						OR = {
+							has_character_modifier = beloved_consort_modifier
+							has_relation_soulmate = scope:harem_liege
+							AND = {	
+								has_variable = favor
+								var:favor >= beloved_consort_lower_limit
 							}
-							count >= 2
 						}
 					}
 				}
-				add = 28
-			}
-			if = { # There are more than 2 beloved consorts
-				limit = {
-					scope:harem_liege = {
-						any_consort = {
-							OR = {
-								has_character_modifier = beloved_consort_modifier
-								has_relation_soulmate = scope:harem_liege
-								AND = {	
-									has_variable = favor
-									var:favor >= beloved_consort_lower_limit
+				if = { # There is more than a beloved consort
+					limit = {
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = beloved_consort_modifier
+									has_relation_soulmate = scope:harem_liege
+									AND = {	
+										has_variable = favor
+										var:favor >= beloved_consort_lower_limit
+									}
 								}
+								count >= 2
 							}
-							count >= 3
 						}
 					}
+					add = 28
 				}
-				add = 48
+				if = { # There are more than 2 beloved consorts
+					limit = {
+						scope:harem_liege = {
+							any_consort = {
+								OR = {
+									has_character_modifier = beloved_consort_modifier
+									has_relation_soulmate = scope:harem_liege
+									AND = {	
+										has_variable = favor
+										var:favor >= beloved_consort_lower_limit
+									}
+								}
+								count >= 3
+							}
+						}
+					}
+					add = 48
+				}
 			}
 		}
 	}
@@ -2543,21 +2567,23 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_rival_genetics
-			value = 2
-			if = {
-				limit = { 
-					root = {
-						has_variable = favor
-						var:favor >= favorite_consort_lower_limit
-					}
-					scope:harem_liege = {
-						any_consort = { 
-							NOT = { this = root } 
-							num_of_good_genetic_traits > 1
+			value = {
+				value = 2
+				if = {
+					limit = { 
+						root = {
+							has_variable = favor
+							var:favor >= favorite_consort_lower_limit
+						}
+						scope:harem_liege = {
+							any_consort = { 
+								NOT = { this = root } 
+								num_of_good_genetic_traits > 1
+							}
 						}
 					}
+					add = 1
 				}
-				add = 1
 			}
 		}
 	}
@@ -2646,14 +2672,16 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_diplomacy
-			value = 4
-			if = {
-				limit = { 
-					root = {
-						diplomacy < 3
+			value = {
+				value = 4
+				if = {
+					limit = { 
+						root = {
+							diplomacy < 3
+						}
 					}
+					add = 2
 				}
-				add = 2
 			}
 		}
 	}
@@ -2675,7 +2703,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_diplomacy
 			value = {
-				add = 2
+				value = 2
 				if = {
 					limit = { 
 						root = {
@@ -2724,7 +2752,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_many_consorts
 			value = {
-				add = 2
+				value = 2
 				if = {
 					limit = {
 						scope:harem_liege = {
@@ -2759,7 +2787,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_new_consorts
 			value = {
-				add = 2
+				value = 2
 				if = {
 					limit = { 
 						scope:harem_liege = { 
@@ -2810,42 +2838,44 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_pregnant_consorts
-			value = 2
-			if = {
-				limit = { 
-					scope:harem_liege = { 
-						any_consort = { 
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-							has_trait = pregnant
-							pregnancy_assumed_father ?= {
-								this = scope:harem_liege
-							}
-							count >= 2
-						}
-					}
-				}
-				add = 2
-			}
-			if = {
-				limit = { 
-					scope:harem_liege = { 
-						any_child = { 
-							is_alive = yes
-							count <= 3
-						}
-					}
-				}
-				add = 2
+			value = {
+				value = 2
 				if = {
-					limit = {
+					limit = { 
 						scope:harem_liege = { 
-							any_child = { 
-								is_alive = yes
-								count = 0
+							any_consort = { 
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+								has_trait = pregnant
+								pregnancy_assumed_father ?= {
+									this = scope:harem_liege
+								}
+								count >= 2
 							}
 						}
 					}
 					add = 2
+				}
+				if = {
+					limit = { 
+						scope:harem_liege = { 
+							any_child = { 
+								is_alive = yes
+								count <= 3
+							}
+						}
+					}
+					add = 2
+					if = {
+						limit = {
+							scope:harem_liege = { 
+								any_child = { 
+									is_alive = yes
+									count = 0
+								}
+							}
+						}
+						add = 2
+					}
 				}
 			}
 		}
@@ -2872,100 +2902,10 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_favored_consorts
-			value = 4
-			#Favorites' effects on each other
-			if = { #If root is a favorite, they will be more affected
-				limit = { 
-					root = {
-						OR = {
-							has_character_modifier = favored_consort_modifier
-							has_character_modifier = favor_boost_modifier
-							has_relation_lover = scope:harem_liege
-						}
-					}
-				}
-				add = 4
-				if = { #If liege has less than 7 consorts and 2 favorites, they will be even more penalized
-					limit = { 
-						scope:harem_liege = {
-							any_consort = {
-								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
-								count <= 6
-							}
-							any_consort = {
-								OR = {
-									has_character_modifier = favored_consort_modifier
-									has_character_modifier = favor_boost_modifier
-									has_relation_lover = scope:harem_liege
-								}
-								count >= 2
-							}
-						}
-					}
-					add = 5
-				}
-				if = { #There can only be a max of 2 favorites
-					limit = { 
-						scope:harem_liege = {
-							any_consort = {
-								OR = {
-									has_character_modifier = favored_consort_modifier
-									has_character_modifier = favor_boost_modifier
-									has_relation_lover = scope:harem_liege
-								}
-								count >= 3
-							}
-						}
-					}
-					add = 6
-				}
-				if = { #There can only be a max of 2 favorites
-					limit = { 
-						scope:harem_liege = {
-							any_consort = {
-								OR = {
-									has_character_modifier = favored_consort_modifier
-									has_character_modifier = favor_boost_modifier
-									has_relation_lover = scope:harem_liege
-								}
-								count >= 4
-							}
-						}
-					}
-					add = 16
-				}
-				if = { #There can only be a max of 2 favorites
-					limit = { 
-						scope:harem_liege = {
-							any_consort = {
-								OR = {
-									has_character_modifier = favored_consort_modifier
-									has_character_modifier = favor_boost_modifier
-									has_relation_lover = scope:harem_liege
-								}
-								count >= 5
-							}
-						}
-					}
-					add = 24
-				}
-			}
-			#Beloved effects on each other
-			if = { #Beloved consorts will take more favor from everyone
-				limit = { 
-					scope:harem_liege = {
-						any_consort = {
-							NOT = { this = root }
-							OR = {
-								has_character_modifier = beloved_consort_modifier
-								has_relation_soulmate = scope:harem_liege
-							}
-							count >= 1
-						}
-					}
-				}
-				add = 6
-				if = { #More if root is favored
+			value = {
+				value = 4
+				#Favorites' effects on each other
+				if = { #If root is a favorite, they will be more affected
 					limit = { 
 						root = {
 							OR = {
@@ -2976,61 +2916,153 @@ favor_points_subtractions = {
 						}
 					}
 					add = 4
-				}
-				if = { #There can only be one beloved consort
-					limit = { 
-						root = {
-							OR = {
-								has_character_modifier = beloved_consort_modifier
-								has_relation_soulmate = scope:harem_liege
-							}
-						}
-					}
-					add = 20
-					if = { #There can only be one beloved consort
+					if = { #If liege has less than 7 consorts and 2 favorites, they will be even more penalized
 						limit = { 
 							scope:harem_liege = {
 								any_consort = {
-									NOT = { this = root }
+									is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
+									count <= 6
+								}
+								any_consort = {
 									OR = {
-										has_character_modifier = beloved_consort_modifier
-										has_relation_soulmate = scope:harem_liege
+										has_character_modifier = favored_consort_modifier
+										has_character_modifier = favor_boost_modifier
+										has_relation_lover = scope:harem_liege
 									}
 									count >= 2
 								}
 							}
 						}
-						add = 30
+						add = 6
 					}
-					if = { #There can only be one beloved consort
+					if = { #There can only be a max of 2 favorites
 						limit = { 
 							scope:harem_liege = {
 								any_consort = {
-									NOT = { this = root }
 									OR = {
-										has_character_modifier = beloved_consort_modifier
-										has_relation_soulmate = scope:harem_liege
+										has_character_modifier = favored_consort_modifier
+										has_character_modifier = favor_boost_modifier
+										has_relation_lover = scope:harem_liege
 									}
 									count >= 3
 								}
 							}
 						}
-						add = 40
+						add = 12
 					}
-					if = { #There can only be one beloved consort
+					if = { #There can only be a max of 2 favorites
 						limit = { 
 							scope:harem_liege = {
 								any_consort = {
-									NOT = { this = root }
 									OR = {
-										has_character_modifier = beloved_consort_modifier
-										has_relation_soulmate = scope:harem_liege
+										has_character_modifier = favored_consort_modifier
+										has_character_modifier = favor_boost_modifier
+										has_relation_lover = scope:harem_liege
 									}
 									count >= 4
 								}
 							}
 						}
-						add = 40
+						add = 24
+					}
+					if = { #There can only be a max of 2 favorites
+						limit = { 
+							scope:harem_liege = {
+								any_consort = {
+									OR = {
+										has_character_modifier = favored_consort_modifier
+										has_character_modifier = favor_boost_modifier
+										has_relation_lover = scope:harem_liege
+									}
+									count >= 5
+								}
+							}
+						}
+						add = 48
+					}
+				}
+				#Beloved effects on each other
+				if = { #Beloved consorts will take more favor from everyone
+					limit = { 
+						scope:harem_liege = {
+							any_consort = {
+								NOT = { this = root }
+								OR = {
+									has_character_modifier = beloved_consort_modifier
+									has_relation_soulmate = scope:harem_liege
+								}
+								count >= 1
+							}
+						}
+					}
+					add = 2
+					if = { #More if root is favored
+						limit = { 
+							root = {
+								OR = {
+									has_character_modifier = favored_consort_modifier
+									has_character_modifier = favor_boost_modifier
+									has_relation_lover = scope:harem_liege
+								}
+							}
+						}
+						add = 4
+					}
+					if = { #There can only be one beloved consort
+						limit = { 
+							root = {
+								OR = {
+									has_character_modifier = beloved_consort_modifier
+									has_relation_soulmate = scope:harem_liege
+								}
+							}
+						}
+						add = 20
+						if = { #There can only be one beloved consort
+							limit = { 
+								scope:harem_liege = {
+									any_consort = {
+										NOT = { this = root }
+										OR = {
+											has_character_modifier = beloved_consort_modifier
+											has_relation_soulmate = scope:harem_liege
+										}
+										count >= 2
+									}
+								}
+							}
+							add = 40
+						}
+						if = { #There can only be one beloved consort
+							limit = { 
+								scope:harem_liege = {
+									any_consort = {
+										NOT = { this = root }
+										OR = {
+											has_character_modifier = beloved_consort_modifier
+											has_relation_soulmate = scope:harem_liege
+										}
+										count >= 3
+									}
+								}
+							}
+							add = 80
+						}
+						if = { #There can only be one beloved consort
+							limit = { 
+								scope:harem_liege = {
+									any_consort = {
+										NOT = { this = root }
+										OR = {
+											has_character_modifier = beloved_consort_modifier
+											has_relation_soulmate = scope:harem_liege
+										}
+										count >= 4
+									}
+								}
+							}
+							add = 160
+						}
 					}
 				}
 			}
@@ -3048,7 +3080,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_age
 			value = {
-				add = 2
+				value = 2
 				if = {
 					limit = { 
 						root = {
@@ -3121,7 +3153,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_unfriendly_children
 			value = {
-				add = 4
+				value = 4
 				if = {
 					limit = { 
 						root = {
@@ -3258,22 +3290,24 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_wrathful
-			value = 2
-			if = {
-				limit = { 
-					scope:harem_liege = {
-						has_trait = wrathful
+			value = {
+				value = 2
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = wrathful
+						}
 					}
+					add = 1
 				}
-				add = 1
-			}
-			if = {
-				limit = { 
-					scope:harem_liege = {
-						has_trait = calm
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = calm
+						}
 					}
+					add = 1
 				}
-				add = 1
 			}
 		}
 	}
@@ -3290,14 +3324,16 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_chaste
-			value = 2
-			if = {
-				limit = { 
-					scope:harem_liege = {
-						has_trait = lustful
+			value = {
+				value = 2
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = lustful
+						}
 					}
+					add = 1
 				}
-				add = 1
 			}
 		}
 	}
@@ -3320,25 +3356,25 @@ favor_points_subtractions = {
 			root = {
 				has_trait = ambitious
 			}
+			scope:harem_liege = {
+				OR ={
+					has_trait = content
+					has_trait = generous
+				}
+			}
 		}
 		subtract = {
 			#desc = favor_subtraction_ambitious
-			value = 1
-			if = {
-				limit = { 
-					scope:harem_liege = {
-						has_trait = content
+			value = {
+				value = 2
+				if = {
+					limit = { 
+						scope:harem_liege = {
+							has_trait = content
+						}
 					}
+					add = 2
 				}
-				add = 1
-			}
-			if = {
-				limit = { 
-					scope:harem_liege = {
-						has_trait = generous
-					}
-				}
-				add = 1
 			}
 		}
 	}
@@ -3355,31 +3391,40 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_lazy
-			value = 1
-			if = { #Extra if root is married
-				limit = { 
-					root = {
-						is_married = yes
+			value = {
+				value = 2
+				if = { #Extra if root is married
+					limit = { 
+						root = {
+							is_married = yes
+							NOR = {
+								has_court_position = grand_consort_court_position
+								AND = {
+									exists = scope:harem_liege.primary_spouse
+									this = scope:harem_liege.primary_spouse
+								}
+							}
+						}
 					}
+					add = 1
 				}
-				add = 1
-			}
-			if = { #Extra if root the GC
-				limit = { 
-					root = {
-						has_court_position = grand_consort_court_position
+				if = { #Extra if root the GC
+					limit = { 
+						root = {
+							has_court_position = grand_consort_court_position
+						}
 					}
+					add = 2
 				}
-				add = 1
-			}
-			if = { #Extra if root is the PS
-				limit = { 
-					exists = scope:harem_liege.primary_spouse
-					root = {
-						this = scope:harem_liege.primary_spouse
+				if = { #Extra if root is the PS
+					limit = { 
+						exists = scope:harem_liege.primary_spouse
+						root = {
+							this = scope:harem_liege.primary_spouse
+						}
 					}
+					add = 4
 				}
-				add = 2
 			}
 		}
 	}
@@ -3411,14 +3456,16 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_greedy
-			value = 1
-			if = { 
-				limit = { 
-					scope:harem_liege = {
-						has_trait = generous
+			value = {
+				value = 1
+				if = { 
+					limit = { 
+						scope:harem_liege = {
+							has_trait = generous
+						}
 					}
+					add = 1
 				}
-				add = 1
 			}
 		}
 	}
@@ -3458,9 +3505,7 @@ favor_points_subtractions = {
 				has_trait = deceitful
 			}
 			scope:harem_liege = {
-				NOT = {	
-					has_trait = honest
-				}
+				has_trait = honest
 			}
 		}
 		subtract = {
@@ -3652,7 +3697,7 @@ favor_points_subtractions = {
 				has_trait = reclusive
 			}
 		}
-		subtract = 2
+		subtract = 4
 	}
 	if = { #Wounded
 		limit = { 
@@ -3663,7 +3708,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_wounded
 			value = {
-				add = 2
+				value = 2
 				if = {
 					limit = { 
 						root = {
@@ -3692,7 +3737,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_bad_genetics
 			value = {
-				add = 6
+				value = 6
 				if = {
 					limit = { 
 						root = {
@@ -3739,7 +3784,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_bad_traits
 			value = {
-				add = 3
+				value = 3
 				if = { #lunatic_1
 					limit = { 
 						root = {
@@ -4021,14 +4066,16 @@ favor_points_subtractions = {
 			}
 		}
 		subtract = {
-			value = 4
-			if = {
-				limit = {
-					scope:harem_liege = {
-						has_trait = chaste
+			value = {
+				value = 4
+				if = {
+					limit = {
+						scope:harem_liege = {
+							has_trait = chaste
+						}
 					}
+					add = 2
 				}
-				add = 2
 			}
 		}
 	}
@@ -4069,14 +4116,16 @@ favor_points_subtractions = {
 			}
 		}
 		subtract = {
-			value = 2
-			if = {
-				limit = {
-					scope:harem_liege = {
-						has_trait = greedy
+			value = {
+				value = 2
+				if = {
+					limit = {
+						scope:harem_liege = {
+							has_trait = greedy
+						}
 					}
+					add = 2
 				}
-				add = 2
 			}
 		}
 	}
@@ -4117,7 +4166,7 @@ favor_points_subtractions = {
 		subtract = {
 			#desc = favor_subtraction_bad_traits
 			value = {
-				add = 3
+				value = 3
 				if = { #lunatic_1
 					limit = { 
 						scope:harem_liege = {
@@ -4269,7 +4318,7 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_cynical
-			value = 1
+			value = 2
 		}
 	}
 	if = { #Infidel
@@ -4299,7 +4348,7 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_infidel
-			value = 2
+			value = 4
 		}
 	}
 
@@ -4320,30 +4369,32 @@ favor_points_subtractions = {
 		}
 		subtract = {
 			#desc = favor_subtraction_foreigner
-			value = 1
-			if = {
-				limit = {
-					scope:harem_liege.culture = {
-						cultural_acceptance = { target = root.culture value < 26 }
+			value = {
+				value = 1
+				if = {
+					limit = {
+						scope:harem_liege.culture = {
+							cultural_acceptance = { target = root.culture value < 26 }
+						}
 					}
+					add = 1
 				}
-				add = 1
-			}
-			if = {
-				limit = {
-					scope:harem_liege.culture = {
-						cultural_acceptance = { target = root.culture value < 11 }
+				if = {
+					limit = {
+						scope:harem_liege.culture = {
+							cultural_acceptance = { target = root.culture value < 11 }
+						}
 					}
+					add = 1
 				}
-				add = 1
-			}
-			if = {
-				limit = {
-					scope:harem_liege = {
-						has_trait = paranoid
+				if = {
+					limit = {
+						scope:harem_liege = {
+							has_trait = paranoid
+						}
 					}
+					add = 1
 				}
-				add = 1
 			}
 		}
 	}
@@ -4396,26 +4447,6 @@ favor_points_subtractions = {
 		}
 	}
 
-	#########War#########
-	if = {
-		limit = {
-			scope:harem_liege = {
-				is_at_war = yes
-			}
-		}
-		multiply = {
-			value = 0.7
-			if = {
-				limit = {
-					scope:harem_liege = {
-						any_character_war = { is_war_leader = scope:harem_liege }
-					}
-				}
-				add = -0.2
-			}
-		}
-	}
-
 	#########Balancing favor#########
 	if = {
 		limit = {
@@ -4456,15 +4487,7 @@ favor_points_subtractions = {
 				}
 				multiply = 2.1
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 2
 			}
 		}
@@ -4497,15 +4520,7 @@ favor_points_subtractions = {
 				}
 				multiply = 1.9
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 1.8
 			}
 		}
@@ -4538,15 +4553,7 @@ favor_points_subtractions = {
 				}
 				multiply = 1.65
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 1.5
 			}
 		}
@@ -4579,15 +4586,7 @@ favor_points_subtractions = {
 				}
 				multiply = 1.1
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 1.05
 			}
 		}
@@ -4620,15 +4619,7 @@ favor_points_subtractions = {
 				}
 				multiply = 0.25
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 0.3
 			}
 		}
@@ -4661,25 +4652,11 @@ favor_points_subtractions = {
 				}
 				multiply = 0.2
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 0.25
 			}
 		}
-		else_if = { #Add more to the unfavored ones
-			limit = {
-				root = {
-					has_variable = favor
-					var:favor = 0
-				}
-			}
+		else = { #Add more to the unfavored ones
 			if = {
 				limit = {
 					scope:harem_liege = {
@@ -4702,15 +4679,7 @@ favor_points_subtractions = {
 				}
 				multiply = 0.05
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 3
-						}
-					}
-				}
+			else = {
 				multiply = 0.1
 			}
 		}
@@ -4749,15 +4718,7 @@ favor_points_subtractions = {
                     }
                     multiply = 1.1
                 }
-                else_if = {
-                    limit = {
-                        scope:harem_liege = {
-                            any_court_position_holder = {
-                                type = grand_consort_court_position
-                                aptitude:grand_consort_court_position = 1
-                            }
-                        }
-                    }
+                else = {
                     multiply = 1.2
                 }
             }
@@ -4779,15 +4740,7 @@ favor_points_subtractions = {
                     }
                     multiply = 1.15
                 }
-                else_if = {
-                    limit = {
-                        scope:harem_liege = {
-                            any_court_position_holder = {
-                                type = grand_consort_court_position
-                                aptitude:grand_consort_court_position = 1
-                            }
-                        }
-                    }
+                else = {
                     multiply = 1.25
                 }
             }
@@ -4803,15 +4756,7 @@ favor_points_subtractions = {
                     }
                     multiply = 1.2
                 }
-                else_if = {
-                    limit = {
-                        scope:harem_liege = {
-                            any_court_position_holder = {
-                                type = grand_consort_court_position
-                                aptitude:grand_consort_court_position = 1
-                            }
-                        }
-                    }
+                else = {
                     multiply = 1.3
                 }
             }
@@ -4828,15 +4773,7 @@ favor_points_subtractions = {
 				}
 				multiply = 0.85
 			}
-			else_if = {
-				limit = {
-					scope:harem_liege = {
-						any_court_position_holder = {
-							type = grand_consort_court_position
-							aptitude:grand_consort_court_position = 1
-						}
-					}
-				}
+			else = {
 				multiply = 0.75
 			}
 		}
