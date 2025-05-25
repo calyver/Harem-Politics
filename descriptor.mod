@@ -3,5 +3,5 @@ tags={
 	"Gameplay"
 	"Historical"
 }
-name="Harem-Politics"
-supported_version="1.15.0"
+name="Harem Politics"
+supported_version="1.16.*"
