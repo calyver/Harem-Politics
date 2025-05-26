@@ -121,21 +121,10 @@ harem_politics_target_outranks_consort_trigger = {
 	}
 }
 
-bride_show_viable_candidate_trigger = {
+##Potential consorts##
+bride_show_viable_consort_trigger = {
 	is_healthy = yes
 	is_available = yes
-	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
-		limit = {
-			age = 15
-		}
-		exists = betrothed
-		$OVERLORD$ = {
-			is_ai = no
-		}
-	}
-	trigger_else = {
-		age >= 16
-	}
 	age <= 23
 	NOR = {
 		#If you betrothed them already, why should they participate?
@@ -197,6 +186,37 @@ bride_show_viable_candidate_trigger = {
 
 		has_trait = pregnant
 	}
+	can_become_concubine_of_character_valid_trigger = { CHARACTER = $OVERLORD$ }
+	NOT = {
+		any_heir_title = {
+			place_in_line_of_succession = {
+				target = prev
+				value <= 2
+			}
+		}
+	}
+}
+
+bride_show_viable_candidate_trigger = {
+	bride_show_viable_consort_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
+		limit = {
+			age = 15
+		}
+		betrothed ?= {
+			NOT = {
+				is_close_family_of = $OVERLORD$
+			}
+		}
+		$OVERLORD$ = {
+			is_ai = no
+		}
+	}
+	trigger_else = {
+		age >= 16
+	}
 	trigger_if = { #Beauty parameters
 		limit = {
 			OR = { #Tributaries would never send ugly candidates
@@ -227,13 +247,43 @@ bride_show_viable_candidate_trigger = {
 			has_trait = intellect_bad
 		}
 	}
-	can_become_concubine_of_character_valid_trigger = { CHARACTER = $OVERLORD$ }
-	NOT = {
-		any_heir_title = {
-			place_in_line_of_succession = {
-				target = prev
-				value <= 2
+}
+
+recruit_jarya_viable_candidate_trigger = {
+	is_adult = yes
+	is_councillor = no
+	bride_show_viable_consort_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	NOR = {
+		religion = religion:islam_religion
+		has_trait = beauty_bad
+		any_close_family_member = {
+			highest_held_title_tier >= tier_county
+		}
+		any_consort = {
+			count >= 1
+		}
+	}
+	trigger_if = {
+		limit = {
+			exists = court_owner
+		}
+		court_owner = {
+			NOR = {
+				is_liege_or_above_of = $OVERLORD$
+				is_vassal_or_below_of = $OVERLORD$
+				is_tributary_of = $OVERLORD$
 			}
+		}
+	}
+}
+
+recruit_jarya_viable_county_trigger = {
+	any_pool_character = {
+		province = $PLACE$
+		recruit_jarya_viable_candidate_trigger = {
+			OVERLORD = $OVERLORD$
 		}
 	}
 }

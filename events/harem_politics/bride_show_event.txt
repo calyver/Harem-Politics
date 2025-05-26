@@ -71,209 +71,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					}
 				}
 			}
-			create_character = {
-				location = scope:liege.capital_province
-				template = potential_bride_character
-				gender_female_chance = {
-					if = {
-						limit = {
-							scope:liege = { allowed_to_marry_same_sex_trigger = yes }
-						}
-						add = 50
-					}
-					else_if = {
-						limit = { scope:liege = { is_female = yes } }
-						add = 0
-					}
-					else = {
-						add = 100
-					}
-				}
-				after_creation = {
-					#Good genetics
-					random = {
-						chance = 10
-						modifier = { #Emperors
-							add = 10
-							scope:liege = {
-								highest_held_title_tier >= tier_empire
-							}
-						}
-						modifier = { #Kings
-							add = 10
-							scope:liege = {
-								highest_held_title_tier >= tier_kingdom
-							}
-						}
-						modifier = {
-							add = {
-								value = 20
-								if = {
-									limit = {
-										NOT = { exists = scope:candidate_1 }
-										any_in_list = {
-											list = elegible_candidates_list
-											has_trait = beauty_good
-											count = 0
-										}
-									}
-									add = 25
-								}
-							}
-							scope:liege = {
-								has_variable = beauty_important
-							}
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 1
-							}
-							add = -5
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 2
-							}
-							add = -10
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 3
-							}
-							add = -10
-						}
-						random_list = {
-							1 = { # Superior genetics
-								modifier = { #Emperors
-									add = 3
-									scope:liege = {
-										highest_held_title_tier >= tier_empire
-									}
-								}
-								modifier = { #Kings
-									add = 2
-									scope:liege = {
-										highest_held_title_tier >= tier_kingdom
-									}
-								}
-								random_list = {
-									20 = { # Beauty
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}
-										add_trait = beauty_good_3
-									}
-									9 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}
-										add_trait = intellect_good_3
-									}
-									9 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}											
-										add_trait = physique_good_3
-									}
-									2 = { # Fecund													
-										add_trait = fecund
-									}
-								}											
-							}
-							4 = { # Good genetics
-								modifier = { #Emperors
-									add = 3
-									scope:liege = {
-										highest_held_title_tier >= tier_empire
-									}
-								}
-								modifier = { #Kings
-									add = 2
-									scope:liege = {
-										highest_held_title_tier >= tier_kingdom
-									}
-								}
-								random_list = {
-									4 = { # Beauty	
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}
-										add_trait = beauty_good_2
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}									
-										add_trait = intellect_good_2
-									}
-									1 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}												
-										add_trait = physique_good_2
-									}
-								}											
-							}
-							25 = { # Decent genetics
-								random_list = {
-									4 = { # Beauty	
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}				
-										add_trait = beauty_good_1
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}									
-										add_trait = intellect_good_1
-									}
-									1 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}											
-										add_trait = physique_good_1
-									}
-								}											
-							}
-						}
-					}
-				}
-				save_scope_as = bride
-			}
+			calyver_create_candidate_effect = yes
 			scope:bride = {
 				add_to_list = elegible_candidates_list
 				add_to_list = created_candidates_list
@@ -3920,6 +3718,377 @@ bride_show.1002 = {
 			else = {
 				custom_tooltip = bride_show_more_courtiers_desc
 				remove_variable = num_courtiers_summoned
+			}
+		}
+	}
+}
+
+##Recruit Jarya##
+bride_show.2000 = {
+	hidden = yes
+	trigger = {
+		is_landed = yes
+		accepts_concubinage = yes
+		religion = religion:islam_religion
+		highest_held_title_tier >= tier_duchy
+		trigger_if = {
+			limit = {
+				any_in_list = {
+					list = pool_candidates
+					NOT = { is_courtier_of = scope:liege }
+					recruit_jarya_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+					count = 0
+				}
+			}
+			exists = scope:candidate_province
+		}
+		trigger_else = {
+			any_in_list = {
+				list = pool_candidates
+				NOT = { is_courtier_of = scope:liege }
+				recruit_jarya_viable_candidate_trigger = {
+					OVERLORD = scope:liege
+				}
+				count >= 1
+			}
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_candidates
+					NOT = { is_courtier_of = scope:liege }
+					recruit_jarya_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+					count = 0
+				}
+			}
+			calyver_create_candidate_effect = yes
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_candidates
+					NOT = { is_courtier_of = scope:liege }
+					recruit_jarya_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+					count = 1
+				}
+			}
+			random_in_list = {
+				list = pool_candidates
+				limit = {
+					NOT = { is_courtier_of = scope:liege }
+					recruit_jarya_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+				save_scope_as = jarya
+			}
+		}
+		else = {
+			random_in_list = {
+				list = pool_candidates
+				limit = {
+					NOT = { is_courtier_of = scope:liege }
+					recruit_jarya_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+				weight = {
+					base = 25
+					modifier = {
+						exists = court_owner
+						add = -25
+					}
+					modifier = { # Christians were especially captured
+						religion = religion:christianity_religion
+						add = 25
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe
+						}
+						add = 15
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe_south
+						}
+						add = 15
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe_west_iberia
+						}
+						add = 15
+					}
+					modifier = {
+						is_lowborn = no
+						add = -10
+					}
+					# Virginity was prized
+					modifier = {
+						any_consort = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 10
+					}
+					modifier = {
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 10
+					}
+					# Skills
+					modifier = {
+						OR = {
+							stewardship >= 9
+							diplomacy >= 9
+							learning >= 9
+						}
+						add = 5
+					}
+					modifier = {
+						OR = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						add = 10
+					}
+					modifier = {
+						OR = {
+							stewardship >= 17
+							diplomacy >= 17
+							learning >= 17
+						}
+						add = 15
+					}
+					modifier = {
+						AND = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						add = 20
+					}
+					# Good genetics
+					modifier = { #Trait considerations
+						num_of_good_genetic_traits >= 1
+						add = 10
+					}
+					modifier = {
+						num_of_good_genetic_traits >= 2
+						add = 10
+					}
+					# No bad genetic traits
+					modifier = {
+						num_of_bad_genetic_traits > 0
+						add = -25
+					}
+					# Docile captives would be easier to send
+					modifier = {
+						has_trait = temperate
+						add = 10
+					}
+					modifier = {
+						has_trait = craven
+						add = 10
+					}
+					modifier = {
+						has_trait = content
+						add = 10
+					}
+					modifier = {
+						has_trait = humble
+						add = 10
+					}
+					modifier = {
+						has_trait = chaste
+						add = -10
+					}
+					modifier = {
+						has_trait = zealous
+						add = -20
+					}
+					# Intellect
+					modifier = {
+						has_trait = intellect_good_1
+						add = 5
+					}
+					modifier = {
+						has_trait = intellect_good_2
+						add = 10
+					}
+					modifier = {
+						has_trait = intellect_good_3
+						add = 15
+					}
+					# Health
+					modifier = {
+						is_healthy = yes
+						add = 15
+					}
+					modifier = {
+						OR = {
+							has_character_modifier = malnourished_modifier
+							current_weight < -50
+							has_character_modifier = obese_modifier
+							current_weight > 50
+							has_trait = beauty_bad
+						}
+						add = -15
+					}		
+				}
+				save_scope_as = jarya
+			}
+		}
+		if = {
+			limit = {	
+				scope:jarya.court_owner ?= {
+					NOT = {
+						this = scope:liege
+					}
+					is_ai = no
+				}
+			}
+			send_interface_toast = {
+				type = event_generic_bad
+				title = bride_show.2000.t.court_owner
+				right_icon = scope:liege
+				left_icon = scope:jarya
+				custom_tooltip = bride_show.2000.desc.court_owner
+			}
+		}
+		send_interface_toast = {
+			type = event_generic_neutral
+			title = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							scope:jarya = { is_female = yes }
+						}
+						desc = bride_show.2000.t_f
+					}
+					desc = bride_show.2000.t_m
+				}
+			}
+			right_icon = scope:jarya
+			scope:liege = {
+				add_courtier = scope:jarya
+			}
+			scope:jarya = {
+				add_opinion = {
+					target = scope:liege
+					modifier = upset_opinion
+					opinion = -10
+				}
+				stress_impact = {
+					base = minor_stress_impact_gain
+				}
+				#In case they received a marriage proposal already
+				add_character_flag = {
+					flag = has_been_offered_as_concubine
+					days = 1
+				}
+				remove_from_list = pool_candidates
+				add_character_flag = {
+					flag = blocked_from_leaving
+					years = 25
+				}
+				hidden_effect = {
+					if = {
+						limit = {
+							exists = betrothed
+							#A check to make sure you haven't somehow gotten betrothed to them during the consideration time
+							NOT = { betrothed = scope:actor }
+						}
+						betrothed = { trigger_event = marriage_interaction.0041 }
+						break_betrothal = betrothed
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								NOT = { this = scope:liege }
+								count >= 1
+							}
+						}
+						every_close_family_member = {
+							limit = {
+								NOT = { this = scope:liege }
+							}
+							add_opinion = {
+								target = scope:liege
+								modifier = abducted_close_family_crime
+							}
+							if = {
+								limit = {
+									is_ai = no
+								}
+								send_interface_toast = {
+									type = event_generic_bad
+									title = bride_show.2000.t.close_family
+									right_icon = scope:liege
+									left_icon = scope:jarya
+									custom_tooltip = bride_show.2000.desc.court_owner
+								}
+							}
+						}
+					}
+				}
+				remove_character_flag = has_been_offered_as_concubine
+			}
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_variable = jarya_recruited
+				}
+			}
+			set_variable = {
+				name = jarya_recruited
+				value = 1
+				months = 6
+			}
+			trigger_event = {
+				id = bride_show.2000
+				days = { 7 10 }
+			}
+		}
+		else = {
+			change_variable = {
+				name = jarya_recruited
+				add = 1
+			}
+			if = {
+				limit = {
+					OR = {
+						AND = {
+							highest_held_title_tier = tier_duchy
+							var:jarya_recruited < 3
+						}
+						AND = {
+							highest_held_title_tier > tier_duchy
+							var:jarya_recruited < 4
+						}
+					}
+				}
+				trigger_event = {
+					id = bride_show.2000
+					days = { 7 10 }
+				}
+			}
+			else = {
+				remove_variable = jarya_recruited
 			}
 		}
 	}

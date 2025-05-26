@@ -135,6 +135,9 @@
 			}
 			has_realm_law = equal_law
 		}
+		NOT = {
+			religion = religion:islam_religion
+		}
 	}
 
 	is_valid = {
@@ -1277,6 +1280,606 @@
 						days = { 7 10 }
 					}
 				}
+			}
+		}
+	}
+	
+	ai_potential = { always = yes }
+
+	ai_will_do = {
+		base = 0
+		ai_value_modifier = {
+			ai_boldness = 0.2
+		}
+		ai_value_modifier = {
+			ai_greed = 0.2
+		}
+		modifier = {
+			add = 15
+			has_trait = lustful
+		}
+		modifier = {
+			add = -25
+			has_trait = shy
+		}
+		modifier = {
+			add = -10
+			has_trait = craven
+		}
+		modifier = {
+			add = -50
+			has_trait = paranoid
+		}
+		modifier = {
+			add = -20
+			has_trait = chaste
+		}
+		modifier = { #Sexuality
+			add = -20
+			has_trait = celibate
+		}
+		modifier = { #Sexuality
+			add = -20
+			has_sexuality = asexual
+		}
+		modifier = {
+			add = 50
+			trigger_if = {
+				limit = {
+					accepts_concubinage = yes
+				}
+				number_of_concubines < number_of_desired_concubines
+				NOT = {
+					any_courtier = {
+						can_become_concubine_of_character_valid_trigger = { CHARACTER = root }
+					}
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					accepts_polygamy = yes
+				}
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+		modifier = {
+			add = 15
+			is_married = no
+			is_betrothed = no
+		}
+		modifier = {
+			add = 20
+			accepts_harems = yes
+		}
+	}
+}
+
+recruit_jarya_decision = {
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					is_female = no
+				}
+				desc = recruit_jarya_decision_title_m
+			}
+			desc = recruit_jarya_decision_title_f
+		}
+	}
+	picture = {
+		reference = "gfx/interface/illustrations/decisions/decision_recruitment.dds"
+	}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					is_female = no
+				}
+				desc = recruit_jarya_decision_desc_m
+			}
+			desc = recruit_jarya_decision_desc_f
+		}
+	}
+	selection_tooltip = {
+		first_valid = {
+			triggered_desc = {
+			    trigger = {
+					is_female = yes
+			    }
+			    desc = recruit_jarya_selection_decision_tooltip_f
+			}
+			desc = recruit_jarya_selection_decision_tooltip_m
+		}
+	}
+
+	decision_group_type = courtier
+	ai_check_interval = 36
+	sort_order = 120
+
+	confirm_text = recruit_jarya_decision_confirm
+	
+	is_shown = {
+		is_landed = yes
+		accepts_concubinage = yes
+		religion = religion:islam_religion
+		OR = {
+			any_neighboring_and_across_water_top_liege_realm_owner = {
+				OR = {
+					any_realm_province = {
+						save_temporary_scope_as = place	
+						OR = {
+							recruit_jarya_viable_county_trigger = {
+								OVERLORD = root
+								PROVINCE = scope:place
+							}
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+					}
+					any_courtier_or_guest = {
+						recruit_jarya_viable_candidate_trigger = {
+							OVERLORD = root
+						}
+					}
+					any_vassal_or_below = {
+						any_courtier_or_guest = {
+							recruit_jarya_viable_candidate_trigger = {
+								OVERLORD = root
+							}
+						}
+					}
+					any_tributary = {
+						OR = {
+							any_courtier_or_guest = {
+								recruit_jarya_viable_candidate_trigger = {
+									OVERLORD = root
+								}
+							}
+							any_realm_province = {
+								save_temporary_scope_as = place
+								OR = {
+									recruit_jarya_viable_county_trigger = {
+										OVERLORD = root
+										PROVINCE = scope:place
+									}
+									NOT = {
+										religion = religion:islam_religion
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			any_realm_province = {
+				save_temporary_scope_as = place
+				OR = {
+					recruit_jarya_viable_county_trigger = {
+						OVERLORD = root
+						PROVINCE = scope:place
+					}
+					NOT = {
+						religion = religion:islam_religion
+					}
+				}
+			}
+		}
+		highest_held_title_tier >= tier_county
+		OR = { #Appropriate dominant sex
+			AND = {
+				is_male = no
+				OR = {
+					has_realm_law = female_only_law
+					has_realm_law = female_preference_law
+				}
+			}
+			AND = {
+				is_male = yes
+				OR = {
+					has_realm_law = male_only_law
+					has_realm_law = male_preference_law
+				}
+			}
+			has_realm_law = equal_law
+		}
+	}
+
+	is_valid = {
+		is_adult = yes
+		is_at_war = no
+		highest_held_title_tier >= tier_duchy
+	}
+	
+	is_valid_showing_failures_only = {
+		is_available = yes
+		NOT = {
+			has_trait = devoted
+		}
+
+		custom_tooltip = {
+			text = contagious_disease_bride_show
+			has_epidemic_disease_trigger = no
+		}
+		custom_tooltip = {
+			text = epidemic_bride_show
+			NOR = {
+				realm_has_any_epidemic = {
+					SIZE = 1
+					INTENSITY = minor
+				}
+				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+			}
+		}
+		custom_tooltip = {
+			text = seclusion_bride_show
+			NOR = {
+				has_character_modifier = isolating_modifier
+			}
+		}
+	}
+	
+	
+	cooldown = { years = 4 }
+	
+	cost = {
+		gold = {
+			value = major_gold_value
+			if = {
+				limit = {
+					highest_held_title_tier > tier_duchy
+				}
+				add = minor_gold_value
+			}
+			if = {
+				limit = {
+					highest_held_title_tier > tier_kingdom
+				}
+				add = minor_gold_value
+			}
+		}
+		prestige = medium_prestige_value
+	}
+
+	effect = {
+		custom_tooltip = recruit_jarya_effect_tooltip
+		hidden_effect = {
+			save_scope_as = liege
+			save_scope_as = actor
+			# First check if there are available characters
+			if = {
+				limit = {
+					any_realm_province = {
+						save_temporary_scope_as = place
+						OR = {
+							recruit_jarya_viable_county_trigger = {
+								OVERLORD = root
+								PROVINCE = scope:place
+							}
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+					}
+				}
+				every_realm_province = {
+					limit = {
+						OR = {
+							scope:liege = {
+								recruit_jarya_viable_county_trigger = {
+									OVERLORD = root
+									PROVINCE = prev
+								}
+							}
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+					}
+					add_to_temporary_list = pool_provinces
+				}
+			}
+			if = {
+				limit = {
+					any_neighboring_and_across_water_top_liege_realm_owner = {
+						OR = {
+							any_realm_province = {
+								save_temporary_scope_as = place
+								OR = {
+									recruit_jarya_viable_county_trigger = {
+										OVERLORD = scope:liege
+										PROVINCE = scope:place
+									}
+									NOT = {
+										religion = religion:islam_religion
+									}
+								}
+							}
+							any_courtier_or_guest = {
+								recruit_jarya_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+							}
+							any_vassal_or_below = {
+								any_courtier_or_guest = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+							}
+							any_tributary = {
+								OR = {
+									any_courtier_or_guest = {
+										recruit_jarya_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+									}
+									any_realm_province = {
+										save_temporary_scope_as = place
+										OR = {
+											recruit_jarya_viable_county_trigger = {
+												OVERLORD = scope:liege
+												PROVINCE = scope:place
+											}
+											NOT = {
+												religion = religion:islam_religion
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				every_neighboring_and_across_water_top_liege_realm_owner = {
+					# Province check
+					if = {
+						limit = {
+							any_realm_province = {
+								save_temporary_scope_as = place
+								OR = {
+									recruit_jarya_viable_county_trigger = {
+										OVERLORD = scope:liege
+										PROVINCE = scope:place
+									}
+									NOT = {
+										religion = religion:islam_religion
+									}
+								}
+							}
+						}
+						every_realm_province = {
+							limit = {
+								OR = {
+									scope:liege = {
+										recruit_jarya_viable_county_trigger = {
+											OVERLORD = root
+											PROVINCE = prev
+										}
+									}
+									NOT = {
+										religion = religion:islam_religion
+									}
+								}
+							}
+							add_to_temporary_list = pool_provinces
+						}
+					}
+					# Courtier check
+					if = {
+						limit = {
+							any_courtier_or_guest = {
+								recruit_jarya_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+							}
+						}
+						every_courtier_or_guest = {
+							limit = {
+								recruit_jarya_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+							}
+							add_to_list = pool_candidates
+						}
+					}
+					# Vassal check
+					if = {
+						limit = {
+							any_vassal_or_below = {
+								any_courtier_or_guest = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+							}
+						}
+						every_vassal_or_below = {
+							limit = {
+								any_courtier_or_guest = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+							}
+							every_courtier_or_guest = {
+								limit = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+					# Tributary check
+					if = {
+						limit = {
+							any_tributary = {
+								any_courtier_or_guest = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+							}
+						}
+						every_tributary = {
+							limit = {
+								any_courtier_or_guest = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+							}
+							every_courtier_or_guest = {
+								limit = {
+									recruit_jarya_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+					if = {
+						limit = {
+							any_tributary = {
+								any_realm_province = {
+									save_temporary_scope_as = place
+									OR = {
+										recruit_jarya_viable_county_trigger = {
+											OVERLORD = scope:liege
+											PROVINCE = scope:place
+										}
+										NOT = {
+											religion = religion:islam_religion
+										}
+									}
+								}
+							}
+						}
+						every_tributary = {
+							every_realm_province = {
+								limit = {
+									OR = {
+										scope:liege = {
+											recruit_jarya_viable_county_trigger = {
+												OVERLORD = root
+												PROVINCE = prev
+											}
+										}
+										NOT = {
+											religion = religion:islam_religion
+										}
+									}
+								}
+								add_to_temporary_list = pool_provinces
+							}
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_provinces
+						save_temporary_scope_as = pool_province
+						recruit_jarya_viable_county_trigger = {
+							OVERLORD = scope:liege
+							PROVINCE = scope:pool_province
+						}
+						count > 0
+					}
+				}
+				every_in_list = {
+					list = pool_provinces
+					save_temporary_scope_as = pool_province
+		
+					every_pool_character = {
+						province = scope:pool_province
+						limit = {
+							recruit_jarya_viable_candidate_trigger = {
+								OVERLORD = scope:liege
+								PROVINCE = prev
+							}
+						}
+						add_to_list = pool_candidates
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						count >= 3
+					}
+				}
+				# Nothing
+			}
+			else = {
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_provinces
+							count > 0
+						}
+					}
+					random_in_list = {
+						list = pool_provinces
+						weight = {
+							base = 1
+							modifier = {
+								NOT = { religion = religion:islam_religion }
+								add = 50
+							}
+						}
+						save_scope_as = candidate_province
+					}
+				}
+				else = {
+					scope:liege.capital_province = {
+						save_scope_as = candidate_province
+					}
+				}
+				while = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+					}
+					calyver_create_candidate_effect = yes
+				}
+			}
+			trigger_event = {
+				id = bride_show.2000
+				days = { 7 10 }
 			}
 		}
 	}
