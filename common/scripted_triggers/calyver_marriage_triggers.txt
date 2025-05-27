@@ -203,14 +203,13 @@ can_be_taken_as_muslim_concubine_trigger = {
 		}
 		trigger_if = { # Offering a concubine to a fellow Muslim
 			limit = {
-				$RECEIVER$ = {
-					NOT = { this = $CHARACTER$ }
-				}
+				$RECEIVER$ != $CHARACTER$
 			}
 			trigger_if = { # If the concubine isn't a slave, the receiver can't be a Muslim, or they're cynical
 				limit = {
 					is_imprisoned = no
 					is_concubine = no
+					NOT = { has_character_flag = abducted_non_believer }
 				}
 				$RECEIVER$ = {
 					trigger_if = {
@@ -231,6 +230,22 @@ can_be_taken_as_muslim_concubine_trigger = {
 	trigger_else = {
 		NOT = {
 			religion = religion:islam_religion
+		}
+	}
+	# You cannot offer your children's parents
+	trigger_if = {
+		limit = {
+			$CHARACTER$ = {
+				NOT = { this = $RECEIVER$ }
+			}
+		}
+		NOR = {
+			has_trait = pregnant
+			any_child = {
+				even_if_dead = yes
+				is_child_of = $CHARACTER$
+				count > 0
+			}
 		}
 	}
 }
