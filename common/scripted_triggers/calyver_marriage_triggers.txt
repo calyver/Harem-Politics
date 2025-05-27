@@ -169,13 +169,50 @@ valid_marriage_legitimacy_rank_trigger = {
 	}
 }
 
+make_concubine_is_valid_trigger = {
+	custom_description = {
+		text = take_concubine_allowed_more
+		object = scope:recipient
+		scope:actor = {
+			allowed_more_concubines = yes
+		}
+	}
+	scope:recipient = {
+		custom_tooltip = {
+			text = take_concubine_ex_spouse
+			NOT = {
+				has_opinion_modifier = {
+					modifier = divorced_me_opinion
+					target = scope:actor
+				}
+			}
+		}
+		is_busy_in_events_localised = yes
+		OR = {
+			AND = {
+				is_imprisoned_by = scope:actor
+				is_married = yes
+			}
+			is_married = no
+		}
+		is_hostage = no
+		custom_tooltip = {
+			text = take_muslim_concubine_trigger
+			can_be_taken_as_muslim_concubine_trigger = { CHARACTER = scope:actor }
+		}
+	}
+}
+
 can_be_taken_as_muslim_concubine_trigger = {
+	# CHARACTER = the actor, either taking the concubine or offering them
+	# RECEIVER = the character being offered, if they exist
 	trigger_if = {
 		limit = {
 			religion = religion:islam_religion
 		}
 		OR = {
 			is_imprisoned_by = $CHARACTER$ # If they are imprisoned, they kinda are slaves already
+			is_concubine_of = $CHARACTER$ # To send concubines to fellow Muslims
 			$CHARACTER$ = {
 				trigger_if = {
 					limit = {
@@ -186,6 +223,32 @@ can_be_taken_as_muslim_concubine_trigger = {
 				trigger_else = {
 					NOT = {
 						religion = religion:islam_religion
+					}
+				}
+			}
+		}
+		trigger_if = { # Offering a concubine to a fellow Muslim
+			limit = {
+				$RECEIVER$ ?= {
+					NOT = { this = $CHARACTER$ }
+				}
+			}
+			trigger_if = { # If the concubine isn't a slave, the receiver can't be a Muslim, or they're cynical
+				limit = {
+					is_imprisoned = no
+					is_concubine = no
+				}
+				$RECEIVER$ = {
+					trigger_if = {
+						limit = {
+							religion = religion:islam_religion
+						}
+						has_trait = cynical
+					}
+					trigger_else = {
+						NOT = {
+							religion = religion:islam_religion
+						}
 					}
 				}
 			}
