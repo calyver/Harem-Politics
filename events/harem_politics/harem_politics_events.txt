@@ -14960,7 +14960,7 @@ harem_politics.0014 = {
 						is_grand_consort_trigger = yes
 					}
 				}
-				desc = harem_politics.0014.gc.desc
+				desc = grand_consort_court_position
 			}
 			triggered_desc = { #Secondary spouse
 				desc = harem_politics.0014.ss.desc
@@ -34313,6 +34313,683 @@ scripted_trigger harem_politics_zhenhuan_trigger = {
 #         }
 #     }
 # }
+
+#########################################################
+##Muslim flavor - A matron presents you with concubines##
+#########################################################
+scripted_trigger valid_harem_politics_0037_province_trigger = {
+	OR = {
+		any_pool_character = {
+			province = this
+			recruit_concubines_viable_candidate_trigger = {
+				OVERLORD = root
+			}
+		}
+		NOT = {
+			religion = religion:islam_religion
+		}
+	}
+}
+
+scripted_trigger valid_head_of_the_harem_trigger = {
+	is_head_of_the_harem_trigger = {
+		LIEGE = root
+	}
+	NOT = { is_consort_of = root }
+	is_healthy = yes
+}
+
+harem_politics.0037 = {
+	type = character_event
+	title = harem_politics.0037.t
+	desc = harem_politics.0037.desc
+	theme = family
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait  = {
+		character = scope:matron
+		animation = personality_content
+	}
+	right_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	lower_left_portrait = {
+		character = scope:jarya_1
+	}
+	lower_center_portrait = {
+		character = scope:jarya_2
+	}
+	lower_right_portrait = {
+		character = scope:jarya_3
+	}
+	
+	trigger = {
+		accepts_concubinage = yes
+		allowed_more_concubines = yes
+		any_courtier = {
+			valid_head_of_the_harem_trigger = yes
+		}
+		can_execute_decision = recruit_concubines_decision
+		OR = {
+			any_realm_province = {
+				valid_harem_politics_0037_province_trigger = yes
+			}
+			any_neighboring_and_across_water_top_liege_realm_owner = {
+				any_realm_province = {
+					valid_harem_politics_0037_province_trigger = yes
+				}
+			}
+		}
+		NOR = {
+			has_character_flag = flag_jarya
+			has_trait = eunuch
+			has_trait = celibate
+			has_trait = devoted
+	    }
+		is_available_at_peace_adult = yes
+		is_physically_able = yes
+		is_healthy = yes
+		highest_held_title_tier >= tier_kingdom
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = -0.5
+			has_trait = chaste
+		}
+		modifier = {
+			add = 0.2
+			has_trait = lustful
+		}
+		modifier = {
+			add = 0.2
+			any_child = {
+				count <= 1
+			}
+		}
+		modifier = {
+			add = -0.4
+			age >= 45
+		}
+		#The GC
+		#High aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 3
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 4
+				has_character_flag = gc_promoting_harmony
+			}
+			add = -0.2
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 5
+				has_character_flag = gc_promoting_harmony
+			}
+			add = -0.2
+		}
+		#Low aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 2
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		random_courtier = {
+			limit = {
+				valid_head_of_the_harem_trigger = yes
+			}
+			save_scope_as = matron
+		}
+		
+		random_in_list = {
+			list = gui_fei_list
+			weight = {
+				base = 10
+				
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 20
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 15
+				}
+
+				modifier = {
+					diplomacy >= decent_skill_rating
+					add = 15
+				}
+
+				modifier = {
+					has_trait = beauty_good
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_good_2
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_good_3
+					add = 10
+				}
+				
+				modifier = {
+					has_court_position = grand_consort_court_position
+					add = 20
+				}
+				modifier = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+					add = 15
+				}
+			}
+			save_scope_as = hui_gui_fei
+		}
+		
+		if = {
+			limit = {
+				any_realm_province = {
+					valid_harem_politics_0037_province_trigger = yes
+				}
+			}
+			every_realm_province = {
+				limit = {
+					valid_harem_politics_0037_province_trigger = yes
+				}
+				add_to_list = pool_provinces
+			}
+		}
+		if = {
+			limit = {
+				any_neighboring_and_across_water_top_liege_realm_owner = {
+					any_realm_province = {
+						valid_harem_politics_0037_province_trigger = yes
+					}
+				}
+			}
+			every_neighboring_and_across_water_top_liege_realm_owner = {
+				every_realm_province = {
+					limit = {
+						valid_harem_politics_0037_province_trigger = yes
+					}
+					add_to_list = pool_provinces
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_provinces
+					any_pool_character = {
+						province = this
+						recruit_concubines_viable_candidate_trigger = {
+							OVERLORD = root
+						}
+					}
+				}
+			}
+			every_in_list = {
+				list = pool_provinces
+				every_pool_character = {
+					province = this
+					limit = {
+						recruit_concubines_viable_candidate_trigger = {
+							OVERLORD = root
+						}
+					}
+					save_to_list = pool_characters
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_characters
+					count < 3
+				}
+			}
+			random_in_list = {
+				list = pool_provinces
+				weight = {
+					base = 1
+					modifier = {
+						religion = religion:christianity_religion
+						add = 35
+					}
+				}
+				save_scope_as = candidate_province
+			}
+			save_scope_as = liege
+			while = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						count < 3
+					}
+				}
+				calyver_create_candidate_effect = yes
+			}
+		}
+		while = {
+			count = 3
+			random_in_list = {
+				list = pool_candidates
+				if = {
+					limit = {
+						NOT = {
+							exists = scope:jarya_1
+						}
+					}
+					save_scope_as = jarya_1
+				}
+				else_if = {
+					limit = {
+						NOT = {
+							exists = scope:jarya_2
+						}
+					}
+					save_scope_as = jarya_2
+				}
+				else = {
+					save_scope_as = jarya_3
+				}
+				# A King+ wouldn't receive concubines with weight problems
+				if = {
+					limit = {
+						has_character_modifier = malnourished_modifier
+					}
+					remove_character_modifier = malnourished_modifier
+				}
+				if = {
+					limit = {
+						current_weight <= underweight_value
+					}
+					change_current_weight = 50
+				}
+				if = {
+					limit = {
+						has_character_modifier = obese_modifier
+					}
+					remove_character_modifier = obese_modifier
+				}
+				if = {
+					limit = {
+						current_weight >= overweight_value
+					}
+					change_current_weight = -50
+				}
+				# They won't present unconverted concubines
+				if = {
+					limit = {
+						faith != root.faith
+					}
+					set_character_faith = root.faith
+				}
+			}
+		}
+	}
+	
+	option = { #Take Mei as a concubine
+        name = harem_politics.0037.a
+		trigger = {
+			allowed_more_concubines = yes
+		}
+		save_scope_as = actor
+		save_scope_as = secondary_actor
+		scope:mei_pin = {
+			had_sex_with_effect = {
+				CHARACTER = root
+				PREGNANCY_CHANCE = pregnancy_chance
+			}
+			if = {
+				limit = {
+					root = {
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+							count >= 3
+						}
+						NOT = { has_game_rule = consort_favor_off }
+					}
+				}
+				set_variable = {
+					name = favor
+					value = initial_favor_valuation
+				}
+				hidden_effect = {
+					calyver_favor_medium_gain_effect = yes
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			add_character_flag = flag_mei
+        	save_scope_as = recipient
+        }
+		scope:hui_gui_fei = {
+			calyver_favor_minor_loss_effect  = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+			add_opinion = {
+				target = scope:mei_pin
+				modifier = hatred_spouse_opinion
+				opinion = -15
+			}
+			set_relation_potential_rival = scope:mei_pin
+		}
+		concubine_on_accept_effect = yes
+		make_concubine = scope:recipient
+		hidden_effect = {
+			every_consort = { #Consorts think Mei used low tricks to seduce root
+				limit = {
+					NOR = {
+						this = scope:mei_pin
+						this = scope:hui_gui_fei
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = root
+						}
+					}
+					harem_politics_evil_consort_trigger = yes
+					accepts_harems = yes
+					is_courtier_of = root
+				}
+				add_opinion = {
+					target = scope:mei_pin
+					modifier = hatred_spouse_opinion
+					opinion = -5
+				}
+			}
+
+			#Trigger Mei's event
+			if= {
+				limit = {
+					NOR = { 
+						has_character_flag = had_mei_event_flag 
+						has_character_flag = has_consort_event_flag 
+					}
+					any_consort = {
+						age >= 27
+						OR = {
+							has_court_position = grand_consort_court_position
+							is_married = yes
+						}
+						is_courtier_of = root
+						harem_politics_evil_consort_trigger = yes
+					}
+				}
+				random_consort = {
+					limit = {
+						age >= 27
+						OR = {
+							has_court_position = grand_consort_court_position
+							is_married = yes
+						}
+						is_courtier_of = root
+						harem_politics_evil_consort_trigger = yes
+					}
+					trigger_event = {
+						id = consort_events.0001
+						days = { 20 34 }
+					}
+				}
+			}
+		}
+		stress_impact = {
+			chaste = minor_stress_impact_gain 
+			arrogant = minor_stress_impact_gain 
+			paranoid = minor_stress_impact_gain 
+		}
+        ai_chance = {
+            base = 100
+            ai_value_modifier = {
+				ai_honor = -0.05
+				ai_boldness = 0.1
+				ai_greed = 0.1
+   			}
+			opinion_modifier = {
+				opinion_target = scope:mei_pin
+				min = -15
+				max = 15
+				multiplier = 0.15
+			}
+			compatibility_modifier = { #Trait compatibility
+				who = root
+				compatibility_target = scope:mei_pin
+				min = -20
+				max = 20
+				multiplier = 2
+			}
+
+            modifier = {	#Weight up for stress.
+				add = 20
+				has_trait = lustful
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = chaste
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = paranoid
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = arrogant
+			}
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 15
+			}
+			modifier = {
+				NOT = { root = { is_attracted_to_gender_of = scope:mei_pin } }
+				factor = 0
+			}
+        }
+    }
+	
+	option = { # Enjoy time with Hui
+        name = harem_politics.0037.b
+		had_sex_with_effect = {
+			CHARACTER = scope:hui_gui_fei
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+        scope:hui_gui_fei = {
+			calyver_favor_minor_gain_effect = yes
+			if = {
+				limit = {
+					NOR = {
+						has_relation_lover = root
+						has_relation_soulmate = root
+						has_relation_potential_lover = root
+					}
+				}
+				set_relation_potential_lover = root
+			}
+        }
+        stress_impact = {
+        	chaste = minor_stress_impact_gain
+        }
+        ai_chance = {
+            base = 100
+            ai_value_modifier = {
+   				ai_rationality = 0.1
+				ai_honor = 0.1
+				ai_boldness = -0.05
+				ai_greed = -0.05
+   			}
+			opinion_modifier = {
+			   opinion_target = scope:hui_gui_fei
+			   min = -15
+			   max = 15
+			   multiplier = 0.15
+			}
+			#Favor
+			modifier = {
+            	add = 10
+            	scope:hui_gui_fei = {
+            		has_character_modifier = favored_consort_modifier
+            	}
+            }
+			modifier = {
+            	add = 20
+            	scope:hui_gui_fei = {
+            		has_character_modifier = beloved_consort_modifier
+            	}
+            }
+			modifier = {
+            	add = 10
+            	scope:hui_gui_fei = {
+            		has_character_modifier = favor_boost_modifier
+            	}
+            }
+			#Rank
+			modifier = { #The PS is very important
+            	add = 15
+				primary_spouse ?= scope:hui_gui_fei
+            }
+			modifier = { #The GC
+            	add = 10
+            	scope:hui_gui_fei = {
+            		has_court_position = grand_consort_court_position
+            	}
+            }
+			modifier = { #SS
+            	add = 5
+            	scope:hui_gui_fei = {
+            		is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+            	}
+            }
+
+			#Relation
+			modifier = {
+            	add = 15
+            	OR = {
+            		has_relation_lover = scope:hui_gui_fei
+					has_relation_soulmate = scope:hui_gui_fei
+            	}
+            }
+			modifier = {
+            	add = 10
+            	OR = {
+            		has_relation_best_friend = scope:hui_gui_fei
+					has_relation_friend = scope:hui_gui_fei
+            	}
+            }
+            modifier = {	#Weight down for stress.
+				add = 10
+				has_trait = lustful
+			}
+			modifier = {	#Weight up for stress.
+				add = -25
+				has_trait = chaste
+			}
+        }
+    }
+
+	option = { # Just leave me alone
+        name = harem_politics.0037.c
+        scope:hui_gui_fei = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+		}
+        stress_impact = {
+        	lustful = minor_stress_impact_gain
+        }
+        ai_chance = {
+            base = 100
+            ai_value_modifier = {
+   				ai_energy = -0.2
+				ai_honor = -0.1
+				ai_boldness = -0.1
+				ai_greed = -0.05
+   			}
+			opinion_modifier = {
+				opinion_target = scope:hui_gui_fei
+				min = -15
+				max = 15
+				multiplier = -0.20
+			}
+			opinion_modifier = {
+				opinion_target = scope:mei_pin
+				min = -15
+				max = 15
+				multiplier = -0.20
+			}
+
+            modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = lustful
+			}
+			modifier = {	#Weight up for stress.
+				add = 25
+				has_trait = chaste
+			}
+        }
+    }
+	after = {
+		add_character_flag = met_mei_pin
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = {
+						scope:mei_pin = {
+							is_consort_of = root
+						}
+					}
+				}
+				scope:mei_pin = {
+					death = {
+						death_reason = death_vanished
+					}
+				}
+			}
+		}
+	}
+}
 
 #########################
 ##Imprisoning a consort##

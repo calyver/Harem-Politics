@@ -171,8 +171,9 @@ accepts_concubinage = {
 }
 
 is_head_of_the_harem_trigger = {
-	is_female = yes
+	sex_opposite_of = $LIEGE$
 	is_adult = yes
+	is_physically_able = yes
 	court_owner ?= {
 		this = $LIEGE$
 	}
@@ -184,6 +185,7 @@ is_head_of_the_harem_trigger = {
 			limit = {
 				$LIEGE$.mother ?= {
 					is_alive = yes
+					is_courtier_of = $LIEGE$
 				}
 			}
 			this = $LIEGE$.mother
@@ -191,23 +193,50 @@ is_head_of_the_harem_trigger = {
 		trigger_else_if = { #Unmarried paternal aunt
 			limit = {
 				$LIEGE$ = {
-					father ?= {
+					any_parent = {
+						NOT = { sex_opposite_of = $LIEGE$ }
 						any_sibling = {
-							is_female = yes
+							sex_opposite_of = $LIEGE$
 							is_alive = yes
 							is_married = no
+							is_courtier_of = $LIEGE$
 						}
 					}
 				}
 
 			}
+			sex_opposite_of = $LIEGE$
+			is_alive = yes
+			is_married = no
+			is_courtier_of = $LIEGE$
 			any_sibling = {
+				NOT = { sex_opposite_of = $LIEGE$ }
 				any_child = {
 					this = $LIEGE$
 				}
 			}
+		}
+		trigger_else_if = { #Unmarried older sisters
+			limit = {
+				$LIEGE$ = {
+					any_sibling = {
+						age > $LIEGE$.age
+						sex_opposite_of = $LIEGE$
+						is_alive = yes
+						is_married = no
+						is_courtier_of = $LIEGE$
+					}
+				}
+
+			}
+			age > $LIEGE$.age
+			sex_opposite_of = $LIEGE$
 			is_alive = yes
 			is_married = no
+			is_courtier_of = $LIEGE$
+			any_sibling = {
+				this = $LIEGE$
+			}
 		}
 		trigger_else_if = { #The primary spouse
 			limit = {
@@ -228,29 +257,30 @@ is_head_of_the_harem_trigger = {
 		trigger_else_if = { #Just any spouse
 			limit = {
 				$LIEGE$ = {
-					exists = $LIEGE$.primary_spouse
+					is_married = yes
 				}
 			}
 			is_spouse_of = $LIEGE$
 		}
-		trigger_else_if = { #Unmarried sisters
+		trigger_else = { #Unmarried older sisters
 			limit = {
 				$LIEGE$ = {
 					any_sibling = {
+						sex_opposite_of = $LIEGE$
 						is_alive = yes
-						is_female = yes
 						is_married = no
 						is_courtier_of = $LIEGE$
 					}
 				}
+
 			}
+			sex_opposite_of = $LIEGE$
 			is_alive = yes
 			is_married = no
-			is_sibling_of = $LIEGE$
-		}
-		trigger_else = { #Unmarried daughters
-			is_child_of = $LIEGE$
-			is_married = no
+			is_courtier_of = $LIEGE$
+			any_sibling = {
+				this = $LIEGE$
+			}
 		}
 	}
 	trigger_else = {
