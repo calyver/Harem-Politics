@@ -34365,8 +34365,9 @@ scripted_trigger valid_head_of_the_harem_trigger = {
 	is_healthy = yes
 }
 
-scripted_effect harem_politics_0037_make_concubine_effect = {
+scripted_effect harem_politics_0038_make_concubine_effect = {
 	hidden_effect = {
+		add_courtier = $JARYA$
 		run_interaction = {
 			interaction = make_concubine_interaction
 			actor = scope:harem_liege
@@ -34443,6 +34444,38 @@ scripted_effect harem_politics_0037_make_concubine_effect = {
 		}
 		$JARYA$ = {
 			save_scope_as = potential_candidate
+			if = {
+				limit = {
+					root = {
+						OR = {
+							is_ai = no
+							highest_held_title_tier >= tier_kingdom
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = prev }
+								count >= 7
+							}
+						}
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = prev }
+							count >= 4
+						}
+					}
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = favor }
+					}
+					set_variable = {
+						name = favor
+						value = initial_favor_valuation
+					}
+				}
+				change_variable = {
+					name = favor
+					add = favor_gc_bonus
+				}
+			}
 		}
 		every_in_list = {
 			list = jarya_list
@@ -34469,6 +34502,10 @@ scripted_effect harem_politics_0037_make_concubine_effect = {
 			modifier = pleased_opinion
 			opinion = 10
 		}
+		add_character_flag = {
+			flag = flag_jarya_accepted
+			years = 4
+		}
 	}
 }
 
@@ -34488,20 +34525,11 @@ harem_politics.0037 = {
 			}
 			desc = harem_politics.0037.sibling.desc
 		}
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					is_female = yes
-				}
-				desc = harem_politics.0037.f.desc
-			}
-			desc = harem_politics.0037.m.desc
-		}
 		desc = harem_politics.0037.end.desc
 	}
 	theme = family
 	override_background = {
-		reference = bedchamber
+		reference = study
 	}
 	
 	left_portrait  = {
@@ -34511,15 +34539,6 @@ harem_politics.0037 = {
 	right_portrait = {
 		character = root
 		animation = personality_rational
-	}
-	lower_left_portrait = {
-		character = scope:jarya_1
-	}
-	lower_center_portrait = {
-		character = scope:jarya_2
-	}
-	lower_right_portrait = {
-		character = scope:jarya_3
 	}
 	
 	trigger = {
@@ -34663,8 +34682,97 @@ harem_politics.0037 = {
 					has_trait = greedy
 					add = 15
 				}
+				modifier = { # They have already offered a concubine
+					has_character_flag = flag_jarya_accepted
+					add = 15
+				}
 			}
 			save_scope_as = matron
+		}
+	}
+	
+	option = {
+		name = harem_politics.0037.a
+		stress_impact = {
+			diligent = minor_stress_impact_gain
+		}
+		trigger_event = {
+			id = harem_politics.0038
+			days = { 2 4 }
+		}
+
+		ai_chance = {
+            base = 1
+		}
+	}
+
+	option = {
+		name = harem_politics.0037.b
+		scope:matron = {
+			add_opinion = {
+				modifier = disappointed_opinion
+				target = root
+				opinion = -5
+			}
+		}
+		ai_chance = {
+            base = 1
+		}
+	}
+
+	after = {
+		add_character_flag = {
+			flag = flag_jarya
+			years = 3
+		}
+	}
+}
+
+harem_politics.0038 = {
+	type = character_event
+	title = harem_politics.0038.t
+	desc = harem_politics.0038.end.desc
+	theme = family
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait  = {
+		character = scope:matron
+		animation = interested
+	}
+	right_portrait = {
+		character = scope:jarya_1
+		animation = personality_honorable
+		outfit_tags = { spouse_outfit }
+	}
+	lower_left_portrait = {
+		character = scope:jarya_2
+		outfit_tags = { spouse_outfit }
+	}
+	lower_right_portrait = {
+		character = scope:jarya_3
+		outfit_tags = { spouse_outfit }
+	}
+	
+	trigger = {
+		OR = {
+			any_realm_province = {
+				valid_harem_politics_0037_province_trigger = yes
+			}
+			any_neighboring_and_across_water_top_liege_realm_owner = {
+				any_realm_province = {
+					valid_harem_politics_0037_province_trigger = yes
+				}
+			}
+		}
+	}
+	
+	immediate = {
+		play_music_cue = mx_cue_banquet
+		stress_impact = {
+			base = minor_stress_impact_loss
+			gregarious = minor_stress_impact_loss
 		}
 		
 		if = {
@@ -34829,9 +34937,7 @@ harem_politics.0037 = {
 					}
 					# They won't present unconverted concubines
 					set_character_faith = root.faith
-					root = {
-						add_courtier = prev
-					}
+					visit_court_of = root
 					return_to_court = yes
 					remove_from_list = pool_candidates
 					add_to_list = jarya_list
@@ -34841,7 +34947,7 @@ harem_politics.0037 = {
 	}
 	
 	option = {
-		name = harem_politics.0037.a
+		name = harem_politics.0038.a
 		trigger = {
 			allowed_more_concubines = yes
 			gold >= minor_gold_value
@@ -34850,7 +34956,7 @@ harem_politics.0037 = {
 			NOT = { gold >= minor_gold_value }
 			allowed_more_concubines = yes
 		}
-		harem_politics_0037_make_concubine_effect = {
+		harem_politics_0038_make_concubine_effect = {
 			JARYA = scope:jarya_1
 		}
 
@@ -34860,7 +34966,7 @@ harem_politics.0037 = {
 	}
 
 	option = {
-		name = harem_politics.0037.b
+		name = harem_politics.0038.b
 		trigger = {
 			allowed_more_concubines = yes
 			gold >= minor_gold_value
@@ -34869,7 +34975,7 @@ harem_politics.0037 = {
 			NOT = { gold >= minor_gold_value }
 			allowed_more_concubines = yes
 		}
-		harem_politics_0037_make_concubine_effect = {
+		harem_politics_0038_make_concubine_effect = {
 			JARYA = scope:jarya_2
 		}
 
@@ -34879,7 +34985,7 @@ harem_politics.0037 = {
 	}
 
 	option = {
-		name = harem_politics.0037.c
+		name = harem_politics.0038.c
 		trigger = {
 			allowed_more_concubines = yes
 			gold >= minor_gold_value
@@ -34888,7 +34994,7 @@ harem_politics.0037 = {
 			NOT = { gold >= minor_gold_value }
 			allowed_more_concubines = yes
 		}
-		harem_politics_0037_make_concubine_effect = {
+		harem_politics_0038_make_concubine_effect = {
 			JARYA = scope:jarya_3
 		}
 
@@ -34898,13 +35004,16 @@ harem_politics.0037 = {
 	}
 
 	option = {
-		name = harem_politics.0037.d
+		name = harem_politics.0038.d
 		scope:matron = {
 			add_opinion = {
 				modifier = disappointed_opinion
 				target = root
 				opinion = -5
 			}
+		}
+		stress_impact = {
+			lustful = minor_stress_impact_gain
 		}
 		ai_chance = {
             base = 1
@@ -34932,6 +35041,56 @@ harem_politics.0037 = {
 	}
 }
 
+harem_politics.0039 = {
+	hidden = yes
+
+	trigger = {
+		NOT = {
+			religion = religion:islam_religion
+		}
+		any_courtier = {
+			is_male = no
+			age <= 23
+			is_adult = yes
+			NOT = { religion = religion:islam_religion }
+		}
+		any_neighboring_and_across_water_top_liege_realm_owner = {
+			religion = religion:islam_religion
+		}
+	}
+
+	immediate = {
+		random_courtier = {
+			limit = {
+				is_male = no
+				age <= 23
+				is_adult = yes
+				NOT = { religion = religion:islam_religion }
+			}
+			save_scope_as = jarya
+		}
+		random_neighboring_and_across_water_top_liege_realm_owner = {
+			limit = {	
+				religion = religion:islam_religion
+			}
+			weight = {
+				base = 1
+				modifier = {
+					highest_held_title_tier >= tier_kingdom
+				}
+			}
+			save_scope_as = liege
+		}
+		send_interface_toast = {
+			type = event_generic_bad
+			title = bride_show.2000.t.court_owner
+			right_icon = scope:liege
+			left_icon = scope:jarya
+			custom_tooltip = bride_show.2000.desc.court_owner
+		}
+	}
+
+}
 #########################
 ##Imprisoning a consort##
 #########################
