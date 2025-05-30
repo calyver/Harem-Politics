@@ -33868,7 +33868,7 @@ scripted_trigger harem_politics_langhua_trigger = {
 	is_demoted_consort_trigger = no
 	harem_politics_punished_consort_trigger = no
 
-	is_courtier_of = root
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 
 	NOR = { 
 		has_opinion_modifier = {
@@ -33883,26 +33883,30 @@ scripted_trigger harem_politics_langhua_trigger = {
 
 		has_relation_rival = root
 		has_relation_nemesis = root
-
-		has_character_modifier = forgotten_consort_modifier
 	}
-	is_travelling = no
-	trigger_if = { #If there's an available PS, they are the PS
+	trigger_if = { #If there's an available PS, they are the GC
 		limit = {
-			exists = root.primary_spouse
+			root.primary_spouse ?= {
+				is_courtier_of = root
+			}
 		}
 		this = root.primary_spouse
 	}
 	trigger_else = { #Else, they're the GC
 		has_court_position = grand_consort_court_position
 	}
-	OR = { #Isn't forgotten
-		AND = {
-			has_variable = favor
-			var:favor >= unfavored_consort_lower_limit
+	trigger_if = {
+		limit = {
+			is_travelling = yes	
 		}
-		NOT = {
-			has_variable = favor
+		current_travel_plan ={
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
 		}
 	}
 }
@@ -33912,7 +33916,17 @@ scripted_trigger harem_politics_zhenhuan_trigger = {
 
 	harem_politics_punished_consort_trigger = no
 
-	is_courtier_of = root
+	trigger_if = {
+		limit = {
+			root.religion = religion:islam_religion
+		}
+		is_head_of_the_harem_trigger = {
+			LIEGE = root
+		}
+	}
+	trigger_else = {
+		is_parent_of = root
+	}
 
 	NOR = { 
 		this = $LANGHUA$
@@ -33930,10 +33944,12 @@ scripted_trigger harem_politics_zhenhuan_trigger = {
 		has_relation_lover = $LANGHUA$
 		has_relation_soulmate = $LANGHUA$
 
-		has_trait = generous
+		has_trait = forgiving
+		has_trait = compassionate
+		has_Trait = humble
 		has_trait = content
+
 		has_trait = lazy
-		has_trait = humble
 		has_trait = shy
 		has_trait = craven
 	}
@@ -33941,14 +33957,44 @@ scripted_trigger harem_politics_zhenhuan_trigger = {
 		target = $LANGHUA$
 		value <= low_negative_trait_compatibility
 	}
-	is_travelling = no
+	trigger_if = {
+		limit = {
+			is_travelling = yes	
+		}
+		current_travel_plan ={
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
 }
 
 harem_politics.0036 = {
-	orphan = yes
 	type = character_event
 	title = harem_politics.0036.t
-	desc = harem_politics.0036.desc
+	desc = {
+		desc = harem_politics.0036.start.desc
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = local_var:children
+				}
+				desc = harem_politics.0036.children.desc
+			}
+			triggered_desc = {
+				trigger = {
+					exists = local_var:rivals
+				}
+				desc = harem_politics.0036.rivals.desc
+			}
+			desc = harem_politics.0036.unfavored.desc
+		}
+		desc = harem_politics.0036.end.desc
+	}
 	theme = family
 	override_background = {
 		reference = study
@@ -33964,24 +34010,58 @@ harem_politics.0036 = {
 	}
 	
 	trigger = {
-		is_travelling = no
 		accepts_harems = yes
+		OR = {
+			# Scenario 1: Root is 24+ with exactly 3 inheritable children
+			AND = {
+				age >= 24
+				any_child = {
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = root }
+					count <= 3
+				}
+			}
+			# Scenario 2: 4 consorts who are rivals or nemesis
+			AND = {
+				any_consort = {
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					OR = {
+						any_relation = {
+							type = rival
+							is_consort_of = root
+							is_courtier_of = root
+						}
+						any_relation = {
+							type = nemesis
+							is_consort_of = root
+							is_courtier_of = root
+						}
+					}
+					count >= 4
+				}
+			}
+			# Scenario 3: 3 consorts who are unfavored or forgotten
+			AND = {
+				any_consort = {
+					harem_politics_unfavored_consort_trigger = yes
+					count >= 3
+				}
+			}
+		}
+		# Keep the existing conditions
 		any_consort = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 			is_imprisoned = no
-			count >= 3
+			count >= 4
 		}
 		any_consort = {
 			harem_politics_langhua_trigger = yes
 			save_temporary_scope_as = temporary_langhua
 		}
-		any_parent = {
+		any_courtier = {
 			harem_politics_zhenhuan_trigger = { LANGHUA = scope:temporary_langhua }
 		}
 		NOR = {
-        	any_consort = {
-	        	has_character_flag = flag_mei
-	        }
 			has_character_flag = had_zhenhuan_event_flag
 	    }
 		is_physically_able_adult = yes
@@ -33991,6 +34071,53 @@ harem_politics.0036 = {
 	
 	immediate = {
 		save_scope_as = harem_liege
+
+		# Find the reasons
+		if = {
+			limit = {
+				age >= 24
+				any_child = {
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = root }
+					count <= 3
+				}
+			}
+			set_local_variable = {
+				name = children
+				value = yes
+			}
+		}
+		else_if = {
+			limit = {
+				any_consort = {
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					OR = {
+						any_relation = {
+							type = rival
+							is_consort_of = root
+							is_courtier_of = root
+						}
+						any_relation = {
+							type = nemesis
+							is_consort_of = root
+							is_courtier_of = root
+						}
+					}
+					count >= 4
+				}
+			}
+			set_local_variable = {
+				name = rivals
+				value = yes
+			}
+		}
+		else = {
+			set_local_variable = {
+				name = unfavored
+				value = yes
+			}
+		}
+
 		random_consort = { #Find Langhua
 			limit = {
 				harem_politics_langhua_trigger = yes
@@ -33998,20 +34125,23 @@ harem_politics.0036 = {
 			save_scope_as = langhua
 		}
 
-		random_parent = {
+		random_courtier = {
 			limit = {
 				harem_politics_zhenhuan_trigger = { LANGHUA = scope:langhua }
 			}
 			weight = {
-				base = 10
+				base = 20
+				modifier = {
+					add = age
+				}
 				modifier = {
 					sex_same_as = scope:langhua
-					add = 15
+					add = 20
 				}
 				compatibility_modifier = { #Trait compatibility
 					compatibility_target = scope:langhua
-					min = -40
-					max = 40
+					min = -15
+					max = 15
 					multiplier = -1
 				}
 				
@@ -34043,9 +34173,10 @@ harem_politics.0036 = {
 			add_opinion = {
 				target = root
 				modifier = thankful_consort_opinion
+				opinion = 15
 			}
 			#They gain a bit of favor
-			calyver_favor_minor_gain_effect = yes
+			calyver_favor_moderate_gain_effect = yes
 		}
 		scope:zhen_huan = {
 			add_opinion = {
@@ -34053,25 +34184,23 @@ harem_politics.0036 = {
 				modifier = frustrated_opinion
 				opinion = -10
 			}
-			if = {
-				limit = {
-					NOR = {
-						has_trait = humble
-						has_trait = content
-					}
-					has_trait = vengeful
-				}
+			hidden_effect = {
 				if = {
 					limit = {
-						NOR = { 
-							has_relation_grudge = scope:langhua
-							has_relation_rival = scope:langhua
-							has_relation_nemesis = scope:langhua
-						}
+						has_trait = vengeful
 					}
-					set_relation_grudge = {
-						REASON = consort_rival_reason
-						target = scope:langhua
+					if = {
+						limit = {
+							NOR = { 
+								has_relation_grudge = scope:langhua
+								has_relation_rival = scope:langhua
+								has_relation_nemesis = scope:langhua
+							}
+						}
+						set_relation_grudge = {
+							REASON = consort_rival_reason
+							target = scope:langhua
+						}
 					}
 				}
 			}
@@ -34151,34 +34280,33 @@ harem_politics.0036 = {
 		scope:zhen_huan = {
 			add_opinion = {
 				target = root
-				modifier = thankful_consort_opinion
+				modifier = pleased_opinion
+				opinion = 10
 			}
 		}
 		scope:langhua = {
 			add_opinion = {
 				target = root
 				modifier = frustrated_opinion
-				opinion = -10
+				opinion = -15
 			}
-			if = {
-				limit = {
-					NOR = {
-						has_trait = humble
-						has_trait = content
-					}
-					has_trait = vengeful
-				}
+			hidden_effect = {
 				if = {
 					limit = {
-						NOR = { 
-							has_relation_grudge = scope:zhen_huan
-							has_relation_rival = scope:zhen_huan
-							has_relation_nemesis = scope:zhen_huan
-						}
+						has_trait = vengeful
 					}
-					set_relation_grudge = {
-						REASON = consort_rival_reason
-						target = scope:zhen_huan
+					if = {
+						limit = {
+							NOR = { 
+								has_relation_grudge = scope:zhen_huan
+								has_relation_rival = scope:zhen_huan
+								has_relation_nemesis = scope:zhen_huan
+							}
+						}
+						set_relation_grudge = {
+							REASON = consort_rival_reason
+							target = scope:zhen_huan
+						}
 					}
 				}
 			}
@@ -34262,17 +34390,7 @@ harem_politics.0036 = {
 				opinion = -10
 			}
 		}
-		scope:zhen_huan = {
-			add_opinion = {
-				target = root
-				modifier = frustrated_opinion
-				opinion = -10
-			}
-		}
-		add_character_flag = {
-			flag = had_zhenhuan_event_flag
-			years = 2
-		}
+		
         stress_impact = {
         	lazy = minor_stress_impact_loss
 			diligent = minor_stress_impact_gain
@@ -34312,6 +34430,12 @@ harem_politics.0036 = {
 			}
         }
     }
+	after = {
+		add_character_flag = {
+			flag = had_zhenhuan_event_flag
+			years = 3
+		}
+	}
 }
 
 #########################################################
