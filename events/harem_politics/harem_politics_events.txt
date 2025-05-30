@@ -34068,6 +34068,74 @@ harem_politics.0036 = {
 		is_at_war = no
 		is_landed_or_landless_administrative = yes
 	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.2
+			religion = religion:islam_religion
+		}
+		modifier = {
+			add = 0.1
+			highest_held_title_tier >= tier_kingdom
+		}
+		modifier = {
+			add = 0.15
+			any_child = {
+				is_alive = yes
+				character_gender_can_inherit_from_trigger = { CHARACTER = root }
+				count <= 3
+			}
+		}
+		#The GC
+		#High aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 3
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 4
+				has_character_flag = gc_promoting_harmony
+			}
+			add = -0.2
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 5
+				has_character_flag = gc_promoting_harmony
+			}
+			add = -0.2
+		}
+		#Low aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 2
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 1
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
+	}
 	
 	immediate = {
 		save_scope_as = harem_liege
@@ -34456,28 +34524,13 @@ scripted_trigger valid_harem_politics_0037_province_trigger = {
 }
 
 scripted_trigger valid_head_of_the_harem_trigger = {
-	sex_opposite_of = root
-	is_adult = yes
-	is_physically_able = yes
-	OR = {
-		trigger_if = {
-			limit = {
-				exists = root.mother
-			}
-			this = root.mother
-		}
-		any_sibling = {
-			NOT = { sex_opposite_of = root }
-			any_child = {
-				this = root
-			}
-		}
-		any_sibling = {
-			this = root
-		}
+	is_valid_muslim_harem_relative_trigger = {
+		LIEGE = root
 	}
 	NOR = { 
 		is_consort_of = root 
+		is_child_of = root
+
 		has_relation_rival = root
 		has_relation_nemesis = root
 
@@ -34715,6 +34768,11 @@ harem_politics.0037 = {
 	weight_multiplier = {
 		base = 1
 		modifier = {
+			any_courtier = {
+				valid_head_of_the_harem_trigger = yes
+			}
+		}
+		modifier = {
 			add = -0.5
 			has_trait = chaste
 		}
@@ -34771,6 +34829,15 @@ harem_politics.0037 = {
 			}
 			add = 0.1
 		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 1
+				has_character_flag = gc_promoting_harmony
+			}
+			add = 0.1
+		}
 	}
 	
 	immediate = {
@@ -34786,12 +34853,7 @@ harem_politics.0037 = {
 					divide = 2
 				}
 				modifier = {
-					trigger_if = {
-						limit = {
-							exists = root.mother
-						}
-						this = root.mother
-					}
+					is_parent_of = root
 					add = 10
 				}
 				modifier = {
@@ -34805,6 +34867,10 @@ harem_politics.0037 = {
 				modifier = {
 					has_trait = greedy
 					add = 15
+				}
+				modifier = {
+					has_trait = lazy
+					add = -15
 				}
 				modifier = { # They have already offered a concubine
 					has_character_flag = flag_jarya_accepted
