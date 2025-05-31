@@ -34142,7 +34142,7 @@ harem_politics.0036 = {
 	immediate = {
 		save_scope_as = harem_liege
 
-		# Find the reasons
+		# Find the reason
 		if = {
 			limit = {
 				age >= 24
@@ -34275,6 +34275,10 @@ harem_politics.0036 = {
 				}
 			}
 		}
+		add_opinion = {
+			target = scope:zhen_huan
+			modifier = disapproving_opinion
+		}
 
 		stress_impact = {
 			forgiving = minor_stress_impact_gain
@@ -34382,6 +34386,10 @@ harem_politics.0036 = {
 			}
 			#They lose a bit of favor
 			calyver_favor_minor_loss_effect = yes
+		}
+		add_opinion = {
+			target = scope:langhua
+			modifier = disapproving_opinion
 		}
 
 		stress_impact = {
@@ -34525,7 +34533,7 @@ scripted_trigger valid_harem_politics_0037_province_trigger = {
 	}
 }
 
-scripted_trigger valid_head_of_the_harem_trigger = {
+scripted_trigger valid_harem_matron_trigger = {
 	is_valid_muslim_harem_relative_trigger = {
 		LIEGE = root
 	}
@@ -34686,6 +34694,11 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 			years = 4
 		}
 	}
+	stress_impact = {
+		greedy = minor_stress_impact_gain
+		chaste = minor_stress_impact_gain
+		shy = minor_stress_impact_gain
+	}
 }
 
 harem_politics.0037 = {
@@ -34726,7 +34739,7 @@ harem_politics.0037 = {
 		allowed_more_concubines = yes
 		gold >= minor_gold_value
 		any_courtier = {
-			valid_head_of_the_harem_trigger = yes
+			valid_harem_matron_trigger = yes
 		}
 		OR = {
 			any_realm_province = {
@@ -34769,10 +34782,23 @@ harem_politics.0037 = {
 
 	weight_multiplier = {
 		base = 1
+		# Stress
+		modifier = { #Stress
+			add = 0.1
+			stress_level >= 1
+		}
+		modifier = { #Stress
+			add = 0.1
+			stress_level >= 2
+		}
+		modifier = { #Stress
+			add = 0.1
+			stress_level = 3
+		}
+
 		modifier = {
-			any_courtier = {
-				valid_head_of_the_harem_trigger = yes
-			}
+			number_of_concubines < number_of_desired_concubines
+			add = 0.1
 		}
 		modifier = {
 			add = -0.5
@@ -34846,7 +34872,7 @@ harem_politics.0037 = {
 		save_scope_as = harem_liege
 		random_courtier = {
 			limit = {
-				valid_head_of_the_harem_trigger = yes
+				valid_harem_matron_trigger = yes
 			}
 			weight = {
 				base = 10
@@ -34894,7 +34920,48 @@ harem_politics.0037 = {
 		}
 
 		ai_chance = {
-            base = 1
+            base = 10
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = 0.3
+			}
+			modifier = {
+				has_trait = shy
+				add = -10
+			}
+			modifier = {
+				has_trait = chaste
+				add = -10
+			}
+			modifier = {
+				has_trait = lazy
+				add = -10
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 15
+			}
+			modifier = {
+				is_child_of = scope:matron
+				add = 10
+			}
+
+			modifier = { #Stress
+				add = 10
+				stress_level >= 1
+			}
+			modifier = { #Stress
+				add = 10
+				stress_level >= 2
+			}
+			modifier = { #Stress
+				add = 10
+				stress_level = 3
+			}
 		}
 	}
 
@@ -34908,7 +34975,31 @@ harem_politics.0037 = {
 			}
 		}
 		ai_chance = {
-            base = 1
+            base = 10
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = -0.3
+			}
+			modifier = {
+				has_trait = shy
+				add = 10
+			}
+			modifier = {
+				has_trait = chaste
+				add = 10
+			}
+			modifier = {
+				has_trait = lazy
+				add = 10
+			}
+			modifier = {
+				has_trait = content
+				add = 15
+			}
+			modifier = {
+				has_trait = lustful
+				add = -15
+			}
 		}
 	}
 
@@ -35138,6 +35229,7 @@ harem_politics.0038 = {
 		}
 	}
 	
+	# Choose Jarya 1
 	option = {
 		name = harem_politics.0038.a
 		trigger = {
@@ -35153,10 +35245,71 @@ harem_politics.0038 = {
 		}
 
 		ai_chance = {
-            base = 1
+            base = 10
+			simple_attraction_modifier = {
+				WHO = root
+				TARGET = scope:jarya_1
+				MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+				MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+			}
+			opinion_modifier = {
+				opinion_target = scope:jarya_1
+				multiplier = 0.5
+			}
+			modifier = {
+				has_trait = celibate
+				add = -25
+			}
+			modifier = {
+				has_trait = greedy
+				add = -30
+			}
+			modifier = {
+				has_trait = shy
+				add = -30
+			}
+			modifier = {
+				has_trait = chaste
+				add = -30
+			}
+
+			modifier = {
+				has_trait = lustful
+				add = 20
+			}
+
+			modifier = {
+				any_child = {
+					is_alive = yes
+					count = 0
+				}
+				add = 15
+			}
+			modifier = {
+				any_child = {
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = root }
+					count <= 3
+				}
+				add = 10
+			}
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 15
+			}
+
+			modifier = {
+				is_child_of = scope:matron
+				add = 10
+			}
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = 0.2
+			}
 		}
 	}
 
+	# Choose Jarya 2
 	option = {
 		name = harem_politics.0038.b
 		trigger = {
@@ -35172,10 +35325,71 @@ harem_politics.0038 = {
 		}
 
 		ai_chance = {
-            base = 1
+            base = 10
+			simple_attraction_modifier = {
+				WHO = root
+				TARGET = scope:jarya_2
+				MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+				MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+			}
+			opinion_modifier = {
+				opinion_target = scope:jarya_2
+				multiplier = 0.5
+			}
+			modifier = {
+				has_trait = celibate
+				add = -25
+			}
+			modifier = {
+				has_trait = greedy
+				add = -30
+			}
+			modifier = {
+				has_trait = shy
+				add = -30
+			}
+			modifier = {
+				has_trait = chaste
+				add = -30
+			}
+
+			modifier = {
+				has_trait = lustful
+				add = 20
+			}
+
+			modifier = {
+				any_child = {
+					is_alive = yes
+					count = 0
+				}
+				add = 15
+			}
+			modifier = {
+				any_child = {
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = root }
+					count <= 3
+				}
+				add = 10
+			}
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 15
+			}
+
+			modifier = {
+				is_child_of = scope:matron
+				add = 10
+			}
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = 0.2
+			}
 		}
 	}
 
+	# Choose Jarya 3
 	option = {
 		name = harem_politics.0038.c
 		trigger = {
@@ -35191,7 +35405,67 @@ harem_politics.0038 = {
 		}
 
 		ai_chance = {
-            base = 1
+            base = 10
+			simple_attraction_modifier = {
+				WHO = root
+				TARGET = scope:jarya_3
+				MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+				MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+			}
+			opinion_modifier = {
+				opinion_target = scope:jarya_3
+				multiplier = 0.5
+			}
+			modifier = {
+				has_trait = celibate
+				add = -25
+			}
+			modifier = {
+				has_trait = greedy
+				add = -30
+			}
+			modifier = {
+				has_trait = shy
+				add = -30
+			}
+			modifier = {
+				has_trait = chaste
+				add = -30
+			}
+
+			modifier = {
+				has_trait = lustful
+				add = 20
+			}
+
+			modifier = {
+				any_child = {
+					is_alive = yes
+					count = 0
+				}
+				add = 15
+			}
+			modifier = {
+				any_child = {
+					is_alive = yes
+					character_gender_can_inherit_from_trigger = { CHARACTER = root }
+					count <= 3
+				}
+				add = 10
+			}
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 15
+			}
+
+			modifier = {
+				is_child_of = scope:matron
+				add = 10
+			}
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = 0.2
+			}
 		}
 	}
 
@@ -35208,28 +35482,38 @@ harem_politics.0038 = {
 			lustful = minor_stress_impact_gain
 		}
 		ai_chance = {
-            base = 1
-		}
-	}
+            base = 10
+			modifier = {
+				has_trait = celibate
+				add = 30
+			}
+			modifier = {
+				has_trait = greedy
+				add = 35
+			}
+			modifier = {
+				has_trait = shy
+				add = 35
+			}
+			modifier = {
+				has_trait = chaste
+				add = 35
+			}
 
-	after = {
-		# add_character_flag = met_mei_pin
-		# hidden_effect = {
-		# 	if = {
-		# 		limit = {
-		# 			NOT = {
-		# 				scope:mei_pin = {
-		# 					is_consort_of = root
-		# 				}
-		# 			}
-		# 		}
-		# 		scope:mei_pin = {
-		# 			death = {
-		# 				death_reason = death_vanished
-		# 			}
-		# 		}
-		# 	}
-		# }
+			modifier = {
+				has_trait = lustful
+				add = -30
+			}
+
+			modifier = {
+				is_child_of = scope:matron
+				add = -10
+			}
+			opinion_modifier = {
+				opinion_target = scope:matron
+				multiplier = -0.5
+			}
+		}
 	}
 }
 
