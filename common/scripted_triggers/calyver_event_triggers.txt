@@ -46,6 +46,24 @@ harem_politics_unfavored_consort_trigger = {
 	}
 }
 
+harem_politics_forgotten_consort_trigger = {
+	has_character_modifier = forgotten_consort_modifier
+	NOT = {
+		has_character_modifier = favor_boost_modifier
+	}
+	trigger_if = { #Can't be unfavored+
+		limit = { 
+			has_variable = favor
+		}
+		var:favor < unfavored_consort_lower_limit
+	}
+	trigger_else = {
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
 harem_politics_punished_consort_trigger = {
 	OR = {
 		has_character_flag = flag_scolded_consort
@@ -77,21 +95,24 @@ is_valid_for_favor_system_trigger = {
 harem_politics_target_outranks_consort_trigger = {
 	$CONSORT$ = {
 		is_consort_of = $LIEGE$
-		NOT = {
+		NOR = {
 			is_parent_of = $LIEGE$
+			is_grandparent_of = $LIEGE$
 		}
 	}
 	$TARGET$ = {
-		trigger_if = { #They're liege's parent
+		trigger_if = { # They're liege's grandparent, parent or primary spouse
 			limit = {
-				is_parent_of = $LIEGE$
+				OR = {	
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+					AND = {
+						exists = $LIEGE$.primary_spouse
+						this = $LIEGE$.primary_spouse
+					}
+				}
 			}
-		}
-		trigger_else_if = { #They're the primary spouse
-			limit = {
-				exists = $LIEGE$.primary_spouse
-				this = $LIEGE$.primary_spouse
-			}
+			always = yes
 		}
 		trigger_else_if = { #They're the Grand Consort
 			limit = {
@@ -119,6 +140,64 @@ harem_politics_target_outranks_consort_trigger = {
 			}
 		}
 	}
+}
+
+harem_politics_target_subranks_consort_trigger = {
+    $CONSORT$ = {
+		OR = {
+			is_consort_of = $LIEGE$
+			is_parent_of = $LIEGE$
+			is_grandparent_of = $LIEGE$
+		}
+    }
+    $TARGET$ = {
+        trigger_if = { #If consort is parent/grandparent, always true
+            limit = {
+                $CONSORT$ = {
+                    OR = {
+                        is_parent_of = $LIEGE$
+                        is_grandparent_of = $LIEGE$
+                    }
+                }
+            }
+            always = yes
+        }
+        trigger_else_if = { #If consort is primary spouse, target must be consort
+            limit = {
+				$LIEGE$.primary_spouse ?= {
+					this = $CONSORT$
+				}
+            }
+            is_consort_of = $LIEGE$
+        }
+        trigger_else_if = { #If consort is Grand Consort, target must be non-primary consort
+            limit = {
+                $CONSORT$ = {
+                    has_court_position = grand_consort_court_position
+                }
+            }
+			is_consort_of = $LIEGE$
+			trigger_if = {
+				limit = {
+					exists = $LIEGE$.primary_spouse
+				}
+				NOT = {
+					this = $LIEGE$.primary_spouse
+				}
+			}
+        }
+        trigger_else_if = { #If consort is spouse, target must be concubine
+            limit = {
+                $CONSORT$ = {
+                    is_spouse_of = $LIEGE$
+                }
+            }
+            is_concubine_of = $LIEGE$
+        }
+		trigger_else = {
+			always = no
+		}
+    }
 }
 
 ##Potential consorts##
@@ -580,10 +659,10 @@ harem_politics_is_valid_bride_show_subject_trigger = {
             trigger_else_if = { # Limited Authority
                 limit = { 
 					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = crown_authority_1 
-							has_realm_law = tribal_authority_1 
-						} 
+						OR = {
+							has_realm_law = crown_authority_1
+							has_realm_law = tribal_authority_1
+						}
 					} 
 				}
 				trigger_if = {
@@ -596,9 +675,7 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					always = yes
 				}
             }
-			trigger_else = { #Nothing else to check
-				always = yes
-			}
+            trigger_else = { always = yes }
         }
 		trigger_else = { #Nothing else to check
 			always = no
