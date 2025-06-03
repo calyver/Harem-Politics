@@ -145,6 +145,7 @@ scripted_trigger consort_favor_valid_harem_consort = {
 	}
 
 	accepts_harems = yes
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:harem_liege }
 }
 ##Valuation##
 consort_favor_valuation.0003 = {
@@ -202,8 +203,9 @@ consort_favor_valuation.0003 = {
 			#The PS can't be forgotten - unless they're in prison
 			if = {
 				limit = {
-					exists = scope:harem_liege.primary_spouse
-					this = scope:harem_liege.primary_spouse
+					scope:harem_liege.primary_spouse ?= {
+						this = root
+					}
 					var:favor < unfavored_consort_lower_limit
 					NOT = {
 						is_imprisoned_by = scope:harem_liege
@@ -353,6 +355,7 @@ consort_favor_valuation.0006 = {
 			has_variable = favor
 			var:favor < neutral_consort_lower_limit
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
 			count >= 3
 		}
 		NOT = { has_character_flag = increased_consort_favor_flag }
@@ -366,6 +369,7 @@ consort_favor_valuation.0006 = {
 				has_variable = favor
 				var:favor < neutral_consort_lower_limit
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				is_imprisoned = no
 				count >= 5
 			}
 		}
@@ -375,6 +379,7 @@ consort_favor_valuation.0006 = {
 				has_variable = favor
 				var:favor < neutral_consort_lower_limit
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				is_imprisoned = no
 				count >= 8
 			}
 		}
@@ -384,15 +389,17 @@ consort_favor_valuation.0006 = {
 				has_variable = favor
 				var:favor < neutral_consort_lower_limit
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				is_imprisoned = no
 				count >= 12
 			}
 		}
 		modifier = {
-			add = 0.5
-			exists = primary_spouse
-			primary_spouse = {
+			add = 0.4
+			primary_spouse ?= {
 				has_variable = favor
 				var:favor < neutral_consort_lower_limit
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				is_imprisoned = no
 			}
 		}
 	}
@@ -402,11 +409,9 @@ consort_favor_valuation.0006 = {
 		random_consort = {
 			limit = {
 				has_variable = favor
-				OR = {
-					var:favor < unfavored_consort_lower_limit	
-					var:favor < neutral_consort_lower_limit
-				}
+				var:favor < neutral_consort_lower_limit
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				is_imprisoned = no
 			}
 			weight = {
 				base = 10
@@ -415,7 +420,7 @@ consort_favor_valuation.0006 = {
 						has_character_modifier = demoted_primary_spouse_modifier
 						has_character_modifier = demoted_spouse_modifier
 					}
-					add = 50
+					add = 20
 				}
 				modifier = {
 					is_lowborn = no
@@ -446,7 +451,7 @@ consort_favor_valuation.0006 = {
 						has_trait = beauty_bad_3
 						has_trait = giant
 					}
-					add = 50
+					add = 20
 				}
 				modifier = {
 					any_close_family_member = {
@@ -464,7 +469,7 @@ consort_favor_valuation.0006 = {
 							is_liege_or_above_of = root
 						}
 					}
-					add = 50
+					add = 10
 				}
 				modifier = {
 					OR = {
@@ -623,7 +628,7 @@ consort_favor_valuation.0006 = {
 		}
 		add_character_flag = {
 			flag = increased_consort_favor_flag
-			months = 5
+			months = 8
 		}
 	}
 }
