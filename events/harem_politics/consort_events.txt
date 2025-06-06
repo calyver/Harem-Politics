@@ -18920,3 +18920,313 @@ consort_events.0035 = {
 		}
 	}
 }
+
+#############################
+##A consort murders an heir##
+#############################
+scripted_trigger is_valid_scheming_consort = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_imprisoned = no
+
+	is_physically_able_ai_adult = yes
+
+	harem_politics_evil_consort_trigger = yes
+
+	intrigue >= medium_skill_rating
+
+	NOR = {
+		is_parent_of = $CHILD$
+
+		has_relation_friend = $CHILD$
+		has_relation_best_friend = $CHILD$
+		has_relation_lover = $CHILD$
+		has_relation_soulmate = $CHILD$
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_opinion_modifier = {
+			target = root
+			modifier = forced_me_concubine_marriage_opinion
+		}
+	}
+
+	save_temporary_scope_as = temporary_consort
+
+	OR = {
+		AND = { # The child rivals their child
+			$CHILD$ = {
+				is_player_heir_of = root
+			}
+			root = {
+				NOT = {
+					has_realm_law = confederate_partition_succession_law
+				}
+			}
+			any_child = {
+				root.primary_title = { # They must be close to succession
+					place_in_line_of_succession = {
+						target = prev
+						value <= 4
+					}
+				}
+				age >= 3
+			}
+		}
+		AND = { # The child is a rival's child
+			$CHILD$ = {
+				any_parent = {
+					is_consort_of = root
+					OR = {
+						has_relation_rival = scope:temporary_consort
+						has_relation_nemesis = scope:temporary_consort
+					}
+				}
+			}
+		}
+	}
+
+	can_start_scheme = {
+		type = murder
+		target_character = $CHILD$
+	}
+}
+
+consort_events.0036 = {
+	hidden = yes
+	
+	trigger = {
+		any_child = {
+			OR = {
+				trigger_if = {	
+					limit = {
+						root = {
+							NOT = { has_realm_law = confederate_partition_succession_law }
+						}
+					}
+					is_player_heir_of = root
+				}
+				any_parent = {
+					is_consort_of = root
+					OR = {
+						any_relation = {
+							type = rival
+							is_consort_of = root
+							is_courtier_of = root
+						}
+						any_relation = {
+							type = nemesis
+							is_consort_of = root
+							is_courtier_of = root
+						}
+					}
+				}
+			}
+			save_temporary_scope_as = temporary_child
+		}
+		any_consort = {
+			is_valid_scheming_consort = {
+				$CHILD$ = scope:temporary_child
+			}
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		is_landed_or_landless_administrative = yes
+		NOT = {
+			has_character_flag = had_scheming_consort_heir_flag
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				count >= 10
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_yanwan
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				has_character_flag = flag_mei
+			}
+		}
+		modifier = {
+			add = 0.15
+			highest_held_title_tier >= tier_kingdom
+		}
+		#The GC aptitude
+		#GC - High aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 3
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.15
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 4
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.3
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 5
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.3
+		}
+		#GC - Low aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 2
+			}
+			add = 0.1
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 1
+			}
+			add = 0.1
+		}
+	}
+	
+	immediate = {
+		save_scope_as = partner
+		random_child = {
+			limit = {
+				OR = {
+					trigger_if = {	
+						limit = {
+							root = {
+								NOT = { has_realm_law = confederate_partition_succession_law }
+							}
+						}
+						is_player_heir_of = root
+					}
+					any_parent = {
+						is_consort_of = root
+						OR = {
+							any_relation = {
+								type = rival
+								is_consort_of = root
+								is_courtier_of = root
+							}
+							any_relation = {
+								type = nemesis
+								is_consort_of = root
+								is_courtier_of = root
+							}
+						}
+					}
+				}
+			}
+			weight = {
+				base = 1
+				modifier = {
+					add = 1
+					is_player_heir_of = root
+				}
+			}
+			save_scope_as = child
+		}
+
+		if = {
+			limit = {
+				exists = scope:child
+				any_consort = {
+					is_valid_scheming_consort = {
+						$CHILD$ = scope:child
+					}
+				}
+			}
+			random_consort = {
+				limit = {
+					is_valid_scheming_consort = {
+						$CHILD$ = scope:child
+					}
+				}
+				weight = {
+					base = 10
+					modifier = { add = intrigue }
+					modifier = {
+						has_character_flag = flag_yanwan
+						add = 5
+					}
+					modifier = {
+						has_character_flag = flag_mei
+						add = 5
+					}
+				}
+				save_scope_as = scheming_consort
+			}
+			if = {
+				limit = {
+					scope:scheming_consort ?= {
+						can_start_scheme = {
+							type = murder
+							target_character = scope:child
+						}
+					}
+				}
+				scope:scheming_consort = {
+					start_scheme = {
+						type = murder
+						target_character = scope:child
+					}
+				}
+				add_character_flag = {
+					flag = had_scheming_consort_heir_flag
+					years = 3
+				}
+				if = {
+					limit = {
+						debug_only = yes
+					}
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = success_hidden_event_t
+						right_icon = scope:child
+						left_icon = scope:scheming_consort
+						custom_tooltip = successful_hidden_event_desc
+					}
+				}
+			}
+		}
+	}
+}
