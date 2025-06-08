@@ -4,4 +4,5 @@ tags={
 	"Historical"
 }
 name="Harem Politics"
+picture="Harem Politics.jpg"
 supported_version="1.16.*"
