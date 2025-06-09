@@ -33948,7 +33948,7 @@ scripted_trigger harem_politics_zhenhuan_trigger = {
 
 		has_trait = forgiving
 		has_trait = compassionate
-		has_Trait = humble
+		has_trait = humble
 		has_trait = content
 
 		has_trait = lazy
@@ -34214,7 +34214,10 @@ harem_politics.0036 = {
 					max = 15
 					multiplier = -1
 				}
-				
+				modifier = {
+					sex_opposite_of = root
+					add = 20
+				}
 			}
 			save_scope_as = zhen_huan
 		}
@@ -36064,56 +36067,435 @@ harem_politics.0039 = {
 	}
 }
 
-# harem_politics.0039 = {
-# 	hidden = yes
+###################################################
+##The Empress Dowager pushes you to favor an ally##
+###################################################
+scripted_trigger is_valid_relative_0040_trigger = {
+	is_physically_able_ai = yes
+	is_healthy = yes
+	harem_politics_punished_consort_trigger = no
 
-# 	trigger = {
-# 		NOT = {
-# 			religion = religion:islam_religion
-# 		}
-# 		any_courtier = {
-# 			is_male = no
-# 			age <= 23
-# 			is_adult = yes
-# 			NOT = { religion = religion:islam_religion }
-# 		}
-# 		any_neighboring_and_across_water_top_liege_realm_owner = {
-# 			religion = religion:islam_religion
-# 		}
-# 	}
+	trigger_if = {
+		limit = {
+			root.religion = religion:islam_religion
+		}
+		is_head_of_the_harem_trigger = {
+			LIEGE = root
+		}
+	}
+	trigger_else = {
+		is_parent_of = root
+	}
 
-# 	immediate = {
-# 		random_courtier = {
-# 			limit = {
-# 				is_male = no
-# 				age <= 23
-# 				is_adult = yes
-# 				NOT = { religion = religion:islam_religion }
-# 			}
-# 			save_scope_as = jarya
-# 		}
-# 		random_neighboring_and_across_water_top_liege_realm_owner = {
-# 			limit = {	
-# 				religion = religion:islam_religion
-# 			}
-# 			weight = {
-# 				base = 1
-# 				modifier = {
-# 					highest_held_title_tier >= tier_kingdom
-# 				}
-# 			}
-# 			save_scope_as = liege
-# 		}
-# 		send_interface_toast = {
-# 			type = event_generic_bad
-# 			title = bride_show.2000.t.court_owner
-# 			right_icon = scope:liege
-# 			left_icon = scope:jarya
-# 			custom_tooltip = bride_show.2000.desc.court_owner
-# 		}
-# 	}
+	NOR = {
+		is_consort_of = root
 
-# }
+		has_trait = pregnant
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_relation_best_friend = root
+		has_relation_friend = root
+
+		has_trait = forgiving
+		has_trait = compassionate
+		has_trait = humble
+		has_trait = content
+
+		has_trait = shy
+		has_trait = craven
+	}
+	trigger_if = {
+		limit = {
+			is_travelling = yes	
+		}
+		current_travel_plan ={
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
+}
+
+scripted_trigger is_valid_favorite_0040_trigger = {
+	is_physically_able_ai = yes
+	is_healthy = yes
+	harem_politics_punished_consort_trigger = no
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	harem_politics_favored_consort_trigger = yes
+	trigger_if = {
+		limit = {
+			is_travelling = yes	
+		}
+		current_travel_plan ={
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
+}
+
+scripted_trigger is_valid_consort_0040_trigger = {
+	is_physically_able_ai = yes
+	is_healthy = yes
+	harem_politics_punished_consort_trigger = no
+
+	harem_politics_unfavored_consort_trigger = yes
+	is_demoted_consort_trigger = no
+
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+
+	age <= 35
+	NOR = {
+		this = $FAVORITE$
+		has_trait = pregnant
+
+		has_relation_rival = $RELATIVE$
+		has_relation_nemesis = $RELATIVE$
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_relation_best_friend = root
+		has_relation_friend = root
+
+		has_relation_lover = root
+		has_relation_soulmate = root
+	}
+	opinion = {
+		target = root
+		value >= -20
+	}
+	reverse_opinion = {
+		target = $RELATIVE$
+		value >= -20
+	}
+	trigger_if = {
+		limit = {
+			is_travelling = yes	
+		}
+		current_travel_plan ={
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
+}
+
+harem_politics.0040 = {
+	type = character_event
+	title = harem_politics.0040.t
+	desc = harem_politics.0040.desc
+	theme = family
+	override_background = { reference = feast }
+	
+	left_portrait  = {
+		character = root
+		animation = shame
+	}
+	right_portrait = {
+		character = scope:zhen_huan
+		animation = disapproval
+	}
+
+	lower_left_portrait = {
+		character = scope:consort_1
+	}
+	lower_center_portrait = {
+		character = scope:favorite
+	}
+	lower_right_portrait = {
+		character = scope:consort_2
+	}
+	
+	trigger = {
+		is_available_at_peace_adult = yes
+		is_physically_able = yes
+		is_healthy = yes
+		any_courtier = {
+			is_valid_relative_0040_trigger = yes
+			save_temporary_scope_as = zhen_huan
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		any_consort = {
+			is_valid_favorite_0040_trigger = yes
+			count = 1
+			save_temporary_scope_as = favorite
+		}
+		any_consort = {
+			is_valid_consort_0040_trigger = {
+				RELATIVE = scope:zhen_huan
+				FAVORITE = scope:favorite
+			}
+			count >= 2
+		}
+		NOR = {
+			has_character_flag = flag_scolded_by_empress_dowager
+			has_trait = eunuch
+			has_trait = celibate
+			has_trait = devoted
+			has_trait = pregnant
+	    }
+	}
+
+	weight_multiplier = {
+		base = 1
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		stress_impact = {
+			gregarious = minor_stress_impact_loss
+		}
+		
+		random_consort = {
+			limit = {
+				is_valid_favorite_0040_trigger = yes
+			}
+			save_scope_as = favorite
+		}
+
+		random_courtier = {
+			limit = {
+				is_valid_relative_0040_trigger = yes				
+			}
+			weight = {
+				base = 1
+				modifier = {
+					sex_opposite_of = root
+					add = 20
+				}
+			}
+			save_scope_as = zhen_huan
+			scope:zhen_huan = {
+				add_opinion = {
+					modifier = disapproval_opinion
+					target = root
+					opinion = -5
+				}
+			}
+		}
+		every_consort = {
+			limit = {
+				is_valid_consort_0040_trigger = {
+					RELATIVE = scope:zhen_huan
+					FAVORITE = scope:favorite
+				}
+			}
+			add_to_list = consort_0040_list
+		}
+		hidden_effect = {
+			while = {
+				count = 2
+				random_in_list = {
+					list = consort_0040_list
+					weight = {
+						base = 1
+						opinion_modifier = { # Liege's opinion
+							who = scope:zhen_huan
+							opinion_target = this
+							min = 0
+							multiplier = 0.5
+						}
+						compatibility_modifier = { # Trait compatibility
+							compatibility_target = scope:zhen_huan
+							min = 0
+							max = 40
+							multiplier = 0.5
+						}
+						modifier = {
+							scope:zhen_huan = {
+								has_hook = prev
+							}
+							add = 50
+						}
+						modifier = {
+							scope:zhen_huan = {
+								has_strong_hook = prev
+							}
+							add = 100
+						}
+					}
+					if = {
+						limit = {
+							NOT = {
+								exists = consort_1
+							}
+						}
+						save_scope_as = consort_1
+						scope:consort_1 = {
+							remove_from_list = consort_0040_list
+						}
+					}
+					else = {
+						save_scope_as = consort_2
+					}
+				}
+			}	
+		}
+	}
+	
+	# You take consort_1
+	option = {
+		name = harem_politics.0040.a
+
+		scope:consort_1 = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:zhen_huan
+					modifier = thankful_consort_opinion
+					opinion = 15
+				}
+			}
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:consort_1
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+
+		scope:zhen_huan = {
+			add_opinion = {
+				modifier = pleased_opinion
+				target = root
+				opinion = 10
+			}
+		}
+
+
+		ai_chance = {
+            base = 10
+		}
+	}
+
+	# You take consort_2
+	option = {
+		name = harem_politics.0040.b
+
+		scope:consort_2 = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_consort_opinion
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:zhen_huan
+					modifier = thankful_consort_opinion
+					opinion = 15
+				}
+			}
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:consort_2
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+
+		scope:zhen_huan = {
+			add_opinion = {
+				modifier = pleased_opinion
+				target = root
+				opinion = 10
+			}
+		}
+
+
+		ai_chance = {
+            base = 10
+		}
+	}
+
+	# Don't intervene in my harem
+	option = {
+		name = harem_politics.0040.c
+		scope:favorite = {
+			calyver_favor_minor_gain_effect = yes
+			if = {
+				limit = {
+					NOR = {
+						has_relation_rival = root
+						has_relation_nemesis = root
+
+						has_opinion_modifier = {
+							target = root
+							modifier = forced_me_concubine_marriage_opinion
+						}
+					}
+					opinion = {
+						target = root
+						value >= -15
+					}
+				}
+				if = {
+					limit = { can_set_relation_potential_lover_trigger = { CHARACTER = root } }
+					set_relation_potential_lover = root
+					add_opinion = {
+						target = root
+						modifier = love_opinion
+						opinion = 10
+					}
+				}
+				else = {
+					add_opinion = {
+						target = root
+						modifier = thankful_consort_opinion
+					}
+				}
+			}
+		}
+		scope:consort_1 = {
+			calyver_favor_minor_loss_effect = yes
+		}
+		scope:consort_2 = {
+			calyver_favor_minor_loss_effect = yes
+		}
+
+		scope:zhen_huan = {
+			add_opinion = {
+				target = root
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+			add_opinion = {
+				target = scope:favorite
+				modifier = frustrated_opinion
+				opinion = -10
+			}
+		}
+
+
+		ai_chance = {
+            base = 10
+		}
+	}
+
+	after = {
+		add_character_flag = {
+			flag = flag_reserved_night
+			years = 4
+		}
+	}
+}
 
 #########################
 ##Imprisoning a consort##
