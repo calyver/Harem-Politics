@@ -34637,9 +34637,8 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 		# The harem loses opinion of the matron
 		every_courtier = {
 			limit = {
-				OR = {
-					is_close_or_extended_family_of = root
-					is_consort_of = root
+				is_valid_harem_member_trigger = {
+					LIEGE = root
 				}
 				NOR = {
 					this = scope:matron
@@ -34657,6 +34656,10 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 					has_relation_nemesis = scope:matron
 
 					is_close_family_of = scope:matron
+
+					scope:matron = {
+						has_hook = prev
+					}
 				}
 				accepts_harems = yes
 				opinion = {
@@ -34677,7 +34680,7 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 				add_opinion = {
 					target = $JARYA$
 					modifier = upset_opinion
-					opinion = -15
+					opinion = -10
 				}
 			}
 			else = {
@@ -34700,6 +34703,11 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 					target = $JARYA$
 					type = favor_hook
 				}
+			}
+			add_opinion = {
+				target = $JARYA$
+				modifier = ally_at_court_opinion
+				opinion = 15
 			}
 		}
 		$JARYA$ = {
@@ -35313,7 +35321,6 @@ harem_politics.0038 = {
 					}
 					set_character_faith = root.faith
 					visit_court_of = root
-					return_to_court = yes
 					remove_from_list = pool_candidates
 					add_to_list = jarya_list
 				}
@@ -36129,6 +36136,17 @@ scripted_trigger is_valid_favorite_0040_trigger = {
 	harem_politics_punished_consort_trigger = no
 	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 	harem_politics_favored_consort_trigger = yes
+	NOR = {
+		has_relation_friend = $RELATIVE$
+		has_relation_best_friend = $RELATIVE$
+
+		has_relation_lover = $RELATIVE$
+		has_relation_soulmate = $RELATIVE$
+
+		$RELATIVE$ = {
+			has_hook = prev
+		}
+	}
 	trigger_if = {
 		limit = {
 			is_travelling = yes	
@@ -36156,6 +36174,7 @@ scripted_trigger is_valid_consort_0040_trigger = {
 	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 
 	age <= 35
+	is_concubine_of = root
 	NOR = {
 		this = $FAVORITE$
 		has_trait = pregnant
@@ -36242,11 +36261,13 @@ harem_politics.0040 = {
 			count >= 4
 		}
 		any_consort = {
-			is_valid_favorite_0040_trigger = yes
+			is_valid_favorite_0040_trigger = {
+				RELATIVE = scope:zhen_huan
+			}
 			count = 1
 			save_temporary_scope_as = favorite
 		}
-		any_consort = {
+		any_concubine = {
 			is_valid_consort_0040_trigger = {
 				RELATIVE = scope:zhen_huan
 				FAVORITE = scope:favorite
@@ -36271,13 +36292,6 @@ harem_politics.0040 = {
 		stress_impact = {
 			gregarious = minor_stress_impact_loss
 		}
-		
-		random_consort = {
-			limit = {
-				is_valid_favorite_0040_trigger = yes
-			}
-			save_scope_as = favorite
-		}
 
 		random_courtier = {
 			limit = {
@@ -36298,6 +36312,14 @@ harem_politics.0040 = {
 					opinion = -5
 				}
 			}
+		}
+		random_consort = {
+			limit = {
+				is_valid_favorite_0040_trigger = {
+					RELATIVE = scope:zhen_huan
+				}
+			}
+			save_scope_as = favorite
 		}
 		every_consort = {
 			limit = {
