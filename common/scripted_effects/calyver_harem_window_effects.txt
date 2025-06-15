@@ -5,8 +5,6 @@
 		}
 		remove_variable = show_harem_window
 		#Clear the lists
-		clear_variable_list = harem_head_list
-		clear_variable_list = harem_vh_list
 		clear_variable_list = harem_consort_list
 		#Remove variables
 		if = { #Can't visit the harem
@@ -25,51 +23,12 @@
 calyver_update_harem_list_effect = {
 	if = {
 		limit = {
-			exists = scope:harem_liege
+			exists = scope:harem_master
 		}
-		clear_saved_scope = harem_liege
+		clear_saved_scope = harem_master
 	}
 	
-	save_scope_as = harem_liege
-
-	# Find the head of the harem
-	if = {
-		limit = {
-			any_courtier = {
-				is_head_of_the_harem_trigger = {
-					LIEGE = scope:harem_liege
-				}
-			}
-		}
-		ordered_courtier = {
-			limit = {
-				is_head_of_the_harem_trigger = {
-					LIEGE = scope:harem_liege
-				}
-			}
-			order_by = {
-				if = {
-					limit = {
-						is_spouse_of = scope:harem_liege
-						NOT = {
-							this = scope:harem_liege.primary_spouse
-						}
-					}
-					add = head_of_the_harem_score_value
-				}
-				else = {
-					add = 100
-				}
-			}
-			save_scope_as = harem_head
-			root = {
-				add_to_variable_list = {
-					name = harem_head_list
-					target = scope:harem_head
-				}
-			}
-		}
-	}
+	save_scope_as = harem_master
 
 	#Relatives are part of a Muslim's harem
 	if = {
@@ -77,30 +36,22 @@ calyver_update_harem_list_effect = {
 			religion = religion:islam_religion
 			any_courtier = {
 				is_valid_muslim_harem_relative_trigger = {
-					LIEGE = scope:harem_liege
+					LIEGE = scope:harem_master
 				}
+				age > scope:harem_master.age
 				NOR = {
-					is_consort_of = scope:harem_liege 
-					this = scope:harem_head
-					this = scope:harem_vice_head
+					is_consort_of = scope:harem_master 
 				}
 			}
 		}
 		ordered_courtier = {
 			limit = {
 				is_valid_muslim_harem_relative_trigger = {
-					LIEGE = scope:harem_liege
+					LIEGE = scope:harem_master
 				}
+				age > scope:harem_master.age
 				NOR = {
-					is_consort_of = scope:harem_liege 
-					is_target_in_variable_list = {
-						name = harem_vh_list
-						target = this
-					}
-					is_target_in_variable_list = {
-						name = harem_head_list
-						target = this
-					}
+					is_consort_of = scope:harem_master 
 				}
 			}
 			order_by = {
@@ -108,7 +59,7 @@ calyver_update_harem_list_effect = {
 				# Grandmother
 				if = {
 					limit = {
-						is_grandparent_of = scope:harem_liege
+						is_grandparent_of = scope:harem_master
 					}
 					add = 300
 				}
@@ -116,7 +67,7 @@ calyver_update_harem_list_effect = {
 				# Mother
 				if = {
 					limit = {
-						is_parent_of = scope:harem_liege
+						is_parent_of = scope:harem_master
 					}
 					add = 200
 				}
@@ -124,14 +75,14 @@ calyver_update_harem_list_effect = {
 				# Aunts
 				if = {
 					limit = {
-						is_uncle_or_aunt_of = scope:harem_liege
+						is_uncle_or_aunt_of = scope:harem_master
 					}
 					add = 100
 				}
 
 				add = age
 			}
-			max = 4
+			max = 3
 			root = {
 				add_to_variable_list = {
 					name = harem_consort_list
@@ -141,15 +92,6 @@ calyver_update_harem_list_effect = {
 		}
 	}
 	ordered_consort = {
-		limit = {
-			NOR = { 
-				is_target_in_variable_list = {
-					name = harem_consort_list
-					target = this
-				}
-				this = scope:harem_head
-			}
-		}
 		order_by = {
 			#Favor
 			if = {
@@ -205,11 +147,11 @@ calyver_update_harem_list_effect = {
 						house ?= { is_dominant_family = yes }
 						OR = {
 							AND = {
-								exists = scope:harem_liege.top_liege
-								top_liege ?= scope:harem_liege.top_liege
+								exists = scope:harem_master.top_liege
+								top_liege ?= scope:harem_master.top_liege
 							}
 							AND = {
-								is_vassal_or_below_of = scope:harem_liege
+								is_vassal_or_below_of = scope:harem_master
 							}
 						}
 					}
@@ -252,11 +194,11 @@ calyver_update_harem_list_effect = {
 							house ?= { is_dominant_family = yes }
 							OR = {
 								AND = {
-									exists = scope:harem_liege.top_liege
-									top_liege ?= scope:harem_liege.top_liege
+									exists = scope:harem_master.top_liege
+									top_liege ?= scope:harem_master.top_liege
 								}
 								AND = {
-									is_vassal_or_below_of = scope:harem_liege
+									is_vassal_or_below_of = scope:harem_master
 								}
 							}
 						}
@@ -268,11 +210,11 @@ calyver_update_harem_list_effect = {
 						limit = {
 							any_close_family_member = {
 								OR = {
-									is_powerful_vassal_of = scope:harem_liege
+									is_powerful_vassal_of = scope:harem_master
 									AND = { #It applies also to fellow powerful vassals
-										exists = scope:harem_liege.liege
-										liege ?= scope:harem_liege.liege
-										is_powerful_vassal_of = scope:harem_liege.liege
+										exists = scope:harem_master.liege
+										liege ?= scope:harem_master.liege
+										is_powerful_vassal_of = scope:harem_master.liege
 									}
 								}
 							}
@@ -283,11 +225,11 @@ calyver_update_harem_list_effect = {
 						limit = {
 							any_close_family_member = {
 								OR = {
-									is_councillor_of = scope:harem_liege
+									is_councillor_of = scope:harem_master
 									AND = { #It applies also to fellow powerful vassals
-										exists = scope:harem_liege.liege
-										liege ?= scope:harem_liege.liege
-										is_councillor_of = scope:harem_liege.liege
+										exists = scope:harem_master.liege
+										liege ?= scope:harem_master.liege
+										is_councillor_of = scope:harem_master.liege
 									}
 								}
 							}
@@ -350,27 +292,27 @@ calyver_update_harem_list_effect = {
 			if = {
 				limit = {
 					any_child = {
-						is_child_of = scope:harem_liege
+						is_child_of = scope:harem_master
 						is_alive = yes
 						count > 0
 					}
 				}
 				every_child = {
 					limit = {
-						is_child_of = scope:harem_liege
+						is_child_of = scope:harem_master
 						is_alive = yes
 					}
 					add = {
 						value = 2
 						if = { #Eligible heirs
 							limit = {
-								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_master }
 							}
 							add = 1
 						}
 						if = { #Closer to the throne
 							limit = {
-								scope:harem_liege.primary_title = {
+								scope:harem_master.primary_title = {
 									place_in_line_of_succession = {
 										target = prev
 										value <= 3
@@ -381,7 +323,7 @@ calyver_update_harem_list_effect = {
 						}
 						if = { #Player heir
 							limit = {
-								is_player_heir_of = scope:harem_liege
+								is_player_heir_of = scope:harem_master
 							}
 							add = 2
 						}
@@ -434,7 +376,7 @@ calyver_update_harem_list_effect = {
 				has_character_modifier = isolating_modifier
 
 				any_consort = {
-					is_courtier_of = scope:harem_liege
+					is_courtier_of = scope:harem_master
 					is_physically_able_ai_adult = yes
 					is_available_healthy_adult = yes
 					NOT = { has_trait = ill }
@@ -443,7 +385,7 @@ calyver_update_harem_list_effect = {
 							is_travelling = yes
 						}
 						current_travel_plan ={
-							travel_plan_owner = scope:harem_liege
+							travel_plan_owner = scope:harem_master
 						}
 					}
 					count <= 2
