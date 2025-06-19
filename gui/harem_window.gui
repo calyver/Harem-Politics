@@ -1,6 +1,6 @@
 window = {
     name = "harem_window"
-    size = { 700 830 }
+    size = { 700 940 }
 
 	parentanchor = center
     widgetanchor = center
@@ -43,7 +43,7 @@ window = {
 					texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
 					blend_mode = alphamultiply
 					mirror = vertical
-					alpha = 0.7
+					alpha = 0.5
 				}
 			}
 			
@@ -66,7 +66,7 @@ window = {
 
 		# Scrollable Consort Grid
 		widget = {
-			size = { 100% 55% }
+			size = { 100% 60% }
 			layoutpolicy_horizontal = expanding
 			layoutpolicy_vertical = expanding
 			scrollarea = {
@@ -74,22 +74,29 @@ window = {
 					using = Background_Area_Border
 				}
 				position = { 0 0 }
-				size = { 100% 415 }
+				size = { 100% 100% }
 				autoresizescrollarea = no
 				scrollbar_vertical = {
 					using = Scrollbar_Vertical
 				}
 				scrollbarpolicy_horizontal = always_off
 				scrollwidget = {
-					widget = {  # Add a container widget
-						size = { 100% 100% }
+					vbox = {
 						layoutpolicy_horizontal = expanding
-						parentanchor = hcenter  # Center the container
-						
+						layoutpolicy_vertical = expanding   # <-- Add this line!
+						# position = { 0 -100 }
+			
 						harem_dynamicgrid = {
-							layoutpolicy_horizontal = expanding
-							parentanchor = hcenter  # Center the grid
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_consort_list')]"
+							datamodel_wrap = 2
+							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_top_consort_list') ) )]"
 						}
+			
+						harem_dynamicgrid = {
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_consort_list')]"
+							datamodel_wrap = 4
+						}
+						margin_bottom = 20
 					}
 				}
 			}
@@ -97,7 +104,8 @@ window = {
 
 		# Button
 		widget = {
-			size = { 100% 50 }
+			size = { 0 0 }
+
 			layoutpolicy_horizontal = expanding
 			layoutpolicy_vertical = expanding
 			
@@ -108,7 +116,7 @@ window = {
 				onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 				enabled = "[Not(GetPlayer.MakeScope.Var('cant_visit_harem').IsSet)]"
 				size = { 380 50 }
-				position = { 0 10 }
+				#position = { 0 22 }
 				parentanchor = center
 				
 				tooltip = "cant_visit_harem_tooltip"
@@ -119,7 +127,7 @@ window = {
 }
 
 types harem_types {
-
+	# The head of the harem's grid
     type window_harem_special_character = dynamicgridbox {
         name = "harem_grid"
         datamodel = "[GetPlayer.MakeScope.GetList('harem_head_list')]"
@@ -131,6 +139,17 @@ types harem_types {
 	type harem_special_griditem = widget {
         size = { 208 200 }
         datacontext = "[Scope.GetCharacter]"
+
+		# # Overlay mask
+		# widget = {
+		# 	size = { 200 240 }
+		# 	parentanchor = center
+		# 	background = {
+		# 		using = Background_Area_Dark
+		# 		alpha = 0.7
+		# 		#margin = { 10 10 }
+		# 	}
+		# }
 
 		text_single = {
             parentanchor = top|hcenter
@@ -163,19 +182,16 @@ types harem_types {
         mask = "gfx/portraits/portrait_mask_head.dds"
     }
 
+	# Other consorts' grid
     type harem_dynamicgrid = dynamicgridbox {
 		name = "harem_grid"
-		datamodel = "[GetPlayer.MakeScope.GetList('harem_consort_list')]"
-		datamodel_wrap = 4
+
 		flipdirection = yes
-		layoutpolicy_horizontal = expanding
-		parentanchor = hcenter
 		
 		item = {
 			harem_griditem = {}
 		}
 	}
-
 	type harem_griditem = widget {
 		allow_outside = yes
 		size = { 155 200 }
@@ -210,6 +226,7 @@ types harem_types {
         portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
         mask = "gfx/portraits/portrait_mask_head.dds"
     }
+
     type harem_portrait_head_small = widget {
 		size = { 100 100 }
 

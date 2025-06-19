@@ -74,36 +74,27 @@ calyver_update_harem_list_effect = {
 	# The top 2 ranks
 	if = {
 		limit = {
-			religion = religion:islam_religion
-			any_courtier = {
-				is_valid_muslim_harem_relative_trigger = {
-					LIEGE = scope:harem_liege
+			OR = {
+				any_courtier = {
+					is_valid_harem_member_trigger = {
+						LIEGE = scope:harem_liege
+					}
+					count >= 5
 				}
-				NOR = {
-					is_consort_of = scope:harem_liege 
-					this = scope:harem_head
-					root = {
-						is_target_in_variable_list = {
-							name = harem_top_consort_list
-							target = prev
-						}
+				any_courtier = {
+					is_valid_harem_member_trigger = {
+						LIEGE = scope:harem_liege
 					}
-					root = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
-						}
-					}
+					count = 3
 				}
 			}
 		}
 		ordered_courtier = {
 			limit = {
-				is_valid_muslim_harem_relative_trigger = {
+				is_valid_harem_member_trigger = {
 					LIEGE = scope:harem_liege
 				}
 				NOR = {
-					is_consort_of = scope:harem_liege 
 					root = {
 						is_target_in_variable_list = {
 							name = harem_top_consort_list
@@ -120,31 +111,280 @@ calyver_update_harem_list_effect = {
 			}
 			order_by = {
 
-				# Grandmother
 				if = {
 					limit = {
-						is_grandparent_of = scope:harem_liege
+						scope:harem_head.religion = religion:islam_religion
+						is_close_or_extended_family_of = scope:harem_liege
+						NOT = {
+							is_consort_of = scope:harem_head
+						}
 					}
-					add = 300
-				}
-
-				# Mother
-				if = {
-					limit = {
-						is_parent_of = scope:harem_liege
+					add = 1000
+					# Grandmother
+					if = {
+						limit = {
+							is_grandparent_of = scope:harem_liege
+						}
+						add = 500
 					}
-					add = 200
-				}
 
-				# Aunts
-				if = {
-					limit = {
-						is_uncle_or_aunt_of = scope:harem_liege
+					# Mother
+					if = {
+						limit = {
+							is_parent_of = scope:harem_liege
+						}
+						add = 300
 					}
-					add = 100
-				}
 
-				add = age
+					# Aunts
+					if = {
+						limit = {
+							is_uncle_or_aunt_of = scope:harem_liege
+						}
+						add = 200
+					}
+
+					add = age
+				}
+				else = {
+					#Favor
+					if = {
+						limit = {
+							has_variable = favor
+						}
+						add = var:favor
+						divide = 50
+					}
+		
+					#Rank
+					if = {
+						limit = {
+							exists = root.primary_spouse
+							this = root.primary_spouse
+						}
+						add = 550
+					}
+					if = {
+						limit = {
+							has_court_position = grand_consort_court_position
+						}
+						add = 270
+					}
+					if = {
+						limit = {
+							is_married = yes
+						}
+						add = 170
+					}
+		
+					#Background
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier >= tier_empire
+							}
+						}
+						add = 25
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_kingdom
+							}
+						}
+						add = 20
+					}
+					if = { #Dominant families
+						limit = {
+							any_close_family_member = {
+								government_allows = administrative
+								house ?= { is_dominant_family = yes }
+								OR = {
+									AND = {
+										exists = scope:harem_liege.top_liege
+										top_liege ?= scope:harem_liege.top_liege
+									}
+									AND = {
+										is_vassal_or_below_of = scope:harem_liege
+									}
+								}
+							}
+						}
+						add = 15
+					}
+					else_if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_duchy
+							}
+						}
+						add = 15
+					}
+		
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_county
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_barony
+							}
+						}
+						add = 5
+					}
+		
+					if = { #Powerful families
+						limit = {
+							any_close_family_member = {
+								is_landed_or_landless_administrative = yes
+								highest_held_title_tier >= tier_county
+								NAND = { #Dominant families have another calculation
+									government_allows = administrative
+									house ?= { is_dominant_family = yes }
+									OR = {
+										AND = {
+											exists = scope:harem_liege.top_liege
+											top_liege ?= scope:harem_liege.top_liege
+										}
+										AND = {
+											is_vassal_or_below_of = scope:harem_liege
+										}
+									}
+								}
+							}
+						}
+						add = {
+							value = 0
+							if = {
+								limit = {
+									any_close_family_member = {
+										OR = {
+											is_powerful_vassal_of = scope:harem_liege
+											AND = { #It applies also to fellow powerful vassals
+												exists = scope:harem_liege.liege
+												liege ?= scope:harem_liege.liege
+												is_powerful_vassal_of = scope:harem_liege.liege
+											}
+										}
+									}
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									any_close_family_member = {
+										OR = {
+											is_councillor_of = scope:harem_liege
+											AND = { #It applies also to fellow powerful vassals
+												exists = scope:harem_liege.liege
+												liege ?= scope:harem_liege.liege
+												is_councillor_of = scope:harem_liege.liege
+											}
+										}
+									}
+								}
+								add = 5
+							}
+						}
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								is_knight_of = root
+							}
+						}
+						add = {
+							value = 2
+							if = {
+								limit = {
+									any_close_family_member = {
+										is_knight_of = root
+										is_acclaimed = yes
+									}
+								}
+								add = {
+									value = 5
+								}
+							}
+						}
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								is_vassal_of = root
+							}
+						}
+						add = 5
+					}
+					if = {
+						limit = {
+							is_lowborn = no
+						}
+						add = 10
+					}
+		
+					#Culture and religion
+					if = {
+						limit = {
+							culture = root.culture
+						}
+						add = 15
+					}
+					if = {
+						limit = {
+							faith = root.faith
+						}
+						add = 15
+					}
+		
+					#Number of children
+					if = {
+						limit = {
+							any_child = {
+								is_child_of = scope:harem_liege
+								is_alive = yes
+								count > 0
+							}
+						}
+						every_child = {
+							limit = {
+								is_child_of = scope:harem_liege
+								is_alive = yes
+							}
+							add = {
+								value = 2
+								if = { #Eligible heirs
+									limit = {
+										character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+									}
+									add = 1
+								}
+								if = { #Closer to the throne
+									limit = {
+										scope:harem_liege.primary_title = {
+											place_in_line_of_succession = {
+												target = prev
+												value <= 3
+											}
+										}
+									}
+									add = 1
+								}
+								if = { #Player heir
+									limit = {
+										is_player_heir_of = scope:harem_liege
+									}
+									add = 2
+								}
+							}
+						}
+					}
+				}
 			}
 			max = 2
 			root = {
@@ -155,15 +395,36 @@ calyver_update_harem_list_effect = {
 			}
 		}
 	}
+
+	#Relatives are part of a Muslim's harem
 	if = {
 		limit = {
-			any_in_list = {
-				variable = harem_top_consort_list
-				count < 2
+			any_courtier = {
+				is_valid_harem_member_trigger = {
+					LIEGE = scope:harem_liege
+				}
+				NOR = { 
+					root = {
+						is_target_in_variable_list = {
+							name = harem_top_consort_list
+							target = prev
+						}
+					}
+					root = {
+						is_target_in_variable_list = {
+							name = harem_head_list
+							target = prev
+						}
+					}
+					this = scope:harem_head
+				}
 			}
 		}
-		ordered_consort = {
+		ordered_courtier = {
 			limit = {
+				is_valid_harem_member_trigger = {
+					LIEGE = scope:harem_liege
+				}
 				NOR = { 
 					root = {
 						is_target_in_variable_list = {
@@ -181,103 +442,90 @@ calyver_update_harem_list_effect = {
 				}
 			}
 			order_by = {
-				#Favor
-				if = {
-					limit = {
-						has_variable = favor
-					}
-					add = var:favor
-					divide = 50
-				}
 	
-				#Rank
 				if = {
 					limit = {
-						exists = root.primary_spouse
-						this = root.primary_spouse
+						scope:harem_head.religion = religion:islam_religion
+						is_close_or_extended_family_of = scope:harem_liege
 					}
-					add = 550
-				}
-				if = {
-					limit = {
-						has_court_position = grand_consort_court_position
+					add = 1000
+					# Grandmother
+					if = {
+						limit = {
+							is_grandparent_of = scope:harem_liege
+						}
+						add = 500
 					}
-					add = 270
-				}
-				if = {
-					limit = {
-						is_married = yes
-					}
-					add = 170
-				}
 	
-				#Background
-				if = {
-					limit = {
-						any_close_family_member = {
-							highest_held_title_tier >= tier_empire
+					# Mother
+					if = {
+						limit = {
+							is_parent_of = scope:harem_liege
 						}
+						add = 300
 					}
-					add = 25
-				}
-				if = {
-					limit = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_kingdom
+	
+					# Aunts
+					if = {
+						limit = {
+							is_uncle_or_aunt_of = scope:harem_liege
 						}
+						add = 200
 					}
-					add = 20
+	
+					add = age
 				}
-				if = { #Dominant families
-					limit = {
-						any_close_family_member = {
-							government_allows = administrative
-							house ?= { is_dominant_family = yes }
-							OR = {
-								AND = {
-									exists = scope:harem_liege.top_liege
-									top_liege ?= scope:harem_liege.top_liege
-								}
-								AND = {
-									is_vassal_or_below_of = scope:harem_liege
-								}
+				else = {
+					#Favor
+					if = {
+						limit = {
+							has_variable = favor
+						}
+						add = var:favor
+						divide = 50
+					}
+		
+					#Rank
+					if = {
+						limit = {
+							exists = root.primary_spouse
+							this = root.primary_spouse
+						}
+						add = 550
+					}
+					if = {
+						limit = {
+							has_court_position = grand_consort_court_position
+						}
+						add = 270
+					}
+					if = {
+						limit = {
+							is_married = yes
+						}
+						add = 170
+					}
+		
+					#Background
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier >= tier_empire
 							}
 						}
+						add = 25
 					}
-					add = 15
-				}
-				else_if = {
-					limit = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_duchy
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_kingdom
+							}
 						}
+						add = 20
 					}
-					add = 15
-				}
-	
-				if = {
-					limit = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_county
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						any_close_family_member = {
-							highest_held_title_tier = tier_barony
-						}
-					}
-					add = 5
-				}
-	
-				if = { #Powerful families
-					limit = {
-						any_close_family_member = {
-							is_landed_or_landless_administrative = yes
-							highest_held_title_tier >= tier_county
-							NAND = { #Dominant families have another calculation
+					if = { #Dominant families
+						limit = {
+							any_close_family_member = {
 								government_allows = administrative
 								house ?= { is_dominant_family = yes }
 								OR = {
@@ -291,504 +539,188 @@ calyver_update_harem_list_effect = {
 								}
 							}
 						}
+						add = 15
 					}
-					add = {
-						value = 0
-						if = {
-							limit = {
-								any_close_family_member = {
-									OR = {
-										is_powerful_vassal_of = scope:harem_liege
-										AND = { #It applies also to fellow powerful vassals
-											exists = scope:harem_liege.liege
-											liege ?= scope:harem_liege.liege
-											is_powerful_vassal_of = scope:harem_liege.liege
-										}
-									}
-								}
-							}
-							add = 5
-						}
-						if = {
-							limit = {
-								any_close_family_member = {
-									OR = {
-										is_councillor_of = scope:harem_liege
-										AND = { #It applies also to fellow powerful vassals
-											exists = scope:harem_liege.liege
-											liege ?= scope:harem_liege.liege
-											is_councillor_of = scope:harem_liege.liege
-										}
-									}
-								}
-							}
-							add = 5
-						}
-					}
-				}
-				if = {
-					limit = {
-						any_close_family_member = {
-							is_knight_of = root
-						}
-					}
-					add = {
-						value = 2
-						if = {
-							limit = {
-								any_close_family_member = {
-									is_knight_of = root
-									is_acclaimed = yes
-								}
-							}
-							add = {
-								value = 5
-							}
-						}
-					}
-				}
-				if = {
-					limit = {
-						any_close_family_member = {
-							is_vassal_of = root
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						is_lowborn = no
-					}
-					add = 10
-				}
-	
-				#Culture and religion
-				if = {
-					limit = {
-						culture = root.culture
-					}
-					add = 15
-				}
-				if = {
-					limit = {
-						faith = root.faith
-					}
-					add = 15
-				}
-	
-				#Number of children
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = scope:harem_liege
-							is_alive = yes
-							count > 0
-						}
-					}
-					every_child = {
+					else_if = {
 						limit = {
-							is_child_of = scope:harem_liege
-							is_alive = yes
+							any_close_family_member = {
+								highest_held_title_tier = tier_duchy
+							}
+						}
+						add = 15
+					}
+		
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_county
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								highest_held_title_tier = tier_barony
+							}
+						}
+						add = 5
+					}
+		
+					if = { #Powerful families
+						limit = {
+							any_close_family_member = {
+								is_landed_or_landless_administrative = yes
+								highest_held_title_tier >= tier_county
+								NAND = { #Dominant families have another calculation
+									government_allows = administrative
+									house ?= { is_dominant_family = yes }
+									OR = {
+										AND = {
+											exists = scope:harem_liege.top_liege
+											top_liege ?= scope:harem_liege.top_liege
+										}
+										AND = {
+											is_vassal_or_below_of = scope:harem_liege
+										}
+									}
+								}
+							}
+						}
+						add = {
+							value = 0
+							if = {
+								limit = {
+									any_close_family_member = {
+										OR = {
+											is_powerful_vassal_of = scope:harem_liege
+											AND = { #It applies also to fellow powerful vassals
+												exists = scope:harem_liege.liege
+												liege ?= scope:harem_liege.liege
+												is_powerful_vassal_of = scope:harem_liege.liege
+											}
+										}
+									}
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									any_close_family_member = {
+										OR = {
+											is_councillor_of = scope:harem_liege
+											AND = { #It applies also to fellow powerful vassals
+												exists = scope:harem_liege.liege
+												liege ?= scope:harem_liege.liege
+												is_councillor_of = scope:harem_liege.liege
+											}
+										}
+									}
+								}
+								add = 5
+							}
+						}
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								is_knight_of = root
+							}
 						}
 						add = {
 							value = 2
-							if = { #Eligible heirs
+							if = {
 								limit = {
-									character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
-								}
-								add = 1
-							}
-							if = { #Closer to the throne
-								limit = {
-									scope:harem_liege.primary_title = {
-										place_in_line_of_succession = {
-											target = prev
-											value <= 3
-										}
+									any_close_family_member = {
+										is_knight_of = root
+										is_acclaimed = yes
 									}
 								}
-								add = 1
-							}
-							if = { #Player heir
-								limit = {
-									is_player_heir_of = scope:harem_liege
+								add = {
+									value = 5
 								}
-								add = 2
 							}
 						}
 					}
-				}
-			}
-			max = {
-				value = 2
-				subtract = {
-					value = 0
 					if = {
 						limit = {
-							any_in_list = {
-								variable = harem_top_consort_list
+							any_close_family_member = {
+								is_vassal_of = root
+							}
+						}
+						add = 5
+					}
+					if = {
+						limit = {
+							is_lowborn = no
+						}
+						add = 10
+					}
+		
+					#Culture and religion
+					if = {
+						limit = {
+							culture = root.culture
+						}
+						add = 15
+					}
+					if = {
+						limit = {
+							faith = root.faith
+						}
+						add = 15
+					}
+		
+					#Number of children
+					if = {
+						limit = {
+							any_child = {
+								is_child_of = scope:harem_liege
+								is_alive = yes
 								count > 0
 							}
 						}
-						add = 1
-					}
-				}
-			}
-			root = {
-				add_to_variable_list = {
-					name = harem_top_consort_list
-					target = prev
-				}
-			}
-		}
-	}
-
-	#Relatives are part of a Muslim's harem
-	if = {
-		limit = {
-			religion = religion:islam_religion
-			any_courtier = {
-				is_valid_muslim_harem_relative_trigger = {
-					LIEGE = scope:harem_liege
-				}
-				NOR = {
-					is_consort_of = scope:harem_liege 
-					this = scope:harem_head
-					root = {
-						is_target_in_variable_list = {
-							name = harem_top_consort_list
-							target = prev
-						}
-					}
-					root = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
+						every_child = {
+							limit = {
+								is_child_of = scope:harem_liege
+								is_alive = yes
+							}
+							add = {
+								value = 2
+								if = { #Eligible heirs
+									limit = {
+										character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+									}
+									add = 1
+								}
+								if = { #Closer to the throne
+									limit = {
+										scope:harem_liege.primary_title = {
+											place_in_line_of_succession = {
+												target = prev
+												value <= 3
+											}
+										}
+									}
+									add = 1
+								}
+								if = { #Player heir
+									limit = {
+										is_player_heir_of = scope:harem_liege
+									}
+									add = 2
+								}
+							}
 						}
 					}
 				}
 			}
-		}
-		ordered_courtier = {
-			limit = {
-				is_valid_muslim_harem_relative_trigger = {
-					LIEGE = scope:harem_liege
-				}
-				NOR = {
-					is_consort_of = scope:harem_liege 
-					root = {
-						is_target_in_variable_list = {
-							name = harem_top_consort_list
-							target = prev
-						}
-					}
-					root = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
-						}
-					}
-				}
-			}
-			order_by = {
-
-				# Grandmother
-				if = {
-					limit = {
-						is_grandparent_of = scope:harem_liege
-					}
-					add = 300
-				}
-
-				# Mother
-				if = {
-					limit = {
-						is_parent_of = scope:harem_liege
-					}
-					add = 200
-				}
-
-				# Aunts
-				if = {
-					limit = {
-						is_uncle_or_aunt_of = scope:harem_liege
-					}
-					add = 100
-				}
-
-				add = age
-			}
-			max = 4
+			min = 0
 			root = {
 				add_to_variable_list = {
 					name = harem_consort_list
 					target = prev
 				}
-			}
-		}
-	}
-	ordered_consort = {
-		limit = {
-			NOR = { 
-				root = {
-					is_target_in_variable_list = {
-						name = harem_top_consort_list
-						target = prev
-					}
-				}
-				root = {
-					is_target_in_variable_list = {
-						name = harem_head_list
-						target = prev
-					}
-				}
-				this = scope:harem_head
-			}
-		}
-		order_by = {
-			#Favor
-			if = {
-				limit = {
-					has_variable = favor
-				}
-				add = var:favor
-				divide = 50
-			}
-
-			#Rank
-			if = {
-				limit = {
-					exists = root.primary_spouse
-					this = root.primary_spouse
-				}
-				add = 550
-			}
-			if = {
-				limit = {
-					has_court_position = grand_consort_court_position
-				}
-				add = 270
-			}
-			if = {
-				limit = {
-					is_married = yes
-				}
-				add = 170
-			}
-
-			#Background
-			if = {
-				limit = {
-					any_close_family_member = {
-						highest_held_title_tier >= tier_empire
-					}
-				}
-				add = 25
-			}
-			if = {
-				limit = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_kingdom
-					}
-				}
-				add = 20
-			}
-			if = { #Dominant families
-				limit = {
-					any_close_family_member = {
-						government_allows = administrative
-						house ?= { is_dominant_family = yes }
-						OR = {
-							AND = {
-								exists = scope:harem_liege.top_liege
-								top_liege ?= scope:harem_liege.top_liege
-							}
-							AND = {
-								is_vassal_or_below_of = scope:harem_liege
-							}
-						}
-					}
-				}
-				add = 15
-			}
-			else_if = {
-				limit = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_duchy
-					}
-				}
-				add = 15
-			}
-
-			if = {
-				limit = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_county
-					}
-				}
-				add = 10
-			}
-			if = {
-				limit = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_barony
-					}
-				}
-				add = 5
-			}
-
-			if = { #Powerful families
-				limit = {
-					any_close_family_member = {
-						is_landed_or_landless_administrative = yes
-						highest_held_title_tier >= tier_county
-						NAND = { #Dominant families have another calculation
-							government_allows = administrative
-							house ?= { is_dominant_family = yes }
-							OR = {
-								AND = {
-									exists = scope:harem_liege.top_liege
-									top_liege ?= scope:harem_liege.top_liege
-								}
-								AND = {
-									is_vassal_or_below_of = scope:harem_liege
-								}
-							}
-						}
-					}
-				}
-				add = {
-					value = 0
-					if = {
-						limit = {
-							any_close_family_member = {
-								OR = {
-									is_powerful_vassal_of = scope:harem_liege
-									AND = { #It applies also to fellow powerful vassals
-										exists = scope:harem_liege.liege
-										liege ?= scope:harem_liege.liege
-										is_powerful_vassal_of = scope:harem_liege.liege
-									}
-								}
-							}
-						}
-						add = 5
-					}
-					if = {
-						limit = {
-							any_close_family_member = {
-								OR = {
-									is_councillor_of = scope:harem_liege
-									AND = { #It applies also to fellow powerful vassals
-										exists = scope:harem_liege.liege
-										liege ?= scope:harem_liege.liege
-										is_councillor_of = scope:harem_liege.liege
-									}
-								}
-							}
-						}
-						add = 5
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_close_family_member = {
-						is_knight_of = root
-					}
-				}
-				add = {
-					value = 2
-					if = {
-						limit = {
-							any_close_family_member = {
-								is_knight_of = root
-								is_acclaimed = yes
-							}
-						}
-						add = {
-							value = 5
-						}
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_close_family_member = {
-						is_vassal_of = root
-					}
-				}
-				add = 5
-			}
-			if = {
-				limit = {
-					is_lowborn = no
-				}
-				add = 10
-			}
-
-			#Culture and religion
-			if = {
-				limit = {
-					culture = root.culture
-				}
-				add = 15
-			}
-			if = {
-				limit = {
-					faith = root.faith
-				}
-				add = 15
-			}
-
-			#Number of children
-			if = {
-				limit = {
-					any_child = {
-						is_child_of = scope:harem_liege
-						is_alive = yes
-						count > 0
-					}
-				}
-				every_child = {
-					limit = {
-						is_child_of = scope:harem_liege
-						is_alive = yes
-					}
-					add = {
-						value = 2
-						if = { #Eligible heirs
-							limit = {
-								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
-							}
-							add = 1
-						}
-						if = { #Closer to the throne
-							limit = {
-								scope:harem_liege.primary_title = {
-									place_in_line_of_succession = {
-										target = prev
-										value <= 3
-									}
-								}
-							}
-							add = 1
-						}
-						if = { #Player heir
-							limit = {
-								is_player_heir_of = scope:harem_liege
-							}
-							add = 2
-						}
-					}
-				}
-			}
-		}
-		min = 0
-		root = {
-			add_to_variable_list = {
-				name = harem_consort_list
-				target = prev
 			}
 		}
 	}
