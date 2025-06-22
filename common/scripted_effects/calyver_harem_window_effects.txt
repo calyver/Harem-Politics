@@ -32,55 +32,94 @@ calyver_update_harem_list_effect = {
 	}
 	
 	save_scope_as = harem_liege
-
-	# Initialize family member counter
-	set_variable = { name = family_members_in_lists value = 0 }
-
-	# Find the head of the harem
-	if = {
+	ordered_courtier = {
 		limit = {
-			any_courtier = {
-				is_head_of_the_harem_trigger = {
-					LIEGE = scope:harem_liege
+			is_valid_harem_member_trigger = {
+				LIEGE = scope:harem_liege
+			}
+			NOT = { is_consort_of = scope:harem_liege }
+		}
+		order_by = {
+			add = 1
+			if = {
+				limit = {
+					is_head_of_the_harem_trigger = {
+						LIEGE = scope:harem_liege
+					}
 				}
+				add = 100
+			}
+			# Mother
+			if = {
+				limit = {
+					is_parent_of = scope:harem_liege
+				}
+				add = 550
+			}
+			# Grandmother
+			else_if = {
+				limit = {
+					is_grandparent_of = scope:harem_liege
+				}
+				add = 700
+			}
+			# Aunts
+			else_if = {
+				limit = {
+					is_uncle_or_aunt_of = scope:harem_liege
+				}
+				add = 400
+			}
+			# Siblings
+			else_if = {
+				limit = {
+					is_sibling_of = scope:harem_liege
+				}
+				add = 200
+			}
+
+			add = age
+		}
+		max = 4
+		add_to_temporary_list = harem_members_list
+	}
+	every_consort = {
+		limit = {
+			is_valid_harem_member_trigger = {
+				LIEGE = scope:harem_liege
 			}
 		}
-		ordered_courtier = {
-			limit = {
-				is_head_of_the_harem_trigger = {
-					LIEGE = scope:harem_liege
-				}
+		add_to_temporary_list = harem_members_list
+	}
+
+	# Find the head of the harem
+	ordered_in_list = {
+		list = harem_members_list
+		limit = {
+			is_head_of_the_harem_trigger = {
+				LIEGE = scope:harem_liege
 			}
-			order_by = {
-				if = {
-					limit = {
-						is_spouse_of = scope:harem_liege
-						NOT = {
-							this = scope:harem_liege.primary_spouse
-						}
+		}
+		order_by = {
+			if = {
+				limit = {
+					is_spouse_of = scope:harem_liege
+					NOT = {
+						this = scope:harem_liege.primary_spouse
 					}
-					add = head_of_the_harem_score_value
 				}
-				else = {
-					add = 100
-				}
+				add = head_of_the_harem_score_value
 			}
-			save_scope_as = harem_head
-			root = {
-				add_to_variable_list = {
-					name = harem_head_list
-					target = scope:harem_head
-				}
-				# Count if head is a relative (not a consort)
-				if = {
-					limit = {
-						scope:harem_head = {
-							is_close_or_extended_family_of = scope:harem_liege
-							NOT = { is_consort_of = scope:harem_liege }
-						}
-					}
-					change_variable = { name = family_members_in_lists add = 1 }
-				}
+			else = {
+				add = 100
+			}
+		}
+		max = 1
+		save_scope_as = harem_head
+		root = {
+			add_to_variable_list = {
+				name = harem_head_list
+				target = scope:harem_head
 			}
 		}
 	}
@@ -89,25 +128,19 @@ calyver_update_harem_list_effect = {
 	if = {
 		limit = {
 			OR = {
-				any_courtier = {
-					is_valid_harem_member_trigger = {
-						LIEGE = scope:harem_liege
-					}
+				any_in_list = {
+					list = harem_members_list
 					count >= 5
 				}
-				any_courtier = {
-					is_valid_harem_member_trigger = {
-						LIEGE = scope:harem_liege
-					}
+				any_in_list = {
+					list = harem_members_list
 					count = 3
 				}
 			}
 		}
-		ordered_courtier = {
+		ordered_in_list = {
+			list = harem_members_list
 			limit = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
 				NOR = {
 					root = {
 						is_target_in_variable_list = {
@@ -122,17 +155,6 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-				}
-				# Fixed relative cap logic: Allow if not a relative, OR if a consort (bypasses cap), OR if under the cap
-				OR = {
-					NOT = { is_close_or_extended_family_of = scope:harem_liege }
-					is_consort_of = scope:harem_liege
-					# Check if adding this relative would exceed the cap
-					AND = {
-						is_close_or_extended_family_of = scope:harem_liege
-						NOT = { is_consort_of = scope:harem_liege }
-						root = { var:family_members_in_lists < 4 }
-					}
 				}
 			}
 			order_by = {
@@ -420,16 +442,6 @@ calyver_update_harem_list_effect = {
 			}
 			max = 2
 			root = {
-				# Only count non-consort relatives
-				if = {
-					limit = {
-						prev = {
-							is_close_or_extended_family_of = scope:harem_liege
-							NOT = { is_consort_of = scope:harem_liege }
-						}
-					}
-					change_variable = { name = family_members_in_lists add = 1 }
-				}
 				add_to_variable_list = {
 					name = harem_top_two_consort_list
 					target = prev
@@ -442,26 +454,14 @@ calyver_update_harem_list_effect = {
 	if = {
 		limit = {
 			# Must have at least 6 consorts
-			any_courtier = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
-				is_consort_of = scope:harem_liege
-				count >= 6
-			}
-			# AND must have at least 10 total eligible members
-			any_courtier = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
+			any_in_list = {
+				list = harem_members_list
 				count >= 10
 			}
 		}
-		ordered_courtier = {
+		ordered_in_list = {
+			list = harem_members_list
 			limit = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
 				NOR = {
 					root = {
 						is_target_in_variable_list = {
@@ -482,17 +482,6 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-				}
-				# Fixed relative cap logic: Allow if not a relative, OR if a consort (bypasses cap), OR if under the cap
-				OR = {
-					NOT = { is_close_or_extended_family_of = scope:harem_liege }
-					is_consort_of = scope:harem_liege
-					# Check if adding this relative would exceed the cap
-					AND = {
-						is_close_or_extended_family_of = scope:harem_liege
-						NOT = { is_consort_of = scope:harem_liege }
-						root = { var:family_members_in_lists < 4 }
-					}
 				}
 			}
 			order_by = {
@@ -780,16 +769,6 @@ calyver_update_harem_list_effect = {
 			}
 			max = 3
 			root = {
-				# Only count non-consort relatives
-				if = {
-					limit = {
-						prev = {
-							is_close_or_extended_family_of = scope:harem_liege
-							NOT = { is_consort_of = scope:harem_liege }
-						}
-					}
-					change_variable = { name = family_members_in_lists add = 1 }
-				}
 				add_to_variable_list = {
 					name = harem_top_three_consort_list
 					target = prev
@@ -801,10 +780,8 @@ calyver_update_harem_list_effect = {
 	# GENERAL CONSORT LIST (other relatives)
 	if = {
 		limit = {
-			any_courtier = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
+			any_in_list = {
+				list = harem_members_list
 				NOR = {
 					root = {
 						is_target_in_variable_list = {
@@ -831,25 +808,12 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-				}
-				# Fixed relative cap logic: Allow if not a relative, OR if a consort (bypasses cap), OR if under the cap
-				OR = {
-					NOT = { is_close_or_extended_family_of = scope:harem_liege }
-					is_consort_of = scope:harem_liege
-					# Check if adding this relative would exceed the cap
-					AND = {
-						is_close_or_extended_family_of = scope:harem_liege
-						NOT = { is_consort_of = scope:harem_liege }
-						root = { var:family_members_in_lists < 4 }
-					}
 				}
 			}
 		}
-		ordered_courtier = {
+		ordered_in_list = {
+			list = harem_members_list
 			limit = {
-				is_valid_harem_member_trigger = {
-					LIEGE = scope:harem_liege
-				}
 				NOR = {
 					root = {
 						is_target_in_variable_list = {
@@ -876,17 +840,6 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-				}
-				# Fixed relative cap logic: Allow if not a relative, OR if a consort (bypasses cap), OR if under the cap
-				OR = {
-					NOT = { is_close_or_extended_family_of = scope:harem_liege }
-					is_consort_of = scope:harem_liege
-					# Check if adding this relative would exceed the cap
-					AND = {
-						is_close_or_extended_family_of = scope:harem_liege
-						NOT = { is_consort_of = scope:harem_liege }
-						root = { var:family_members_in_lists < 4 }
-					}
 				}
 			}
 			order_by = {
@@ -1174,16 +1127,6 @@ calyver_update_harem_list_effect = {
 			}
 			min = 0
 			root = {
-				# Only count non-consort relatives
-				if = {
-					limit = {
-						prev = {
-							is_close_or_extended_family_of = scope:harem_liege
-							NOT = { is_consort_of = scope:harem_liege }
-						}
-					}
-					change_variable = { name = family_members_in_lists add = 1 }
-				}
 				add_to_variable_list = {
 					name = harem_consort_list
 					target = prev
@@ -1246,9 +1189,6 @@ calyver_update_harem_list_effect = {
 		}
 		set_variable = cant_visit_harem
 	}
-
-	# Clean up temporary variables
-	remove_variable = family_members_in_lists
 }
 
 visit_harem_effect = {
