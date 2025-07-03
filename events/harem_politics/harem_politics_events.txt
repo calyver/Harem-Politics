@@ -11739,70 +11739,6 @@ scripted_effect chosen_consort_effect = {
 			}
 			50 = { #Nothing	
 			}
-			50 = { #Root didn't like the consort
-				opinion_modifier = {
-					opinion_target = root
-					min = -50
-					max = 50
-					multiplier = -0.5
-				}
-				opinion_modifier = {
-					who = root
-					opinion_target = scope:chosen_consort
-					min = -50
-					max = 50
-					multiplier = -0.5
-				}
-				modifier = {
-					has_trait = beauty_bad_1
-					add = 5
-				}
-				modifier = {
-					has_trait = beauty_bad_2
-					add = 10
-				}
-				modifier = {
-					has_trait = beauty_bad_3
-					add = 15
-				}
-				modifier = {
-					has_character_modifier = unfavored_consort_modifier
-					add = 5
-				}
-				modifier = {
-					has_character_modifier = forgotten_consort_modifier
-					add = 10
-				}
-				modifier = {
-					OR = {
-						has_relation_potential_rival = root
-						has_relation_rival =  root
-						has_relation_nemesis = root
-					}
-					add = 5
-				}
-				modifier = {
-					NOT = { root = { is_attracted_to_gender_of = scope:chosen_consort } }
-					add = 30
-				}
-				modifier = {
-					NOT = { is_attracted_to_gender_of = root }
-					add = 30
-				}
-				add_opinion = {
-					target = root
-					modifier = disappointed_opinion
-					opinion = -10
-				}
-				root = {
-					add_opinion = {
-						target = scope:chosen_consort
-						modifier = disappointed_opinion
-						opinion = -10
-					}	
-				}
-				calyver_favor_minor_loss_effect = yes
-			}
 		}
 	}
 	if = {
@@ -17237,22 +17173,15 @@ scripted_trigger harem_politics_valid_harem_head_trigger = {
 
 	is_demoted_consort_trigger = no
 	harem_politics_punished_consort_trigger = no
+	harem_politics_forgotten_consort_trigger = no
 	
-	OR = {
-		AND = {
-			exists = root.primary_spouse
-			this = root.primary_spouse
-		}
-		any_child = {
-			this = root
-		}
-		has_court_position = grand_consort_court_position
+	is_head_of_the_harem_trigger = {
+		LIEGE = root
 	}
 	
 	NOR = {
 		has_trait = ill
 		has_trait = wounded
-		has_character_modifier = forgotten_consort_modifier
 	}
 
 	OR = {
@@ -17267,15 +17196,6 @@ scripted_trigger harem_politics_valid_harem_head_trigger = {
 			root = {
 				is_travelling = no
 			}
-		}
-	}
-	OR = { #Concubines won't listen to forgotten consorts
-		AND = {
-			has_variable = favor
-			var:favor > forgotten_consort_upper_limit
-		}
-		NOT = {
-			has_variable = favor
 		}
 	}
 }
@@ -17356,92 +17276,24 @@ harem_politics.0016 = {
 	type = character_event
 	title = harem_politics.0016.t
 	desc = {
-		first_valid = {
-			triggered_desc = { #Emperor
-				trigger = {
-					highest_held_title_tier = tier_empire
-				}
-				desc = harem_politics.0016.imperial.desc
-			}
-			triggered_desc = { #King
-				trigger = {
-					highest_held_title_tier = tier_kingdom
-				}
-				desc = harem_politics.0016.royal.desc
-			}
-			triggered_desc = { #Prince
-				trigger = {
-					any_parent = {
-						highest_held_title_tier >= tier_kingdom
-					}
-				}
-				desc = harem_politics.0016.princely.desc
-			}
-			triggered_desc = { #Duke
-				trigger = {
-					highest_held_title_tier = tier_duchy
-				}
-				desc = harem_politics.0016.ducal.desc
-			}
-			triggered_desc = { #Noble
-				desc = harem_politics.0016.noble.desc
-			}
-		}
 		desc = harem_politics.0016.first.desc
-		first_valid = {
-			triggered_desc = { #Mother
-				trigger = {
-					scope:harem_head = {
-						any_child = {
-							this = root
-						}
-					}
-				}
-				desc = harem_politics.0016.parent.desc
-			}
-			triggered_desc = { #Main Spouse
-				trigger = {
-					exists = primary_spouse
-					primary_spouse = {
-						this = scope:harem_head
-					}
-				}
-				desc = harem_politics.0016.ms.desc
-			}
-			triggered_desc = { #Grand Consort
-				desc = harem_politics.0016.gc.desc
-			}
-		}
-		desc = harem_politics.0016.second.desc
 		first_valid = {
 			triggered_desc = { #Good performers
 				trigger = {
-					OR = {
-						scope:performer_1 = {
-							diplomacy >= high_skill_rating
-						}
-						scope:performer_2 = {
-							diplomacy >= high_skill_rating
-						}
-						scope:performer_3 = {
-							diplomacy >= high_skill_rating
-						}
+					any_in_list = {
+						list = performers_list
+						diplomacy >= high_skill_rating
+						count >= 2
 					}
 				}
 				desc = harem_politics.0016.good.desc
 			}
 			triggered_desc = { #Decent performers
 				trigger = {
-					OR = {
-						scope:performer_1 = {
-							diplomacy >= medium_skill_rating
-						}
-						scope:performer_2 = {
-							diplomacy >= medium_skill_rating
-						}
-						scope:performer_3 = {
-							diplomacy >= medium_skill_rating
-						}
+					any_in_list = {
+						list = performers_list
+						diplomacy >= medium_skill_rating
+						count >= 2
 					}
 				}
 				desc = harem_politics.0016.decent.desc
@@ -17533,35 +17385,33 @@ harem_politics.0016 = {
 	immediate = {
 		save_scope_as = harem_liege
 		save_scope_as = actor
-		every_courtier = {
-			limit = {	
-				harem_politics_valid_harem_head_trigger = yes
+		if = {
+			limit = {
+				any_courtier = {
+					harem_politics_valid_harem_head_trigger = yes
+					count > 1	
+				}
 			}
-			add_to_temporary_list = harem_head_list
+			random_courtier = {
+				limit = {
+					harem_politics_valid_harem_head_trigger = yes
+				}
+				weight = {
+					base = 1
+					modifier = {
+						add = head_of_the_harem_score_value
+					}
+				}
+				save_scope_as = harem_head
+			}
 		}
-		random_in_list = {
-			list = harem_head_list
-			weight = {
-				base = 10
-				modifier = { #The main spouse is the head harem
-					AND = {
-						exists = root.primary_spouse
-						this = root.primary_spouse
-					}
-					add = 100
+		else = {
+			random_courtier = {
+				limit = {
+					harem_politics_valid_harem_head_trigger = yes
 				}
-				modifier = { #The Grand Consort is the second in command
-					has_court_position = grand_consort_court_position
-					add = 50
-				}
-				modifier = { #Parents are also harem authority
-					any_child = {
-						this = root
-					}
-					add = 25
-				}
+				save_scope_as = harem_head
 			}
-			save_scope_as = harem_head
 		}
 		
 		every_concubine = {
@@ -17571,165 +17421,80 @@ harem_politics.0016 = {
 					this = scope:harem_head
 				}
 			}
-			add_to_temporary_list = performers_list
+			add_to_list = performers_list
 		}
-		random_in_list = {
-			list = performers_list
-			weight = {
-				base = 10
-				compare_modifier = { #High diplomacy is required
-					value = diplomacy
-					multiplier = 1
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_3
-					add = 20
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_2
-					add = 15
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_1
-					add = 10
-				}
-				modifier = { #Grand Consort
-					has_court_position = grand_consort_court_position
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = favored_consort_modifier
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = beloved_consort_modifier
-					add = 15
-				}
-				modifier = { #Influential consort
-					any_close_or_extended_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_liege_or_above_of = root
-							AND = {
-								is_knight_of = root
-								is_acclaimed = yes
+		hidden_effect = {
+			while = {
+				count = 3
+				random_in_list = {
+					list = performers_list
+					weight = {
+						base = 10
+						compare_modifier = { #High diplomacy is required
+							value = diplomacy
+							multiplier = 1
+						}
+						modifier = { #Beauty
+							has_trait = beauty_good_3
+							add = 20
+						}
+						modifier = { #Beauty
+							has_trait = beauty_good_2
+							add = 15
+						}
+						modifier = { #Beauty
+							has_trait = beauty_good_1
+							add = 10
+						}
+						modifier = { #Grand Consort
+							has_court_position = grand_consort_court_position
+							add = 10
+						}
+						modifier = { #Favorites
+							has_character_modifier = favored_consort_modifier
+							add = 10
+						}
+						modifier = { #Favorites
+							has_character_modifier = beloved_consort_modifier
+							add = 15
+						}
+						modifier = { #Influential consort
+							any_close_or_extended_family_member = {
+								OR = {
+									is_powerful_vassal_of = root
+									is_councillor_of = root
+									is_liege_or_above_of = root
+									AND = {
+										is_knight_of = root
+										is_acclaimed = yes
+									}
+								}
 							}
+							add = 10
 						}
 					}
-					add = 10
-				}
-			}
-			save_scope_as = performer_1
-		}
-		random_in_list = {
-			list = performers_list
-			limit = {
-				NOT = {
-					this = scope:performer_1
-				}
-			}
-			weight = {
-				base = 10
-				compare_modifier = { #High diplomacy is required
-					value = diplomacy
-					multiplier = 1
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_3
-					add = 20
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_2
-					add = 15
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_1
-					add = 10
-				}
-				modifier = { #Grand Consort
-					has_court_position = grand_consort_court_position
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = favored_consort_modifier
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = beloved_consort_modifier
-					add = 15
-				}
-				modifier = { #Influential consort
-					any_close_or_extended_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_liege_or_above_of = root
-							AND = {
-								is_knight_of = root
-								is_acclaimed = yes
+					if = {
+						limit = {
+							NOT = {
+								exists = scope:performer_1
 							}
 						}
+						save_scope_as = performer_1
 					}
-					add = 10
-				}
-			}
-			save_scope_as = performer_2
-		}
-		random_in_list = {
-			list = performers_list
-			limit = {
-				NOR = {
-					this = scope:performer_1
-					this = scope:performer_2
-				}
-			}
-			weight = {
-				base = 10
-				compare_modifier = { #High diplomacy is required
-					value = diplomacy
-					multiplier = 1
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_3
-					add = 20
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_2
-					add = 15
-				}
-				modifier = { #Beauty
-					has_trait = beauty_good_1
-					add = 10
-				}
-				modifier = { #Grand Consort
-					has_court_position = grand_consort_court_position
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = favored_consort_modifier
-					add = 10
-				}
-				modifier = { #Favorites
-					has_character_modifier = beloved_consort_modifier
-					add = 15
-				}
-				modifier = { #Influential consort
-					any_close_or_extended_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_liege_or_above_of = root
-							AND = {
-								is_knight_of = root
-								is_acclaimed = yes
+					else_if = {
+						limit = {
+							NOT = {
+								exists = scope:performer_2
 							}
 						}
+						save_scope_as = performer_2
 					}
-					add = 10
+					else = {
+						save_scope_as = performer_3
+					}
+					remove_from_list = performers_list
 				}
 			}
-			save_scope_as = performer_3
 		}
 	}
 	
@@ -28640,16 +28405,7 @@ harem_politics.0030 = {
 			}
 			has_royal_court = no
 		}
-		OR = {
-			AND = {
-				accepts_concubinage = yes
-				allowed_more_concubines = yes
-			}
-			AND = {
-				accepts_concubinage = no
-				allowed_more_spouses = yes
-			}
-		}
+		accepts_harems = yes
 		any_vassal = {
 			count >= 4
 		}
@@ -37228,6 +36984,225 @@ harem_politics.0043 = {
 		add_character_flag = met_hailan_flag
 	}
 }
+
+###########################
+##A consort offers a meal##
+###########################
+
+# harem_politics.0044 = {
+# 	type = character_event
+# 	title = harem_politics.0044.t
+# 	desc = harem_politics.0044.desc
+# 	theme = corruption
+# 	override_background = {
+# 		reference = throne_room
+# 	}
+	
+# 	left_portrait  = {
+# 		character = scope:ruyi
+# 		animation = beg
+# 	}
+# 	right_portrait = {
+# 		character = scope:hailan
+# 		animation = shame
+# 	}
+	
+# 	trigger = {
+# 		exists = scope:hailan
+# 	}
+	
+# 	immediate = {
+# 		show_as_tooltip = {
+# 			had_sex_with_effect = {
+# 				CHARACTER = scope:hailan
+# 				PREGNANCY_CHANCE = pregnancy_chance
+# 			}
+# 		}
+# 		scope:hailan = {
+# 			add_opinion = {
+# 				target = root
+# 				modifier = upset_opinion
+# 				opinion = -15
+# 			}
+# 			add_trait = fornicator
+# 			hidden_effect = {
+# 				if = {
+# 					limit = {
+# 						faith != root.faith
+# 					}
+# 					add_character_flag = {
+# 						flag = abducted_non_believer
+# 						years = 20
+# 					}
+# 					set_character_faith = root.faith
+# 				}
+# 				visit_court_of = root
+# 			}
+# 		}
+		
+# 		random_courtier = {
+# 			limit = {
+# 				is_valid_harem_member_trigger = {
+# 					LIEGE = root
+# 				}
+# 				trigger_if = {
+# 					limit = {
+# 						is_consort_of = root
+# 					}
+# 					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+# 					harem_politics_punished_consort_trigger = no
+# 					harem_politics_unfavored_consort_trigger = no
+# 					is_demoted_consort_trigger = no
+# 					is_imprisoned = no
+# 				}
+# 			}
+# 			weight = {
+# 				base = 1
+# 				modifier = {
+# 					has_trait = just
+# 					add = 15
+# 				}
+# 				modifier = {
+# 					is_spouse_of = root
+# 					add = 10
+# 				}
+# 				modifier = {
+# 					harem_politics_evil_consort_trigger = no
+# 					add = 15
+# 				}
+# 				modifier = {
+# 					harem_politics_favored_consort_trigger = yes
+# 					add = 10
+# 				}
+# 				modifier = {
+# 					add = ai_compassion
+# 					min = 0
+# 				}
+# 				opinion_modifier = {
+# 					opinion_target = scope:hailan
+# 					multiplier = 0.20
+# 					min = 0
+# 				}
+# 			}
+# 			save_scope_as = ruyi
+# 		}
+# 	}
+	
+# 	# Take Hailan as a consort
+# 	option = {
+# 		name = harem_politics.0044.a
+# 		trigger = {
+# 			allowed_more_concubines = yes
+# 		}
+
+# 		add_prestige = minor_prestige_loss
+# 		show_as_tooltip = {
+# 			make_concubine = scope:hailan
+# 		}
+
+# 		scope:hailan = {
+# 			remove_trait = fornicator
+# 			add_character_flag = hailan_flag
+# 		}
+		
+# 		scope:ruyi = {
+# 			calyver_favor_micro_gain_effect = yes
+# 			# Ruyi and Hailan become friends
+# 			if = {
+# 				limit = {
+# 					can_set_relation_friend_trigger = { CHARACTER = scope:hailan }
+# 				}
+# 				set_relation_friend = { 
+# 					target = scope:hailan
+# 					reason = consort_friendship_reason
+# 				}
+# 			}
+# 			add_opinion = {
+# 				target = root
+# 				modifier = thankful_consort_opinion
+# 				opinion = 10
+# 			}
+# 			hidden_effect = { # Hailan becomes loyal to Ruyi
+# 				add_hook = {
+# 					type = loyalty_hook
+# 					target = scope:hailan
+# 				}
+# 			}
+# 		}
+# 		hidden_effect = {
+# 			every_consort = { # Other consorts will think Ruyi shoved a consort to gain favor
+# 				limit = {
+# 					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+# 					NOR = {
+# 						this = scope:hailan
+# 						this = scope:ruyi
+# 						has_relation_friend = scope:ruyi
+# 						has_relation_best_friend = scope:ruyi
+# 						has_relation_lover = scope:ruyi
+# 						has_relation_soulmate = scope:ruyi
+# 					}
+# 					harem_politics_evil_consort_trigger = yes
+# 				}
+# 				add_opinion = {
+# 					target = scope:ruyi
+# 					modifier = upset_opinion
+# 					opinion = -15
+# 				}
+# 				add_opinion = {
+# 					target = scope:hailan
+# 					modifier = upset_opinion
+# 					opinion = -15
+# 				}
+# 			}
+# 			add_courtier = scope:hailan
+# 			run_interaction = {
+# 				interaction = make_concubine_interaction
+# 				actor = scope:harem_liege
+# 				recipient = scope:hailan
+# 				execute_threshold = accept
+# 			}
+# 		}
+
+# 		stress_impact = {
+# 			arrogant = minor_stress_impact_gain
+# 		}
+# 		ai_chance = {
+#             base = 10
+# 		}
+# 	}
+
+# 	# Forget it
+# 	option = {
+# 		name = harem_politics.0044.b
+
+# 		scope:ruyi = {
+# 			calyver_favor_micro_loss_effect = yes
+# 			add_opinion = {
+# 				target = root
+# 				modifier = upset_opinion
+# 				opinion = -15
+# 			}
+# 		}
+# 		hidden_effect = {
+# 			scope:hailan = {
+# 				death = {
+# 					death_reason = death_vanished
+# 				}
+# 			}
+# 		}
+# 		stress_impact = {
+# 			forgiving = minor_stress_impact_gain
+# 			compassionate = minor_stress_impact_gain
+# 		}
+# 		ai_chance = {
+#             base = 10
+# 		}
+# 	}
+
+# 	after = {
+# 		add_character_flag = met_hailan_flag
+# 	}
+# }
 
 #########################
 ##Imprisoning a consort##
