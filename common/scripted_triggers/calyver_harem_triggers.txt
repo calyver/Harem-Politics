@@ -185,6 +185,7 @@ is_head_of_the_harem_trigger = {
 	trigger_if = { #Liege's mother is always the head of the harem
 		limit = {
 			$LIEGE$ = {
+				religion = religion:islam_religion
 				any_parent = {
 					is_courtier_of = $LIEGE$
 					is_valid_harem_member_trigger = {
@@ -199,6 +200,7 @@ is_head_of_the_harem_trigger = {
 	trigger_else_if = { #Grandparents
 		limit = {
 			$LIEGE$ = {
+				religion = religion:islam_religion
 				any_courtier = {
 					is_grandparent_of = $LIEGE$
 					is_valid_harem_member_trigger = {
@@ -213,6 +215,7 @@ is_head_of_the_harem_trigger = {
 	trigger_else_if = { #Unmarried paternal aunt
 		limit = {
 			$LIEGE$ = {
+				religion = religion:islam_religion
 				any_parent = {
 					any_sibling = {
 						is_courtier_of = $LIEGE$
@@ -229,6 +232,7 @@ is_head_of_the_harem_trigger = {
 	trigger_else_if = { #Unmarried older sisters
 		limit = {
 			$LIEGE$ = {
+				religion = religion:islam_religion
 				any_sibling = {
 					age > $LIEGE$.age
 					is_courtier_of = $LIEGE$
@@ -272,11 +276,13 @@ is_head_of_the_harem_trigger = {
 	trigger_else = { #Younger sisters
 		limit = {
 			$LIEGE$ = {
+				religion = religion:islam_religion
 				any_sibling = {
 					is_courtier_of = $LIEGE$
-					is_valid_muslim_harem_relative_trigger = {
+					is_valid_harem_member_trigger = {
 						LIEGE = $LIEGE$
 					}
+					NOT = { is_consort_of = $LIEGE$ }
 				}
 			}
 		}
@@ -297,33 +303,8 @@ is_valid_harem_member_trigger = {
 			}
 		}
 		$LIEGE$.religion = religion:islam_religion
-		is_close_or_extended_family_of = $LIEGE$
-		#Check sex based on religious doctrines
-		trigger_if = {
-			limit = {
-				$LIEGE$.faith = {
-					NOT = { has_doctrine = doctrine_gender_equal }
-				}
-			}
-			trigger_if = {
-				limit = {
-					$LIEGE$.faith = {
-						has_doctrine = doctrine_gender_male_dominated
-					}
-				}
-				is_male = no
-			}
-			trigger_else_if = {
-				limit = {
-					$LIEGE$.faith = {
-						has_doctrine = doctrine_gender_female_dominated
-					}
-				}
-				is_male = yes
-			}
-			trigger_else = {
-				always = no
-			}
+		is_valid_muslim_harem_relative_trigger = {
+			LIEGE = $LIEGE$
 		}
 	}
 	trigger_else = {
@@ -332,9 +313,9 @@ is_valid_harem_member_trigger = {
 }
 
 is_valid_muslim_harem_relative_trigger = {
-	is_valid_harem_member_trigger = {
-		LIEGE = $LIEGE$
-	}
+	# Not married
+	is_married = no
+	# Check the legitimacy of the family line
 	OR = {
 		# Grandparents
 		AND = {
@@ -390,12 +371,38 @@ is_valid_muslim_harem_relative_trigger = {
 		}
 		# Siblings
 		is_sibling_of = $LIEGE$
-		# Children
-		is_child_of = $LIEGE$
+	}
+	# Check their gender based on religious doctrines
+	trigger_if = {
+		limit = {
+			$LIEGE$.faith = {
+				NOT = { has_doctrine = doctrine_gender_equal }
+			}
+		}
+		trigger_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_male_dominated
+				}
+			}
+			is_male = no
+		}
+		trigger_else_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_female_dominated
+				}
+			}
+			is_male = yes
+		}
+		trigger_else = {
+			always = no
+		}
 	}
 }
 
 is_virgin_trigger = {
+	is_married = no
 	any_consort = {
 		even_if_dead = yes
 		count = 0
