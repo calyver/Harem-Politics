@@ -33761,7 +33761,7 @@ harem_politics.0036 = {
 	trigger = {
 		accepts_harems = yes
 		OR = {
-			# Scenario 1: Root is 24+ with exactly 3 inheritable children
+			# Scenario 1: Root is 24+ with only 3 eligible heirs
 			AND = {
 				age >= 24
 				any_child = {
@@ -33789,11 +33789,11 @@ harem_politics.0036 = {
 					count >= 4
 				}
 			}
-			# Scenario 3: 3 consorts who are unfavored or forgotten
+			# Scenario 3: 4 consorts who are unfavored or forgotten
 			AND = {
 				any_consort = {
 					harem_politics_unfavored_consort_trigger = yes
-					count >= 3
+					count >= 4
 				}
 			}
 		}
@@ -34293,8 +34293,8 @@ harem_politics.0036 = {
    			}
 
             modifier = { #Traits
-				diplomacy = high_skill_rating
-				add = -35
+				diplomacy >= high_skill_rating
+				add = 35
 			}
         }
     }
@@ -34317,7 +34317,7 @@ harem_politics.0036 = {
             base = 50
         	ai_value_modifier = {
 				ai_honor = -0.2
-				ai_boldness = -0.3
+				ai_boldness = -0.5
 				ai_compassion = -0.7
    			}
 
@@ -34619,7 +34619,7 @@ harem_politics.0037 = {
 
 		modifier = {
 			number_of_concubines < number_of_desired_concubines
-			add = 0.1
+			add = 0.15
 		}
 		modifier = {
 			add = -0.5
@@ -35453,7 +35453,7 @@ harem_politics.0038 = {
 			}
 			opinion_modifier = {
 				opinion_target = scope:matron
-				multiplier = -0.5
+				multiplier = -0.6
 			}
 		}
 	}
@@ -35464,6 +35464,14 @@ harem_politics.0038 = {
 				list = jarya_list
 				limit = {	
 					NOT = { is_consort_of = root }
+				}
+				if = {
+					limit = { NOT = { exists = var:last_visited_ruler } }
+					set_variable = {
+						name = last_visited_ruler
+						value = this.host
+						days = 1825
+					}
 				}
 				move_to_pool_at = root.location
 			}
@@ -35732,6 +35740,38 @@ harem_politics.0039 = {
 
 		ai_chance = {
             base = 10
+			ai_value_modifier = {
+				ai_energy = 0.3
+				ai_honor = 0.3
+				ai_rationality = 0.4
+			}
+			opinion_modifier = {
+				opinion_target = scope:consort_2
+				multiplier = 0.5
+			}
+			simple_attraction_modifier = {
+				TARGET = scope:consort_2
+				MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+				MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+			}
+			modifier = {
+				scope:consort_2 = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = {
+				scope:consort_2 = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort_2 = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
+			}
 		}
 	}
 
@@ -35777,31 +35817,33 @@ harem_politics.0039 = {
 				target = root
 				opinion = -10
 			}
-			if = {
-				limit = {
-					NOR = {
-						has_trait = forgiving
-						has_trait = compassionate
+			hidden_effect = {
+				if = {
+					limit = {
+						NOR = {
+							has_trait = forgiving
+							has_trait = compassionate
+						}
 					}
-				}
-				add_opinion = {
-					target = scope:consort_1
-					modifier = hatred_spouse_opinion
-					opinion = -15
-				}
-			}
-			if = {
-				limit = {
-					has_trait = vengeful
+					add_opinion = {
+						target = scope:consort_1
+						modifier = hatred_spouse_opinion
+						opinion = -15
+					}
 				}
 				if = {
 					limit = {
-						can_set_relation_rival_trigger = { CHARACTER = scope:secondary_actor }
+						has_trait = vengeful
 					}
-					progress_towards_rival_effect = {
-						REASON = consort_rival_reason
-						CHARACTER = scope:consort_1
-						OPINION = 0
+					if = {
+						limit = {
+							can_set_relation_rival_trigger = { CHARACTER = scope:secondary_actor }
+						}
+						progress_towards_rival_effect = {
+							REASON = consort_rival_reason
+							CHARACTER = scope:consort_1
+							OPINION = 0
+						}
 					}
 				}
 			}
@@ -35810,6 +35852,38 @@ harem_politics.0039 = {
 
 		ai_chance = {
             base = 10
+			ai_value_modifier = {
+				ai_energy = -0.3
+				ai_honor = -0.3
+				ai_rationality = -0.4
+			}
+			opinion_modifier = {
+				opinion_target = scope:consort_1
+				multiplier = 0.5
+			}
+			simple_attraction_modifier = {
+				TARGET = scope:consort_1
+				MAX_PERSONALITY = 50 # -50 at low trait combatibility, +150 at high trait combatibility.
+				MAX_PHYSICAL = 50 # Will be -25 by default (due to Rakish) but can vary from between -150 and +150 due to other Attraction modifiers.
+			}
+			modifier = {
+				scope:consort_1 = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 10
+			}
+			modifier = {
+				scope:consort_1 = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort_1 = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 20
+			}
 		}
 	}
 
@@ -36130,12 +36204,7 @@ harem_politics.0040 = {
 		hidden_effect = {
 			every_in_list = {
 				list = performing_consorts
-				while = {
-					limit = {
-						diplomacy < medium_skill_rating
-					}
-					add_diplomacy_skill = 1
-				}
+				add_diplomacy_skill = 1
 			}
 		}
 	}
@@ -36608,7 +36677,7 @@ harem_politics.0042 = {
 		}
 		modifier = {
 			has_trait = lustful
-			add = 0.25
+			add = 0.15
 		}
 		modifier = {
 			has_trait = fornicator
