@@ -4566,22 +4566,36 @@ harem_politics.0004 = {
 			}
 			modifier = { #Less likely if the candidate is lowborn and low legitimacy
 				add = -35
-				OR = {
-					AND = {
+				is_valid_for_legitimacy_change = yes
+				trigger_if = {
+					limit = {
 						highest_held_title_tier = tier_empire
-						legitimacy_level <= 3
 					}
-					AND = {
+					legitimacy_level <= 3
+				}
+				trigger_else_if = {
+					limit = {
 						highest_held_title_tier = tier_kingdom
-						legitimacy_level <= 2
 					}
-					AND = {
-						highest_held_title_tier = tier_duchy
-						legitimacy_level <= 1
-					}
+					legitimacy_level <= 2
+				}
+				trigger_else = {
+					highest_held_title_tier = tier_duchy
+					legitimacy_level <= 1
 				}
 				scope:loved_consort = {
 					is_lowborn = yes
+				}
+				# Marrying a lowborn SS will reduce legitimacy of feudal rulers
+				trigger_if = {
+					limit = {
+						is_married = yes
+					}
+					can_have_settled_harem_trigger = yes
+				}
+				# Marrying a lowborn PS will always reduce legitimacy
+				trigger_else = {
+					is_married = no
 				}
 			}
 			modifier = { #Culture
@@ -4620,6 +4634,42 @@ harem_politics.0004 = {
 					}
 				}
 				add = 20
+			}
+			# Number of spouses
+			modifier = {
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+				trigger_else = {
+					any_spouse = {
+						count < 1
+					}
+				}
+				NOT = {
+					has_government = landless_adventurer_government
+				}
+				add = 15
 			}
 		}
 	}
@@ -10623,6 +10673,7 @@ harem_politics.0009 = {
 			}
 			has_royal_court = no
 		}
+		harem_politics_valid_event_county_trigger = yes
 	}
 
 	weight_multiplier = {
@@ -11089,6 +11140,7 @@ harem_politics.0010 = {
 			}
 			has_royal_court = no
 		}
+		harem_politics_valid_event_county_trigger = yes
 	}
 
 	weight_multiplier = {
@@ -18394,6 +18446,7 @@ harem_politics.0017 = {
 			has_character_flag = met_yanwan_chun_fei
 			has_character_flag = met_yanwan_jia_fei
 		}
+		harem_politics_valid_event_county_trigger = yes
 	}
 
 	weight_multiplier = {
@@ -27910,7 +27963,7 @@ harem_politics.0029 = {
 				scope:target_consort = {
 					harem_politics_evil_consort_trigger = no
 				}
-				add = 5
+				add = 15
 			}
 			modifier = {
 				scope:target_consort = {
@@ -27927,11 +27980,6 @@ harem_politics.0029 = {
 				}
 				add = 10
 			}
-			#Unmarried
-			modifier = {
-				is_married = no
-				add = 10
-			}
 			#Stress
 			modifier = {
 				has_trait = just
@@ -27945,6 +27993,42 @@ harem_politics.0029 = {
 					}
 				}
 				add = -15
+			}
+			# Number of spouses
+			modifier = {
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+				trigger_else = {
+					any_spouse = {
+						count < 1
+					}
+				}
+				NOT = {
+					has_government = landless_adventurer_government
+				}
+				add = 15
 			}
 		}
 	}
@@ -28360,6 +28444,7 @@ harem_politics.0030 = {
 			has_character_modifier = mourner_modifier
 			has_trait_with_flag = can_not_marry
 		}
+		harem_politics_valid_event_county_trigger = yes
 	}
 
 	weight_multiplier = {
@@ -30470,6 +30555,7 @@ harem_politics.0032 = {
 		is_physically_able_adult = yes
 		is_at_war = no
 		highest_held_title_tier >= tier_kingdom
+		harem_politics_valid_event_county_trigger = yes
 	}
 
 	weight_multiplier = {
@@ -30499,6 +30585,10 @@ harem_politics.0032 = {
 		modifier = { #Stress
 			add = 0.1
 			stress_level >= 2
+		}
+		modifier = {
+			number_of_concubines < number_of_desired_concubines
+			add = 0.15
 		}
 		#The GC
 		#High aptitude
@@ -37094,34 +37184,7 @@ harem_politics.0042 = {
 			save_temporary_scope_as = valid_target_consort
 		}
 		allowed_more_concubines = yes
-		trigger_if = {
-			limit = {
-				religion = religion:islam_religion
-			}
-			OR = {
-				any_neighboring_and_across_water_top_liege_realm_owner = {
-					OR = {
-						any_realm_province = {
-							NOT = {
-								religion = religion:islam_religion
-							}
-						}
-						any_tributary = {
-							any_realm_province = {
-								NOT = {
-									religion = religion:islam_religion
-								}
-							}
-						}
-					}
-				}
-				any_realm_province = {
-					NOT = {
-						religion = religion:islam_religion
-					}
-				}
-			}
-		}
+		harem_politics_valid_event_county_trigger = yes
 		NOR = {
 			has_character_flag = met_hailan_flag
 			has_trait = chaste
