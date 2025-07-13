@@ -10567,6 +10567,67 @@ scripted_effect create_yanwan_effect = {
 	}
 }
 
+## Make them a concubine
+scripted_effect make_concubine_harem_politics_events_effect = {
+	hidden_effect = {
+		add_courtier = $CONSORT$
+		run_interaction = {
+			interaction = make_concubine_interaction
+			actor = scope:harem_liege
+			recipient = $CONSORT$
+			execute_threshold = accept
+		}
+	}
+	show_as_tooltip = {
+		make_concubine = $CONSORT$
+	}
+}
+
+scripted_effect make_concubine_yanwan_event_effect = {
+	$YANWAN$ = {
+		if = {
+			limit = {
+				root = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						count >= 3
+					}
+					NOT = { has_game_rule = consort_favor_off }
+				}
+			}
+			set_variable = {
+				name = favor
+				value = initial_favor_valuation
+			}
+			hidden_effect = {
+				calyver_favor_medium_gain_effect = yes
+			}
+		}
+		add_opinion = {
+			target = root
+			modifier = grateful_opinion
+			opinion = 10
+		}
+		add_character_flag = flag_yanwan
+	}
+	make_concubine_harem_politics_events_effect = {
+		CONSORT = $YANWAN$
+	}
+	$CURRENT_CONSORT$ = {
+		calyver_favor_minor_loss_effect = yes
+		add_opinion = {
+			target = root
+			modifier = disappointed_opinion
+			opinion = -15
+		}
+		add_opinion = {
+			target = $YANWAN$
+			modifier = hatred_spouse_opinion
+		}
+		set_relation_potential_rival = $YANWAN$
+	}
+}
+
 ##Through Consort Chun##
 
 scripted_trigger chun_fei_trigger = {
@@ -10662,8 +10723,8 @@ harem_politics.0009 = {
 			has_character_modifier = mourner_modifier
 	    }
 		allowed_more_concubines = yes
-		is_physically_able_adult = yes
-		is_at_war = no
+		is_available_healthy_adult = yes
+		is_available_at_peace_adult = yes
 		highest_held_title_tier >= tier_kingdom
 		OR = {
 			AND = { #You must have many servants
@@ -10803,16 +10864,8 @@ harem_politics.0009 = {
 		#Create Yanwan
 		create_yanwan_effect = yes
 		hidden_effect = {
-			if = {
-				limit = { is_travelling = no }
-				add_courtier = scope:yanwan
-			}
-			else = {
-				add_courtier = scope:yanwan
-				add_to_entourage_court_and_activity_effect = {
-					CHAR_TO_ADD = scope:yanwan 
-					NEW_COURT_OWNER = root
-				}
+			scope:yanwan = {
+				visit_court_of = scope:harem_liege
 			}
 		}
 	}
@@ -10822,50 +10875,10 @@ harem_politics.0009 = {
 		trigger = {
 			allowed_more_concubines = yes
 		}
-		save_scope_as = actor
-		save_scope_as = secondary_actor
-		scope:yanwan = {
-			if = {
-				limit = {
-					root = {
-						any_consort = {
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-							count >= 3
-						}
-						NOT = { has_game_rule = consort_favor_off }
-					}
-				}
-				set_variable = {
-					name = favor
-					value = initial_favor_valuation
-				}
-				hidden_effect = {
-					calyver_favor_medium_gain_effect = yes
-				}
-			}
-			add_opinion = {
-				target = root
-				modifier = grateful_opinion
-				opinion = 10
-			}
-			add_character_flag = flag_yanwan
-        	save_scope_as = recipient
-        }
-		scope:chun_fei = {
-			calyver_favor_minor_loss_effect = yes
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -15
-			}
-			add_opinion = {
-				target = scope:yanwan
-				modifier = hatred_spouse_opinion
-			}
-			set_relation_potential_rival = scope:yanwan
+		make_concubine_yanwan_event_effect = {
+			YANWAN = scope:yanwan
+			CURRENT_CONSORT = scope:chun_fei
 		}
-		concubine_on_accept_effect = yes
-		make_concubine = scope:recipient
 		hidden_effect = {
 			every_consort = { #Consorts think Chun shoved a concubine to gain favor
 				limit = {
@@ -11129,8 +11142,8 @@ harem_politics.0010 = {
 			has_character_modifier = mourner_modifier
 	    }
 		allowed_more_concubines = yes
-		is_physically_able_adult = yes
-		is_at_war = no
+		is_available_healthy_adult = yes
+		is_available_at_peace_adult = yes
 		highest_held_title_tier >= tier_kingdom
 		OR = {
 			AND = { #You must have many servants
@@ -11236,18 +11249,8 @@ harem_politics.0010 = {
 		#Create Yanwan
 		create_yanwan_effect = yes
 		hidden_effect = {
-			if = {
-				limit = { is_travelling = no }
-				add_courtier = scope:yanwan
-			}
-			else = {
-				add_courtier = scope:yanwan
-				add_to_entourage_court_and_activity_effect = {
-					CHAR_TO_ADD = scope:yanwan 
-					NEW_COURT_OWNER = root
-				}
-			}
 			scope:yanwan = {
+				visit_court_of = scope:harem_liege
 				add_opinion = {
 					target = scope:jia_fei
 					modifier = cruelty_opinion
@@ -11263,54 +11266,16 @@ harem_politics.0010 = {
 			allowed_more_concubines = yes
 		}
 
-		save_scope_as = actor
-		save_scope_as = secondary_actor
-		scope:yanwan = {
-			if = {
-				limit = {
-					root = {
-						any_consort = {
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-							count >= 3
-						}
-						NOT = { has_game_rule = consort_favor_off }
-					}
-				}
-				set_variable = {
-					name = favor
-					value = initial_favor_valuation
-				}
-				hidden_effect = {
-					calyver_favor_medium_gain_effect = yes
-				}
-			}
-			add_opinion = {
-				target = root
-				modifier = grateful_opinion
-				opinion = 10
-			}
-			add_character_flag = flag_yanwan
-        	save_scope_as = recipient
-        }
+		make_concubine_yanwan_event_effect = {
+			YANWAN = scope:yanwan
+			CURRENT_CONSORT = scope:jia_fei
+		}
 		scope:jia_fei = {
-			calyver_favor_moderate_loss_effect = yes
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -15
-			}
-			add_opinion = {
-				target = scope:yanwan
-				modifier = hatred_spouse_opinion
-			}
-			set_relation_potential_rival = scope:yanwan
 			add_character_flag = {
 				flag = flag_scolded_consort
 				years = 1
 			}
 		}
-		concubine_on_accept_effect = yes
-		make_concubine = scope:recipient
 		stress_impact = {
 			chaste = minor_stress_impact_gain 
 			arrogant = minor_stress_impact_gain 
@@ -18426,8 +18391,8 @@ harem_politics.0017 = {
 			has_trait = devoted
 	    }
 		allowed_more_concubines = yes
-		is_physically_able_adult = yes
-		is_at_war = no
+		is_available_healthy_adult = yes
+		is_available_at_peace_adult = yes
 		highest_held_title_tier >= tier_kingdom
 		OR = {
 			AND = { #You must have many servants
@@ -18530,7 +18495,9 @@ harem_politics.0017 = {
 		#Create Yanwan
 		create_yanwan_effect = yes
 		hidden_effect = {
-			add_courtier = scope:yanwan
+			scope:yanwan = {
+				visit_court_of = scope:harem_liege
+			}
 		}
 	}
 	
@@ -18540,8 +18507,9 @@ harem_politics.0017 = {
 			allowed_more_concubines = yes
 		}
 
-		save_scope_as = actor
-		save_scope_as = secondary_actor
+		make_concubine_harem_politics_events_effect = {
+			CONSORT = scope:yanwan
+		}
 		scope:yanwan = {
 			if = {
 				limit = {
@@ -18567,10 +18535,7 @@ harem_politics.0017 = {
 				opinion = 10
 			}
 			add_character_flag = flag_yanwan
-        	save_scope_as = recipient
         }
-		concubine_on_accept_effect = yes
-		make_concubine = scope:recipient
 		had_sex_with_effect = {
 			CHARACTER = scope:yanwan
 			PREGNANCY_CHANCE = pregnancy_chance
@@ -34502,14 +34467,10 @@ scripted_trigger valid_harem_matron_trigger = {
 }
 
 scripted_effect harem_politics_0038_make_concubine_effect = {
+	make_concubine_harem_politics_events_effect = {
+		CONSORT = $JARYA$
+	}
 	hidden_effect = {
-		add_courtier = $JARYA$
-		run_interaction = {
-			interaction = make_concubine_interaction
-			actor = scope:harem_liege
-			recipient = $JARYA$
-			execute_threshold = accept
-		}
 		# The harem loses opinion of the matron
 		every_courtier = {
 			limit = {
@@ -34629,9 +34590,6 @@ scripted_effect harem_politics_0038_make_concubine_effect = {
 	pay_short_term_gold = {
 		target = scope:matron
 		gold = bride_compensation_payment_value
-	}
-	show_as_tooltip = {
-		make_concubine = $JARYA$
 	}
 	scope:matron = {
 		add_opinion = {
