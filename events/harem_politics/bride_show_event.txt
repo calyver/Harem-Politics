@@ -3834,26 +3834,9 @@ bride_show.2000 = {
 		highest_held_title_tier >= tier_duchy
 		trigger_if = {
 			limit = {
-				any_in_list = {
-					list = pool_candidates
-					NOT = { is_courtier_of = scope:liege }
-					recruit_concubines_viable_candidate_trigger = {
-						OVERLORD = scope:liege
-					}
-					count = 0
-				}
+				has_variable = jarya_recruited
 			}
-			exists = scope:candidate_province
-		}
-		trigger_else = {
-			any_in_list = {
-				list = pool_candidates
-				NOT = { is_courtier_of = scope:liege }
-				recruit_concubines_viable_candidate_trigger = {
-					OVERLORD = scope:liege
-				}
-				count >= 1
-			}
+			var:jarya_recruited < 4
 		}
 	}
 
@@ -3867,6 +3850,35 @@ bride_show.2000 = {
 						OVERLORD = scope:liege
 					}
 					count = 0
+				}
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:candidate_province }
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_provinces
+							count > 0
+						}
+					}
+					random_in_list = {
+						list = pool_provinces
+						weight = {
+							base = 1
+							modifier = {
+								NOT = { religion = religion:islam_religion }
+								add = 50
+							}
+						}
+						save_scope_as = candidate_province
+					}
+				}
+				else = {
+					scope:liege.capital_province = {
+						save_scope_as = candidate_province
+					}
 				}
 			}
 			calyver_create_candidate_effect = yes
@@ -4233,9 +4245,26 @@ bride_show.2000 = {
 				value = 1
 				months = 6
 			}
-			trigger_event = {
-				id = bride_show.2000
-				days = { 7 10 }
+			if = {
+				limit = {
+					highest_held_title_tier = tier_duchy
+				}
+				random = {
+					chance = 50
+					trigger_event = {
+						id = bride_show.2000
+						days = { 7 10 }
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					highest_held_title_tier > tier_duchy
+				}
+				trigger_event = {
+					id = bride_show.2000
+					days = { 7 10 }
+				}
 			}
 		}
 		else = {
@@ -4243,26 +4272,67 @@ bride_show.2000 = {
 				name = jarya_recruited
 				add = 1
 			}
+			# Should we repeat the event?
+			# For dukes, the maximum is 3
 			if = {
 				limit = {
-					OR = {
-						AND = {
-							highest_held_title_tier = tier_duchy
-							var:jarya_recruited < 3
-						}
-						AND = {
-							highest_held_title_tier > tier_duchy
-							var:jarya_recruited < 4
+					highest_held_title_tier = tier_duchy
+				}
+				if = {
+					limit = {
+						var:jarya_recruited < 3
+					}
+					random = {
+						chance = 25
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
 						}
 					}
 				}
-				trigger_event = {
-					id = bride_show.2000
-					days = { 7 10 }
+				else = {
+					remove_variable = jarya_recruited
 				}
 			}
-			else = {
-				remove_variable = jarya_recruited
+			# For kings+, the maximum is 4
+			if = {
+				limit = {
+					highest_held_title_tier > tier_duchy
+				}
+				if = {
+					limit = {
+						var:jarya_recruited < 3
+					}
+					random = {
+						chance = 50
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						var:jarya_recruited = 3
+					}
+					random = {
+						chance = 25
+						modifier = {
+							highest_held_title_tier > tier_kingdom
+							add = 10
+						}
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						var:jarya_recruited > 3	
+					}
+					remove_variable = jarya_recruited
+				}
 			}
 		}
 		# The AI is a bit slow and will sometimes convert them to Islam before taking them as concubines
