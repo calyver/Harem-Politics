@@ -242,8 +242,10 @@ harem_politics.0001 = {
 		is_physically_able_adult = yes
 		is_at_war = no
 		is_landed_or_landless_administrative = yes
-		NOT = {
+		NOR = {
 			has_character_modifier = mourner_modifier
+			# To avoid making things messier
+			religion = religion:islam_religion
 		}
 	}
 	
@@ -5137,9 +5139,13 @@ harem_politics.0005 = {
 	trigger = {
 		OR = {
 			AND = {
-				allowed_more_concubines = yes
 				any_spouse = {
 					harem_politics_valid_demotion_consort_trigger = yes
+					save_temporary_scope_as = reference_consort
+				}
+				is_character_interaction_valid = {
+					recipient = scope:reference_consort
+					interaction = demote_spouse_interaction
 				}
 			}
 			AND = {
@@ -5560,15 +5566,16 @@ harem_politics.0005 = {
 			scope:sinful_spouse = {
 				is_spouse_of = root
 			}
-			allowed_more_concubines = yes
+			is_character_interaction_valid = {
+				recipient = scope:sinful_spouse
+				interaction = demote_spouse_interaction
+			}
 		}
-		save_scope_as = actor
-		scope:actor = {
-			save_scope_as = secondary_actor
-		}
-		spouse_demotion_effect = {
-			ACTOR = root
-			RECIPIENT = scope:sinful_spouse
+		run_interaction = {
+			interaction = demote_spouse_interaction
+			actor = scope:harem_liege
+			recipient = scope:sinful_spouse
+			execute_threshold = accept
 		}
 		stress_impact = {
 			forgiving = minor_stress_impact_gain
@@ -16093,35 +16100,14 @@ harem_politics.0014 = {
 				}
 				#Demoting from spouse to concubine
 				AND = {
-					allowed_more_concubines = yes
 					scope:recipient = {
-						is_spouse_of = root
 						NOT = { 
 							has_court_position = grand_consort_court_position
 						}
 					}
-					NOT = { #Can divorce
-						culture = {
-							has_cultural_parameter = cannot_divorce
-						}
-					}
-					faith = {
-						# We are not required to seek approval of a spiritual HoF
-						NAND = {
-							has_doctrine = doctrine_divorce_approval
-							has_doctrine = doctrine_spiritual_head
-							exists = religious_head
-						}
-						# We are not required to seek approval of a house head
-						NAND = {
-							has_doctrine = doctrine_divorce_approval
-							exists = root.house
-							exists = root.house.house_head
-							root = { is_house_head = no }
-						}
-						NOT = {
-							has_doctrine = doctrine_divorce_disallowed
-						}
+					is_character_interaction_valid = {
+						recipient = scope:recipient
+						interaction = demote_spouse_interaction
 					}
 				}
 			}
@@ -16160,26 +16146,21 @@ harem_politics.0014 = {
 		}
 		if = {
 			limit = {
-				allowed_more_concubines = yes
 				scope:recipient = {
-					is_spouse_of = root
-					any_close_family_member = {
-						NOT = {
-							is_liege_or_above_of = root
-						}
-					}
 					NOT = { 
 						has_court_position = grand_consort_court_position
 					}
 				}
+				is_character_interaction_valid = {
+					recipient = scope:recipient
+					interaction = demote_spouse_interaction
+				}
 			}
-			save_scope_as = secondary_actor
-			scope:recipient = {
-				save_scope_as = secondary_recipient
-			}
-			spouse_demotion_effect = {
-				ACTOR = root
-				RECIPIENT = scope:recipient
+			run_interaction = {
+				interaction = demote_spouse_interaction
+				actor = scope:harem_liege
+				recipient = scope:recipient
+				execute_threshold = accept
 			}
 		}
 		else_if = {
@@ -35461,6 +35442,10 @@ harem_politics.0038 = {
 			ai_value_modifier = {
 				ai_greed = 0.3
 				ai_sociability = 0.3
+			}
+			modifier = {
+				has_trait = temperate
+				add = 10
 			}
 			modifier = {
 				has_trait = celibate
