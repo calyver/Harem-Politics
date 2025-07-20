@@ -31,7 +31,7 @@ scripted_effect bride_show_add_to_candidate_list_effect = {
 
 scripted_effect bride_show_next_candidate_effect = {
 	if = {
-		limit = { #I can still pick dates
+		limit = { #I can still pick candidates
 			OR = {
 				NOT = {		
 					exists = scope:candidate_3
@@ -2749,6 +2749,7 @@ bride_show.0006 = {
 				limit = {
 					any_in_list = {
 						list = created_candidates_list
+						has_character_flag = created_bride_flag
 						count >= 1
 					}
 				}
@@ -3843,6 +3844,18 @@ bride_show.2000 = {
 	immediate = {
 		if = {
 			limit = {
+				NOT = { exists = scope:liege }
+			}
+			save_scope_as = liege
+		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
+		if = {
+			limit = {
 				any_in_list = {
 					list = pool_candidates
 					NOT = { is_courtier_of = scope:liege }
@@ -3856,34 +3869,7 @@ bride_show.2000 = {
 				limit = {
 					NOT = { exists = scope:concubine_location }
 				}
-				if = {
-					limit = {
-						any_in_list = {
-							list = pool_provinces
-							count > 0
-						}
-					}
-					random_in_list = {
-						list = pool_provinces
-						weight = {
-							base = 1
-							modifier = {
-								NOT = { religion = religion:islam_religion }
-								add = 50
-							}
-							modifier = {
-								religion = religion:christianity_religion
-								add = 50
-							}
-						}
-						save_scope_as = concubine_location
-					}
-				}
-				else = {
-					scope:liege.capital_province = {
-						save_scope_as = concubine_location
-					}
-				}
+				hp_select_concubine_location_effect = yes
 			}
 			calyver_create_candidate_effect = yes
 		}
