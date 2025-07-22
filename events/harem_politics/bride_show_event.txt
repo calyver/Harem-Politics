@@ -507,10 +507,7 @@ scripted_effect bride_show_next_candidate_effect = {
 						add = 40
 					}
 					modifier = { #Virginity is valuable
-						any_spouse = {
-							even_if_dead = yes
-							count = 0
-						}
+						is_virgin_trigger = yes
 						add = 40
 					}
 					modifier = { #Characters that believe in concubinage are more elegible
@@ -4106,12 +4103,14 @@ bride_show.2000 = {
 					is_ai = no
 				}
 			}
-			send_interface_toast = {
-				type = event_generic_bad
-				title = bride_show.2000.t.court_owner
-				right_icon = scope:liege
-				left_icon = scope:jarya
-				custom_tooltip = bride_show.2000.desc.court_owner
+			scope:jarya.court_owner = {
+				send_interface_toast = {
+					type = event_generic_bad
+					title = bride_show.2000.t.court_owner
+					right_icon = scope:liege
+					left_icon = scope:jarya
+					custom_tooltip = bride_show.2000.desc.court_owner
+				}
 			}
 		}
 		send_interface_toast = {
@@ -4156,20 +4155,79 @@ bride_show.2000 = {
 				}
 				hidden_effect = {
 					return_to_court = yes
-					# Chance of conversion
-					# if = {
-					# 	limit = {
-					# 		NOT = { religion = religion:islam_religion }
-					# 	}
-					# 	random = {
-					# 		chance = 50
-					# 		modifier = {
-					# 			has_trait = zealous
-					# 			add = -49
-					# 		}
-					# 		set_character_faith = scope:liege.faith
-					# 	}
-					# }
+					# Chance of conversion to liege's faith
+					if = {
+						limit = {
+							NOR = {
+								has_trait = zealous 
+								faith = scope:liege.faith
+							}
+						}
+						random = {
+							chance = 50
+							# Based on current faith
+							modifier = {
+								religion = religion:islam_religion
+								add = 20
+							}
+							modifier = {
+								faith_hostility_level = {
+									target = scope:liege.faith
+									value = faith_fully_accepted_level
+								}
+								add = 30
+							}
+							modifier = {
+								faith_hostility_level = {
+									target = scope:liege.faith
+									value >= faith_astray_level
+								}
+								add = -15
+							}
+							modifier = {
+								faith_hostility_level = {
+									target = scope:liege.faith
+									value >= faith_hostile_level
+								}
+								add = -15
+							}
+							modifier = {
+								faith_hostility_level = {
+									target = scope:liege.faith
+									value >= faith_evil_level
+								}
+								add = -15
+							}
+							# Based on traits
+							modifier = {
+								has_trait = cynical
+								add = 20
+							}
+							modifier = {
+								has_trait = ambitious
+								add = 20
+							}
+							modifier = {
+								has_trait = greedy
+								add = 20
+							}
+							modifier = {
+								has_trait = arrogant
+								add = 20
+							}
+							# Younger characters are more likely to change faiths
+							modifier = {
+								age < 20
+								add = 15
+							}
+							# Kings and Emperors are more likely to force their servants to convert
+							modifier = {
+								scope:liege.highest_held_title_tier >= tier_kingdom
+								add = 15
+							}
+							set_character_faith = scope:liege.faith
+						}
+					}
 					if = {
 						limit = {
 							exists = betrothed
