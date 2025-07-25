@@ -803,39 +803,12 @@ scripted_trigger is_valid_harem_victim_trigger = {
 			}
 		}
 	}
-	OR = {
-		is_concubine_of = root
-		AND = {
-			is_spouse_of = root
-			$CONSORT_AUTHORITY$ = {
-				OR = {
-					is_parent_of = root
-					AND = {	
-						exists = root.primary_spouse
-						this = root.primary_spouse
-					}
-					has_court_position = grand_consort_court_position
-				}
-			}
-		}
-	}
 }
 
 scripted_trigger is_valid_generic_consort_trigger = {
 	OR = {
-		AND = {
-			is_valid_harem_member_trigger = {
-				LIEGE = root
-			}
-			trigger_if = {
-				limit = {
-					NOR = { 
-						is_consort_of = root 
-						is_parent_of = root
-					}
-				}
-				root.religion = religion:islam_religion
-			}
+		is_valid_harem_member_trigger = {
+			LIEGE = root
 		}
 		has_court_position = chief_eunuch_court_position
 		has_court_position = lady_in_waiting_court_position
@@ -1075,10 +1048,16 @@ scripted_effect begging_punished_consort_effect = {
 					}
 					add = 10
 				}
-				compare_modifier = { #Diplomacy
-					value = $BEGGAR$.diplomacy
-					multiplier = 0.5
+				modifier = { #Diplomacy
+					add = {
+						value = diplomacy
+						multiply = 0.5
+					}
 				}
+				# Check. Add a modifier to check whether the bully is root's relative
+				# modifier = {
+					
+				# }
 
 				$BEGGAR$ = {
 					save_scope_as = beggar
@@ -7651,20 +7630,6 @@ consort_events.0007 = {
 				}
 
 				modifier = {
-					exists = root.primary_spouse
-					this = root.primary_spouse
-					add = 10
-				}
-				modifier = {
-					has_court_position = grand_consort_court_position
-					add = 5
-				}
-				modifier = {
-					is_spouse_of = root
-					add = 10
-				}
-
-				modifier = {
 					is_consort_of = root
 					add = 10
 				}
@@ -7809,6 +7774,18 @@ consort_events.0007 = {
 				}
 				random_list = {
 					50 = { #The victim is punished severely
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
@@ -8061,6 +8038,18 @@ consort_events.0007 = {
 						}
 					}
 					50 = { #Very high punishment
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
@@ -8302,6 +8291,18 @@ consort_events.0007 = {
 						}
 					}
 					50 = { #High punishment
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
