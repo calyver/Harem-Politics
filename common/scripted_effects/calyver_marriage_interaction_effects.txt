@@ -3275,7 +3275,42 @@ set_primary_spouse_effect = {
 				just = minor_stress_impact_loss
 			}
 		}
-		set_primary_spouse = scope:recipient
+		# New and previous GC management
+		if = {
+			limit = {
+				scope:previous_primary_spouse ?= {
+					has_court_position = grand_consort_court_position
+				}
+			}
+			hidden_effect = {
+				revoke_court_position = {
+					recipient = scope:previous_primary_spouse
+					court_position = grand_consort_court_position
+				}
+			}
+			set_primary_spouse = scope:recipient
+			if = {
+				limit = {
+					can_appoint_char_to_court_position = {
+						CHAR = scope:recipient
+						COURT_POS = grand_consort_court_position
+					}
+				}
+				appoint_court_position = {
+					recipient = scope:recipient
+					court_position = grand_consort_court_position
+				}
+				scope:recipient = {
+					add_character_flag = {
+						flag = appointed_gc_ps_flag
+						days = 2
+					}
+				}
+			}
+		}
+		else = {
+			set_primary_spouse = scope:recipient
+		}
 		# If we're a clan this interaction affects unity
 		add_clan_unity_interaction_effect = {
 			CHARACTER = scope:actor
@@ -3352,96 +3387,97 @@ set_primary_spouse_effect = {
 					#Trigger event
 				}
 			}
+			# Managing GC opinions
 			if = {
 				limit = {
-					any_consort = {
-						has_court_position = grand_consort_court_position
-						NOT = {
+					employs_court_position = grand_consort_court_position
+					any_court_position_holder = {
+						type = grand_consort_court_position
+						NOR = {
 							this = scope:recipient
+							this = scope:previous_primary_spouse
 						}
 					}
 				}
-				random_consort = {
-					limit = {
-						has_court_position = grand_consort_court_position
-					}
+				random_court_position_holder = {
+					type = grand_consort_court_position
 					save_scope_as = grand_consort_scope
 				}
-			}
-			if = { #For some reason, can't update consorts opinions
-				limit = {
-					exists = scope:grand_consort_scope
-				}
-				if = {
+				if = { #For some reason, can't update consorts opinions
 					limit = {
-						scope:previous_primary_spouse ?= {
-							has_opinion_modifier = {
+						exists = scope:grand_consort_scope
+					}
+					if = {
+						limit = {
+							scope:previous_primary_spouse ?= {
+								has_opinion_modifier = {
+									target = scope:grand_consort_scope
+									modifier = threatening_consort_opinion
+								}
+							}
+						}
+						scope:previous_primary_spouse = {
+							remove_opinion = {
 								target = scope:grand_consort_scope
 								modifier = threatening_consort_opinion
 							}
 						}
 					}
-					scope:previous_primary_spouse = {
-						remove_opinion = {
-							target = scope:grand_consort_scope
-							modifier = threatening_consort_opinion
-						}
-					}
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							OR = {
-								has_trait = craven
-								has_trait = paranoid
-								has_trait = shy
-								harem_politics_evil_consort_trigger = yes
-							}
-							NOR = {
-								has_relation_best_friend = scope:grand_consort_scope
-								has_relation_friend = scope:grand_consort_scope
-								has_relation_soulmate = scope:grand_consort_scope
-								has_relation_lover = scope:grand_consort_scope
-							}
-							opinion = {
-								target = scope:grand_consort_scope
-								value <= low_positive_opinion
-							}
-							hp_accepts_harems = yes
-						}
-					}
-					scope:recipient = {
-						add_opinion = {
-							target = scope:grand_consort_scope
-							modifier = threatening_consort_opinion
-						}
-					}
-				}
-				scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
 					if = {
 						limit = {
-							harem_politics_evil_consort_trigger = yes
-							opinion = {
-								target = scope:recipient
-								value <= 10
-							}
-							hp_accepts_harems = yes
-							NOR = {
-								has_opinion_modifier = {
-									modifier = forced_me_concubine_marriage_opinion
-									target = scope:actor
+							scope:recipient = {
+								OR = {
+									has_trait = craven
+									has_trait = paranoid
+									has_trait = shy
+									harem_politics_evil_consort_trigger = yes
 								}
-								has_demoted_or_divorced_as_ps_opinion_trigger = {
-									TARGET = scope:actor
+								NOR = {
+									has_relation_best_friend = scope:grand_consort_scope
+									has_relation_friend = scope:grand_consort_scope
+									has_relation_soulmate = scope:grand_consort_scope
+									has_relation_lover = scope:grand_consort_scope
 								}
+								opinion = {
+									target = scope:grand_consort_scope
+									value <= low_positive_opinion
+								}
+								hp_accepts_harems = yes
 							}
 						}
-						add_opinion = {
-							target = scope:actor
-							modifier = ignored_consort_opinion
-							opinion = -15
+						scope:recipient = {
+							add_opinion = {
+								target = scope:grand_consort_scope
+								modifier = threatening_consort_opinion
+							}
 						}
-						calyver_favor_moderate_loss_effect = yes
+					}
+					scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
+						if = {
+							limit = {
+								harem_politics_evil_consort_trigger = yes
+								opinion = {
+									target = scope:recipient
+									value <= 10
+								}
+								hp_accepts_harems = yes
+								NOR = {
+									has_opinion_modifier = {
+										modifier = forced_me_concubine_marriage_opinion
+										target = scope:actor
+									}
+									has_demoted_or_divorced_as_ps_opinion_trigger = {
+										TARGET = scope:actor
+									}
+								}
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = ignored_consort_opinion
+								opinion = -15
+							}
+							calyver_favor_moderate_loss_effect = yes
+						}
 					}
 				}
 			}
@@ -3538,7 +3574,18 @@ make_primary_spouse_effect = {
 							}
 						}
 					}
-					calyver_favor_big_gain_effect = yes
+					if = {
+						limit = {
+							NOT = {
+								has_character_flag = appointed_gc_ps_flag
+							}
+						}
+						calyver_favor_big_gain_effect = yes
+					}
+					else = {
+						calyver_favor_moderate_gain_effect = yes
+						remove_character_flag = appointed_gc_ps_flag
+					}
 				}
 			}
 		}
