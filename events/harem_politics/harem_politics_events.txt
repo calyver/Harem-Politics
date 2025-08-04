@@ -2937,7 +2937,7 @@ harem_politics.0002 = {
 			type = event_generic_bad
 			title = punished_consort_t
 			right_icon = scope:secondary_recipient
-			left_icon = scope:secondary_actor
+			left_icon = scope:authority
 			custom_tooltip = punished_consort_severe_desc
 		}
 		ai_chance = {
@@ -3225,7 +3225,7 @@ harem_politics.0003 = {
 			callous = medium_stress_impact_loss
 			arbitrary = minor_stress_impact_loss
 		}
-		save_scope_as = secondary_actor
+		save_scope_as = authority
 		scope:hailan = {
 			save_scope_as = secondary_recipient
 			death = {
@@ -3340,7 +3340,7 @@ harem_politics.0003 = {
 			type = event_generic_bad
 			title = punished_consort_t
 			right_icon = scope:secondary_recipient
-			left_icon = scope:secondary_actor
+			left_icon = scope:authority
 			custom_tooltip = punished_consort_severe_desc
 		}
 		ai_chance = {
@@ -15000,7 +15000,16 @@ harem_politics.0014 = {
 			}
 		}
 		scope:recipient = {
-			calyver_favor_minor_loss_effect = yes
+			if = {
+				limit = {
+					is_consort_of = root
+				}
+				calyver_favor_minor_loss_effect = yes
+				add_character_flag = {
+					flag = flag_scolded_consort
+					years = 1
+				}
+			}
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
@@ -15010,15 +15019,6 @@ harem_politics.0014 = {
 				add_opinion = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
-				}
-			}
-			if = {
-				limit = {
-					is_consort_of = root
-				}
-				add_character_flag = {
-					flag = flag_scolded_consort
-					years = 1
 				}
 			}
 			if = {
@@ -15284,6 +15284,9 @@ harem_politics.0014 = {
 					has_trait = pregnant
 				}
 			}
+			scope:recipient = {
+				is_consort_of = root
+			}
 			OR = {
 				has_trait = sadistic
 				has_trait = vengeful
@@ -15323,9 +15326,13 @@ harem_politics.0014 = {
 			}
 			if = {
 				limit = {
-					can_set_relation_potential_rival_trigger = { CHARACTER = scope:beggar } 
+					can_set_relation_rival_trigger = { CHARACTER = scope:beggar }
 				}
-				set_relation_potential_rival = scope:beggar
+				progress_towards_rival_effect = {
+					REASON = consort_rival_reason
+					CHARACTER = scope:beggar
+					OPINION = 0
+				}
 			}
 			if = {
 				limit = {
@@ -15703,34 +15710,23 @@ harem_politics.0014 = {
 		scope:recipient = {
 			if = {
 				limit = {
-					has_character_modifier = favor_boost_modifier
+					is_consort_of = root
 				}
-				calyver_stop_favor_boost_event_effect = {
-					HAREM_LIEGE = root
-					CONSORT = scope:recipient
+				calyver_favor_moderate_loss_effect = yes
+				if = {
+					limit = {
+						has_character_modifier = favor_boost_modifier
+					}
+					calyver_stop_favor_boost_event_effect = {
+						HAREM_LIEGE = root
+						CONSORT = scope:recipient
+					}
 				}
 			}
-			calyver_favor_moderate_loss_effect = yes
 			hidden_effect = {
-
 				add_opinion = {
 					target = scope:beggar
 					modifier = hatred_spouse_opinion
-				}
-			}
-			if = {
-				limit = {
-					has_character_modifier = favored_consort_modifier
-				}
-				remove_character_modifier = favored_consort_modifier
-			}
-			if = {
-				limit = {
-					is_consort_of = root
-				}
-				add_character_modifier = {
-					modifier = unfavored_consort_modifier
-					years = 1
 				}
 			}
 			add_opinion = {
@@ -15740,9 +15736,13 @@ harem_politics.0014 = {
 			}
 			if = {
 				limit = {
-					can_set_relation_potential_rival_trigger = { CHARACTER = scope:beggar } 
+					can_set_relation_rival_trigger = { CHARACTER = scope:beggar }
 				}
-				set_relation_potential_rival = scope:beggar
+				progress_towards_rival_effect = {
+					REASON = consort_rival_reason
+					CHARACTER = scope:beggar
+					OPINION = 0
+				}
 			}
 		}
 		imprison = {
@@ -16031,6 +16031,14 @@ harem_politics.0014 = {
 						is_liege_or_above_of = root
 					}
 				}
+			}
+			modifier = {
+				scope:recipient = {
+					NOT = {
+						is_consort_of = root
+					}
+				}
+				factor = 0
 			}
         }
 		trigger_event = harem_politics.1000
@@ -16437,7 +16445,12 @@ harem_politics.0014 = {
 			}
 		}
 		scope:recipient = {
-			calyver_favor_minor_gain_effect = yes
+			if = {
+				limit = {
+					is_consort_of = root
+				}
+				calyver_favor_minor_gain_effect = yes
+			}
 		}
 		add_character_flag = flag_dismissed_beggar
 		if = {
