@@ -73,8 +73,8 @@
 # 				highest_held_title_tier >= tier_county
 # 				is_landed_or_landless_administrative = yes
 # 				any_consort = {
-# 					is_available_allow_travelling = yes
-# 					is_courtier_of = scope:actor.court_owner
+# 					is_available_healthy_adult = yes 
+# 					is_courtier_of = prev
 # 					count >= 3
 # 				}
 # 				any_consort = {
@@ -163,7 +163,7 @@
 # 			custom_tooltip = visit_liege_effect_tooltilp
 # 			add_character_flag = {
 # 				flag = visited_liege_flag
-# 				years = 2
+# 				months = 18
 # 			}
 # 			add_character_flag = {
 # 				flag = is_visiting_harem_character_flag
@@ -178,14 +178,14 @@
 # 				}
 # 			}
 # 			random_list = {
-# 				100 = { #You reach your liege
+# 				50 = { #You reach your liege
 # 					custom_tooltip = visit_liege_positive_tooltilp
 # 					#Liege's opinion of actor
 # 					opinion_modifier = { 
 # 						WHO = scope:harem_liege
 # 						opinion_target = scope:actor
-# 						min = -20
-# 						max = 15
+# 						min = -30
+# 						max = 30
 # 						multiplier = 0.50
 # 					}
 # 					#Rank
@@ -193,11 +193,11 @@
 # 						scope:harem_liege.primary_spouse ?= {
 # 							this = scope:actor
 # 						}
-# 						add = 40
+# 						add = 35
 # 					}
 # 					modifier = {
 # 						has_court_position = grand_consort_court_position
-# 						add = 30
+# 						add = 25
 # 					}
 # 					modifier = {
 # 						is_spouse_of = scope:harem_liege
@@ -205,16 +205,16 @@
 # 							this = scope:harem_liege.primary_spouse
 # 							has_court_position = grand_consort_court_position
 # 						}
-# 						add = 30
+# 						add = 15
 # 					}
 # 					#Favor
 # 					modifier = {
 # 						has_character_modifier = favored_consort_modifier
-# 						add = 10
+# 						add = 15
 # 					}
 # 					modifier = {
 # 						has_character_modifier = beloved_consort_modifier
-# 						add = 15
+# 						add = 25
 # 					}
 # 					modifier = {
 # 						has_character_modifier = favor_boost_modifier
@@ -226,7 +226,7 @@
 # 							has_relation_potential_lover = scope:harem_liege
 # 							has_relation_potential_friend = scope:harem_liege
 # 						}
-# 						add = 5
+# 						add = 10
 # 					}
 # 					modifier = {
 # 						OR = {
@@ -253,44 +253,66 @@
 # 						}
 # 						add = 10
 # 					}
-# 					#Liege's stress
-# 					modifier = {
-# 						scope:harem_liege = {
-# 							stress_level >= 1
-# 						}
-# 						add = -10
-# 					}
-# 					modifier = {
-# 						scope:harem_liege = {
-# 							stress_level >= 2
-# 						}
-# 						add = -10
-# 					}
-# 					modifier = {
-# 						scope:harem_liege = {
-# 							stress_level >= 3
-# 						}
-# 						add = -10
-# 					}
+
 # 					#Children
-# 					# modifier = {
-# 					# 	any_child = {
-# 					# 		is_alive = yes
-# 					# 		is_child_of = scope:harem_liege
-# 					# 	}
-# 					# 	every_child = {
-# 					# 		is_alive = yes
-# 					# 		is_child_of = scope:harem_liege
-# 					# 		add = 5
-# 					# 	}
-# 					# }
+# 					modifier = {
+# 						any_child = {
+# 							is_alive = yes
+# 							is_child_of = scope:harem_liege
+# 						}
+# 						add = {
+# 							every_child = {
+# 								limit = {	
+# 									is_alive = yes
+# 									is_child_of = scope:harem_liege
+# 								}
+# 								add = 2
+# 								if = { # Can inherit
+# 									limit = {
+# 										character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+# 									}
+# 									add = 3
+# 								}
+# 								if = { # The heir
+# 									limit = {
+# 										is_player_heir_of = scope:harem_liege
+# 									}
+# 									add = 5
+# 								}
+# 								if = { # Closer to the throne
+# 									limit = {
+# 										scope:harem_liege.primary_title = {
+# 											place_in_line_of_succession = {
+# 												target = prev
+# 												value <= 3
+# 											}
+# 										}
+# 									}
+# 									add = 3
+# 								}
+# 							}
+# 						}
+# 					}
 # 					#Pregnancy
 # 					modifier = {
 # 						has_trait = pregnant
-# 						pregnancy_assumed_father ?= {
-# 							this = scope:harem_liege
+# 						pregnancy_assumed_father ?= scope:harem_liege
+# 						add = {
+# 							value = 10
+# 							if = {
+# 								limit = {
+# 									scope:harem_liege = {
+# 										any_child = {
+# 											is_alive = yes
+# 											has_any_bastard_trait_trigger = no
+# 											character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+# 											count <= 3
+# 										}
+# 									}
+# 								}
+# 								add = 10
+# 							}
 # 						}
-# 						add = 15
 # 					}
 # 					#Family connections
 # 					modifier = {
@@ -298,38 +320,20 @@
 # 							OR = {
 # 								is_powerful_vassal_of = scope:harem_liege
 # 								is_councillor_of = scope:harem_liege
-# 								AND = { #Or belongs to the same realm
-# 									government_has_flag = government_is_administrative
-# 									exists = scope:harem_liege.top_liege
-# 									top_liege ?= {
-# 										this = scope:harem_liege.top_liege
-# 									}
-# 									house ?= {
-# 										is_powerful_family = yes
-# 										is_dominant_family = no
-# 									}
-# 								}
-# 							}
-# 						}
-# 						add = 15
-# 					}
-# 					modifier = {
-# 						any_close_family_member = {
-# 							OR = {	
 # 								is_liege_or_above_of = scope:harem_liege
-# 								AND = { #Or belongs to the same realm
-# 									government_has_flag = government_is_administrative
-# 									exists = scope:harem_liege.top_liege
-# 									top_liege ?= {
-# 										this = scope:harem_liege.top_liege
-# 									}
-# 									house ?= {
-# 										is_dominant_family = yes
-# 									}
-# 								}
 # 							}
 # 						}
-# 						add = 50
+# 						add = {
+# 							value = 15
+# 							if = {
+# 								limit = {
+# 									any_close_family_member = {
+# 										is_liege_or_above_of = scope:harem_liege
+# 									}
+# 								}
+# 								add = 15
+# 							}
+# 						}
 # 					}
 # 					#Liege's traits
 # 					modifier = {
@@ -356,28 +360,6 @@
 # 						}
 # 						add = 10
 # 					}
-# 					modifier = {
-# 						scope:harem_liege = { has_trait = irritable }
-# 						add = -15
-# 					}
-# 					#Consort's traits
-# 					modifier = {
-# 						scope:consort = { has_trait = irritable }
-# 						add = -15
-# 					}
-# 					#Liege has too few children
-# 					modifier = {
-# 						scope:harem_liege = {
-# 							any_child = {
-# 								is_alive = yes
-# 								NOT = {
-# 									has_trait = bastard
-# 								}
-# 								count < 3
-# 							}
-# 						}
-# 						add = 10
-# 					}
 
 # 					scope:harem_liege = {
 # 						trigger_event = {
@@ -391,43 +373,61 @@
 # 						}
 # 					}
 # 				}
-# 				1 = { #Servants stop you
+# 				50 = { # Servants stop you
 # 					custom_tooltip = visit_liege_negative_tooltilp
 # 					#Liege's opinion of actor
 # 					opinion_modifier = { 
 # 						WHO = scope:harem_liege
 # 						opinion_target = scope:actor
-# 						min = -15
-# 						max = 20
+# 						min = -30
+# 						max = 30
 # 						multiplier = -0.50
 # 					}
-# 					#Rank
+# 					# Rank
 # 					modifier = {
-# 						is_concubine = yes
+# 						is_concubine_of = scope:harem_liege
+# 						add = 10
+# 					}
+# 					modifier = {
+# 						has_character_flag = flag_new_consort
 # 						add = 5
+# 					}
+# 					# Background
+# 					modifier = {
+# 						is_lowborn = yes
+# 						add = 10
 # 					}
 # 					#Favor
 # 					modifier = {
 # 						has_character_modifier = unfavored_consort_modifier
-# 						add = 10
+# 						add = 15
 # 					}
 # 					modifier = {
 # 						has_character_modifier = forgotten_consort_modifier
-# 						add = 15
+# 						add = 25
 # 					}
 
-# 					#Relationship with liege
+# 					# Punished consort
 # 					modifier = {
-# 						has_relation_potential_rival = scope:harem_liege
+# 						has_character_flag = scolded_consort_flag
 # 						add = 5
 # 					}
 # 					modifier = {
-# 						OR = {	
-# 							has_relation_rival = scope:harem_liege
-# 							scope:harem_liege = {
-# 								has_relation_grudge = scope:actor
-# 							}
-# 						}
+# 						has_character_modifier = demoted_primary_spouse_modifier
+# 						add = 10
+# 					}
+# 					modifier = {
+# 						is_demoted_consort_trigger = yes
+# 						add = 10
+# 					}
+					
+# 					# Relationship with liege
+# 					modifier = {
+# 						has_relation_potential_rival = scope:harem_liege
+# 						add = 10
+# 					}
+# 					modifier = {
+# 						has_relation_rival = scope:harem_liege
 # 						add = 15
 # 					}
 # 					modifier = {
@@ -435,34 +435,47 @@
 # 						add = 25
 # 					}
 
-# 					#Too many consorts
+# 					# Many consorts
 # 					modifier = {
 # 						scope:harem_liege = {
 # 							any_consort = {
 # 								is_courtier_of = prev
-# 								count >= 8
+# 								count > 7
 # 							}
 # 						}
 # 						add = 10
 # 					}
-# 					#Liege's traits
+# 					#Liege's stress
 # 					modifier = {
 # 						scope:harem_liege = {
-# 							has_trait = craven
+# 							stress_level >= 1
 # 						}
-# 						add = 10
+# 						add = -10
 # 					}
+# 					modifier = {
+# 						scope:harem_liege = {
+# 							stress_level >= 2
+# 						}
+# 						add = -10
+# 					}
+# 					modifier = {
+# 						scope:harem_liege = {
+# 							stress_level >= 3
+# 						}
+# 						add = -10
+# 					}
+# 					#Liege's traits
 # 					modifier = {
 # 						scope:harem_liege = {
 # 							has_trait = shy
 # 						}
-# 						add = 10
+# 						add = 15
 # 					}
 # 					modifier = {
 # 						scope:harem_liege = {
-# 							has_trait = chaste
+# 							has_trait = craven
 # 						}
-# 						add = 10
+# 						add = 5
 # 					}
 # 					modifier = {
 # 						scope:harem_liege = {
@@ -472,21 +485,20 @@
 # 					}
 # 					modifier = {
 # 						scope:harem_liege = {
-# 							has_trait = reclusive
+# 							has_trait = chaste
 # 						}
-# 						add = 10
-# 					}
-
-# 					#New consorts will be seen as eager to climb
-# 					modifier = {
-# 						has_character_flag = flag_new_consort
 # 						add = 15
 # 					}
-
-# 					#Lowborn
 # 					modifier = {
-# 						is_lowborn = yes
-# 						add = 5
+# 						scope:harem_liege = { 
+# 							has_trait = reclusive 
+# 						}
+# 						add = 15
+# 					}
+# 					# Consort's traits
+# 					modifier = {
+# 						has_trait = irritable
+# 						add = 10
 # 					}
 
 # 					trigger_event = {
