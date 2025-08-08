@@ -1848,6 +1848,10 @@ make_concubine_interaction = {
 			every_courtier = {
 				limit = {
 					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = scope:actor 
+						RECEIVER = scope:actor
+					}
 				}
 				add_to_list = characters
 			}
@@ -1974,7 +1978,7 @@ ai_make_concubine_interaction = {
 					#Don't take a lover who doesn't want to be a concubine as a concubine unless your relationship with them is already *complicated*
 					AND = {	
 						has_relation_lover = scope:recipient
-						accepts_concubinage = yes
+						hp_accepts_concubinage = yes
 					}
 					has_relation_rival = scope:actor
 				}
@@ -2143,6 +2147,10 @@ find_concubine = {
 			every_courtier = {
 				limit = {
 					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = scope:actor 
+						RECEIVER = scope:actor
+					}
 				}
 				add_to_list = characters
 			}
@@ -2182,6 +2190,10 @@ find_concubine = {
 			}
 			scope:recipient = {
 				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+					CHARACTER = scope:actor 
+					RECEIVER = scope:actor
+				}
 				is_adult = yes
 				OR = {
 					is_imprisoned_by = scope:actor
@@ -2206,6 +2218,10 @@ find_concubine = {
 				OR = {
 					any_courtier = {
 						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+						can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+							CHARACTER = scope:actor 
+							RECEIVER = scope:actor
+						}
 					}
 					any_prisoner = {
 						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
@@ -2219,6 +2235,10 @@ find_concubine = {
 			}
 			scope:recipient = {
 				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+					CHARACTER = scope:actor 
+					RECEIVER = scope:actor
+				}
 			}
 		}
 	}
@@ -2592,7 +2612,7 @@ demote_spouse_interaction = {
 	use_diplomatic_range = no
 	icon = concubine_icon
 
-	desc = divorce_character_interaction_desc
+	desc = demote_spouse_interaction_desc
 	cost = { 
 		piety = divorce_cost 
 		influence = {
@@ -2814,7 +2834,7 @@ demote_spouse_interaction = {
 					scope:actor = { is_house_head = no }
 				}
 			}
-			accepts_concubinage = yes
+			hp_accepts_concubinage = yes
 		}
 		scope:recipient = {
 			is_spouse_of = scope:actor
@@ -2840,11 +2860,16 @@ demote_spouse_interaction = {
 			}
 			text = CULTURE_FORBIDS_DIVORCE
 		}
-		NOT = {
-			scope:actor.faith = {
-				has_doctrine = doctrine_divorce_disallowed
-			}
+		custom_tooltip = {
+			scope:actor = { NOT = { religion = religion:islam_religion } }
+			text = take_concubine_ex_spouse_faith
 		}
+		# custom_tooltip = {
+		# 	scope:recipient = {
+		# 		NOT = { has_character_flag = flag_new_consort }
+		# 	}
+		# 	text = RECENTLY_MARRIED_SPOUSE
+		# }
 		scope:recipient = { is_busy_in_events_localised = yes }
 		scope:recipient = { NOT = { has_strong_hook = scope:actor } }
 		scope:actor = { NOT = { allowed_more_concubines = no } }
@@ -2853,11 +2878,11 @@ demote_spouse_interaction = {
 	auto_accept = yes
 
 	on_accept = {
-		scope:recipient = {
-			trigger_event = marriage_interaction.0030
-		}
 		scope:actor = {
 			save_scope_as = secondary_actor
+			show_as_tooltip = {
+				make_concubine = scope:recipient
+			}
 		}
 		scope:recipient = {
 			save_scope_as = secondary_recipient
@@ -3071,7 +3096,7 @@ offer_concubine = {
 	is_shown = {
 		NOT = { scope:actor = scope:recipient }
 		scope:actor = {
-			accepts_concubinage = yes
+			hp_accepts_concubinage = yes
 		}
 		scope:recipient = {
 			NOT = { government_has_flag = government_is_herder }
@@ -3638,7 +3663,7 @@ offer_concubine = {
 			has_trait = greedy
 			ai_greed > very_high_positive_ai_value
 		}	
-		accepts_concubinage = yes
+		hp_accepts_concubinage = yes
 	}
 
 	ai_will_do = {
@@ -3669,7 +3694,7 @@ offer_concubine = {
 		}
 
 		modifier = { # If secondary_actor is close to actor, a good character, or if actor should take them as concubine
-			add = -100
+			add = -120
 			scope:secondary_actor = {
 				is_of_minor_interest_trigger = {
 					CHARACTER = scope:actor

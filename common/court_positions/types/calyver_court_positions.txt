@@ -115,7 +115,7 @@
 				is_lowborn = yes
 			}
 			add = { 
-				value = -20
+				value = -10
 				desc = grand_consort_lowborn_description
 			}
 		}
@@ -716,7 +716,7 @@
 
 	is_shown = {
 		NOT = { government_has_flag = government_is_landless_adventurer }
-		accepts_harems = yes
+		hp_accepts_harems = yes
 		trigger_if = {
 			limit = {
 				is_ai = yes
@@ -755,14 +755,32 @@
 
 	valid_character = {
 		scope:employee = {
-			NOT = { this = scope:liege.primary_spouse }
-			OR = {
-				is_spouse_of = scope:liege
-				AND = {
-					scope:liege  = {
-						accepts_polygamy = no
+			trigger_if = {
+				limit = {
+					scope:liege.religion = religion:islam_religion
+					scope:liege.primary_spouse ?= {
+						is_courtier_of = scope:liege
+						NOT = {
+							is_head_of_the_harem_trigger = {
+								LIEGE = scope:liege
+							}
+						}
+					}
+				}
+				this = scope:liege.primary_spouse
+			}
+			trigger_else = {
+				NOT = { this = scope:liege.primary_spouse }
+				trigger_if = {
+					limit = {
+						scope:liege = {
+							hp_accepts_polygamy = no
+						}
 					}
 					is_concubine_of = scope:liege
+				}
+				trigger_else = {
+					is_spouse_of = scope:liege	
 				}
 			}
 			is_imprisoned = no
@@ -1005,6 +1023,14 @@
 		add = court_position_candidate_score_base_value
 		add = court_position_candidate_aptitude_value
 		scope:liege = {
+			# If the PS isn't in the council, they should be the GC
+			if = {
+				limit = {
+					exists = diarch
+					has_diarchy_active_parameter = diarchy_is_vizierate
+				}
+				add = 10
+			}
 			# There is no PS
 			if = {
 				limit = {
@@ -1047,7 +1073,7 @@
 								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
 								count >= 3
 							}
-							accepts_concubinage = yes
+							hp_accepts_concubinage = yes
 						}
 						add = 10
 					}

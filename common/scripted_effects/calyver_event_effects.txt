@@ -1,0 +1,162 @@
+﻿hp_after_consort_creation_effect = {
+	if = {
+		limit = {
+			scope:harem_liege = {
+				OR = {
+					religion = religion:islam_religion
+					has_unsettled_government_trigger = yes
+				}
+			}
+		}
+		set_to_lowborn = yes
+	}
+	if = {
+		limit = {
+			faith != scope:harem_liege.faith
+		}
+		set_character_faith = scope:harem_liege.faith
+	}
+	if = {
+		limit = {
+			scope:harem_liege.religion = religion:islam_religion
+		}
+		add_character_flag = {
+			flag = abducted_non_believer
+			years = 5
+		}
+	}
+}
+
+bs_after_consort_creation_effect = {
+	if = {
+		limit = {
+			scope:liege = {
+				OR = {
+					has_unsettled_government_trigger = yes
+					AND = {
+						hp_accepts_concubinage = yes
+						allowed_more_concubines = yes
+					}
+				}
+			}
+		}
+		random = {
+			chance = 50
+			modifier = {
+				scope:liege = {
+					has_variable = family_background_important
+				}
+				add = -30
+			}
+			set_to_lowborn = yes
+		}
+	}
+}
+
+hp_select_concubine_location_effect = {
+	if = {
+		limit = {
+			religion = religion:islam_religion
+			OR = {
+				any_neighboring_and_across_water_top_liege_realm_owner = {
+					OR = {
+						any_realm_province = {
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+						any_tributary = {
+							any_realm_province = {
+								NOT = {
+									religion = religion:islam_religion
+								}
+							}
+						}
+					}
+				}
+				any_realm_province = {
+					NOT = {
+						religion = religion:islam_religion
+					}
+				}
+			}
+		}
+		every_neighboring_and_across_water_top_liege_realm_owner = {
+			every_realm_province = {
+				limit = {
+					NOT = {
+						religion = religion:islam_religion
+					}
+				}
+				add_to_temporary_list = concubine_location_list
+			}
+			every_tributary = {
+				every_realm_province = {
+					limit = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+					add_to_temporary_list = concubine_location_list
+				}
+			}
+		}
+		every_realm_province = {
+			limit = {
+				NOT = {
+					religion = religion:islam_religion
+				}
+			}
+			add_to_temporary_list = concubine_location_list
+		}
+		random_in_list = {
+			list = concubine_location_list
+			weight = {
+				base = 1
+				modifier = { # More likely to be captured near bodies of water
+					OR = {
+						is_sea_province = yes
+						is_riverside_province = yes
+						county ?= {
+							OR = {
+								is_coastal_county = yes
+								is_riverside_county = yes
+							}
+						}
+					}
+					add = 30
+				}
+				modifier = { # Christians were especially captured
+					religion = religion:christianity_religion
+					add = 30
+				}
+				modifier = {
+					geographical_region = world_europe
+					add = 20
+				}
+				modifier = {
+					geographical_region = world_europe_south
+					add = 20
+				}
+				modifier = {
+					geographical_region = world_europe_west_iberia
+					add = 20
+				}
+			}
+			save_scope_as = concubine_location
+		}
+	}
+	else = {
+		capital_province = {
+			save_scope_as = concubine_location
+		}
+	}
+}
+
+hp_character_creation_effect = {
+	create_character = {
+		location = root.capital_province
+		template = $CHARACTER$_template
+		save_scope_as = $CHARACTER$
+	}
+}

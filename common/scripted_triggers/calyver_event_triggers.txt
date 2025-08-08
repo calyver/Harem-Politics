@@ -25,6 +25,21 @@
 	}
 }
 
+harem_politics_beloved_consort_trigger = {
+	has_character_modifier = beloved_consort_modifier
+	trigger_if = { #Can't be favored-
+		limit = { 
+			has_variable = favor
+		}
+		var:favor >= beloved_consort_lower_limit
+	}
+	trigger_else = {
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
 harem_politics_unfavored_consort_trigger = {
 	OR = {
 		has_character_modifier = unfavored_consort_modifier
@@ -46,6 +61,24 @@ harem_politics_unfavored_consort_trigger = {
 	}
 }
 
+harem_politics_forgotten_consort_trigger = {
+	has_character_modifier = forgotten_consort_modifier
+	NOT = {
+		has_character_modifier = favor_boost_modifier
+	}
+	trigger_if = { #Can't be unfavored+
+		limit = { 
+			has_variable = favor
+		}
+		var:favor < unfavored_consort_lower_limit
+	}
+	trigger_else = {
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+
 harem_politics_punished_consort_trigger = {
 	OR = {
 		has_character_flag = flag_scolded_consort
@@ -56,10 +89,10 @@ harem_politics_punished_consort_trigger = {
 	}
 }
 
-accepts_harems = {
+hp_accepts_harems = {
 	OR = {
-		accepts_polygamy = yes
-		accepts_concubinage = yes
+		hp_accepts_polygamy = yes
+		hp_accepts_concubinage = yes
 	}
 }
 
@@ -74,68 +107,75 @@ is_valid_for_favor_system_trigger = {
 	}
 }
 
-harem_politics_target_outranks_consort_trigger = {
-	$CONSORT$ = {
-		is_consort_of = $LIEGE$
-		NOT = {
-			is_parent_of = $LIEGE$
+
+harem_politics_is_valid_authority_trigger = {
+    # $AUTHORITY$ is the high-ranking character
+    # $TARGET$ is the lower-ranked character
+    # $LIEGE$ is the harem owner
+
+    $AUTHORITY$ = { 
+		is_valid_harem_member_trigger = {
+			LIEGE = $LIEGE$
 		}
 	}
-	$TARGET$ = {
-		trigger_if = { #They're liege's parent
-			limit = {
-				is_parent_of = $LIEGE$
-			}
+    $TARGET$ = {
+		is_valid_harem_member_trigger = {
+			LIEGE = $LIEGE$
 		}
-		trigger_else_if = { #They're the primary spouse
-			limit = {
-				exists = $LIEGE$.primary_spouse
-				this = $LIEGE$.primary_spouse
-			}
-		}
-		trigger_else_if = { #They're the Grand Consort
-			limit = {
-				has_court_position = grand_consort_court_position
-			}
-			$CONSORT$ = {
-				trigger_if = { #They can't be the PS
-					limit = {
-						exists = $LIEGE$.primary_spouse
-					}
+	}
+
+    trigger_if = {
+        # 1. If authority is a relative (not a consort), target must be a consort
+		# 2. If authority is primary spouse, target must be a consort
+        limit = {
+            $AUTHORITY$ = {
+				OR = {
 					NOT = {
-						this = $LIEGE$.primary_spouse
+						is_consort_of = $LIEGE$
 					}
+					$LIEGE$.primary_spouse ?= { this = $AUTHORITY$ }
 				}
-			}
+            }
+        }
+    	$TARGET$ = {
+			is_consort_of = $LIEGE$
 		}
-		trigger_else = {
+    }
+    trigger_else_if = {
+        # 3. If authority is Grand Consort, target must be a consort but not the PS
+        limit = {
+            $AUTHORITY$ = { has_court_position = grand_consort_court_position }
+        }
+		$TARGET$ = {
+			is_consort_of = $LIEGE$
 			trigger_if = {
 				limit = {
-					is_spouse_of = $LIEGE$
+					exists = $LIEGE$.primary_spouse
 				}
-				$CONSORT$ = {
-					is_concubine_of = $LIEGE$
+				NOT = {
+					this = $LIEGE$.primary_spouse
 				}
 			}
 		}
-	}
+    }
+    trigger_else_if = {
+        # 4. If authority is a spouse (not PS), target must be a concubine
+        limit = {
+            $AUTHORITY$ = {
+                is_spouse_of = $LIEGE$
+            }
+        }
+        $TARGET$ = { is_concubine_of = $LIEGE$ }
+    }
+    trigger_else = {
+        always = no
+    }
 }
 
-bride_show_viable_candidate_trigger = {
+##Potential consorts##
+bride_show_viable_consort_trigger = {
 	is_healthy = yes
 	is_available = yes
-	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
-		limit = {
-			age = 15
-		}
-		exists = betrothed
-		$OVERLORD$ = {
-			is_ai = no
-		}
-	}
-	trigger_else = {
-		age >= 16
-	}
 	age <= 23
 	NOR = {
 		#If you betrothed them already, why should they participate?
@@ -197,6 +237,37 @@ bride_show_viable_candidate_trigger = {
 
 		has_trait = pregnant
 	}
+	can_become_concubine_of_character_valid_trigger = { CHARACTER = $OVERLORD$ }
+	NOT = {
+		any_heir_title = {
+			place_in_line_of_succession = {
+				target = prev
+				value <= 2
+			}
+		}
+	}
+}
+
+bride_show_viable_candidate_trigger = {
+	bride_show_viable_consort_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
+		limit = {
+			age = 15
+		}
+		betrothed ?= {
+			NOT = {
+				is_close_family_of = $OVERLORD$
+			}
+		}
+		$OVERLORD$ = {
+			is_ai = no
+		}
+	}
+	trigger_else = {
+		age >= 16
+	}
 	trigger_if = { #Beauty parameters
 		limit = {
 			OR = { #Tributaries would never send ugly candidates
@@ -227,13 +298,49 @@ bride_show_viable_candidate_trigger = {
 			has_trait = intellect_bad
 		}
 	}
-	can_become_concubine_of_character_valid_trigger = { CHARACTER = $OVERLORD$ }
-	NOT = {
-		any_heir_title = {
-			place_in_line_of_succession = {
-				target = prev
-				value <= 2
+}
+
+recruit_concubines_viable_candidate_trigger = {
+	is_adult = yes
+	is_councillor = no
+	bride_show_viable_consort_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	NOR = {
+		religion = religion:islam_religion
+		has_trait = beauty_bad
+		has_character_flag = recently_abducted_concubine
+		any_close_family_member = {
+			highest_held_title_tier >= tier_county
+		}
+		any_consort = {
+			count >= 1
+		}
+	}
+	trigger_if = {
+		limit = {
+			exists = court_owner
+		}
+		court_owner = {
+			NOR = {
+				is_liege_or_above_of = $OVERLORD$
+				is_vassal_or_below_of = $OVERLORD$
+				is_tributary_of = $OVERLORD$
 			}
+		}
+	}
+}
+
+recruit_concubines_viable_county_trigger = {
+	OR = {
+		any_pool_character = {
+			province = this
+			recruit_concubines_viable_candidate_trigger = {
+				OVERLORD = $OVERLORD$
+			}
+		}
+		NOT = {
+			religion = religion:islam_religion
 		}
 	}
 }
@@ -524,10 +631,10 @@ harem_politics_is_valid_bride_show_subject_trigger = {
             trigger_else_if = { # Limited Authority
                 limit = { 
 					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = crown_authority_1 
-							has_realm_law = tribal_authority_1 
-						} 
+						OR = {
+							has_realm_law = crown_authority_1
+							has_realm_law = tribal_authority_1
+						}
 					} 
 				}
 				trigger_if = {
@@ -540,9 +647,7 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					always = yes
 				}
             }
-			trigger_else = { #Nothing else to check
-				always = yes
-			}
+            trigger_else = { always = yes }
         }
 		trigger_else = { #Nothing else to check
 			always = no
@@ -752,6 +857,43 @@ harem_politics_grand_consort_task_valid_basic_ruler_trigger = {
 		opinion = {
 			target = $OVERLORD$
 			value <= 5
+		}
+	}
+}
+
+# Valid neighboring counties#
+harem_politics_valid_event_county_trigger = {
+	trigger_if = {
+		limit = {
+			religion = religion:islam_religion
+		}
+		OR = {
+			any_neighboring_and_across_water_top_liege_realm_owner = {
+				OR = {
+					any_realm_province = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+					any_tributary = {
+						any_realm_province = {
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+					}
+				}
+			}
+			any_realm_province = {
+				NOT = {
+					religion = religion:islam_religion
+				}
+			}
+		}
+	}	
+	trigger_else = {
+		NOT = {
+			religion = religion:islam_religion
 		}
 	}
 }

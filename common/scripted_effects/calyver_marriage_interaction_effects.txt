@@ -372,14 +372,14 @@
 				every_consort = {
 					# If the spouse themselves does not believe in polygamy...
 					limit = {
-						accepts_harems = no
+						hp_accepts_harems = no
 					}
 
 					#... then family members who also do not believe in polygamy aren't happy about having a relative forced into polygamous union with you.
 					every_close_family_member = {
 						if = {
 							limit = { 
-								accepts_harems = no
+								hp_accepts_harems = no
 							}
 							add_opinion = {
 								target = scope:secondary_actor
@@ -760,7 +760,7 @@ calyver_marriage_harem_politics_effect = {
 										modifier = thankful_consort_relative_opinion
 									}
 								}
-								accepts_harems = yes
+								hp_accepts_harems = yes
 							}
 							add_opinion = {
 								target = scope:secondary_recipient
@@ -830,7 +830,7 @@ calyver_marriage_harem_politics_effect = {
 										modifier = thankful_consort_relative_opinion
 									}
 								}
-								accepts_harems = yes
+								hp_accepts_harems = yes
 							}
 							add_opinion = {
 								target = scope:secondary_actor
@@ -842,6 +842,57 @@ calyver_marriage_harem_politics_effect = {
 			}
 		}
 	}
+
+	# No longer eligible for concubinage for Muslim rulers
+	if = {
+		limit = {
+			scope:secondary_actor = {
+				has_character_flag = abducted_non_believer
+			}
+			scope:secondary_recipient = {
+				religion = religion:islam_religion
+				trigger_if = {
+					limit = {
+						has_character_flag = abducted_non_believer
+					}
+					is_ruler = yes
+				}
+				trigger_else = {
+					NOT = {
+						has_character_flag = abducted_non_believer
+					}
+				}
+			}
+		}
+		scope:secondary_actor = {
+			remove_character_flag = abducted_non_believer
+		}
+	}
+	if = {
+		limit = {
+			scope:secondary_recipient = {
+				has_character_flag = abducted_non_believer
+			}
+			scope:secondary_actor = {
+				religion = religion:islam_religion
+				trigger_if = {
+					limit = {
+						has_character_flag = abducted_non_believer
+					}
+					is_ruler = yes
+				}
+				trigger_else = {
+					NOT = {
+						has_character_flag = abducted_non_believer
+					}
+				}
+			}
+		}
+		scope:secondary_recipient = {
+			remove_character_flag = abducted_non_believer
+		}
+	}
+
 	child_promotion_effect = {
 		PARENT_1 = scope:secondary_actor
 		PARENT_2 = scope:secondary_recipient
@@ -850,6 +901,19 @@ calyver_marriage_harem_politics_effect = {
 
 concubine_on_accept_effect = {
 	scope:recipient = {
+		if = {
+			limit = {
+				religion = religion:islam_religion
+				NOT = {
+					has_character_flag = abducted_non_believer
+				}
+				is_imprisoned = no
+				scope:secondary_actor.religion = religion:islam_religion
+			}
+			scope:secondary_actor = {
+				add_piety = medium_piety_loss
+			}
+		}	
 		trigger_event = marriage_interaction.0040
 		if = {
 			# Victim is angry for being forced into concubinage.
@@ -915,7 +979,7 @@ concubine_on_accept_effect = {
 				if = {
 					limit = { 
 						OR = {
-							NOT = { accepts_concubinage = yes }
+							NOT = { hp_accepts_concubinage = yes }
 							NOT = { faith = { has_doctrine = tenet_polyamory } }
 							AND = {
 								allowed_to_marry_same_sex_trigger = no
@@ -1143,9 +1207,9 @@ former_consort_forced_concubine_effect = {
 							harem_politics_evil_consort_trigger = yes
 						}
 						OR = { #Only for the consorts they outranked
-							harem_politics_target_outranks_consort_trigger = {
-								CONSORT = this
-								TARGET = $CONSORT$
+							harem_politics_is_valid_authority_trigger = {
+								AUTHORITY = $CONSORT$
+								TARGET = this
 								LIEGE = $PARTNER$
 							}
 							$CONSORT$ = {
@@ -1865,7 +1929,7 @@ spouse_demotion_effect = {
 							is_lowborn = no
 						}
 						any_vassal = { 
-							accepts_harems = yes
+							hp_accepts_harems = yes
 							has_vassal_stance = courtly
 							count >= 1
 						}
@@ -1874,7 +1938,7 @@ spouse_demotion_effect = {
 					hidden_effect = {
 						every_vassal = {
 							limit = { 
-								accepts_harems = yes
+								hp_accepts_harems = yes
 								has_vassal_stance = courtly
 							}
 							add_opinion = {
@@ -2006,7 +2070,7 @@ spouse_demotion_effect = {
 							is_lowborn = no
 						}
 						any_vassal = { 
-							accepts_harems = yes
+							hp_accepts_harems = yes
 							has_vassal_stance = courtly
 							count >= 1
 						}
@@ -2015,7 +2079,7 @@ spouse_demotion_effect = {
 					hidden_effect = {
 						every_vassal = {
 							limit = { 
-								accepts_harems = yes
+								hp_accepts_harems = yes
 								has_vassal_stance = courtly
 							}
 							add_opinion = {
@@ -2119,7 +2183,7 @@ spouse_demotion_effect = {
 							is_lowborn = no
 						}
 						any_vassal = { 
-							accepts_harems = yes
+							hp_accepts_harems = yes
 							has_vassal_stance = courtly
 							count >= 1
 						}
@@ -2128,7 +2192,7 @@ spouse_demotion_effect = {
 					hidden_effect = {
 						every_vassal = {
 							limit = { 
-								accepts_harems = yes
+								hp_accepts_harems = yes
 								has_vassal_stance = courtly
 							}
 							add_opinion = {
@@ -2759,21 +2823,26 @@ divorcer_effect = {
 new_primary_spouse_divorce_effect = {
 	$PARTNER$ = {
 		if = { 
-			limit = { 
-				any_spouse = {
-					has_court_position = grand_consort_court_position
+			limit = {
+				any_court_position_holder = {
+					type = grand_consort_court_position
 					NOT = {	
 						this = $PREVIOUS_PS$
 					}
 				}
 			}
-			random_spouse = {
-				limit = {
-					has_court_position = grand_consort_court_position
-				}
+			random_court_position_holder = {
+				type = grand_consort_court_position
 				save_scope_as = new_primary_spouse
 			}
-			set_primary_spouse = scope:new_primary_spouse
+			if = {
+				limit = {
+					NOT = {
+						primary_spouse ?= scope:new_primary_spouse
+					}
+				}
+				set_primary_spouse = scope:new_primary_spouse
+			}
 			make_primary_spouse_effect = {
 				PARTNER = $PARTNER$
 			}
@@ -2946,7 +3015,14 @@ new_primary_spouse_divorce_effect = {
 					}
 					save_scope_as = new_primary_spouse
 				}
-				set_primary_spouse = scope:new_primary_spouse
+				if = {
+					limit = {
+						NOT = {
+							primary_spouse ?= scope:new_primary_spouse
+						}
+					}
+					set_primary_spouse = scope:new_primary_spouse
+				}
 				make_primary_spouse_effect = {
 					PARTNER = $PARTNER$
 				}
@@ -3197,7 +3273,42 @@ set_primary_spouse_effect = {
 				just = minor_stress_impact_loss
 			}
 		}
-		set_primary_spouse = scope:recipient
+		# New and previous GC management
+		if = {
+			limit = {
+				scope:previous_primary_spouse ?= {
+					has_court_position = grand_consort_court_position
+				}
+			}
+			hidden_effect = {
+				revoke_court_position = {
+					recipient = scope:previous_primary_spouse
+					court_position = grand_consort_court_position
+				}
+			}
+			set_primary_spouse = scope:recipient
+			if = {
+				limit = {
+					can_appoint_char_to_court_position = {
+						CHAR = scope:recipient
+						COURT_POS = grand_consort_court_position
+					}
+				}
+				appoint_court_position = {
+					recipient = scope:recipient
+					court_position = grand_consort_court_position
+				}
+				scope:recipient = {
+					add_character_flag = {
+						flag = appointed_gc_ps_flag
+						days = 2
+					}
+				}
+			}
+		}
+		else = {
+			set_primary_spouse = scope:recipient
+		}
 		# If we're a clan this interaction affects unity
 		add_clan_unity_interaction_effect = {
 			CHARACTER = scope:actor
@@ -3239,7 +3350,19 @@ set_primary_spouse_effect = {
 								this = scope:previous_primary_spouse
 							}
 						}
-						accepts_harems = yes
+						trigger_if = {
+							limit = {
+								hp_accepts_harems = no
+							}
+							OR = {
+								has_trait = ambitious
+								has_trait = arrogant
+								has_trait = greedy
+							}
+						}
+						trigger_else = {
+							hp_accepts_harems = yes
+						}
 						opinion = {
 							target = scope:recipient
 							value <= low_positive_opinion
@@ -3274,96 +3397,114 @@ set_primary_spouse_effect = {
 					#Trigger event
 				}
 			}
+			# Managing GC opinions
 			if = {
 				limit = {
-					any_consort = {
-						has_court_position = grand_consort_court_position
-						NOT = {
+					employs_court_position = grand_consort_court_position
+					any_court_position_holder = {
+						type = grand_consort_court_position
+						NOR = {
 							this = scope:recipient
+							this = scope:previous_primary_spouse
 						}
 					}
 				}
-				random_consort = {
-					limit = {
-						has_court_position = grand_consort_court_position
-					}
+				random_court_position_holder = {
+					type = grand_consort_court_position
 					save_scope_as = grand_consort_scope
-				}
-			}
-			if = { #For some reason, can't update consorts opinions
-				limit = {
-					exists = scope:grand_consort_scope
 				}
 				if = {
 					limit = {
-						scope:previous_primary_spouse ?= {
-							has_opinion_modifier = {
+						exists = scope:grand_consort_scope
+					}
+					if = {
+						limit = {
+							scope:previous_primary_spouse ?= {
+								has_opinion_modifier = {
+									target = scope:grand_consort_scope
+									modifier = threatening_consort_opinion
+								}
+							}
+						}
+						scope:previous_primary_spouse = {
+							remove_opinion = {
 								target = scope:grand_consort_scope
 								modifier = threatening_consort_opinion
 							}
 						}
 					}
-					scope:previous_primary_spouse = {
-						remove_opinion = {
-							target = scope:grand_consort_scope
-							modifier = threatening_consort_opinion
-						}
-					}
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							OR = {
-								has_trait = craven
-								has_trait = paranoid
-								has_trait = shy
-								harem_politics_evil_consort_trigger = yes
-							}
-							NOR = {
-								has_relation_best_friend = scope:grand_consort_scope
-								has_relation_friend = scope:grand_consort_scope
-								has_relation_soulmate = scope:grand_consort_scope
-								has_relation_lover = scope:grand_consort_scope
-							}
-							opinion = {
-								target = scope:grand_consort_scope
-								value <= low_positive_opinion
-							}
-							accepts_harems = yes
-						}
-					}
-					scope:recipient = {
-						add_opinion = {
-							target = scope:grand_consort_scope
-							modifier = threatening_consort_opinion
-						}
-					}
-				}
-				scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
 					if = {
 						limit = {
-							harem_politics_evil_consort_trigger = yes
-							opinion = {
-								target = scope:recipient
-								value <= 10
-							}
-							accepts_harems = yes
-							NOR = {
-								has_opinion_modifier = {
-									modifier = forced_me_concubine_marriage_opinion
-									target = scope:actor
+							scope:recipient = {
+								OR = {
+									has_trait = craven
+									has_trait = paranoid
+									has_trait = shy
+
+									harem_politics_evil_consort_trigger = yes
+
+									has_relation_rival = scope:grand_consort_scope
+									has_relation_nemesis = scope:grand_consort_scope
 								}
-								has_demoted_or_divorced_as_ps_opinion_trigger = {
-									TARGET = scope:actor
+								NOR = {
+									has_relation_best_friend = scope:grand_consort_scope
+									has_relation_friend = scope:grand_consort_scope
+									has_relation_soulmate = scope:grand_consort_scope
+									has_relation_lover = scope:grand_consort_scope
+
+									has_trait = trusting
+								}
+								opinion = {
+									target = scope:grand_consort_scope
+									value <= low_positive_opinion
 								}
 							}
 						}
-						add_opinion = {
-							target = scope:actor
-							modifier = ignored_consort_opinion
-							opinion = -15
+						scope:recipient = {
+							add_opinion = {
+								target = scope:grand_consort_scope
+								modifier = threatening_consort_opinion
+							}
 						}
+					}
+					scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
 						calyver_favor_moderate_loss_effect = yes
+						if = {
+							limit = {
+								harem_politics_evil_consort_trigger = yes
+								opinion = {
+									target = scope:recipient
+									value <= 10
+								}
+								NOR = {
+									has_opinion_modifier = {
+										modifier = forced_me_concubine_marriage_opinion
+										target = scope:actor
+									}
+									has_demoted_or_divorced_as_ps_opinion_trigger = {
+										TARGET = scope:actor
+									}
+								}
+								trigger_if = {
+									limit = {
+										hp_accepts_harems = no
+									}
+									OR = {
+										has_trait = ambitious
+										has_trait = arrogant
+										has_trait = greedy
+									}
+								}
+								trigger_else = {
+									hp_accepts_harems = yes
+								}
+							}
+							add_opinion = {
+								target = scope:actor
+								modifier = ignored_consort_opinion
+								opinion = -15
+							}
+						}
 					}
 				}
 			}
@@ -3460,7 +3601,18 @@ make_primary_spouse_effect = {
 							}
 						}
 					}
-					calyver_favor_big_gain_effect = yes
+					if = {
+						limit = {
+							NOT = {
+								has_character_flag = appointed_gc_ps_flag
+							}
+						}
+						calyver_favor_big_gain_effect = yes
+					}
+					else = {
+						calyver_favor_moderate_gain_effect = yes
+						remove_character_flag = appointed_gc_ps_flag
+					}
 				}
 			}
 		}
@@ -3475,7 +3627,7 @@ make_primary_spouse_effect = {
 			}
 			if = {
 				limit = {
-					accepts_harems = yes
+					hp_accepts_harems = yes
 				}
 				add_opinion = {
 					target = $PARTNER$
@@ -3512,7 +3664,7 @@ make_primary_spouse_effect = {
 									modifier = thankful_consort_relative_opinion
 								}
 							}
-							accepts_harems = yes
+							hp_accepts_harems = yes
 						}
 						add_opinion = {
 							target = $PARTNER$
@@ -3616,6 +3768,25 @@ make_primary_spouse_effect = {
 						if = { #Envy
 							limit = {
 								harem_politics_evil_consort_trigger = yes
+								trigger_if = {
+									limit = {
+										hp_accepts_harems = no
+									}
+									OR = {
+										has_trait = ambitious
+										has_trait = arrogant
+										has_trait = greedy
+									}
+								}
+								trigger_else = {
+									hp_accepts_harems = yes
+								}
+								NOT = {
+									has_opinion_modifier = {
+										modifier = envy_consort_opinion
+										target = scope:new_primary_spouse
+									}
+								}
 							}
 							add_opinion = {
 								target = scope:new_primary_spouse
@@ -3676,10 +3847,6 @@ calyver_update_active_consort_opinion_effect = {
 			NOR = {
 				exists = scope:is_being_divorced
 				exists = scope:is_being_set_aside
-				has_opinion_modifier = {
-					modifier = forced_me_concubine_marriage_opinion
-					target = $PARTNER$
-				}
 				this = $SPOUSE$
 			}
 		}
@@ -3688,71 +3855,120 @@ calyver_update_active_consort_opinion_effect = {
 		if = {
 			limit = {		
 				is_concubine = yes
-				NOR = {
-					has_relation_best_friend = $SPOUSE$
-					has_relation_friend = $SPOUSE$
-					has_relation_soulmate = $SPOUSE$
-					has_relation_lover = $SPOUSE$
-				}
-				$PARTNER$ = {
-					OR = {
-						primary_spouse ?= {
-							this = $SPOUSE$
+			}
+			if = {
+				limit = {
+					has_court_position = grand_consort_court_position
+					is_court_position_employer = {
+						court_position = grand_consort_court_position
+						who = $PARTNER$
+					}
+					NOT = {
+						has_demoted_or_divorced_as_ps_opinion_trigger = {
+							TARGET = $PARTNER$
 						}
-						$SPOUSE$ = {
-							NOT = {
-								has_demoted_or_divorced_opinion_trigger = {
-									TARGET = $PARTNER$
+					}
+				}
+				calyver_favor_moderate_loss_effect = yes
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_relation_best_friend = $SPOUSE$
+						has_relation_friend = $SPOUSE$
+						has_relation_soulmate = $SPOUSE$
+						has_relation_lover = $SPOUSE$
+					}
+					$PARTNER$ = {
+						OR = {
+							primary_spouse ?= {
+								this = $SPOUSE$
+							}
+							$SPOUSE$ = {
+								NOT = {
+									has_demoted_or_divorced_opinion_trigger = {
+										TARGET = $PARTNER$
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			if = {
-				limit = {
-					harem_politics_evil_consort_trigger = yes
-					accepts_harems = yes
-					opinion = {
-						target = $SPOUSE$
-						value <= 15
-					}
-				}
-				if = { #The GC expects to be the next PS
-					limit = {
-						has_court_position = grand_consort_court_position
-					}
-					add_opinion = {
-						target = $PARTNER$
-						modifier = ignored_consort_opinion
-						opinion = -15
-					}
-				}
+				# Managing opinions
 				if = {
 					limit = {
-						NOT = {
+						harem_politics_evil_consort_trigger = yes
+						opinion = {
+							target = $SPOUSE$
+							value <= 15
+						}
+						NOR = {
+							has_demoted_or_divorced_as_ps_opinion_trigger = {
+								TARGET = $PARTNER$
+							}
 							has_opinion_modifier = {
-								target = $SPOUSE$
-								modifier = envy_consort_opinion
+								modifier = forced_me_concubine_marriage_opinion
+								target = $PARTNER$
+							}
+							has_relation_rival = $PARTNER$
+							has_relation_nemesis = $PARTNER$
+						}
+						trigger_if = {
+							limit = {
+								hp_accepts_harems = no
+							}
+							OR = {
+								has_trait = ambitious
+								has_trait = arrogant
+								has_trait = greedy
 							}
 						}
+						trigger_else = {
+							hp_accepts_harems = yes
+						}
 					}
-					add_opinion = {
-						target = $SPOUSE$
-						modifier = envy_consort_opinion
+					if = { # The GC expects to be the next PS
+						limit = {
+							has_court_position = grand_consort_court_position
+							is_court_position_employer = {
+								court_position = grand_consort_court_position
+								who = $PARTNER$
+							}
+						}
+						add_opinion = {
+							target = $PARTNER$
+							modifier = ignored_consort_opinion
+							opinion = -15
+						}
+					}
+					# Envy
+					if = {
+						limit = {
+							NOT = {
+								has_opinion_modifier = {
+									target = $SPOUSE$
+									modifier = envy_consort_opinion
+								}
+							}
+						}
+						add_opinion = {
+							target = $SPOUSE$
+							modifier = envy_consort_opinion
+						}
 					}
 				}
-			}
-			if = {
-				limit = {		
-					$SPOUSE$ = {
-						harem_politics_evil_consort_trigger = yes
+				# Stress
+				if = {
+					limit = {		
+						$SPOUSE$ = {
+							harem_politics_evil_consort_trigger = yes
+						}
 					}
-				}
-				stress_impact = {
-					craven = minor_stress_impact_gain
-					shy = minor_stress_impact_gain
-					paranoid = minor_stress_impact_gain
+					stress_impact = {
+						craven = minor_stress_impact_gain
+						shy = minor_stress_impact_gain
+						paranoid = minor_stress_impact_gain
+					}
 				}
 			}
 		}
@@ -3825,13 +4041,13 @@ update_active_consort_opinion_effect = {
 			# Characters who do not believe in concubinage, but are forced into it, have the harshest opinion penalties.
 			limit = {
 				is_concubine_of = $PARTNER$
-				NOT = { accepts_concubinage = yes }
+				NOT = { hp_accepts_concubinage = yes }
 			}
 			if = {
 				# Harshest opinion penalty if they are a concubine but believe in monogamy
 				limit = { 
-					accepts_concubinage = no
-					accepts_polygamy = no
+					hp_accepts_concubinage = no
+					hp_accepts_polygamy = no
 				}
 				add_opinion = {
 					target = $PARTNER$
@@ -3841,7 +4057,7 @@ update_active_consort_opinion_effect = {
 			else_if = {
 				# Lesser-but-still-harsh opinion penalty if they are a concubine but believe in polygamy
 				limit = {
-					accepts_polygamy = yes
+					hp_accepts_polygamy = yes
 				}
 				add_opinion = {
 					target = $PARTNER$
@@ -3854,7 +4070,7 @@ update_active_consort_opinion_effect = {
 			limit = {
 				is_spouse_of = $PARTNER$
 				$PARTNER$ = { any_consort = { count >= 2 }}
-				NOT = { accepts_concubinage = yes }
+				NOT = { hp_accepts_concubinage = yes }
 				NOT = { faith = { has_doctrine = tenet_polyamory }}
 			}
 			if = {
@@ -3873,7 +4089,7 @@ update_active_consort_opinion_effect = {
 			}
 			else_if = {
 				limit = {
-					accepts_polygamy = no
+					hp_accepts_polygamy = no
 				}
 				add_opinion = {
 					target = $PARTNER$
@@ -3913,7 +4129,7 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith/culture has changed to permit us being a concubine.
-				accepts_concubinage = yes
+				hp_accepts_concubinage = yes
 			}
 		}
 		remove_opinion = {
@@ -3942,7 +4158,7 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith/Culture has changed to permit us being a concubine.
-				accepts_concubinage = yes
+				hp_accepts_concubinage = yes
 			}
 		}
 		remove_opinion = {
@@ -3979,7 +4195,7 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith/Culture has changed to permit the relationship.
-				accepts_concubinage = yes
+				hp_accepts_concubinage = yes
 				faith = { has_doctrine = tenet_polyamory }
 			}
 		}
@@ -4017,8 +4233,8 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith/Culture has changed to permit the relationship.
-				accepts_concubinage = yes
-				accepts_polygamy = yes
+				hp_accepts_concubinage = yes
+				hp_accepts_polygamy = yes
 				faith = { has_doctrine = tenet_polyamory }
 			}
 		}
@@ -4074,189 +4290,41 @@ new_primary_spouse_on_action_effect = {
 	save_scope_as = harem_liege
 	if = { #The Grand Consort is promoted
 		limit = {
-			any_spouse = {
-				has_court_position = grand_consort_court_position
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
 				NOT = {	
 					this = scope:dead_relation
 				}
 			}
 		}
-		random_spouse = {
-			limit = {
-				has_court_position = grand_consort_court_position
-			}
+		random_court_position_holder = {
+			type = grand_consort_court_position
 			save_scope_as = new_primary_spouse
 		}
 	}
 	else = {
-		every_spouse = {
-			limit = { 	
-				NOT = {	
+		ordered_spouse = {
+			limit = {
+				NOT = {
 					this = scope:dead_relation
 				}
 			}
-			add_to_temporary_list = future_primary_spouse
-		}
-		random_in_list = {
-			list = future_primary_spouse
-			weight = {
-				base = 60
-				modifier = {
-					faith = scope:harem_liege.faith
-					add = 20
-				}
-				modifier = {
-					culture = scope:harem_liege.culture
-					add = 10
-				}
-				modifier = {
-					is_demoted_consort_trigger = no
-					add = 30
-				}
-				modifier = {
-					is_lowborn = no
-					add = 50
-				}
-				modifier = {
-					any_close_or_extended_family_member = {
-						is_landed = yes
-					}
-					add = 20
-				}
-				modifier = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_county
-					}
-					add = 15
-				}
-				modifier = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_duchy
-					}
-					add = 25
-				}
-				modifier = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_kingdom
-					}
-					add = 35
-				}
-				modifier = {
-					any_close_family_member = {
-						highest_held_title_tier = tier_empire
-					}
-					add = 45
-				}
-				modifier = {
-					any_close_family_member = {
-						is_vassal_of = scope:harem_liege
-					}
-					add = 10
-				}
-				modifier = {
-					any_close_family_member = {
-						is_powerful_vassal_of = scope:harem_liege
-					}
-					add = 35
-				}
-				modifier = {
-					any_close_family_member = {
-						is_councillor_of = scope:harem_liege
-					}
-					add = 30
-				}
-				modifier = {
-					any_close_family_member = {
-						is_liege_or_above_of = scope:harem_liege
-					}
-					add = 500
-				}
-				modifier = {
-					NOT = { has_character_flag = flag_new_consort }
-					add = 15
-				}
-				modifier = {
-					has_character_modifier = forgotten_consort_modifier
-					add = -20
-				}
-				modifier = {
-					has_character_modifier = unfavored_consort_modifier
-					add = -10
-				}
-				modifier = {
-					has_character_modifier = favored_consort_modifier
-					add = 5
-				}
-				modifier = {
-					has_character_modifier = favor_boost_modifier
-					add = 10
-				}
-				modifier = {
-					has_character_modifier = beloved_consort_modifier
-					add = 15
-				}
-
-				modifier = {
-					num_virtuous_traits >= 1
-					add = {
-						value = num_virtuous_traits
-						multiply = 5
-					}
-				}
-				modifier = {
-					num_sinful_traits >= 1
-					add = {
-						value = num_sinful_traits
-						multiply = -5
-					}
-				}
-				modifier = {
-					any_secret = {
-						exists = secret_owner
-						is_known_by = scope:harem_liege
-						is_criminal_for = scope:harem_liege
-					}
-					add = -20
-				}
-				modifier = {
-					OR = {
-						has_relation_rival = scope:harem_liege
-						has_relation_nemesis = scope:harem_liege
-						has_relation_potential_rival = scope:harem_liege
-					}
-					add = -25
-				}
-
-				modifier = {
-					add = {
-						every_child = {
-							limit = {
-								is_child_of = scope:harem_liege
-							}
-							add = {
-								value = 1
-								if = {
-									limit = {
-										character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
-									}
-									add = 1
-								}
-								if = {
-									limit = {
-										is_player_heir_of = scope:harem_liege
-									}
-									add = 2
-								}
-							}
-						}
-					}
-				}
-
+			order_by = {
+				value = 1
+				add = primary_spouse_score_value
 			}
 			save_scope_as = new_primary_spouse
 		}
 	}
-	set_primary_spouse = scope:new_primary_spouse
+	if = {
+		limit = {
+			NOT = {
+				primary_spouse ?= scope:new_primary_spouse
+			}
+		}
+		set_primary_spouse = scope:new_primary_spouse
+	}
 	scope:new_primary_spouse = {
 		clear_negative_consort_modifiers_effect = yes
 		if = {
@@ -4275,7 +4343,7 @@ new_primary_spouse_on_action_effect = {
 			calyver_favor_huge_gain_effect = yes
 			if = {
 				limit = {
-					accepts_harems = yes
+					hp_accepts_harems = yes
 					NOT = {
 						has_demoted_or_divorced_as_ps_opinion_trigger = {
 							TARGET = scope:harem_liege
@@ -4713,6 +4781,32 @@ concubine_offer_on_accept_effect = {
 	scope:secondary_actor = {
 		trigger_event = marriage_interaction.0040
 		if = {
+			limit = {
+				religion = religion:islam_religion
+				NOR = {
+					has_character_flag = abducted_non_believer
+					is_concubine = yes
+				}
+				is_imprisoned = no
+			}
+			scope:actor = {
+				if = {
+					limit = {
+						religion = religion:islam_religion
+					}
+					add_piety = medium_piety_loss
+				}
+			}
+			scope:recipient = {
+				if = {
+					limit = {
+						religion = religion:islam_religion
+					}
+					add_piety = medium_piety_loss
+				}	
+			}
+		}
+		if = {
 			# Victim is angry for being forced into concubinage.
 			limit = {
 				OR = {
@@ -4780,7 +4874,7 @@ concubine_offer_on_accept_effect = {
 				if = {
 					limit = { 
 						OR = {
-							NOT = { accepts_concubinage = yes }
+							NOT = { hp_accepts_concubinage = yes }
 							NOT = { faith = { has_doctrine = tenet_polyamory } }
 							AND = {
 								allowed_to_marry_same_sex_trigger = no
@@ -5299,7 +5393,7 @@ demand_concubine_interaction_on_accept_effect = {
 			if = {
 				limit = { 
 					OR = {
-						NOT = { accepts_concubinage = yes }
+						NOT = { hp_accepts_concubinage = yes }
 						NOT = { faith = { has_doctrine = tenet_polyamory } }
 						AND = {
 							allowed_to_marry_same_sex_trigger = no

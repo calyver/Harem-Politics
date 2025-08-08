@@ -17,7 +17,7 @@ scripted_trigger mei_daying_trigger = {
 	harem_politics_punished_consort_trigger = no
 	harem_politics_unfavored_consort_trigger = no
 
-	accepts_harems = yes
+	hp_accepts_harems = yes
 
 	age <= 21
 
@@ -135,7 +135,7 @@ scripted_trigger xia_changzai_trigger = {
 	harem_politics_punished_consort_trigger = no
 	harem_politics_unfavored_consort_trigger = no
 
-	accepts_harems = yes
+	hp_accepts_harems = yes
 
 	NOR = { 
 		this = root
@@ -277,7 +277,7 @@ scripted_trigger ranting_consort_trigger = {
 	is_demoted_consort_trigger = no
 	harem_politics_punished_consort_trigger = no
 
-	accepts_harems = yes
+	hp_accepts_harems = yes
 
 	is_concubine = yes
 
@@ -364,7 +364,7 @@ scripted_trigger arrogant_consort_trigger = {
 	harem_politics_punished_consort_trigger = no
 	harem_politics_unfavored_consort_trigger = no
 
-	accepts_harems = yes
+	hp_accepts_harems = yes
 
 	is_courtier_of = $PARTNER$
 	
@@ -701,20 +701,18 @@ scripted_trigger is_valid_harem_authority_trigger = {
 	is_physically_able_ai_adult = yes
 	is_healthy = yes
 
-	accepts_harems = yes
+	hp_accepts_harems = yes
 
 	harem_politics_punished_consort_trigger = no
 
-	is_courtier_of = root
-
-	OR = {
-		is_spouse_of = root
-		has_court_position = grand_consort_court_position
-		is_parent_of = root
+	is_valid_harem_member_trigger = {
+		LIEGE = root
 	}
+
 	NOR = {
 		exists = scope:is_being_divorced
 		exists = scope:is_being_set_aside
+		is_concubine_of = root
 		
 		has_trait = pregnant
 		has_trait = ill
@@ -748,8 +746,6 @@ scripted_trigger is_valid_harem_victim_trigger = {
 
 	is_physically_able_ai_adult = yes
 	
-	is_courtier_of = root
-
 	NOR = {
 		this = $CONSORT_AUTHORITY$
 		
@@ -777,6 +773,25 @@ scripted_trigger is_valid_harem_victim_trigger = {
 		has_relation_best_friend = $CONSORT_AUTHORITY$
 		has_relation_friend = $CONSORT_AUTHORITY$
 	}
+	harem_politics_is_valid_authority_trigger = {
+		AUTHORITY = $CONSORT_AUTHORITY$
+		TARGET = this
+		LIEGE = root
+	}
+	trigger_if = {
+		limit = {
+			root = {
+				religion = religion:islam_religion
+				OR = {
+					primary_spouse ?= $CONSORT_AUTHORITY$
+					$CONSORT_AUTHORITY$ = { is_sibling_of = root }
+				}
+			}
+		}
+		NOT = {
+			is_spouse_of = root
+		}
+	}
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -791,28 +806,15 @@ scripted_trigger is_valid_harem_victim_trigger = {
 			}
 		}
 	}
-	OR = {
-		is_concubine_of = root
-		AND = {
-			is_spouse_of = root
-			$CONSORT_AUTHORITY$ = {
-				OR = {
-					is_parent_of = root
-					AND = {	
-						exists = root.primary_spouse
-						this = root.primary_spouse
-					}
-					has_court_position = grand_consort_court_position
-				}
-			}
-		}
-	}
 }
 
 scripted_trigger is_valid_generic_consort_trigger = {
 	OR = {
-		is_consort_of = root
-		is_parent_of = root
+		is_valid_harem_member_trigger = {
+			LIEGE = root
+		}
+		has_court_position = chief_eunuch_court_position
+		has_court_position = lady_in_waiting_court_position
 	}
 	is_healthy = yes
 	is_physically_able_ai_adult = yes
@@ -932,7 +934,8 @@ scripted_trigger scheming_consort_trigger = {
 scripted_effect begging_punished_consort_effect = {
 	if = {
 		limit = {
-			$BEGGAR$ = {
+			exists = $AUTHORITY$
+			$VICTIM$ ?= {
 				is_alive = yes
 				OR = {
 					has_character_modifier = recently_tortured
@@ -945,103 +948,103 @@ scripted_effect begging_punished_consort_effect = {
 		random_list = {
 			50 = { #The victim whines
 				opinion_modifier = { #Opinion
-					WHO = $BEGGAR$
-					opinion_target = $AUTHORITY$
+					WHO = $VICTIM$
+					opinion_target = $LIEGE$
 					min = -20
 					max = 20
 					multiplier = 0.50
 				}
 				opinion_modifier = { #Opinion
-					WHO = $AUTHORITY$
-					opinion_target = $BEGGAR$
+					WHO = $LIEGE$
+					opinion_target = $VICTIM$
 					min = -20
 					max = 20
 					multiplier = 0.50
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = brave }
+					$VICTIM$ = { has_trait = brave }
 					add = 10
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = vengeful }
+					$VICTIM$ = { has_trait = vengeful }
 					add = 15
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = callous }
+					$VICTIM$ = { has_trait = callous }
 					add = 5
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = arrogant }
+					$VICTIM$ = { has_trait = arrogant }
 					add = 15
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = craven }
+					$VICTIM$ = { has_trait = craven }
 					add = -20
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = shy }
+					$VICTIM$ = { has_trait = shy }
 					add = -20
 				}
 
 				modifier = { #Mei
-					$BEGGAR$ = { has_character_flag = flag_mei }
+					$VICTIM$ = { has_character_flag = flag_mei }
 					add = 10
 				}
 
 				modifier = { #Harem consorts wouldn't see it as worth it
-					$BEGGAR$ = { 
-						accepts_harems = no
+					$VICTIM$ = { 
+						hp_accepts_harems = no
 					}
 					add = -20
 				}
 
 				modifier = { #Evil consorts won't take punishment really well
-					$BEGGAR$ = { harem_politics_evil_consort_trigger = yes }
+					$VICTIM$ = { harem_politics_evil_consort_trigger = yes }
 					add = 10
 				}
 
 				modifier = { #Favored consort
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						has_character_modifier = beloved_consort_modifier
 					}
 					add = 20
 				}
 				modifier = { #Favored consort
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						has_character_modifier = favor_boost_modifier
 					}
 					add = 15
 				}
 				modifier = { #Favored consort
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						has_character_modifier = favored_consort_modifier 
 					}
 					add = 10
 				}
 
 				modifier = { #Unfavored consort
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						has_character_modifier = unfavored_consort_modifier
 					}
 					add = -10
 				}
 				modifier = { #Unfavored consort
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						has_character_modifier = forgotten_consort_modifier
 					}
 					add = -20
 				}
 
 				modifier = { #Arrogant consorts won't take disrespect lightly
-					$BEGGAR$ = { 
+					$VICTIM$ = { 
 						any_close_family_member = {
 							OR = {
-								is_powerful_vassal_of = $AUTHORITY$
-								is_councillor_of = $AUTHORITY$
-								is_close_family_of = $AUTHORITY$
-								is_liege_or_above_of = $AUTHORITY$
+								is_powerful_vassal_of = $LIEGE$
+								is_councillor_of = $LIEGE$
+								is_close_family_of = $LIEGE$
+								is_liege_or_above_of = $LIEGE$
 								AND = {
-									is_knight_of = $AUTHORITY$
+									is_knight_of = $LIEGE$
 									is_acclaimed = yes
 								}
 							}
@@ -1049,19 +1052,41 @@ scripted_effect begging_punished_consort_effect = {
 					}
 					add = 10
 				}
-				compare_modifier = { #Diplomacy
-					value = $BEGGAR$.diplomacy
-					multiplier = 0.5
+				modifier = { #Diplomacy
+					add = {
+						value = $VICTIM$.diplomacy
+						multiply = 0.5
+					}
+				}
+				# Harem authorities
+				modifier = {
+					$AUTHORITY$ = {
+						NOT = {
+							is_consort_of = $LIEGE$
+						}
+					}
+					add = -15
+				}
+				modifier = {
+					$AUTHORITY$ = {
+						NOT = {
+							is_consort_of = $LIEGE$
+						}
+						is_head_of_the_harem_trigger = {
+							LIEGE = $LIEGE$
+						}
+
+					}
+					add = -15
 				}
 
-				$BEGGAR$ = {
+				$VICTIM$ = {
 					save_scope_as = beggar
 				}
-				scope:secondary_actor = {
+				$AUTHORITY$ = {
 					save_scope_as = recipient
 				}
-				clear_saved_scope = secondary_actor
-				$AUTHORITY$ = {
+				$LIEGE$ = {
 					trigger_event = {
 						id = harem_politics.0014
 						days = 3
@@ -1070,88 +1095,88 @@ scripted_effect begging_punished_consort_effect = {
 			}
 			50 = { #Nothing happens
 				opinion_modifier = { #Opinion
-					WHO = $BEGGAR$
-					opinion_target = $AUTHORITY$
+					WHO = $VICTIM$
+					opinion_target = $LIEGE$
 					min = -20
 					max = 20
 					multiplier = -0.50
 				}
 				opinion_modifier = { #Opinion
-					WHO = $AUTHORITY$
-					opinion_target = $BEGGAR$
+					WHO = $LIEGE$
+					opinion_target = $VICTIM$
 					min = -20
 					max = 20
 					multiplier = -0.50
 				}
 
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = content }
+					$VICTIM$ = { has_trait = content }
 					add = 10
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = humble }
+					$VICTIM$ = { has_trait = humble }
 					add = 10
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = craven }
+					$VICTIM$ = { has_trait = craven }
 					add = 15
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = shy }
+					$VICTIM$ = { has_trait = shy }
 					add = 15
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = forgiving }
+					$VICTIM$ = { has_trait = forgiving }
 					add = 20
 				}
 				modifier = { #Traits
-					$BEGGAR$ = { has_trait = compassionate }
+					$VICTIM$ = { has_trait = compassionate }
 					add = 20
 				}
 				
 
-				modifier = { #scope:secondary_actor is favored
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is favored
+					$AUTHORITY$ = { 
 						has_character_modifier = beloved_consort_modifier 
 					}
 					add = 20
 				}
-				modifier = { #scope:secondary_actor is favored
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is favored
+					$AUTHORITY$ = { 
 						has_character_modifier = favor_boost_modifier 
 					}
 					add = 15
 				}
-				modifier = { #scope:secondary_actor is favored
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is favored
+					$AUTHORITY$ = { 
 						has_character_modifier = favored_consort_modifier 
 					}
 					add = 10
 				}
 
-				modifier = { #scope:secondary_actor is unfavored
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is unfavored
+					$AUTHORITY$ = { 
 						has_character_modifier = unfavored_consort_modifier 
 					}
 					add = -10
 				}
-				modifier = { #scope:secondary_actor is unfavored
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is unfavored
+					$AUTHORITY$ = { 
 						has_character_modifier = forgotten_consort_modifier 
 					}
 					add = -20
 				}
 
-				modifier = { #scope:secondary_actor is influential
-					scope:secondary_actor = { 
+				modifier = { #$AUTHORITY$ is influential
+					$AUTHORITY$ = { 
 						any_close_family_member = {
 							OR = {
-								is_powerful_vassal_of = $AUTHORITY$
-								is_councillor_of = $AUTHORITY$
-								is_close_family_of = $AUTHORITY$
-								is_liege_or_above_of = $AUTHORITY$
+								is_powerful_vassal_of = $LIEGE$
+								is_councillor_of = $LIEGE$
+								is_close_family_of = $LIEGE$
+								is_liege_or_above_of = $LIEGE$
 								AND = {
-									is_knight_of = $AUTHORITY$
+									is_knight_of = $LIEGE$
 									is_acclaimed = yes
 								}
 							}
@@ -1159,13 +1184,26 @@ scripted_effect begging_punished_consort_effect = {
 					}
 					add = 15
 				}
-				modifier = { #scope:secondary_actor is influential
-					scope:secondary_actor = { 
-						any_child = {
-							this = $AUTHORITY$
+				# Harem authorities
+				modifier = {
+					$AUTHORITY$ = {
+						NOT = {
+							is_consort_of = $LIEGE$
 						}
 					}
-					add = 40
+					add = 15
+				}
+				modifier = {
+					$AUTHORITY$ = {
+						NOT = {
+							is_consort_of = $LIEGE$
+						}
+						is_head_of_the_harem_trigger = {
+							LIEGE = $LIEGE$
+						}
+
+					}
+					add = 15
 				}
 			}
 		}
@@ -1366,7 +1404,7 @@ scripted_effect mild_close_relations_torture_opinion_effect = {
 					type = event_generic_bad
 					title = punished_relative_t
 					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
+					left_icon = scope:authority
 					custom_tooltip = punished_consort_severe_desc
 					add_opinion = {
 						target = $EXECUTIONER$
@@ -1431,7 +1469,7 @@ scripted_effect mild_close_relations_torture_opinion_effect = {
 					type = event_generic_bad
 					title = punished_acquaintance_t
 					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
+					left_icon = scope:authority
 					custom_tooltip = punished_consort_severe_desc
 					add_opinion = {
 						target = $EXECUTIONER$
@@ -1469,7 +1507,7 @@ scripted_effect partner_consorts_opinion_effect = {
 				}
 			}
 			add_opinion = {
-				target = scope:secondary_actor
+				target = scope:authority
 				modifier = cruelty_opinion
 				opinion = -20
 			}
@@ -1480,7 +1518,7 @@ scripted_effect partner_consorts_opinion_effect = {
 			type = event_generic_bad
 			title = punished_consort_t
 			right_icon = scope:secondary_recipient
-			left_icon = scope:secondary_actor
+			left_icon = scope:authority
 			custom_tooltip = punished_consort_severe_desc
 			if = {
 				limit = {
@@ -1505,7 +1543,7 @@ scripted_effect partner_consorts_opinion_effect = {
 					}
 				}
 				add_opinion = {
-					target = scope:secondary_actor
+					target = scope:authority
 					modifier = cruelty_opinion
 					opinion = -20
 				}
@@ -1515,14 +1553,14 @@ scripted_effect partner_consorts_opinion_effect = {
 			limit = {
 				NOR = {
 					this = scope:valid_target_consort
-					this = scope:secondary_actor
+					this = scope:authority
 				}
 			}
 			send_interface_toast = {
 				type = event_generic_bad
 				title = punished_consort_t
 				right_icon = scope:secondary_recipient
-				left_icon = scope:secondary_actor
+				left_icon = scope:authority
 				custom_tooltip = punished_consort_severe_desc
 				if = {
 					limit = {
@@ -1552,7 +1590,7 @@ scripted_effect partner_consorts_opinion_effect = {
 						base = minor_stress_impact_gain
 					}
 					add_opinion = {
-						target = scope:secondary_actor
+						target = scope:authority
 						modifier = cruelty_opinion
 						opinion = -20
 					}
@@ -1672,10 +1710,10 @@ scripted_effect consort_torture_effect = {
 						#Effect
 						death = {
 							death_reason = death_punishment
-							killer = scope:secondary_actor
+							killer = scope:authority
 						}
 						hidden_effect = {
-							close_relations_torture_opinion_effect = { VICTIM = scope:valid_target_consort EXECUTIONER = scope:secondary_actor }
+							close_relations_torture_opinion_effect = { VICTIM = scope:valid_target_consort EXECUTIONER = scope:authority }
 						}
 					}
 				}
@@ -1685,7 +1723,7 @@ scripted_effect consort_torture_effect = {
 			limit = {
 				is_alive = yes
 			}
-			scope:secondary_actor = {
+			scope:authority = {
 				save_scope_as = actor
 				###EFFECT TOOLTIP###
 				torture_interaction_actor_effect = yes
@@ -1764,7 +1802,7 @@ scripted_effect consort_torture_effect = {
 	}
 	
 	hidden_effect = {
-		scope:secondary_actor = {
+		scope:authority = {
 			add_opinion = {
 				target = scope:valid_target_consort
 				modifier = insolent_consort_opinion
@@ -1795,18 +1833,18 @@ scripted_effect sleep_deprieved_starved_effect = {
 			years = 2
 		}
 		add_opinion = {
-			target = scope:secondary_actor
+			target = scope:authority
 			modifier = cruelty_opinion
 			opinion = -60
 		}
-		mild_close_relations_torture_opinion_effect = { VICTIM = scope:valid_target_consort EXECUTIONER = scope:secondary_actor }
+		mild_close_relations_torture_opinion_effect = { VICTIM = scope:valid_target_consort EXECUTIONER = scope:authority }
 	}
 	
 	scope:partner = {
 		partner_consorts_opinion_effect = yes
 	}
 	hidden_effect = {
-		scope:secondary_actor = {
+		scope:authority = {
 			add_opinion = {
 				target = scope:valid_target_consort
 				modifier = insolent_consort_opinion
@@ -1832,7 +1870,7 @@ scripted_effect high_punishment_effect = {
 			years = 2
 		}
 		add_opinion = {
-			target = scope:secondary_actor
+			target = scope:authority
 			modifier = cruelty_opinion
 			opinion = -15
 		}
@@ -1845,28 +1883,28 @@ scripted_effect high_punishment_effect = {
 				type = event_generic_bad
 				title = punished_consort_t
 				right_icon = scope:secondary_recipient
-				left_icon = scope:secondary_actor
+				left_icon = scope:authority
 				custom_tooltip = punished_consort_desc
 			}
 			every_consort = {
 				limit = {
 					NOR = {
 						this = scope:valid_target_consort
-						this = scope:secondary_actor
+						this = scope:authority
 					}
 				}
 				send_interface_toast = {
 					type = event_generic_bad
 					title = punished_consort_t
 					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
+					left_icon = scope:authority
 					custom_tooltip = punished_consort_desc
 				}
 			}
 		}
 	}
 	hidden_effect = {
-		scope:secondary_actor = {
+		scope:authority = {
 			add_opinion = {
 				target = scope:valid_target_consort
 				modifier = insolent_consort_opinion
@@ -1892,7 +1930,7 @@ scripted_effect moderate_punishment = {
 			years = 2
 		}
 		add_opinion = {
-			target = scope:secondary_actor
+			target = scope:authority
 			modifier = cruelty_opinion
 			opinion = -15
 		}
@@ -1905,21 +1943,21 @@ scripted_effect moderate_punishment = {
 				type = event_generic_bad
 				title = punished_consort_t
 				right_icon = scope:secondary_recipient
-				left_icon = scope:secondary_actor
+				left_icon = scope:authority
 				custom_tooltip = punished_consort_desc
 			}
 			every_consort = {
 				limit = {
 					NOR = {
 						this = scope:valid_target_consort
-						this = scope:secondary_actor
+						this = scope:authority
 					}
 				}
 				send_interface_toast = {
 					type = event_generic_bad
 					title = punished_consort_t
 					right_icon = scope:secondary_recipient
-					left_icon = scope:secondary_actor
+					left_icon = scope:authority
 					custom_tooltip = punished_consort_desc
 				}
 				
@@ -1927,7 +1965,7 @@ scripted_effect moderate_punishment = {
 		}				
 	}
 	hidden_effect = {
-		scope:secondary_actor = {
+		scope:authority = {
 			add_opinion = {
 				target = scope:valid_target_consort
 				modifier = insolent_consort_opinion
@@ -1945,7 +1983,7 @@ scripted_effect scolding_punishment = {
 	}
 	scope:valid_target_consort = {
 		add_opinion = {
-			target = scope:secondary_actor
+			target = scope:authority
 			modifier = scolded_me_opinion
 			opinion = -5
 		}
@@ -1955,7 +1993,7 @@ scripted_effect scolding_punishment = {
 		}
 	}
 	hidden_effect = {
-		scope:secondary_actor = {
+		scope:authority = {
 			add_opinion = {
 				target = scope:valid_target_consort
 				modifier = insolent_consort_opinion
@@ -1968,11 +2006,11 @@ scripted_effect scolding_punishment = {
 scripted_effect worsening_relationship_consort_effect = {
 	if = {
 		limit = {
-			can_set_relation_rival_trigger = { CHARACTER = scope:secondary_actor }
+			can_set_relation_rival_trigger = { CHARACTER = scope:authority }
 		}
 		progress_towards_rival_effect = {
 			REASON = consort_rival_reason
-			CHARACTER = scope:secondary_actor
+			CHARACTER = scope:authority
 			OPINION = 0
 		}
 	}
@@ -2061,7 +2099,7 @@ consort_events.0001 = {
 			exists = scope:is_being_set_aside
 		}
 		is_physically_able_adult = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 	}
 	
 	weight_multiplier = {
@@ -2313,7 +2351,7 @@ consort_events.0001 = {
 				save_scope_as = valid_target_consort
 			}
 		}
-		save_scope_as = secondary_actor
+		save_scope_as = authority
 
 		#Mei became favored
 		scope:valid_target_consort = {
@@ -3118,7 +3156,11 @@ consort_events.0001 = {
 				years = 5
 			}
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = scope:partner }
+		begging_punished_consort_effect = { 
+			VICTIM = scope:valid_target_consort
+			LIEGE = scope:partner 
+			AUTHORITY = scope:authority
+		}
 	}
 }
 
@@ -3150,7 +3192,7 @@ consort_events.1002 = {
 			exists = scope:is_being_set_aside
 		}
 		is_physically_able_adult = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 	}
 	weight_multiplier = {
 		base = 1
@@ -3318,7 +3360,7 @@ consort_events.1002 = {
 						months = 5
 					}
 					root = {
-						save_scope_as = secondary_actor
+						save_scope_as = authority
 						trigger_event = consort_events.0002
 					}
 				}
@@ -3356,9 +3398,9 @@ consort_events.0002 = {
 	immediate = {
 		if = {
 			limit = {
-				NOT = { exists = scope:secondary_actor }
+				NOT = { exists = scope:authority }
 			}
-			save_scope_as = secondary_actor
+			save_scope_as = authority
 		}
 		scope:shen = {
 			if = {
@@ -4341,7 +4383,11 @@ consort_events.0003 = {
 				years = 2
 			}
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = scope:partner }
+		begging_punished_consort_effect = { 
+			VICTIM = scope:valid_target_consort
+			LIEGE = scope:partner 
+			AUTHORITY = scope:authority
+		}
 	}
 }
 
@@ -4351,7 +4397,7 @@ consort_events.0003 = {
 
 consort_events.0004 = {
 	type = character_event
-	title = consort_events.0004.t
+	title = consort_events.0002.t
 	desc = consort_events.0004.desc
 	theme = family
 	override_background = {
@@ -4410,7 +4456,7 @@ consort_events.0004 = {
 			exists = scope:is_being_set_aside
 		}
 		is_physically_able_adult = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 	}
 	weight_multiplier = {
 		base = 1
@@ -4600,7 +4646,7 @@ consort_events.0004 = {
 				modifier = hatred_spouse_opinion
 			}
 		}
-		save_scope_as = secondary_actor
+		save_scope_as = authority
 	}
 	
 	#Torture them
@@ -5413,7 +5459,11 @@ consort_events.0004 = {
 				years = 2
 			}
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = scope:partner }
+		begging_punished_consort_effect = { 
+			VICTIM = scope:valid_target_consort
+			LIEGE = scope:partner 
+			AUTHORITY = scope:authority
+		}
 	}
 }
 
@@ -5424,21 +5474,7 @@ consort_events.0004 = {
 consort_events.0005 = {
 	type = character_event
 	title = consort_events.0005.t
-	desc = {
-		desc = consort_events.0005.start.desc
-		first_valid = {
-			triggered_desc = { #GC
-				trigger = {
-					has_court_position = grand_consort_court_position
-				}
-				desc = consort_events.0005.gc.desc
-			}
-			triggered_desc = {
-				desc = consort_events.0005.ps.desc
-			}
-		}
-		desc = consort_events.0005.end.desc
-	}
+	desc = consort_events.0005.des
 	theme = family
 	override_background = {
 		reference = throne_room
@@ -5524,7 +5560,7 @@ consort_events.0005 = {
 			}
 		}
 		is_physically_able_adult = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 	}
 	
 	weight_multiplier = {
@@ -5719,7 +5755,7 @@ consort_events.0005 = {
 				every_consort = {
 					limit = {
 						AND = {
-							accepts_harems = yes
+							hp_accepts_harems = yes
 							NOR = {
 								this = root
 								this = scope:valid_target_consort
@@ -5738,7 +5774,7 @@ consort_events.0005 = {
 				}
 			}
 		}
-		save_scope_as = secondary_actor
+		save_scope_as = authority
 	}
 	
 	#Torture them
@@ -6571,7 +6607,11 @@ consort_events.0005 = {
 				years = 3
 			}
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = scope:partner }
+		begging_punished_consort_effect = { 
+			VICTIM = scope:valid_target_consort
+			LIEGE = scope:partner 
+			AUTHORITY = scope:authority
+		}
 	}
 }
 
@@ -6658,7 +6698,7 @@ consort_events.0006 = {
 			add_diplomacy_skill = 1
 			save_scope_as = valid_target_consort
 		}
-		save_scope_as = secondary_actor
+		save_scope_as = authority
 	}
 	
 	#Torture them
@@ -7463,7 +7503,11 @@ consort_events.0006 = {
 		scope:yanwan = {
 			add_character_flag = flag_courted_favor
 		}
-		begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = scope:partner }
+		begging_punished_consort_effect = { 
+			VICTIM = scope:valid_target_consort
+			LIEGE = scope:partner 
+			AUTHORITY = scope:authority
+		}
 	}
 }
 
@@ -7639,20 +7683,6 @@ consort_events.0007 = {
 				}
 
 				modifier = {
-					exists = root.primary_spouse
-					this = root.primary_spouse
-					add = 10
-				}
-				modifier = {
-					has_court_position = grand_consort_court_position
-					add = 5
-				}
-				modifier = {
-					is_spouse_of = root
-					add = 10
-				}
-
-				modifier = {
 					is_consort_of = root
 					add = 10
 				}
@@ -7685,7 +7715,7 @@ consort_events.0007 = {
 				}
 			}
 			save_scope_as = harem_authority
-			save_scope_as = secondary_actor
+			save_scope_as = authority
 		}
 		if = {
 			limit = {
@@ -7699,7 +7729,7 @@ consort_events.0007 = {
 					base = 60
 					opinion_modifier = { #Opinion
 						WHO = scope:harem_authority
-						opinion_target = prev
+						opinion_target = this
 						min = -40
 						max = 40
 						multiplier = -0.40
@@ -7733,17 +7763,30 @@ consort_events.0007 = {
 						add = 10
 						is_concubine = yes
 					}
+					modifier = { #Spouses are harder to punish
+						add = -10
+						is_spouse_of = scope:partner
+					}
 
 					modifier = { #Authorities will want to bully favored subordinates
 						add = 20
+						scope:harem_authority = {
+							harem_politics_favored_consort_trigger = yes
+						}
 						has_character_modifier = beloved_consort_modifier
 					}
 					modifier = { #Authorities will want to bully favored subordinates
 						add = 15
+						scope:harem_authority = {
+							harem_politics_favored_consort_trigger = yes
+						}
 						has_character_modifier = favor_boost_modifier
 					}
 					modifier = { #Authorities will want to bully favored subordinates
 						add = 10
+						scope:harem_authority = {
+							harem_politics_favored_consort_trigger = yes
+						}
 						has_character_modifier = favored_consort_modifier
 					}
 
@@ -7764,7 +7807,11 @@ consort_events.0007 = {
 						add = 10
 						has_trait = callous
 					}
-
+					modifier = { # The ruling House
+						add = -15
+						exists = scope:partner.house
+						house ?= scope:partner.house
+					}
 					modifier = { #Lowborn consorts are more powerless
 						add = 10
 						is_lowborn = yes
@@ -7797,6 +7844,18 @@ consort_events.0007 = {
 				}
 				random_list = {
 					50 = { #The victim is punished severely
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
@@ -8049,6 +8108,18 @@ consort_events.0007 = {
 						}
 					}
 					50 = { #Very high punishment
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
@@ -8290,6 +8361,18 @@ consort_events.0007 = {
 						}
 					}
 					50 = { #High punishment
+						trigger = {
+							trigger_if = {
+								limit = {
+									religion = religion:islam_religion
+								}
+								scope:valid_target_consort = {
+									NOT = {
+										is_spouse_of = root
+									}
+								}
+							}
+						}
 						opinion_modifier = { #Opinion
 							WHO = scope:harem_authority
 							opinion_target = scope:valid_target_consort
@@ -9039,7 +9122,11 @@ consort_events.0007 = {
 						}
 					}
 				}
-				begging_punished_consort_effect = { BEGGAR = scope:valid_target_consort AUTHORITY = root }
+				begging_punished_consort_effect = { 
+					VICTIM = scope:valid_target_consort
+					LIEGE = scope:partner 
+					AUTHORITY = scope:harem_authority
+				}
 			}
 		}
 	}
@@ -9055,8 +9142,10 @@ consort_events.0008 = {
 			save_temporary_scope_as = temporary_consort_friend
 		}
 		any_consort = {
-			NOT = {
+			NOR = {
 				this = scope:temporary_consort_friend
+				has_court_position = chief_eunuch_court_position
+				has_court_position = lady_in_waiting_court_position
 			}
 			is_valid_generic_consort_trigger = yes
 		}
@@ -9081,7 +9170,7 @@ consort_events.0008 = {
 			}
 		}
 		modifier = {
-			add = 0.1
+			add = 0.15
 			any_consort = {
 				count >= 8
 			}
@@ -9091,6 +9180,16 @@ consort_events.0008 = {
 			any_consort = {
 				count >= 12
 			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 17
+			}
+		}
+		modifier = {
+			add = 0.1
+			religion = religion:islam_religion
 		}
 		modifier = {
 			add = 0.15
@@ -9179,8 +9278,10 @@ consort_events.0008 = {
 			}
 			every_consort = {
 				limit = {
-					NOT = {
+					NOR = {
 						this = scope:consort_friend
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
 					}
 					is_valid_generic_consort_trigger = yes
 				}
@@ -9190,19 +9291,15 @@ consort_events.0008 = {
 			random_in_list = {
 				list = consort_friend_list
 				weight = {
-					base = 100
+					base = 50
 					opinion_modifier = { #Opinion
 						opinion_target = scope:consort_friend
-						min = -50
-						max = 50
-						multiplier = 1
+						multiplier = 0.5
 					}
 
 					compatibility_modifier = { #Trait compatibility
 						compatibility_target = scope:consort_friend
-						min = -50
-						max = 50
-						multiplier = 1
+						multiplier = 0.5
 					}
 
 					modifier = { #Unfavored consorts united
@@ -9281,11 +9378,26 @@ consort_events.0008 = {
 						has_trait = paranoid
 						add = -10
 					}
-					modifier = { #Traits
+					modifier = {
 						OR = {
 							has_relation_rival = scope:consort_friend
 							has_relation_nemesis = scope:consort_friend
 						}
+						add = 15
+					}
+					modifier = {
+						is_close_or_extended_family_of = root
+						add = -30
+					}
+					modifier = {
+						scope:consort_friend = {
+							OR = {
+								is_close_or_extended_family_of = root
+								has_court_position = chief_eunuch_court_position
+								has_court_position = lady_in_waiting_court_position
+							}
+						}
+						has_trait = ambitious
 						add = 15
 					}
 				}
@@ -9498,8 +9610,10 @@ consort_events.0009 = {
 			save_temporary_scope_as = temporary_consort_rival
 		}
 		any_consort = {
-			NOT = {
+			NOR = {
 				this = scope:temporary_consort_rival
+				has_court_position = chief_eunuch_court_position
+				has_court_position = lady_in_waiting_court_position
 			}
 			is_valid_generic_consort_trigger = yes
 		}
@@ -9524,7 +9638,7 @@ consort_events.0009 = {
 			}
 		}
 		modifier = {
-			add = 0.1
+			add = 0.15
 			any_consort = {
 				count >= 8
 			}
@@ -9534,6 +9648,16 @@ consort_events.0009 = {
 			any_consort = {
 				count >= 12
 			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 17
+			}
+		}
+		modifier = {
+			add = 0.1
+			religion = religion:islam_religion
 		}
 		modifier = {
 			add = 0.15
@@ -9613,6 +9737,13 @@ consort_events.0009 = {
 					harem_politics_evil_consort_trigger = yes
 					add = 20
 				}
+				modifier = {
+					OR = {
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+					}
+					add = -20
+				}
 			}
 			save_scope_as = consort_rival
 		}
@@ -9622,7 +9753,11 @@ consort_events.0009 = {
 			}
 			every_consort = {
 				limit = {
-					NOT = { this = scope:consort_rival }
+					NOR = {
+						this = scope:consort_rival
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+					}
 					is_valid_generic_consort_trigger = yes
 				}
 				add_to_list = consort_rival_list
@@ -9634,16 +9769,12 @@ consort_events.0009 = {
 					base = 100
 					opinion_modifier = { #Opinion
 						opinion_target = scope:consort_rival
-						min = -50
-						max = 50
-						multiplier = -1
+						multiplier = -0.5
 					}
 
 					compatibility_modifier = { #Trait compatibility
 						compatibility_target = scope:consort_rival
-						min = -50
-						max = 50
-						multiplier = -1
+						multiplier = -0.5
 					}
 
 					modifier = { #Favored consorts don't like each other
@@ -9722,8 +9853,16 @@ consort_events.0009 = {
 						add = -10
 					}
 					modifier = { #Traits
-						has_relation_best_friend = scope:valid_target_consort
+						has_relation_best_friend = scope:consort_rival
 						add = -20
+					}
+
+					modifier = {
+						scope:consort_rival = {
+							is_close_or_extended_family_of = root	
+						}
+						is_close_or_extended_family_of = root
+						add = -10
 					}
 				}
 				save_scope_as = valid_target_consort
@@ -10699,6 +10838,38 @@ consort_events.0011 = {
 ####################
 ##Choosing an ally##
 ####################
+scripted_trigger potential_ally_trigger = {
+	is_physically_able_adult = yes
+	is_courtier_of = scope:temporary_partner
+	is_demoted_consort_trigger = no
+	NOT = { 
+		this = root
+	}
+	can_set_relation_friend_trigger = { CHARACTER = root }
+	OR = {
+		AND = {
+			exists = $PARTNER$.primary_spouse
+			this = $PARTNER$.primary_spouse
+		}
+		has_court_position = grand_consort_court_position
+		has_court_position = chief_eunuch_court_position
+		has_court_position = lady_in_waiting_court_position
+		AND = {
+			harem_politics_favored_consort_trigger = yes
+			is_consort_of = $PARTNER$
+		}
+		is_parent_of = $PARTNER$
+		trigger_if = {
+			limit = {
+				$PARTNER$.religion = religion:islam_religion
+			}
+			is_valid_harem_member_trigger = {
+				LIEGE = $PARTNER$
+			}
+			NOT = { is_consort_of = root }
+		}
+	}
+}
 consort_events.0012 = {
 	type = character_event
 	title = consort_events.0012.t
@@ -10714,25 +10885,12 @@ consort_events.0012 = {
 		animation = flirtation
 	}
 	lower_left_portrait = {
-		trigger = {
-			exists = scope:first_target
-			exists = scope:second_target
-		}
-		character = scope:first_target
+		character = scope:third_target
 	}
 	lower_center_portrait = {
-		trigger = {
-			NOT = {
-				exists = scope:second_target
-			}
-		}
 		character = scope:first_target
 	}
 	lower_right_portrait = {
-		trigger = {
-			exists = scope:first_target
-			exists = scope:second_target
-		}
 		character = scope:second_target
 	}
 	
@@ -10740,46 +10898,11 @@ consort_events.0012 = {
 		any_consort = {
 			is_physically_able_adult = yes
 			save_temporary_scope_as = temporary_partner
-			OR = {
-				AND = {
-					exists = primary_spouse
-					primary_spouse = {
-						is_physically_able_adult = yes
-						is_courtier_of = scope:temporary_partner
-						NOT = { 
-							this = root
-						}
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
+			any_courtier = {
+				potential_ally_trigger = {
+					PARTNER = scope:temporary_partner
 				}
-				any_consort = {
-					is_physically_able_adult = yes
-					has_court_position = grand_consort_court_position
-					is_courtier_of = scope:temporary_partner
-					NOT = { 
-						this = root
-					}
-					is_demoted_consort_trigger = no
-					can_set_relation_friend_trigger = { CHARACTER = root }
-				}
-				any_consort = {
-					is_physically_able_adult = yes
-					is_courtier_of = scope:temporary_partner
-					harem_politics_favored_consort_trigger = yes
-					NOT = { 
-						this = root
-					}
-					is_demoted_consort_trigger = no
-					can_set_relation_friend_trigger = { CHARACTER = root }
-				}
-				any_parent = {
-					is_physically_able_adult = yes
-					is_courtier_of = scope:temporary_partner
-					NOT = { 
-						this = root
-					}
-					can_set_relation_friend_trigger = { CHARACTER = root }
-				}
+				count >= 3
 			}
 			any_consort = {
 				is_physically_able_adult = yes
@@ -10967,114 +11090,77 @@ consort_events.0012 = {
 			save_scope_as = partner
 		}
 		scope:partner = {
-			if = {
+			every_courtier = {
 				limit = {
-					exists = primary_spouse
-					primary_spouse = {
-						is_physically_able_adult = yes
-						is_courtier_of = scope:partner
-						NOT = { 
-							this = root
-						}
-						can_set_relation_friend_trigger = { CHARACTER = root }
+					potential_ally_trigger = {
+						PARTNER = scope:partner
 					}
 				}
-				primary_spouse = {
-					save_scope_as = first_target
-				}
+				add_to_list = potential_targets_list
 			}
-			if = {
-				limit = {
-					any_consort = {
-						is_physically_able_adult = yes
-						has_court_position = grand_consort_court_position
-						is_courtier_of = scope:partner
-						NOT = { 
-							this = root
+			hidden_effect = {
+				while = {
+					count = 3
+					random_in_list = {
+						list = potential_targets_list
+						weight = {
+							base = 1
+							modifier = {
+								is_valid_harem_member_trigger = {
+									LIEGE = scope:partner
+								}
+								add = 100
+							}
+							modifier = {
+								is_parent_of = scope:partner
+								add = 80
+							}
+							modifier = {
+								exists = scope:partner.primary_spouse
+								this = scope:partner.primary_spouse
+								add = 50
+							}
+							modifier = {
+								is_close_or_extended_family_of = scope:partner
+								add = 30
+							}
+							modifier = {
+								has_court_position = grand_consort_court_position
+								add = 20
+							}
+							modifier = {
+								has_court_position = chief_eunuch_court_position
+								add = 30
+							}
+							modifier = {
+								has_court_position = lady_in_waiting_court_position
+								add = 30
+							}
+							modifier = {
+								harem_politics_favored_consort_trigger = yes
+								add = 20
+							}
 						}
-						is_demoted_consort_trigger = no
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
-				}
-				random_consort = {
-					limit = {
-						has_court_position = grand_consort_court_position
-					}
-					if = {
-						limit = {
-							exists = scope:first_target
+						if = {
+							limit = {
+								NOT = {
+									exists = scope:first_target
+								}
+							}
+							save_scope_as = first_target
 						}
-						save_scope_as = second_target
-					}
-					else = {
-						save_scope_as = first_target
-					}
-				}
-			}
-			else_if = {
-				limit = {
-					any_consort = {
-						is_physically_able_adult = yes
-						is_courtier_of = scope:partner
-						harem_politics_favored_consort_trigger = yes
-						NOT = { 
-							this = root
+						else_if = {
+							limit = {
+								NOT = {
+									exists = scope:second_target
+								}
+							}
+							save_scope_as = second_target
 						}
-						is_demoted_consort_trigger = no
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
-				}
-				random_consort = {
-					limit = {
-						is_physically_able_adult = yes
-						exists = court_owner
-						is_courtier_of = scope:partner
-						harem_politics_favored_consort_trigger = yes
-						NOT = { 
-							this = root
+						else = {
+							save_scope_as = third_target
 						}
-						is_demoted_consort_trigger = no
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
-					if = {
-						limit = {
-							exists = scope:first_target
-						}
-						save_scope_as = second_target
-					}
-					else = {
-						save_scope_as = first_target
-					}
-				}
-			}
-			else_if = {
-				limit = {
-					any_parent = {
-						is_physically_able_adult = yes
-						is_courtier_of = scope:partner
-						NOT = { 
-							this = root
-						}
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
-				}
-				random_parent = {
-					limit = {
-						is_physically_able_adult = yes
-						is_courtier_of = scope:partner
-						NOT = { 
-							this = root
-						}
-						can_set_relation_friend_trigger = { CHARACTER = root }
-					}
-					if = {
-						limit = {
-							exists = scope:first_target
-						}
-						save_scope_as = second_target
-					}
-					else = {
-						save_scope_as = first_target
+						remove_from_list = potential_targets_list
 					}
 				}
 			}
@@ -11227,40 +11313,7 @@ consort_events.0012 = {
 	
 	#Sway first_target
 	option = {
-		name = {
-			trigger = { 
-				scope:first_target = { 
-					exists = scope:partner.primary_spouse 
-					this = scope:partner.primary_spouse 
-				} 
-			} 
-			text = consort_events.0012.ps.b
-		}
-		name = {
-			trigger = { scope:first_target = { has_court_position = grand_consort_court_position } } 
-			text = consort_events.0012.gc.b
-		}
-		name = {
-			trigger = { 
-				scope:first_target = { 
-					has_character_modifier = favored_consort_modifier
-					NOT = {
-						has_court_position = grand_consort_court_position
-					} 
-				} 
-			} 
-			text = consort_events.0012.favored.b
-		}
-		name = {
-			trigger = { 
-				scope:first_target = { 
-					any_child = {
-						this = scope:partner
-					}
-				} 
-			} 
-			text = consort_events.0012.parent.b
-		}
+		name = consort_events.0012.b
 		trigger = { 
 			NOR = {
 				has_relation_rival = scope:first_target
@@ -11324,8 +11377,7 @@ consort_events.0012 = {
 		ai_chance = {
 			base = 50
 			ai_value_modifier = {
-				ai_greed = -0.10
-				ai_honor = 0.25
+				ai_sociability = 0.5
 				ai_energy = 0.15
 			}
 			modifier = { #Evil consort
@@ -11341,26 +11393,16 @@ consort_events.0012 = {
 				has_trait = chaste
 			}
 			modifier = { #Traits
-				add = -50
+				add = -25
 				has_trait = shy
 			}
 			modifier = { #Diplomatic Consorts
 				add = 15
 				has_character_modifier = diplomatic_consort_modifier
 			}
-			modifier = { #Opinion
-				add = 10
-				opinion = {
-					target = scope:first_target
-					value >= 10
-				}
-			}
-			modifier = { #Opinion
-				add = 10
-				opinion = {
-					target = scope:first_target
-					value >= 30
-				}
+			opinion_modifier = {
+				opinion_target = scope:first_target
+				multiplier = 0.15
 			}
 			
 			modifier = { #Diplomacy
@@ -11376,17 +11418,50 @@ consort_events.0012 = {
 				diplomacy >= high_skill_rating
 			}
 
-			modifier = { #PS
-				add = 10
-				exists = scope:partner.primary_spouse
+			modifier = { # The HH
+				add = 20
 				scope:first_target = {
+					OR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
+				}
+			}
+			modifier = { # The PS
+				add = 15
+				scope:first_target = {
+					exists = scope:partner.primary_spouse
 					this = scope:partner.primary_spouse
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
+				}
+			}
+			modifier = { # A relative
+				add = 10
+				scope:first_target = {
+					is_close_or_extended_family_of = scope:partner
+					NOR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
 				}
 			}
 			modifier = { #GC
 				add = 5
 				scope:first_target = {
 					has_court_position = grand_consort_court_position
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
 				}
 			}
 			modifier = { #Favor
@@ -11399,38 +11474,31 @@ consort_events.0012 = {
 				add = 5
 				scope:first_target = {
 					is_consort_of = scope:partner
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
 				}
+			}
+			modifier = {
+				scope:first_target = {
+					has_court_position = chief_eunuch_court_position
+				}
+				add = 10
+			}
+			modifier = {
+				scope:first_target = {
+					has_court_position = lady_in_waiting_court_position
+				}
+				add = 10
 			}
 		}
 	}
 	
 	#Sway second_target
 	option = {
-		name = {
-			trigger = { scope:first_target = { has_court_position = grand_consort_court_position } } 
-			text = consort_events.0012.gc.b
-		}
-		name = {
-			trigger = { 
-				scope:first_target = { 
-					has_character_modifier = favored_consort_modifier
-					NOT = {
-						has_court_position = grand_consort_court_position
-					} 
-				} 
-			} 
-			text = consort_events.0012.favored.b
-		}
-		name = {
-			trigger = { 
-				scope:first_target = { 
-					any_child = {
-						this = scope:partner
-					}
-				} 
-			} 
-			text = consort_events.0012.parent.b
-		}
+		name = consort_events.0012.c
 		trigger = { 
 			exists = scope:second_target
 			NOR = {
@@ -11495,8 +11563,7 @@ consort_events.0012 = {
 		ai_chance = {
 			base = 50
 			ai_value_modifier = {
-				ai_greed = -0.10
-				ai_honor = 0.25
+				ai_sociability = 0.5
 				ai_energy = 0.15
 			}
 			modifier = { #Evil consort
@@ -11512,26 +11579,16 @@ consort_events.0012 = {
 				has_trait = chaste
 			}
 			modifier = { #Traits
-				add = -50
+				add = -25
 				has_trait = shy
 			}
 			modifier = { #Diplomatic Consorts
 				add = 15
 				has_character_modifier = diplomatic_consort_modifier
 			}
-			modifier = { #Opinion
-				add = 10
-				opinion = {
-					target = scope:second_target
-					value >= 10
-				}
-			}
-			modifier = { #Opinion
-				add = 10
-				opinion = {
-					target = scope:second_target
-					value >= 30
-				}
+			opinion_modifier = {
+				opinion_target = scope:second_target
+				multiplier = 0.15
 			}
 			
 			modifier = { #Diplomacy
@@ -11547,10 +11604,50 @@ consort_events.0012 = {
 				diplomacy >= high_skill_rating
 			}
 
+			modifier = { # The HH
+				add = 20
+				scope:second_target = {
+					OR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
+				}
+			}
+			modifier = { # The PS
+				add = 15
+				scope:second_target = {
+					exists = scope:partner.primary_spouse
+					this = scope:partner.primary_spouse
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
+				}
+			}
+			modifier = { # A relative
+				add = 10
+				scope:second_target = {
+					is_close_or_extended_family_of = scope:partner
+					NOR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
+				}
+			}
 			modifier = { #GC
 				add = 5
 				scope:second_target = {
 					has_court_position = grand_consort_court_position
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
 				}
 			}
 			modifier = { #Favor
@@ -11563,7 +11660,210 @@ consort_events.0012 = {
 				add = 5
 				scope:second_target = {
 					is_consort_of = scope:partner
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
 				}
+			}
+			modifier = {
+				scope:second_target = {
+					has_court_position = chief_eunuch_court_position
+				}
+				add = 10
+			}
+			modifier = {
+				scope:second_target = {
+					has_court_position = lady_in_waiting_court_position
+				}
+				add = 10
+			}
+		}
+	}
+
+	#Sway third_target
+	option = {
+		name = consort_events.0012.d
+		trigger = { 
+			exists = scope:third_target
+			NOR = {
+				has_relation_rival = scope:third_target
+				has_relation_nemesis = scope:third_target
+			}
+			OR = {
+				can_start_scheme = {
+					type = befriend
+					target_character = scope:third_target
+				}
+				can_start_scheme = {
+					type = sway
+					target_character = scope:third_target
+				}
+			}
+		}
+		if = {
+			limit = {
+				AND = {
+					NOT = {
+						any_scheme = {
+							scheme_type = befriend
+							scheme_target_character = scope:third_target
+						}
+					}
+					can_start_scheme = {
+						type = befriend
+						target_character = scope:third_target
+					}
+				}
+			}
+			start_scheme = {
+				type = befriend
+				target_character = scope:third_target
+			}
+		}
+		else_if = {
+			limit = {
+				AND = {
+					NOT = {
+						any_scheme = {
+							scheme_type = sway
+							scheme_target_character = scope:third_target
+						}
+					}
+					can_start_scheme = {
+						type = sway
+						target_character = scope:third_target
+					}
+				}
+			}
+			start_scheme = {
+				type = sway
+				target_character = scope:third_target
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_sociability = 0.5
+				ai_energy = 0.15
+			}
+			modifier = { #Evil consort
+				harem_politics_evil_consort_trigger = no
+				add = 30
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = gregarious
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = chaste
+			}
+			modifier = { #Traits
+				add = -25
+				has_trait = shy
+			}
+			modifier = { #Diplomatic Consorts
+				add = 15
+				has_character_modifier = diplomatic_consort_modifier
+			}
+			opinion_modifier = {
+				opinion_target = scope:third_target
+				multiplier = 0.15
+			}
+			
+			modifier = { #Diplomacy
+				add = 10
+				diplomacy >= medium_skill_rating
+			}
+			modifier = { #Diplomacy
+				add = 5
+				diplomacy >= decent_skill_rating
+			}
+			modifier = { #Diplomacy
+				add = 5
+				diplomacy >= high_skill_rating
+			}
+
+			modifier = { # The HH
+				add = 20
+				scope:third_target = {
+					OR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
+				}
+			}
+			modifier = { # The PS
+				add = 15
+				scope:third_target = {
+					exists = scope:partner.primary_spouse
+					this = scope:partner.primary_spouse
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
+				}
+			}
+			modifier = { # A relative
+				add = 10
+				scope:third_target = {
+					is_close_or_extended_family_of = scope:partner
+					NOR = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+						is_parent_of = scope:partner
+					}
+				}
+			}
+			modifier = { #GC
+				add = 5
+				scope:third_target = {
+					has_court_position = grand_consort_court_position
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
+				}
+			}
+			modifier = { #Favor
+				add = 5
+				scope:third_target = {
+					harem_politics_favored_consort_trigger = yes
+				}
+			}
+			modifier = { #Favor
+				add = 5
+				scope:third_target = {
+					is_consort_of = scope:partner
+					NOT = {
+						is_head_of_the_harem_trigger = {
+							LIEGE = scope:partner
+						}
+					}
+				}
+			}
+			modifier = {
+				scope:third_target = {
+					has_court_position = chief_eunuch_court_position
+				}
+				add = 10
+			}
+			modifier = {
+				scope:third_target = {
+					has_court_position = lady_in_waiting_court_position
+				}
+				add = 10
 			}
 		}
 	}
@@ -11575,8 +11875,8 @@ consort_events.0012 = {
 		ai_chance = {
 			base = 25
 			ai_value_modifier = {
-				ai_greed = -0.10
-				ai_honor = 0.25
+				ai_sociability = 0.5
+				ai_greed = -0.20
 				ai_energy = -0.15
 			}
 			modifier = { #Traits
@@ -11707,8 +12007,16 @@ consort_events.0013 = {
 	weight_multiplier = {
 		base = 1
 		modifier = {
-			add = 0.1
+			add = 0.15
 			has_character_flag = flag_yanwan
+		}
+		modifier = {
+			add = 0.1
+			has_character_flag = flag_mei
+		}
+		modifier = {
+			add = 0.05
+			has_character_flag = flag_hailan
 		}
 		modifier = {
 			add = 0.1
@@ -11908,6 +12216,14 @@ consort_events.0013 = {
 			modifier = { #Consort Ling
 				has_character_flag = flag_yanwan
 				add = 15
+			}
+			modifier = {
+				add = 5
+				has_character_flag = flag_hailan
+			}
+			modifier = {
+				add = 10
+				has_character_flag = flag_mei
 			}
 			opinion_modifier = {
 				opinion_target = scope:player_primary_heir
@@ -12117,7 +12433,7 @@ consort_events.0014 = {
 		is_demoted_consort_trigger = no
 		harem_politics_unfavored_consort_trigger = no
 		harem_politics_punished_consort_trigger = no
-		accepts_harems = yes
+		hp_accepts_harems = yes
 
 		OR = {
 			NOT = {
@@ -12750,7 +13066,7 @@ consort_events.0017 = {
 	
 	trigger = {
 		harem_politics_evil_consort_trigger = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 
 		is_physically_able_adult = yes
 
@@ -12798,6 +13114,8 @@ consort_events.0017 = {
 			has_trait = deceitful
 
 			has_character_flag = flag_yanwan
+			has_character_flag = flag_hailan
+			has_character_flag = flag_mei
 		}
 		OR = {
 			AND = {
@@ -12833,6 +13151,14 @@ consort_events.0017 = {
 		modifier = {
 			add = 0.2
 			has_character_flag = flag_yanwan
+		}
+		modifier = {
+			add = 0.05
+			has_character_flag = flag_hailan
+		}
+		modifier = {
+			add = 0.1
+			has_character_flag = flag_mei
 		}
 		modifier = {
 			add = 0.1
@@ -13164,6 +13490,14 @@ consort_events.0017 = {
 				has_character_flag = flag_yanwan
 				add = 15
 			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_mei
+				add = 10
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_hailan
+				add = 5
+			}
 
 			opinion_modifier = {
 				opinion_target = scope:consort_target
@@ -13460,7 +13794,7 @@ consort_events.0019 = {
 		}
 		harem_politics_evil_consort_trigger = yes
 		is_physically_able_adult = yes
-		accepts_harems = yes
+		hp_accepts_harems = yes
 	}
 	
 	weight_multiplier = {
@@ -13468,6 +13802,14 @@ consort_events.0019 = {
 		modifier = {
 			add = 0.15
 			has_character_flag = flag_yanwan
+		}
+		modifier = {
+			add = 0.1
+			has_character_flag = flag_mei
+		}
+		modifier = {
+			add = 0.05
+			has_character_flag = flag_hailan
 		}
 		modifier = {
 			add = 0.1
@@ -13907,6 +14249,14 @@ consort_events.0019 = {
 				has_character_flag = flag_yanwan
 				add = 15
 			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = 10
+			}
+			modifier = { #Hailan
+				has_character_flag = flag_hailan
+				add = 5
+			}
 			
 			modifier = { #Rank
 				exists = scope:partner.primary_spouse
@@ -14295,6 +14645,14 @@ consort_events.0019 = {
 				has_character_flag = flag_yanwan
 				add = 15
 			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = 10
+			}
+			modifier = { #Hailan
+				has_character_flag = flag_hailan
+				add = 5
+			}
 			
 			modifier = { #Rank
 				exists = scope:partner.primary_spouse
@@ -14482,6 +14840,14 @@ consort_events.0019 = {
 			modifier = { #Consort Ling
 				has_character_flag = flag_yanwan
 				add = -15
+			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = -10
+			}
+			modifier = { #Hailan
+				has_character_flag = flag_hailan
+				add = -5
 			}
 			
 			modifier = { #Intrigue
@@ -15175,6 +15541,10 @@ consort_events.0020 = {
 				has_character_flag = flag_yanwan
 				add = 15
 			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = 10
+			}
 			modifier = { #You're a powerful consort
 				add = 10
 				OR = {
@@ -15783,6 +16153,10 @@ consort_events.0020 = {
 				has_character_flag = flag_yanwan
 				add = 15
 			}
+			modifier = { #Hailan
+				has_character_flag = flag_hailan
+				add = 5
+			}
 			modifier = { #You're a powerful consort
 				add = 10
 				OR = {
@@ -15955,6 +16329,14 @@ consort_events.0020 = {
 			modifier = { #Consort Ling
 				has_character_flag = flag_yanwan
 				add = -15
+			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = -10
+			}
+			modifier = { #Hailan
+				has_character_flag = flag_hailan
+				add = -5
 			}
 			modifier = { #You're a weak consort
 				add = 20
@@ -16212,9 +16594,9 @@ consort_events.0026 = {
 	}
 }
 
-###########################
-##More miscarriage events##
-###########################
+########################################
+## A consort might cause a miscarriage##
+########################################
 
 consort_events.0027 = {
 
@@ -16228,8 +16610,7 @@ consort_events.0027 = {
 			is_courtier_of = root
 			
 			pregnancy_month <= 7
-			exists = pregnancy_assumed_father
-			pregnancy_assumed_father = {
+			pregnancy_assumed_father ?= {
 				this = root
 			}
 			
@@ -16259,6 +16640,18 @@ consort_events.0027 = {
 			add = 0.3
 			any_consort = {
 				has_character_flag = flag_yanwan
+			}
+		}
+		modifier = { #Mei
+			add = 0.15
+			any_consort = {
+				has_character_flag = flag_mei
+			}
+		}
+		modifier = { #Hailan
+			add = 0.05
+			any_consort = {
+				has_character_flag = flag_hailan
 			}
 		}
 		modifier = { #Many consorts
@@ -16696,7 +17089,7 @@ consort_events.0028 = {
 		any_consort = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 			age >= 20
-			accepts_harems = yes
+			hp_accepts_harems = yes
 			diplomacy >= 14
 			learning >= 9
 			OR = { #Proper education
@@ -16738,7 +17131,7 @@ consort_events.0028 = {
 			limit = {
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 				age >= 20
-				accepts_harems = yes
+				hp_accepts_harems = yes
 				diplomacy >= 15
 				learning >= 9
 				OR = { #Proper education
@@ -16929,7 +17322,7 @@ consort_events.0029 = {
 		any_consort = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 			age >= 20
-			accepts_harems = yes
+			hp_accepts_harems = yes
 			intrigue >= 13
 			OR = { #Proper education
 				has_trait = education_intrigue_1
@@ -17022,7 +17415,7 @@ consort_events.0029 = {
 			limit = {
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 				age >= 20
-				accepts_harems = yes
+				hp_accepts_harems = yes
 				intrigue >= 13
 				OR = { #Proper education
 					has_trait = education_intrigue_1
@@ -17129,6 +17522,15 @@ consort_events.0029 = {
 				modifier = { #Scheming consorts
 					add = 10
 					has_character_modifier = scheming_consort_modifier
+				}
+
+				modifier = { #Hailan is less likely to become a seducer
+					add = -10
+					has_character_flag = flag_hailan
+				}
+				modifier = { #Yanwan is more likely to become a seducer
+					add = 5
+					has_character_flag = flag_yanwan
 				}
 
 				modifier = { #Age
@@ -18580,7 +18982,7 @@ consort_events.0035 = {
 	hidden = yes
 	
 	trigger = {
-		government_allows = administrative
+		government_has_flag = government_has_influence
 		is_landed = yes
 		is_independent_ruler = yes
 		highest_held_title_tier >= tier_kingdom
@@ -18605,6 +19007,14 @@ consort_events.0035 = {
 	
 	weight_multiplier = {
 		base = 1
+		modifier = {
+			add = 0.15
+			has_trait = trusting
+		}
+		modifier = {
+			add = -0.4
+			has_trait = paranoid
+		}
 		modifier = {
 			add = 0.1
 			any_consort = {
@@ -18928,6 +19338,326 @@ consort_events.0035 = {
 							value = 0
 							add = scope:stolen_influence
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#############################
+##A consort murders an heir##
+#############################
+scripted_trigger is_valid_scheming_consort = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_imprisoned = no
+
+	is_physically_able_ai_adult = yes
+
+	harem_politics_evil_consort_trigger = yes
+
+	intrigue >= medium_skill_rating
+
+	NOR = {
+		is_parent_of = $CHILD$
+
+		has_relation_friend = $CHILD$
+		has_relation_best_friend = $CHILD$
+		has_relation_lover = $CHILD$
+		has_relation_soulmate = $CHILD$
+
+		has_relation_rival = root
+		has_relation_nemesis = root
+
+		has_opinion_modifier = {
+			target = root
+			modifier = forced_me_concubine_marriage_opinion
+		}
+	}
+
+	save_temporary_scope_as = temporary_consort
+
+	OR = {
+		AND = { # The child rivals their child
+			$CHILD$ = {
+				is_player_heir_of = root
+			}
+			root = {
+				NOT = {
+					has_realm_law = confederate_partition_succession_law
+				}
+			}
+			any_child = {
+				root.primary_title = { # They must be close to succession
+					place_in_line_of_succession = {
+						target = prev
+						value <= 4
+					}
+				}
+				age >= 3
+			}
+		}
+		AND = { # The child is a rival's child
+			$CHILD$ = {
+				any_parent = {
+					is_consort_of = root
+					OR = {
+						has_relation_rival = scope:temporary_consort
+						has_relation_nemesis = scope:temporary_consort
+					}
+				}
+			}
+		}
+	}
+
+	can_start_scheme = {
+		type = murder
+		target_character = $CHILD$
+	}
+}
+
+consort_events.0036 = {
+	hidden = yes
+	
+	trigger = {
+		any_child = {
+			OR = {
+				trigger_if = {	
+					limit = {
+						root = {
+							NOT = { has_realm_law = confederate_partition_succession_law }
+						}
+					}
+					is_player_heir_of = root
+				}
+				any_parent = {
+					is_consort_of = root
+					OR = {
+						any_relation = {
+							type = rival
+							is_consort_of = root
+							is_courtier_of = root
+						}
+						any_relation = {
+							type = nemesis
+							is_consort_of = root
+							is_courtier_of = root
+						}
+					}
+				}
+			}
+			save_temporary_scope_as = temporary_child
+		}
+		any_consort = {
+			is_valid_scheming_consort = {
+				CHILD = scope:temporary_child
+			}
+		}
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		is_landed_or_landless_administrative = yes
+		NOT = {
+			has_character_flag = had_scheming_consort_heir_flag
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				count >= 10
+			}
+		}
+		modifier = {
+			add = 0.15
+			any_consort = {
+				has_character_flag = flag_yanwan
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_mei
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				has_character_flag = flag_hailan
+			}
+		}
+		modifier = {
+			add = 0.15
+			highest_held_title_tier >= tier_kingdom
+		}
+		#The GC aptitude
+		#GC - High aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 3
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.15
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 4
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.3
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 5
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.3
+		}
+		#GC - Low aptitude
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position <= 2
+			}
+			add = 0.1
+		}
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position = 1
+			}
+			add = 0.1
+		}
+	}
+	
+	immediate = {
+		save_scope_as = partner
+		random_child = {
+			limit = {
+				OR = {
+					trigger_if = {	
+						limit = {
+							root = {
+								NOT = { has_realm_law = confederate_partition_succession_law }
+							}
+						}
+						is_player_heir_of = root
+					}
+					any_parent = {
+						is_consort_of = root
+						OR = {
+							any_relation = {
+								type = rival
+								is_consort_of = root
+								is_courtier_of = root
+							}
+							any_relation = {
+								type = nemesis
+								is_consort_of = root
+								is_courtier_of = root
+							}
+						}
+					}
+				}
+			}
+			weight = {
+				base = 1
+				modifier = {
+					add = 1
+					is_player_heir_of = root
+				}
+			}
+			save_scope_as = child
+		}
+
+		if = {
+			limit = {
+				exists = scope:child
+				any_consort = {
+					is_valid_scheming_consort = {
+						CHILD = scope:child
+					}
+				}
+			}
+			random_consort = {
+				limit = {
+					is_valid_scheming_consort = {
+						CHILD = scope:child
+					}
+				}
+				weight = {
+					base = 10
+					modifier = { add = intrigue }
+					modifier = {
+						has_character_flag = flag_yanwan
+						add = 15
+					}
+					modifier = {
+						has_character_flag = flag_mei
+						add = 10
+					}
+					modifier = {
+						has_character_flag = flag_hailan
+						add = 5
+					}
+				}
+				save_scope_as = scheming_consort
+			}
+			if = {
+				limit = {
+					scope:scheming_consort ?= {
+						can_start_scheme = {
+							type = murder
+							target_character = scope:child
+						}
+					}
+				}
+				scope:scheming_consort = {
+					start_scheme = {
+						type = murder
+						target_character = scope:child
+					}
+				}
+				add_character_flag = {
+					flag = had_scheming_consort_heir_flag
+					years = 3
+				}
+				if = {
+					limit = {
+						debug_only = yes
+					}
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = success_hidden_event_t
+						right_icon = scope:child
+						left_icon = scope:scheming_consort
+						custom_tooltip = successful_hidden_event_desc
 					}
 				}
 			}

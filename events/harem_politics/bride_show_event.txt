@@ -4,8 +4,8 @@ scripted_trigger agrees_with_bride_show = {
 	OR = {
 		culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 		culture = { has_cultural_tradition = tradition_legalistic }
-		accepts_concubinage = yes
-		accepts_polygamy = yes
+		hp_accepts_concubinage = yes
+		hp_accepts_polygamy = yes
 	}
 }
 
@@ -31,7 +31,7 @@ scripted_effect bride_show_add_to_candidate_list_effect = {
 
 scripted_effect bride_show_next_candidate_effect = {
 	if = {
-		limit = { #I can still pick dates
+		limit = { #I can still pick candidates
 			OR = {
 				NOT = {		
 					exists = scope:candidate_3
@@ -71,209 +71,7 @@ scripted_effect bride_show_next_candidate_effect = {
 					}
 				}
 			}
-			create_character = {
-				location = scope:liege.capital_province
-				template = potential_bride_character
-				gender_female_chance = {
-					if = {
-						limit = {
-							scope:liege = { allowed_to_marry_same_sex_trigger = yes }
-						}
-						add = 50
-					}
-					else_if = {
-						limit = { scope:liege = { is_female = yes } }
-						add = 0
-					}
-					else = {
-						add = 100
-					}
-				}
-				after_creation = {
-					#Good genetics
-					random = {
-						chance = 10
-						modifier = { #Emperors
-							add = 10
-							scope:liege = {
-								highest_held_title_tier >= tier_empire
-							}
-						}
-						modifier = { #Kings
-							add = 10
-							scope:liege = {
-								highest_held_title_tier >= tier_kingdom
-							}
-						}
-						modifier = {
-							add = {
-								value = 20
-								if = {
-									limit = {
-										NOT = { exists = scope:candidate_1 }
-										any_in_list = {
-											list = elegible_candidates_list
-											has_trait = beauty_good
-											count = 0
-										}
-									}
-									add = 25
-								}
-							}
-							scope:liege = {
-								has_variable = beauty_important
-							}
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 1
-							}
-							add = -5
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 2
-							}
-							add = -10
-						}
-						modifier = {
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count >= 3
-							}
-							add = -10
-						}
-						random_list = {
-							1 = { # Superior genetics
-								modifier = { #Emperors
-									add = 3
-									scope:liege = {
-										highest_held_title_tier >= tier_empire
-									}
-								}
-								modifier = { #Kings
-									add = 2
-									scope:liege = {
-										highest_held_title_tier >= tier_kingdom
-									}
-								}
-								random_list = {
-									20 = { # Beauty
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}
-										add_trait = beauty_good_3
-									}
-									9 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}
-										add_trait = intellect_good_3
-									}
-									9 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}											
-										add_trait = physique_good_3
-									}
-									2 = { # Fecund													
-										add_trait = fecund
-									}
-								}											
-							}
-							4 = { # Good genetics
-								modifier = { #Emperors
-									add = 3
-									scope:liege = {
-										highest_held_title_tier >= tier_empire
-									}
-								}
-								modifier = { #Kings
-									add = 2
-									scope:liege = {
-										highest_held_title_tier >= tier_kingdom
-									}
-								}
-								random_list = {
-									4 = { # Beauty	
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}
-										add_trait = beauty_good_2
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}									
-										add_trait = intellect_good_2
-									}
-									1 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}												
-										add_trait = physique_good_2
-									}
-								}											
-							}
-							25 = { # Decent genetics
-								random_list = {
-									4 = { # Beauty	
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}				
-										add_trait = beauty_good_1
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}									
-										add_trait = intellect_good_1
-									}
-									1 = { # Physique
-										modifier = {
-											add = 4
-											scope:liege = {
-												has_variable = beauty_important
-											}
-										}											
-										add_trait = physique_good_1
-									}
-								}											
-							}
-						}
-					}
-				}
-				save_scope_as = bride
-			}
+			calyver_create_candidate_effect = yes
 			scope:bride = {
 				add_to_list = elegible_candidates_list
 				add_to_list = created_candidates_list
@@ -427,6 +225,11 @@ scripted_effect bride_show_next_candidate_effect = {
 					modifier = { #Trait considerations
 						num_of_good_genetic_traits >= 1
 						add = 5
+					}
+					modifier = { #Trait considerations - beauty is important
+						has_trait = strong
+						scope:liege = { has_variable = beauty_important }
+						add = 10
 					}
 					modifier = { #Trait considerations - beauty is important
 						OR = {
@@ -666,6 +469,31 @@ scripted_effect bride_show_next_candidate_effect = {
 						}
 						add = 35
 					}
+					# Poets
+					modifier = {
+						has_trait = poet
+						scope:liege = { has_variable = personality_skills_important }
+						add = 15
+					}
+					# Skills
+					modifier = { #Diplomacy
+						add = {
+							value = diplomacy
+							divide = 2
+						}
+					}
+					modifier = { #Learning
+						add = {
+							value = learning
+							divide = 2
+						}
+					}
+					modifier = { #Intrigue
+						add = {
+							value = intrigue
+							divide = 2
+						}
+					}
 					modifier = { #Scheming consorts will try their best to be chosen... and they make the harem interesting
 						harem_politics_evil_consort_trigger = yes
 						NOT = { scope:liege = { has_variable = personality_skills_important } }
@@ -679,14 +507,11 @@ scripted_effect bride_show_next_candidate_effect = {
 						add = 40
 					}
 					modifier = { #Virginity is valuable
-						any_spouse = {
-							even_if_dead = yes
-							count = 0
-						}
+						is_virgin_trigger = yes
 						add = 40
 					}
 					modifier = { #Characters that believe in concubinage are more elegible
-						accepts_harems = yes
+						hp_accepts_harems = yes
 						add = 10
 					}
 				}
@@ -774,6 +599,12 @@ bride_show.0001 = {
 				NOT = { exists = scope:liege }
 			}
 			save_scope_as = liege
+		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
 		}
 	}
 	# Family background is important
@@ -882,6 +713,12 @@ bride_show.0002 = {
 			}
 			save_scope_as = liege
 		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
 	}
 	# Beauty is important
 	option = {
@@ -985,6 +822,12 @@ bride_show.0003 = {
 			}
 			save_scope_as = liege
 		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
 	}
 	# Personality and skills are important
 	option = {
@@ -1052,7 +895,12 @@ bride_show.0004 = {
 			}
 			save_scope_as = liege
 		}
-		
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
 		hidden_effect = {
 			#Set up lists
 			# Vassals
@@ -1582,6 +1430,12 @@ bride_show.0005 = {
 			}
 			save_scope_as = liege
 		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
 		scope:potential_candidate.court_owner ?= {
 			save_scope_as = pc_court_owner
 		}
@@ -1790,13 +1644,13 @@ bride_show.0005 = {
 		marriage_interaction_on_accept_effect = yes
 		
 		ai_chance = {
-			base = 5
+			base = 10
 			modifier = { #Weigh down for stress
 				add = -25
 				has_trait = paranoid
 			}
 			modifier = { #Weigh down for stress
-				add = -25
+				add = -15
 				has_trait = craven
 			}
 			modifier = { #Weigh down for stress
@@ -1804,21 +1658,22 @@ bride_show.0005 = {
 				has_trait = shy
 			}
 			modifier = { #More likely if root is lustful
-				add = 25
+				add = 15
 				has_trait = lustful
 			}
 			modifier = { #More likely if concubinage isn't accepted
-				add = 40
+				add = 20
 				allowed_concubines = no
 			}
-			modifier = { #More likely if the candidate is noble
+			modifier = { #Less likely if the candidate is a commoner
 				add = -20
+				can_have_settled_harem_trigger = yes
 				scope:potential_candidate = {
 					is_lowborn = yes
 				}
 			}
 			modifier = { #More likely if root doesn't have enough spouses
-				add = 45
+				add = 50
 				scope:liege = {
 					trigger_if = {
 						limit = {
@@ -1852,7 +1707,7 @@ bride_show.0005 = {
 				}
 			}
 			modifier = { #Less likely if the candidate is lowborn and low legitimacy
-				add = -75
+				add = -60
 				OR = {
 					AND = {
 						highest_held_title_tier = tier_empire
@@ -1870,6 +1725,7 @@ bride_show.0005 = {
 				scope:potential_candidate = {
 					is_lowborn = yes
 				}
+				can_have_settled_harem_trigger = yes
 			}
 			modifier = { #More likely if the shares same faith
 				scope:potential_candidate.faith = root.faith
@@ -1880,13 +1736,13 @@ bride_show.0005 = {
 				add = 10
 			}
 			modifier = { #More likely if the candidate is the child of a vassal
-				add = 30
+				add = 35
 				scope:potential_candidate = {
 					any_close_family_member = { is_vassal_of = root }
 				}
 			}
 			modifier = { #More likely if the candidate is the child of a powerful vassal
-				add = 35
+				add = 40
 				scope:potential_candidate = {
 					any_close_family_member = { 
 						OR = {
@@ -1988,7 +1844,7 @@ bride_show.0005 = {
 				}
 			}
 			modifier = { #More likely if the candidate is virtuous
-				add = 5
+				add = 10
 				scope:potential_candidate = {
 					num_sinful_traits = 0
 				}
@@ -2008,15 +1864,12 @@ bride_show.0005 = {
 				}
 			}
 			modifier = { #More likely if the candidate isn't a criminal
-				add = 5
+				add = 10
 				NOT = { has_imprisonment_reason = scope:potential_candidate }
 			}
 			modifier = { #More likely if root doesn't have kids
-				add = 5
-				any_child = {
-					even_if_dead = no
-					count = 0
-				}
+				add = 15
+				is_virgin_trigger = yes
 			}
 			modifier = { #More likely if candidate has good skills
 				add = 10
@@ -2242,7 +2095,7 @@ bride_show.0005 = {
 				has_trait = paranoid
 			}
 			modifier = { #Weigh down for stress
-				add = -25
+				add = -15
 				has_trait = craven
 			}
 			modifier = { #Weigh down for stress
@@ -2250,15 +2103,24 @@ bride_show.0005 = {
 				has_trait = shy
 			}
 			modifier = { #More likely if root is lustful
-				add = 25
+				add = 20
 				has_trait = lustful
 			}
-			modifier = { #More likely if the candidate is noble
-				add = 20
-				scope:potential_candidate = {
-					is_lowborn = yes
-				}
+
+			modifier = { #More likely if root doesn't have enough spouses
+				add = 15
+				number_of_concubines < number_of_desired_concubines
 			}
+
+			modifier = { #More likely if the shares same faith
+				scope:potential_candidate.faith = root.faith
+				add = 10
+			}
+			modifier = { #More likely if the shares same culture
+				scope:potential_candidate.culture = root.culture
+				add = 10
+			}
+
 			modifier = { #More likely if the candidate is the child of a vassal
 				add = 5
 				scope:potential_candidate = {
@@ -2266,7 +2128,7 @@ bride_show.0005 = {
 				}
 			}
 			modifier = { #More likely if the candidate is the child of a powerful vassal
-				add = 5
+				add = 10
 				scope:potential_candidate = {
 					any_close_family_member = { 
 						OR = {
@@ -2287,88 +2149,113 @@ bride_show.0005 = {
 						}
 					}
 				}
+				add = 15
+			}
+			modifier = {
+				scope:potential_candidate = {
+					any_close_family_member = {
+						tier_difference = {
+							target = scope:liege
+							value >= -1
+						}
+					}
+				}
+				add = 5
+			}
+
+			modifier = { # Beauty
 				add = 10
-			}
-			modifier = { #More likely if root doesn't have min. of desired concubines
-				add = 60
-				number_of_concubines < number_of_desired_concubines
-			}
-			modifier = { #More likely if the number of concubines is inferior to the number of spouses
-				add = 40
-				any_spouse = {
-					is_alive = yes
-					count >= number_of_concubines
-				}
-			}
-			modifier = { #More likely if the candidate has nice traits
-				add = 10
-				scope:potential_candidate = {
-					has_trait = physique_good_1
-				}
-			}
-			modifier = { #More likely if the candidate has good traits
-				add = 20
-				scope:potential_candidate = {
-					has_trait = physique_good_2
-				}
-			}
-			modifier = { #More likely if the candidate has excellent traits
-				add = 30
-				scope:potential_candidate = {
-					has_trait = physique_good_3
-				}
-			}
-			modifier = { #More likely if the candidate has nice traits
-				add = 10
-				scope:potential_candidate = {
-					has_trait = intellect_good_1
-				}
-			}
-			modifier = { #More likely if the candidate has good traits
-				add = 20
-				scope:potential_candidate = {
-					has_trait = intellect_good_2
-				}
-			}
-			modifier = { #More likely if the candidate has excellent traits
-				add = 30
-				scope:potential_candidate = {
-					has_trait = intellect_good_3
-				}
-			}
-			modifier = { #More likely if the candidate has nice traits
-				add = 20
 				scope:potential_candidate = {
 					has_trait = beauty_good_1
 				}
 			}
-			modifier = { #More likely if the candidate has good traits
-				add = 30
+			modifier = { # Beauty
+				add = 15
 				scope:potential_candidate = {
 					has_trait = beauty_good_2
 				}
 			}
-			modifier = { #More likely if the candidate has excellent traits
-				add = 40
+			modifier = { # Beauty
+				add = 20
+				scope:potential_candidate = {
+					has_trait = beauty_good_3
+				}
+			}
+
+			modifier = { # Physique
+				add = 5
+				scope:potential_candidate = {
+					has_trait = physique_good_1
+				}
+			}
+			modifier = { # Physique
+				add = 10
+				scope:potential_candidate = {
+					has_trait = physique_good_2
+				}
+			}
+			modifier = { # Physique
+				add = 15
+				scope:potential_candidate = {
+					has_trait = physique_good_3
+				}
+			}
+
+			modifier = { # Intellect
+				add = 5
+				scope:potential_candidate = {
+					has_trait = intellect_good_1
+				}
+			}
+			modifier = { # Intellect
+				add = 10
 				scope:potential_candidate = {
 					OR = {
-						has_trait = beauty_good_3
-						has_trait = fecund
+						has_trait = intellect_good_2
+						has_trait = intellect_good_3
 					}
 				}
 			}
+
 			modifier = { #More likely if the candidate has excellent traits
 				add = 15
 				scope:potential_candidate = {
 					has_trait = pure_blooded
 				}
 			}
+			modifier = { #More likely if the candidate has excellent traits
+				add = 40
+				scope:potential_candidate = {
+					has_trait = golden_lineage
+				}
+			}
+			modifier = { #More likely if the candidate is virtuous
+				add = 10
+				scope:potential_candidate = {
+					num_sinful_traits = 0
+				}
+			}
+			modifier = { #More likely if the candidate is virtuous
+				add = {
+					value = 10
+					if = {
+						limit = {
+							num_virtuous_traits >= 2
+						}
+						add = 10
+					}
+				}
+				scope:potential_candidate = {
+					num_virtuous_traits >= 1
+				}
+			}
+			modifier = { #More likely if the candidate isn't a criminal
+				add = 5
+				NOT = { has_imprisonment_reason = scope:potential_candidate }
+			}
 			modifier = { #More likely if root doesn't have kids
 				add = 20
-				any_child = {
-					is_alive = yes
-					count = 0
-				}
+				is_virgin_trigger = yes
 			}
 			modifier = { #More likely if candidate has good skills
 				add = 15
@@ -2544,6 +2431,11 @@ bride_show.0005 = {
 			}
 		}
 		add_courtier = scope:potential_candidate
+		scope:potential_candidate = {
+			hidden_effect = {
+				return_to_court = yes
+			}
+		}
 		
 		ai_chance = {
 			base = 0
@@ -2698,17 +2590,15 @@ bride_show.0005 = {
 			}
 			if = {
 				limit = {
-					AND = {
-						NOR = {
-							has_trait = paranoid
-							has_trait = craven
-							has_trait = shy
-							has_trait = chaste
-							has_trait = celibate
-						}
-						is_betrothed = no
-						agrees_with_bride_show = yes
+					NOR = {
+						has_trait = paranoid
+						has_trait = craven
+						has_trait = shy
+						has_trait = chaste
+						has_trait = celibate
 					}
+					is_betrothed = no
+					agrees_with_bride_show = yes
 				}
 				add_opinion = {
 					target = root
@@ -2735,21 +2625,19 @@ bride_show.0005 = {
 		ai_chance = {
 			base = 15
 			modifier = { #Paranoid
-				add = 15
+				add = 20
 				has_trait = paranoid
 			}
 			modifier = { #Shy
-				add = 15
+				add = 20
 				has_trait = shy
 			}
-			modifier = { #More likely if the candidate is not noble
+			modifier = { #Craven
 				add = 10
-				scope:potential_candidate = {
-					is_lowborn = yes
-				}
+				has_trait = craven
 			}
 			modifier = { #More likely if the candidate is not the child of a vassal
-				add = 40
+				add = 30
 				scope:potential_candidate = {
 					NOT = {
 						any_close_family_member = { 
@@ -2786,7 +2674,15 @@ bride_show.0005 = {
 				scope:potential_candidate = {
 					num_of_bad_genetic_traits >= 1
 				}
-				add = 20
+				add = {
+					value = 25
+					if = {
+						limit = {
+							num_of_bad_genetic_traits >= 2
+						}
+						add = 10
+					}
+				}
 			}
 		}
 	}
@@ -2850,6 +2746,7 @@ bride_show.0006 = {
 				limit = {
 					any_in_list = {
 						list = created_candidates_list
+						has_character_flag = created_bride_flag
 						count >= 1
 					}
 				}
@@ -3065,8 +2962,8 @@ bride_show.0007 = {
 					OR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						accepts_concubinage = yes
-						accepts_polygamy = yes
+						hp_accepts_concubinage = yes
+						hp_accepts_polygamy = yes
 					}
 				}
 				if = {
@@ -3092,8 +2989,8 @@ bride_show.0007 = {
 					NOR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						accepts_concubinage = yes
-						accepts_polygamy = yes
+						hp_accepts_concubinage = yes
+						hp_accepts_polygamy = yes
 					}
 				}
 				add_opinion = {
@@ -3109,8 +3006,8 @@ bride_show.0007 = {
 					OR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						accepts_concubinage = yes
-						accepts_polygamy = yes
+						hp_accepts_concubinage = yes
+						hp_accepts_polygamy = yes
 					}
 				}
 				add_opinion = {
@@ -3124,8 +3021,8 @@ bride_show.0007 = {
 					NOR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						accepts_concubinage = yes
-						accepts_polygamy = yes
+						hp_accepts_concubinage = yes
+						hp_accepts_polygamy = yes
 					}
 				}
 				add_opinion = {
@@ -3288,9 +3185,9 @@ bride_show.0007 = {
 				add = -10
 			}
 			modifier = {
-				accepts_harems = no
+				hp_accepts_harems = no
 				scope:liege = {
-					accepts_harems = yes
+					hp_accepts_harems = yes
 				}
 				add = -25
 			}
@@ -3428,9 +3325,9 @@ bride_show.0007 = {
 				add = 15
 			}
 			modifier = {
-				accepts_harems = no
+				hp_accepts_harems = no
 				scope:liege = {
-					accepts_harems = yes
+					hp_accepts_harems = yes
 				}
 				add = 25
 			}
@@ -3920,6 +3817,678 @@ bride_show.1002 = {
 			else = {
 				custom_tooltip = bride_show_more_courtiers_desc
 				remove_variable = num_courtiers_summoned
+			}
+		}
+	}
+}
+
+##Recruit Jarya##
+bride_show.2000 = {
+	hidden = yes
+	trigger = {
+		is_landed = yes
+		hp_accepts_concubinage = yes
+		religion = religion:islam_religion
+		highest_held_title_tier >= tier_duchy
+		trigger_if = {
+			limit = {
+				has_variable = jarya_recruited
+			}
+			var:jarya_recruited < 4
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { exists = scope:liege }
+			}
+			save_scope_as = liege
+		}
+		if = {
+			limit = {
+				NOT = { exists = scope:harem_liege }
+			}
+			save_scope_as = harem_liege
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_candidates
+					NOT = { is_courtier_of = scope:liege }
+					recruit_concubines_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+					count = 0
+				}
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:concubine_location }
+				}
+				hp_select_concubine_location_effect = yes
+			}
+			calyver_create_candidate_effect = yes
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = pool_candidates
+					NOT = { is_courtier_of = scope:liege }
+					recruit_concubines_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+					count = 1
+				}
+			}
+			random_in_list = {
+				list = pool_candidates
+				limit = {
+					NOT = { is_courtier_of = scope:liege }
+					recruit_concubines_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+				save_scope_as = jarya
+			}
+		}
+		else = {
+			random_in_list = {
+				list = pool_candidates
+				limit = {
+					NOT = { is_courtier_of = scope:liege }
+					recruit_concubines_viable_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+				weight = {
+					base = 50
+					modifier = {
+						exists = court_owner
+						add = -25
+					}
+					modifier = { # More likely to be captured near bodies of water
+						location ?= {
+							OR = {
+								is_sea_province = yes
+								is_riverside_province = yes
+								county ?= {
+									OR = {
+										is_coastal_county = yes
+										is_riverside_county = yes
+									}
+								}
+							}
+						}
+						add = 30
+					}
+					modifier = { # Christians were especially captured
+						religion = religion:christianity_religion
+						add = 30
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe
+						}
+						add = 20
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe_south
+						}
+						add = 20
+					}
+					modifier = {
+						location ?= {
+							geographical_region = world_europe_west_iberia
+						}
+						add = 20
+					}
+					modifier = {
+						is_lowborn = no
+						add = -10
+					}
+					# Virginity was prized
+					modifier = {
+						is_virgin_trigger = yes
+						add = 25
+					}
+					# Skills
+					modifier = {
+						OR = {
+							stewardship >= 9
+							diplomacy >= 9
+							learning >= 9
+						}
+						add = 10
+					}
+					modifier = {
+						OR = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						add = 15
+					}
+					modifier = {
+						OR = {
+							stewardship >= 17
+							diplomacy >= 17
+							learning >= 17
+						}
+						add = 20
+					}
+					modifier = {
+						AND = {
+							stewardship >= 13
+							diplomacy >= 13
+							learning >= 13
+						}
+						add = 25
+					}
+					# Good genetics
+					modifier = { #Trait considerations
+						num_of_good_genetic_traits >= 1
+						add = 15
+					}
+					modifier = {
+						num_of_good_genetic_traits >= 2
+						add = 20
+					}
+					# No bad genetic traits
+					modifier = {
+						num_of_bad_genetic_traits > 0
+						add = -25
+					}
+					# Docile captives would be easier to send
+					modifier = {
+						has_trait = temperate
+						add = 10
+					}
+					modifier = {
+						has_trait = craven
+						add = 10
+					}
+					modifier = {
+						has_trait = content
+						add = 10
+					}
+					modifier = {
+						has_trait = humble
+						add = 10
+					}
+					modifier = {
+						has_trait = lustful
+						add = 10
+					}
+					modifier = {
+						has_trait = chaste
+						add = -10
+					}
+					modifier = {
+						has_trait = zealous
+						add = -20
+					}
+					# Intellect
+					modifier = {
+						has_trait = intellect_good_1
+						add = 5
+					}
+					modifier = {
+						has_trait = intellect_good_2
+						add = 10
+					}
+					modifier = {
+						has_trait = intellect_good_3
+						add = 15
+					}
+					modifier = {
+						has_trait = strong
+						add = 5
+					}
+					# Poets
+					modifier = {
+						has_trait = poet
+						add = 5
+					}
+					modifier = {
+						has_trait = poet
+						scope:liege = { highest_held_title_tier >= tier_kingdom }
+						add = 10
+					}
+					# Skills
+					modifier = { #Diplomacy
+						add = {
+							value = diplomacy
+							divide = 2
+						}
+					}
+					modifier = { #Learning
+						add = {
+							value = learning
+							divide = 2
+						}
+					}
+					modifier = { #Intrigue
+						add = {
+							value = intrigue
+							divide = 2
+						}
+					}
+					# Health
+					modifier = {
+						is_healthy = yes
+						add = 20
+					}
+					modifier = {
+						OR = {
+							has_character_modifier = malnourished_modifier
+							current_weight < -50
+							has_character_modifier = obese_modifier
+							current_weight > 50
+							has_trait = beauty_bad
+						}
+						add = -20
+					}		
+				}
+				save_scope_as = jarya
+			}
+		}
+		if = {
+			limit = {	
+				scope:jarya.court_owner ?= {
+					NOR = {
+						this = scope:liege
+						is_close_family_of = scope:jarya
+					}
+					is_ai = no
+				}
+			}
+			scope:jarya.court_owner = {
+				send_interface_toast = {
+					type = event_generic_bad
+					title = bride_show.2000.t.court_owner
+					right_icon = scope:liege
+					left_icon = scope:jarya
+					custom_tooltip = bride_show.2000.desc.court_owner
+				}
+			}
+		}
+		send_interface_toast = {
+			type = event_generic_neutral
+			title = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							scope:jarya = { is_female = yes }
+						}
+						desc = bride_show.2000.t_f
+					}
+					desc = bride_show.2000.t_m
+				}
+			}
+			right_icon = scope:jarya
+			scope:liege = {
+				add_courtier = scope:jarya
+			}
+			scope:jarya = {
+				add_opinion = {
+					target = scope:liege
+					modifier = upset_opinion
+					opinion = -10
+				}
+				stress_impact = {
+					base = minor_stress_impact_gain
+				}
+				#In case they received a marriage proposal already
+				# add_character_flag = {
+				# 	flag = has_been_offered_as_concubine
+				# 	days = 1
+				# }
+				add_character_flag = {
+					flag = recently_abducted_concubine
+					years = 2
+				}
+				remove_from_list = pool_candidates
+				add_character_flag = {
+					flag = blocked_from_leaving
+					years = 5
+				}
+				hidden_effect = {
+					return_to_court = yes
+					# Chance of conversion to liege's faith
+					if = {
+						limit = {
+							NOR = {
+								has_trait = zealous 
+								faith = scope:liege.faith
+							}
+						}
+						random = {
+							chance = 50
+							# Based on current faith
+							modifier = {
+								faith = {
+									faith_hostility_level = {
+										target = scope:liege.faith
+										value = faith_fully_accepted_level
+									}
+								}
+								add = 30
+							}
+							modifier = {
+								faith = {
+									faith_hostility_level = {
+										target = scope:liege.faith
+										value >= faith_astray_level
+									}
+								}
+								add = -15
+							}
+							modifier = {
+								faith = {
+									faith_hostility_level = {
+										target = scope:liege.faith
+										value >= faith_hostile_level
+									}
+								}
+								add = -15
+							}
+							modifier = {
+								faith = {
+									faith_hostility_level = {
+										target = scope:liege.faith
+										value >= faith_evil_level
+									}
+								}
+								add = -15
+							}
+							modifier = {
+								hp_accepts_harems = yes
+								add = 10
+							}
+							# Based on traits
+							modifier = {
+								has_trait = cynical
+								add = 20
+							}
+							modifier = {
+								has_trait = ambitious
+								add = 20
+							}
+							modifier = {
+								has_trait = greedy
+								add = 20
+							}
+							modifier = {
+								has_trait = arrogant
+								add = 20
+							}
+							modifier = {
+								has_trait = craven
+								add = 20
+							}
+							# Younger characters are more likely to change faiths
+							modifier = {
+								age < 20
+								add = 15
+							}
+							# Kings and Emperors are more likely to force their servants to convert
+							modifier = {
+								scope:liege.highest_held_title_tier >= tier_kingdom
+								add = 15
+							}
+							# Zealous rulers are more likely to recruit converted concubines
+							modifier = {
+								scope:liege = { has_trait = zealous }
+								add = 15
+							}
+							# Cynical rulers don't care much about concubines' faith
+							modifier = {
+								scope:liege = { has_trait = cynical }
+								add = -15
+							}
+							if = {
+								limit = {
+									NOT = {
+										has_character_flag = abducted_non_believer
+									}
+								}
+								add_character_flag = {
+									flag = abducted_non_believer
+									years = 5
+								}
+							}
+							set_character_faith = scope:liege.faith
+						}
+					}
+					if = {
+						limit = {
+							exists = betrothed
+							#A check to make sure you haven't somehow gotten betrothed to them during the consideration time
+							NOT = { betrothed = scope:actor }
+						}
+						betrothed = { trigger_event = marriage_interaction.0041 }
+						break_betrothal = betrothed
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								NOT = { this = scope:liege }
+								count >= 1
+							}
+						}
+						every_close_family_member = {
+							limit = {
+								NOT = { this = scope:liege }
+							}
+							add_opinion = {
+								target = scope:liege
+								modifier = abducted_close_family_crime
+							}
+							if = {
+								limit = {
+									is_ai = no
+								}
+								send_interface_toast = {
+									type = event_generic_bad
+									title = bride_show.2000.t.close_family
+									right_icon = scope:liege
+									left_icon = scope:jarya
+									custom_tooltip = bride_show.2000.desc.court_owner
+								}
+							}
+						}
+					}
+					# They should be lowborn
+					if = {
+						limit = {
+							house ?= {
+								any_house_member = {
+									count = 1
+								}
+							}
+						}
+						set_to_lowborn = yes
+					}
+				}
+				# remove_character_flag = has_been_offered_as_concubine
+			}
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_variable = jarya_recruited
+				}
+			}
+			set_variable = {
+				name = jarya_recruited
+				value = 1
+				months = 6
+			}
+			if = {
+				limit = {
+					highest_held_title_tier = tier_duchy
+				}
+				random = {
+					chance = 50
+					modifier = {
+						has_trait = lustful
+						add = 10
+					}
+					trigger_event = {
+						id = bride_show.2000
+						days = { 7 10 }
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					highest_held_title_tier > tier_duchy
+				}
+				trigger_event = {
+					id = bride_show.2000
+					days = { 7 10 }
+				}
+			}
+		}
+		else = {
+			change_variable = {
+				name = jarya_recruited
+				add = 1
+			}
+			# Should we repeat the event?
+			# For dukes, the maximum is 3
+			if = {
+				limit = {
+					highest_held_title_tier = tier_duchy
+				}
+				if = {
+					limit = {
+						var:jarya_recruited < 3
+					}
+					random = {
+						chance = 25
+						modifier = {
+							has_trait = lustful
+							add = 10
+						}
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
+						}
+					}
+				}
+				else = {
+					remove_variable = jarya_recruited
+				}
+			}
+			# For kings+, the maximum is 4
+			if = {
+				limit = {
+					highest_held_title_tier > tier_duchy
+				}
+				if = {
+					limit = {
+						var:jarya_recruited < 3
+					}
+					random = {
+						chance = 50
+						modifier = {
+							has_trait = lustful
+							add = 10
+						}
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						var:jarya_recruited = 3
+					}
+					random = {
+						chance = 25
+						modifier = {
+							has_trait = lustful
+							add = 10
+						}
+						modifier = {
+							highest_held_title_tier > tier_kingdom
+							add = 10
+						}
+						trigger_event = {
+							id = bride_show.2000
+							days = { 7 10 }
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						var:jarya_recruited > 3	
+					}
+					remove_variable = jarya_recruited
+				}
+			}
+		}
+		# The AI is a bit slow and will sometimes convert them to Islam before taking them as concubines
+		if = {
+			limit = {
+				is_ai = yes
+				is_character_interaction_valid = {
+					recipient = scope:jarya
+					interaction = ai_make_concubine_interaction
+				}
+			}
+			random = {
+				chance = 10
+				modifier = {
+					number_of_concubines < number_of_desired_concubines
+					add = 60
+				}
+				modifier = {
+					scope:jarya = {
+						num_of_good_genetic_traits > 0
+					}
+					add = 25
+				}
+				modifier = {
+					scope:jarya = {
+						num_of_bad_genetic_traits > 0
+					}
+					add = -50
+				}
+				modifier = {
+					scope:jarya = {
+						can_have_children_with = { CHARACTER = scope:liege } # Only if you can have kids since this is about fertility and genetic traits
+						fertility > 0.2
+					}
+					add = 10
+				}
+				modifier = {
+					is_attracted_to_gender_of = scope:jarya
+					add = 10
+				}
+				modifier = {
+					NOT = { is_attracted_to_gender_of = scope:jarya }
+					add = -25
+				}
+				modifier = {
+					OR = { 
+						has_relation_lover = scope:jarya
+						has_relation_friend = scope:jarya
+						has_relation_soulmate = scope:jarya
+						has_relation_best_friend = scope:jarya
+					}
+					add = 60
+				}
+				run_interaction = {
+					interaction = ai_make_concubine_interaction
+					actor = scope:liege
+					recipient = scope:jarya
+					execute_threshold = accept
+				}
 			}
 		}
 	}
