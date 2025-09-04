@@ -19431,12 +19431,9 @@ scripted_trigger is_valid_scheming_consort = {
 				}
 			}
 			any_child = {
-				root.primary_title = { # They must be close to succession
-					place_in_line_of_succession = {
-						target = prev
-						value <= 4
-					}
-				}
+				is_child_of = root
+				is_alive = yes
+				character_gender_can_inherit_from_trigger = { CHARACTER = root }
 				age >= 3
 			}
 		}
@@ -19448,6 +19445,7 @@ scripted_trigger is_valid_scheming_consort = {
 						has_relation_rival = scope:temporary_consort
 						has_relation_nemesis = scope:temporary_consort
 					}
+					NOT = { this = root }
 				}
 			}
 		}
@@ -19524,6 +19522,12 @@ consort_events.0036 = {
 			add = 0.1
 			any_consort = {
 				has_character_flag = flag_yanwan
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_nurbanu
 			}
 		}
 		modifier = {
@@ -19656,7 +19660,29 @@ consort_events.0036 = {
 				}
 				weight = {
 					base = 10
-					modifier = { add = intrigue }
+					modifier = { # Greed
+						any_child = {
+							is_child_of = root
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = root }
+						}
+						add = {
+							value = ai_greed
+							multiply = 0.25
+						}
+					}
+					modifier = { # Vengefulness
+						add = {
+							value = ai_vengefulness
+							multiply = 0.5
+						}
+					}
+					modifier = { #Intrigue
+						add = {
+							value = intrigue
+							multiply = 2
+						}
+					}
 					modifier = {
 						OR = {	
 							has_character_flag = flag_yanwan
@@ -19671,6 +19697,51 @@ consort_events.0036 = {
 					modifier = {
 						has_character_flag = flag_hailan
 						add = 5
+					}
+					modifier = { # Higher-ups have more resources
+						exists = root.primary_spouse
+						this = root.primary_spouse
+						add = 15
+					}
+					modifier = { # Higher-ups have more resources
+						has_court_position = grand_consort_court_position
+						trigger_if = {
+							limit = {
+								exists = root.primary_spouse
+							}
+							this != root.primary_spouse
+						}
+						add = 10
+					}
+					modifier = { # Higher-ups have more resources
+						is_spouse_of = root
+						NOR = {
+							this = root.primary_spouse
+							has_court_position = grand_consort_court_position
+						}
+						add = 5
+					}
+
+					# Favor
+					modifier = {
+						has_character_modifier = beloved_consort_modifier
+						add = 15
+					}
+					modifier = {
+						has_character_modifier = favor_boost_modifier
+						add = 10
+					}
+					modifier = {
+						has_character_modifier = favored_consort_modifier
+						add = 5
+					}
+					modifier = {
+						has_character_modifier = unfavored_consort_modifier
+						add = 5
+					}
+					modifier = { # Forgotten consorts don't draw attention
+						has_character_modifier = forgotten_consort_modifier
+						add = 10
 					}
 				}
 				save_scope_as = scheming_consort
@@ -19692,7 +19763,7 @@ consort_events.0036 = {
 				}
 				add_character_flag = {
 					flag = had_scheming_consort_heir_flag
-					years = 3
+					years = 2
 				}
 				if = {
 					limit = {

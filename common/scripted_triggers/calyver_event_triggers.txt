@@ -172,7 +172,11 @@ harem_politics_is_valid_authority_trigger = {
     }
 }
 
+######################
 ##Potential consorts##
+######################
+
+## Basic trigger - used for all the other triggers ##
 bride_show_viable_consort_trigger = {
 	is_healthy = yes
 	is_available = yes
@@ -247,7 +251,7 @@ bride_show_viable_consort_trigger = {
 		}
 	}
 }
-
+## Trigger for the bride show ##
 bride_show_viable_candidate_trigger = {
 	bride_show_viable_consort_trigger = {
 		OVERLORD = $OVERLORD$
@@ -300,19 +304,33 @@ bride_show_viable_candidate_trigger = {
 	}
 }
 
-recruit_concubines_viable_candidate_trigger = {
+###########################
+## For Muslim concubines ##
+###########################
+
+## Basic trigger ##
+basic_viable_candidate_trigger = {
 	is_adult = yes
 	is_councillor = no
 	bride_show_viable_consort_trigger = {
 		OVERLORD = $OVERLORD$
 	}
 	NOR = {
-		religion = religion:islam_religion
 		has_trait = beauty_bad
-		has_character_flag = recently_abducted_concubine
 		any_close_family_member = {
 			highest_held_title_tier >= tier_county
 		}
+	}
+}
+
+## Trigger for dukes ##
+recruit_concubines_viable_candidate_trigger = {
+	basic_viable_candidate_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	NOR = {
+		religion = religion:islam_religion
+		has_character_flag = recently_abducted_concubine
 		any_consort = {
 			count >= 1
 		}
@@ -331,6 +349,39 @@ recruit_concubines_viable_candidate_trigger = {
 	}
 }
 
+## Trigger for kings and above ##
+recruit_concubines_eligible_vassal_candidate_trigger = {
+	basic_viable_candidate_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	NOR = {
+		has_character_flag = has_been_offered_as_concubine
+	}
+	is_virgin_trigger = yes
+	trigger_if = {
+		limit  ={
+			religion = religion:islam_religion
+		}
+		trigger_if = {
+			limit = {
+				$OVERLORD$.religion = religion:islam_religion
+			}
+			has_character_flag = abducted_non_believer
+		}
+		trigger_else = {
+			always = yes
+		}
+	}
+	trigger_else = {
+		religion != religion:islam_religion
+	}
+}
+
+##############
+## Counties ##
+#############
+
+## Trigger for dukes ##
 recruit_concubines_viable_county_trigger = {
 	OR = {
 		any_pool_character = {
@@ -345,7 +396,22 @@ recruit_concubines_viable_county_trigger = {
 	}
 }
 
-#Bride Show subject requirements#
+## Trigger for kings and above ##
+recruit_concubines_kings_viable_county_trigger = {
+	OR = {
+		any_pool_character = {
+			province = this
+			recruit_concubines_eligible_vassal_candidate_trigger = {
+				OVERLORD = $OVERLORD$
+			}
+		}
+		NOT = {
+			religion = religion:islam_religion
+		}
+	}
+}
+
+# Bride Show subject requirements #
 harem_politics_valid_bride_show_subject_trigger = {
 	OR = {
 		is_vassal_of = $OVERLORD$
@@ -904,5 +970,72 @@ harem_politics_special_consort_trigger = {
 		has_character_flag = flag_nurbanu
 		has_character_flag = flag_hailan
 		has_character_flag = flag_mei
+	}
+}
+
+## Recruit concubines requirements ##
+recruit_concubines_trigger = {
+	is_landed_or_landless_administrative = yes
+	hp_accepts_concubinage = yes
+	religion = religion:islam_religion
+	OR = {
+		any_neighboring_and_across_water_top_liege_realm_owner = {
+			OR = {
+				any_realm_province = {
+					recruit_concubines_viable_county_trigger = {
+						OVERLORD = root
+					}
+				}
+				any_courtier_or_guest = {
+					recruit_concubines_viable_candidate_trigger = {
+						OVERLORD = root
+					}
+				}
+				any_vassal_or_below = {
+					any_courtier_or_guest = {
+						recruit_concubines_viable_candidate_trigger = {
+							OVERLORD = root
+						}
+					}
+				}
+				any_tributary = {
+					OR = {
+						any_courtier_or_guest = {
+							recruit_concubines_viable_candidate_trigger = {
+								OVERLORD = root
+							}
+						}
+						any_realm_province = {
+							recruit_concubines_viable_county_trigger = {
+								OVERLORD = root
+							}
+						}
+					}
+				}
+			}
+		}
+		any_realm_province = {
+			recruit_concubines_viable_county_trigger = {
+				OVERLORD = root
+			}
+		}
+	}
+	highest_held_title_tier >= tier_county
+	OR = { #Appropriate dominant sex
+		AND = {
+			is_male = no
+			OR = {
+				has_realm_law = female_only_law
+				has_realm_law = female_preference_law
+			}
+		}
+		AND = {
+			is_male = yes
+			OR = {
+				has_realm_law = male_only_law
+				has_realm_law = male_preference_law
+			}
+		}
+		has_realm_law = equal_law
 	}
 }
