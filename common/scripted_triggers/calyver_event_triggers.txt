@@ -172,6 +172,27 @@ harem_politics_is_valid_authority_trigger = {
     }
 }
 
+#########################
+## Bride Show triggers ##
+#########################
+agrees_with_bride_show = {
+	OR = {
+		culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+		culture = { has_cultural_tradition = tradition_legalistic }
+		hp_accepts_concubinage = yes
+		hp_accepts_polygamy = yes
+	}
+}
+
+can_have_four_candidates_trigger = {
+	OR = {
+		highest_held_title_tier >= tier_empire
+		any_vassal = {
+			count >= 9
+		}
+	}
+}
+
 ######################
 ##Potential consorts##
 ######################
@@ -320,6 +341,10 @@ basic_viable_candidate_muslim_trigger = {
 			highest_held_title_tier >= tier_county
 		}
 		has_character_flag = has_been_offered_as_concubine
+		has_character_flag = recently_abducted_concubine
+		any_consort = {
+			count >= 1
+		}
 	}
 }
 
@@ -330,10 +355,6 @@ recruit_concubines_viable_candidate_trigger = {
 	}
 	NOR = {
 		religion = religion:islam_religion
-		has_character_flag = recently_abducted_concubine
-		any_consort = {
-			count >= 1
-		}
 	}
 	trigger_if = {
 		limit = {
@@ -341,6 +362,7 @@ recruit_concubines_viable_candidate_trigger = {
 		}
 		court_owner = {
 			NOR = {
+				religion = religion:islam_religion
 				is_liege_or_above_of = $OVERLORD$
 				is_vassal_or_below_of = $OVERLORD$
 				is_tributary_of = $OVERLORD$
@@ -350,12 +372,9 @@ recruit_concubines_viable_candidate_trigger = {
 }
 
 ## Trigger for kings and above ##
-recruit_concubines_eligible_vassal_candidate_trigger = {
+royal_concubines_eligible_candidate_trigger = {
 	basic_viable_candidate_muslim_trigger = {
 		OVERLORD = $OVERLORD$
-	}
-	NOR = {
-		has_character_flag = has_been_offered_as_concubine
 	}
 	is_virgin_trigger = yes
 	trigger_if = {
@@ -374,6 +393,19 @@ recruit_concubines_eligible_vassal_candidate_trigger = {
 	}
 	trigger_else = {
 		religion != religion:islam_religion
+	}
+	trigger_if = {
+		limit = {
+			exists = court_owner
+			exists = betrothed
+		}
+		court_owner = {
+			this != betrothed
+			is_character_interaction_valid = {
+				recipient = prev
+				interaction = break_betrothal_interaction
+			}
+		}
 	}
 }
 
@@ -397,11 +429,11 @@ recruit_concubines_viable_county_trigger = {
 }
 
 ## Trigger for kings and above ##
-recruit_concubines_kings_viable_county_trigger = {
+recruit_royal_concubines_viable_county_trigger = {
 	OR = {
 		any_pool_character = {
 			province = this
-			recruit_concubines_eligible_vassal_candidate_trigger = {
+			royal_concubines_eligible_candidate_trigger = {
 				OVERLORD = $OVERLORD$
 			}
 		}
