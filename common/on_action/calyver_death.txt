@@ -6,6 +6,38 @@
 mourning_period_on_action = {
 	effect = {
 		save_scope_as = dead_relation
+		if = { #Spouses
+			limit = {
+				is_married = yes
+			}
+			every_spouse = {
+				limit = {
+					is_ruler = yes
+				}
+				if = { #Primary Spouse
+					limit = {
+						primary_spouse ?= {
+							this = scope:dead_relation
+						}
+					}
+					add_character_flag = {
+						flag = dead_main_spouse_flag
+						days = 2
+					}
+					if = { #New Primary Spouse
+						limit = {
+							any_spouse = {
+								NOT = {
+									this = scope:dead_relation
+								}
+								count >= 1
+							}
+						}
+						new_primary_spouse_on_action_effect = yes
+					}
+				}
+			}
+		}
 		if = {
 			limit = {
 				has_game_rule = mourning_cycle
@@ -17,28 +49,6 @@ mourning_period_on_action = {
 				every_spouse = {
 					limit = {
 						is_ruler = yes
-					}
-					if = { #Primary Spouse
-						limit = {
-							primary_spouse ?= {
-								this = scope:dead_relation
-							}
-						}
-						add_character_flag = {
-							flag = dead_main_spouse_flag
-							days = 2
-						}
-						if = { #New Primary Spouse
-							limit = {
-								any_spouse = {
-									NOT = {
-										this = scope:dead_relation
-									}
-									count >= 1
-								}
-							}
-							new_primary_spouse_on_action_effect = yes
-						}
 					}
 					add_to_list = mourners_list
 				}

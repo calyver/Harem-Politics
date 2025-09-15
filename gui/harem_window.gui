@@ -1,101 +1,407 @@
 window = {
-	name = "harem_window"
-	# size = { 750 90% }
-	parentanchor = hcenter
-	#position = { -50 65 }
-	allow_outside = yes
-	layer = middle
+    name = "harem_window"
+    size = { 700 940 }
 
+	parentanchor = center
+    widgetanchor = center
+    allow_outside = yes
+    layer = middle
+
+    using = Window_Movable
 	using = Window_Background
 	using = Window_Decoration_Spike
-	using = Window_Size_CharacterList
 
-	visible = "[GetPlayer.MakeScope.Var('show_harem_window').IsSet]"
-	
+    visible = "[GetPlayer.MakeScope.Var('show_harem_window').IsSet]"
+
 	vbox = {
-		name = "harem_content"
-		using = Window_Margins
+        name = "harem_content"
+        using = Window_Margins
+        layoutpolicy_horizontal = expanding
+        layoutpolicy_vertical = expanding
 
-		header_pattern = {
+        # Header
+        header_pattern = {
+            layoutpolicy_horizontal = expanding
+            blockoverride "header_text" { text = "check_harem_decision" }
+            blockoverride "button_close" {
+                onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+            }
+        }
+
+        # Special Characters Container
+		widget = {
+			size = { 100% 210 }
 			layoutpolicy_horizontal = expanding
-		
-			blockoverride "header_text"
-			{
-				text = "check_harem_decision"
-			}
-		
-			blockoverride "button_close"
-			{
-				onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
-			}
-		}
+			datacontext = "[GetIllustration( 'character_private' )]"
 
-		#Consorts
-		vbox_consort_list = {
-			layoutpolicy_horizontal = expanding
-			layoutpolicy_vertical = expanding
-
-			blockoverride "scrollbox_empty_visibility"
-			{
-				layoutpolicy_vertical = expanding
-				visible = "[IsDataModelEmpty(GetPlayer.MakeScope.GetList('harem_consort_list'))]"
-				text = "CHARACTER_FINDER_NO_MATCH"
+			background = {
+				texture = "[Illustration.GetTexture( GetPlayer.MakeScope )]"
+				fittype = centercrop
+				using = Mask_Rough_Edges
+				
+				modify_texture = {
+					texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+					blend_mode = alphamultiply
+					mirror = vertical
+					alpha = 0.5
+				}
 			}
 			
-			blockoverride "container_implementation" {
-				fixedgridbox = {
-					addcolumn = 630
-					addrow = 92
-
-					name = "characters_grid"
-					datamodel_reuse_widgets = yes
-					datamodel = "[GetPlayer.MakeScope.GetList('harem_consort_list')]"
-					visible = "[Not(GetPlayer.MakeScope.GetList('harem_consort_list'))]" #Check because it should be the opposite of the empty list text
-
-					item = {
-						widget_harem_list_item_finder = {
-							size = { 630 94 }
-						}
+			# Content container
+			widget = {
+				size = { 80% 80% }
+				parentanchor = center
+				
+				vbox = {
+					parentanchor = top|hcenter
+					spacing = 0
+					
+					# Harem Head
+					window_harem_special_character = {
+						datamodel = "[GetPlayer.MakeScope.GetList('harem_head_list')]"  # Changed from datacontext to datamodel
+						visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_head_list') ) )]"
 					}
 				}
 			}
 		}
-		
-		#Button
-		vbox = {
+
+		# Scrollable Consort Grid
+		widget = {
+			size = { 100% 60% }
 			layoutpolicy_horizontal = expanding
-			margin_top = 10
-			margin_bottom = 10
-			spacing = 5
-
-			spacer = {
-				size = { 10 10 }
-			}
-
-			# default step
-			widget = {
-				size = { 380 50 }
-				decision_confirm_button = {
-					name = "harem_decision_button"
-					text = "IM_TT_HAREM_WINDOW"
-					onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
-					onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
-					enabled = "[Not(GetPlayer.MakeScope.Var('cant_visit_harem').IsSet)]"
-					size = { 100% 100% }
-					
-					tooltip = "cant_visit_harem_tooltip"
-					tooltip_visible = "[GetPlayer.MakeScope.Var('cant_visit_harem').IsSet]"
+			layoutpolicy_vertical = expanding
+			scrollarea = {
+				background = {
+					using = Background_Area_Border
 				}
-				
-			}
-
-			spacer = {
-				size = { 0 2 }
-			}
-
+				position = { 0 0 }
+				size = { 100% 100% }
+				autoresizescrollarea = no
+				scrollbar_vertical = {
+					using = Scrollbar_Vertical
+				}
+				scrollbarpolicy_horizontal = always_off
+				scrollwidget = {
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						layoutpolicy_vertical = expanding   # <-- Add this line!
+						# position = { 0 -100 }
 			
+						harem_dynamicgrid = {
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_two_consort_list')]"
+							datamodel_wrap = 2
+							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_top_two_consort_list') ) )]"
+						}
 
-			expand = {}
+						harem_dynamicgrid = {
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_three_consort_list')]"
+							datamodel_wrap = 3
+							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_top_three_consort_list') ) )]"
+						}
+			
+						harem_dynamicgrid = {
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_consort_list')]"
+							datamodel_wrap = 4
+							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_consort_list') ) )]"
+						}
+						margin_bottom = 20
+					}
+				}
+			}
+		}
+
+		# Button
+		widget = {
+			size = { 0 0 }
+
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			
+			decision_confirm_button = {
+				name = "harem_decision_button"
+				text = "IM_TT_HAREM_WINDOW"
+				onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				onclick = "[GetScriptedGui('visit_harem_gui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				enabled = "[Not(GetPlayer.MakeScope.Var('cant_visit_harem').IsSet)]"
+				size = { 380 50 }
+				#position = { 0 22 }
+				parentanchor = center
+				
+				tooltip = "cant_visit_harem_tooltip"
+				tooltip_visible = "[GetPlayer.MakeScope.Var('cant_visit_harem').IsSet]"
+			}
+		}
+    }
+}
+
+types harem_types {
+	# The head of the harem's grid
+    type window_harem_special_character = dynamicgridbox {
+        name = "harem_grid"
+        datamodel = "[GetPlayer.MakeScope.GetList('harem_head_list')]"
+        flipdirection = yes
+        item = {
+            harem_special_griditem = {}
+        }
+    }
+	type harem_special_griditem = widget {
+        size = { 210 210 }
+        datacontext = "[Scope.GetCharacter]"
+
+		# Overlay mask
+		widget = {
+			size = { 210 210 }
+			position = { 0 -20 }
+			parentanchor = center
+			background = {
+				using = Background_Area_Dark
+				alpha = 0.8
+			}
+		}
+
+		text_single = {
+            parentanchor = top|hcenter
+            using = Font_Size_Medium
+            position = { 0 -15 }  # Moved down to be below the hbox
+            text = "[Character.Custom('consort_rank_localization')][Character.Custom('harem_head_localization')]"
+        }
+        
+        text_single = {
+            parentanchor = top|hcenter
+            using = Font_Size_Small
+            position = { 0 16 }  # Moved down to be below the hbox
+            text = "[Character.GetFirstNameNoTooltip]"
+        }
+        
+        harem_special_consort_portrait = {}
+
+		# 4. NEW: HBox for Icons
+		hbox = {
+			layoutpolicy_horizontal = expanding  # This outer hbox spans the full width of the parent
+			parentanchor = bottom|hcenter
+			position = { 0 63 }
+
+			expand = {} # This spacer pushes the content to the right
+
+			# This inner hbox groups the icons together tightly
+			hbox = {
+				spacing = 5
+
+				# Icon 1: House Banner
+				widget = {
+					size = { 35 35 }
+					coa_house_small = {
+						datacontext = "[Character.GetHouse]"
+						parentanchor = center
+						scale = 0.5
+					}
+				}
+
+				# Icon 2: Level of Favor
+				text_single = {
+					text = "[Character.Custom('consort_favor_level')]"
+					using = Font_Size_Medium
+					margin_top = -5
+				}
+
+				# # Icon 3: Temperament
+				text_single = {
+					text = "consort_temperament"
+					using = Font_Size_Medium
+					tooltip = "consort_temperament_tooltip"
+					margin_top = -5
+				}
+			}
+
+			expand = {} # This spacer pushes the content to the left
+		}
+    }
+    type harem_special_consort_portrait = portrait_head {
+        parentanchor = hcenter|vcenter
+        position = { 0 -12 }
+        size = { 110 110 }  # Reduced from 200 200
+        portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
+        # mask = "gfx/portraits/portrait_mask_head.dds"
+    }
+
+	# Other consorts' grid
+    type harem_dynamicgrid = dynamicgridbox {
+		name = "harem_grid"
+
+		flipdirection = yes
+		
+		item = {
+			harem_griditem = {}
+		}
+	}
+	type harem_griditem = widget {
+		allow_outside = yes
+		size = { 155 190 }
+		datacontext = "[Scope.GetCharacter]"
+	
+		vbox = {
+			margin_top = 20  # This adds space above the first row
+	
+			text_single = {
+				text = "[Character.Custom('consort_rank_localization')]"
+				using = Font_Size_Small
+			}
+			text_single = {
+				text = "[Character.GetFirstNameNoTooltip]"
+				using = Font_Size_Small
+			}
+			harem_portrait_head_small = {}
+
+			# 4. NEW: HBox for Icons
+			hbox = {
+				#layoutpolicy_horizontal = expanding  # Make the hbox fill the parent's width <-- REMOVED
+				spacing = 5
+	
+				# Icon 1: House Banner
+				widget = {
+					size = { 35 35 }
+					parentanchor = left
+					coa_house_small = {
+						datacontext = "[Character.GetHouse]"
+						parentanchor = center
+						scale = 0.57
+					}
+				}
+	
+				# Icon 2: Level of Favor
+				text_single = {
+					text = "[Character.Custom('consort_favor_level')]"
+					using = Font_Size_Medium
+					margin_top = -5
+				}
+
+				# # Icon 3: Temperament
+				text_single = {
+					text = "consort_temperament"
+					using = Font_Size_Medium
+					tooltip = "consort_temperament_tooltip"
+					margin_top = -5
+				}
+			}
+		}
+	}
+    type harem_consort_portrait = portrait_head {
+        parentanchor = hcenter|vcenter
+        position = { 0 0 }
+        size = { 110 110 }  # Reduced from 200 200
+        portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
+        # mask = "gfx/portraits/portrait_mask_head.dds"
+    }
+
+    type harem_portrait_head_small = widget {
+		size = { 100 100 }
+
+		background = {
+			using = Background_Area_Solid
+
+			modify_texture = {
+				texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+				blend_mode = alphamultiply
+				alpha = 0.2
+				mirror = vertical
+			}
+		}
+
+		background = {
+			block "empty_character" {}
+			visible = "[Not( Character.HasLandedTitles )]"
+			texture = "gfx/portraits/portrait_frame.dds"
+			using = Color_Grey
+			margin = { -4 -4 }
+			alpha = 0.4
+		}
+
+		widget = {
+			size = { 100% 100% }
+			using = Portrait_Background_Glows
+
+			block "empty_character" {}
+		}
+
+		portrait_button = {
+			parentanchor = center
+			size = { 80 100 }
+			using = portrait_base
+
+			block "portrait_texture"
+			{
+				portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
+			}
+
+			mask = "gfx/portraits/portrait_mask_head_small.dds"
+			effectname = "NoHighlight"
+
+			highlight_icon = {
+				name = "prison_bars"
+				visible = "[Character.IsImprisoned]"
+				visible_at_creation = no
+				size = { 80 88 }
+				parentanchor = center
+				effectname = "NoHighlight"
+				texture = "gfx/portraits/portrait_prison_head.dds"
+
+				modify_texture = {
+					name = "mask"
+					texture = "gfx/portraits/portrait_mask_head_small.dds"
+					spriteType = Corneredstretched
+					blend_mode = alphamultiply
+				}
+			}
+
+			block "portrait_button" {}
+		}
+
+		widget_portrait_frame = {}
+
+		widget = {
+			size = { 100% 100% }
+			visible = "[Not( Character.HasLandedTitles )]"
+			block "empty_character" {}
+
+			background = {
+				texture = "gfx/portraits/portrait_frame.dds"
+				using = Color_Grey
+				margin = { -4 -4 }
+				alpha = 0.4
+
+				modify_texture = {
+					texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+					blend_mode = alphamultiply
+					mirror = vertical
+				}
+			}
+
+			background = {
+				visible = "[Character.IsHovered]"
+				texture = "gfx/portraits/portrait_frame.dds"
+				using = Color_Grey
+				alpha = 0.7
+				margin = { -4 -4 }
+			}
+		}
+
+		flowcontainer = {
+			parentanchor = bottom|right
+			ignoreinvisible = yes
+			direction = vertical
+			margin = { 4 0 }
+			margin_bottom = 5
+
+			portrait_status_icons_small = {
+				parentanchor = right
+			}
+
+			block "opinion_box"
+			{
+				portrait_opinion_small = {
+					name = "tutorial_highlight_character_view_opinion_heir"
+				}
+			}
 		}
 	}
 }

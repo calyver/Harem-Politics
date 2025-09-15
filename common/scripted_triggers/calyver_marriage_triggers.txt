@@ -65,6 +65,10 @@ make_concubine_is_valid_trigger = {
 			}
 		}
 		is_hostage = no
+		can_be_taken_as_muslim_concubine_trigger = { 
+			CHARACTER = scope:actor 
+			RECEIVER = scope:actor
+		}
 	}
 }
 
@@ -140,6 +144,46 @@ can_become_concubine_of_character_trigger = {
 	could_marry_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, recent divorce, allowed to marry, no illegal incest etc.
 }
 
+can_be_offered_as_concubine_to_character_trigger = {
+	trigger_if = {
+		limit = {
+			NOT = { is_imprisoned_by = $GIVER$ }
+		}
+		is_married = no
+		is_betrothed = no
+		OR = {
+			is_concubine = no
+			is_concubine_of = $GIVER$
+		}
+		number_of_concubines = 0
+	}
+	trigger_if = {
+		limit = {
+			is_imprisoned_by = $GIVER$
+			is_married = yes
+		}
+		NOR = {
+			is_spouse_of = $CHARACTER$
+			is_spouse_of = $GIVER$
+		}
+	}
+	NOR = {
+		is_concubine_of = $CHARACTER$
+		has_character_flag = has_been_offered_as_concubine
+	}
+	is_ruler = no
+	is_playable_character = no
+	is_adult = yes
+	NOT = {
+		is_theocratic_lessee = yes
+	}
+	could_marry_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, recent divorce, allowed to marry, no illegal incest etc.
+	can_be_taken_as_muslim_concubine_trigger = { # Can a Muslim be taken as a concubine?
+		CHARACTER = $GIVER$
+		RECEIVER = $CHARACTER$
+	}
+}
+
 valid_marriage_legitimacy_rank_trigger = {
 	# ROOT = character being checked (either OTHER or their relative)
 	# RULER = character getting legitimacy
@@ -164,6 +208,112 @@ valid_marriage_legitimacy_rank_trigger = {
 			}
 			$RULER$ = {
 				highest_held_title_tier >= tier_empire
+			}
+		}
+	}
+}
+
+can_be_taken_as_muslim_concubine_trigger = {
+	# CHARACTER = the actor, either taking the concubine or offering them
+	# RECEIVER = the character being offered the concubine, if they exist
+	custom_tooltip = {
+		text = take_muslim_concubine_trigger
+		trigger_if = {
+			limit = {
+				religion = religion:islam_religion
+			}
+			OR = {
+				is_imprisoned_by = $CHARACTER$ # If they are imprisoned, they kinda are slaves already
+				AND = {
+					is_concubine_of = $CHARACTER$ # To send concubines to fellow Muslims
+					$RECEIVER$ != $CHARACTER$
+				}
+				$CHARACTER$ = {
+					trigger_if = {
+						limit = {
+							religion = religion:islam_religion
+						}
+						has_trait = cynical
+					}
+					trigger_else = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+				}
+				has_character_flag = abducted_non_believer
+			}
+			trigger_if = { # Offering a concubine to a fellow Muslim
+				limit = {
+					$RECEIVER$ != $CHARACTER$
+				}
+				trigger_if = { # If the concubine isn't a slave, the receiver can't be a Muslim, or they're cynical
+					limit = {
+						is_imprisoned = no
+						is_concubine = no
+						NOT = { has_character_flag = abducted_non_believer }
+					}
+					$RECEIVER$ = {
+						trigger_if = {
+							limit = {
+								religion = religion:islam_religion
+							}
+							has_trait = cynical
+						}
+						trigger_else = {
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
+					}
+				}
+			}
+		}
+		trigger_else = {
+			NOT = {
+				religion = religion:islam_religion
+			}
+		}
+	}
+	# You cannot offer your children's parents
+	trigger_if = {
+		limit = {
+			$CHARACTER$ != $RECEIVER$
+		}
+		trigger_if = { # Prevent the AI from offering potential heirs
+			limit = {
+				has_trait = pregnant
+				exists = pregnancy_assumed_father
+			}
+			NOT = { pregnancy_assumed_father = $CHARACTER$ }
+		}
+		trigger_if = { # After having a child, a concubine can't be given away
+			limit = {
+				$CHARACTER$.religion = religion:islam_religion
+			}
+			NOT = {
+				any_child = {
+					even_if_dead = yes
+					is_child_of = $CHARACTER$
+					count > 0
+				}
+			}
+		}
+	}
+	custom_tooltip = {
+		text = take_concubine_ex_spouse_faith
+		trigger_if = { # You can't take a freed person as a concubine
+			limit = {
+				$CHARACTER$.religion = religion:islam_religion
+			}
+			NOR = {
+				is_spouse_of = $CHARACTER$
+				has_divorced_opinion_trigger = {
+					TARGET = $CHARACTER$
+				}
+				any_former_spouse = {
+					this = $CHARACTER$
+				}
 			}
 		}
 	}
