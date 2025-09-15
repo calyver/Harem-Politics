@@ -19782,6 +19782,1040 @@ consort_events.0036 = {
 	}
 }
 
+######################
+##Summon to chambers##
+######################
+consort_events.0037 = {
+	type = character_event
+	title = consort_events.0037.t
+	desc = consort_events.0037.desc
+	theme = seduce_scheme
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = { 	
+		character = scope:actor
+		animation = flirtation
+	}
+	right_portrait = { 	
+		character = scope:recipient
+		animation = flirtation
+	}
+	
+	trigger = {
+		scope:recipient = {
+			is_alive = yes
+			is_consort_of = scope:actor
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+			NOT = {
+				has_trait = pregnant
+			}
+			is_physically_able = yes
+			is_healthy = yes
+			is_imprisoned = no
+		}
+		scope:actor = {
+			is_alive = yes
+			is_physically_able = yes
+			is_healthy = yes
+			is_imprisoned = no
+			NOR = {
+				has_trait = celibate
+				has_trait = devoted
+			}
+		}
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				has_character_flag = summoned_to_chambers_flag
+			}
+			remove_character_flag = summoned_to_chambers_flag
+		}
+		add_character_flag = {
+			flag = summoned_to_chambers_flag
+			years = 1
+		}
+		add_character_flag = {
+			flag = is_naked
+			days = 30
+		}
+		scope:recipient = {
+			add_character_flag = {
+				flag = is_naked
+				days = 30
+			}
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:recipient
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		random_list = {
+			50 = { # A very good night
+
+			}
+		}
+	}
+	
+	#Langua's "friendship bracelet"
+	option = {
+		name = consort_events.0019.a
+		trigger = { 
+			OR = { 
+				any_spouse = { 
+					this = scope:partner
+				}
+				has_court_position = grand_consort_court_position
+			}
+		}
+		random_list = {
+			75 = { #The consort accepts it
+				opinion_modifier = { #Opinion
+					WHO = scope:threatening_consort
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = 1
+				}
+				modifier = { #Traits
+					scope:threatening_consort = { has_trait = trusting }
+					add = 20
+				}
+				modifier = { #Spouses
+					is_spouse_of = scope:partner
+					add = 5
+				}
+				modifier = { #Grand Consort
+					root = { 
+						has_court_position = grand_consort_court_position
+					}
+					add = 5
+				}
+				modifier = { #Primary Spouse
+					scope:partner = { 
+						exists = primary_spouse
+						primary_spouse = {
+							this = root
+						}
+					}
+					add = 50
+				}
+
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 5
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = favored_consort_modifier
+					}
+					add = 5
+				}
+
+				modifier = { #Favored consorts
+					has_relation_friend = scope:threatening_consort
+					add = 15
+				}
+
+				compare_modifier = { #Intrigue
+					value = intrigue
+					multiplier = 1
+					max = 25
+				}
+
+				scope:threatening_consort = { 
+					add_character_modifier = {
+						modifier = langhua_bracelet_modifier
+					}
+					add_opinion = {
+						target = root
+						modifier = gifted_me_poison_opinion
+					}
+					if = {
+						limit = { can_set_relation_potential_friend_trigger = { CHARACTER = root } }
+						set_relation_potential_friend = root
+					}
+				}
+			}
+			25 = { #They reject the bracelet
+				opinion_modifier = { #Opinion
+					WHO = scope:threatening_consort
+					opinion_target = root
+					min = -20
+					max = 10
+					multiplier = -1
+				}
+				modifier = { #Traits
+					scope:threatening_consort = { has_trait = paranoid }
+					add = 15
+				}
+				compare_modifier = { #Intrigue
+					value = scope:threatening_consort.intrigue
+					multiplier = 1
+					max = 25
+				}
+
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = unfavored_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = forgotten_consort_modifier
+					}
+					add = 15
+				}
+
+				modifier = { #Primary Spouse
+					scope:partner = { 
+						exists = primary_spouse
+						primary_spouse = {
+							this = scope:threatening_consort
+						}
+					}
+					add = 10
+				}
+				modifier = { #GC
+					scope:threatening_consort = { 
+						has_court_position = grand_consort_court_position
+					}
+					add = 5
+				}
+				modifier = { #SS
+					scope:threatening_consort = { 
+						is_married = yes
+					}
+					add = 5
+				}
+
+				modifier = { #Suspicion
+					scope:threatening_consort = { 
+						has_opinion_modifier = {
+							modifier = suspicion_opinion
+							target = root
+						}
+					}
+					add = 15
+				}
+
+				modifier = { #Herbalist
+					scope:threatening_consort = { 
+						has_trait = lifestyle_herbalist
+					}
+					add = 20
+				}
+				modifier = { #Scheming consort
+					scope:threatening_consort = { 
+						has_character_modifier = scheming_consort_modifier
+					}
+					add = 15
+				}
+
+				modifier = { #Rivals
+					scope:threatening_consort = { 
+						has_relation_rival = root
+					}
+					add = -15
+				}
+				modifier = { #Rivals
+					scope:threatening_consort = { 
+						has_relation_nemesis = root
+					}
+					add = -25
+				}
+
+				add_opinion = {
+					target = scope:threatening_consort
+					modifier = refusal_opinion
+					opinion = -5
+				}
+				scope:threatening_consort = { 
+					add_opinion = {
+						target = root
+						modifier = suspicion_opinion
+						opinion = -10
+					}
+				}
+			}
+		}
+
+		stress_impact = {
+			honest = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+			just = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = 0.25
+				ai_compassion = -0.25
+				ai_greed = 0.25
+				ai_honor = -0.25
+				ai_energy = 0.15
+			}
+
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:threatening_consort
+				min = -20
+				max = 20
+				multiplier = -1
+			}
+
+			modifier = { #Traits
+				add = 10
+				has_trait = disloyal
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = brave
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = ambitious
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = greedy
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = deceitful
+			}
+			modifier = { #Traits
+				add = -15
+				has_trait = craven
+			}
+			modifier = { #Traits
+				add = -15
+				has_trait = shy
+			}
+
+			modifier = { #Scheming Consorts
+				add = 15
+				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_yanwan
+				add = 15
+			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = 10
+			}
+			modifier = { # Special consorts
+				harem_politics_special_consort_trigger = yes
+				add = 5
+			}
+			
+			modifier = { #Rank
+				exists = scope:partner.primary_spouse
+				this = scope:partner.primary_spouse
+				add = 15
+			}
+			modifier = { #Rank
+				has_court_position = grand_consort_court_position
+				add = 10
+			}
+			modifier = { #Rank
+				is_married = yes
+				add = 5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = 20
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = 15
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = 10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = -15
+			}
+
+			modifier = { #Friends
+				has_relation_friend = scope:threatening_consort
+				add = 20
+			}
+			modifier = { #Rivals
+				has_relation_rival = scope:threatening_consort
+				add = -5
+			}
+			modifier = { #Rivals
+				has_relation_nemesis = scope:threatening_consort
+				add = -15
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_relation_lover = scope:partner
+				}
+				add = 15
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_relation_soulmate = scope:partner
+				}
+				add = 25
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					harem_politics_favored_consort_trigger = yes
+				}
+				add = 10
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 10
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = beauty_good_2
+				}
+				add = 10
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = beauty_good_3
+				}
+				add = 20
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = lifestyle_herbalist
+				}
+				add = -20
+			}
+
+			modifier = { #Favored consorts
+				intrigue <= medium_skill_rating
+				add = -5
+			}
+			modifier = { #Favored consorts
+				intrigue <= mediocre_skill_rating
+				add = -5
+			}
+			modifier = { #Favored consorts
+				intrigue <= low_skill_rating
+				add = -5
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= medium_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= decent_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= high_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= very_high_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= extremely_high_skill_rating
+				}
+				add = -5
+			}
+		}
+	}
+	
+	#Lingrong's "ointment"
+	option = {
+		name = consort_events.0019.b
+		random_list = {
+			50 = { #The consort accepts it
+				opinion_modifier = { #Opinion
+					WHO = scope:threatening_consort
+					opinion_target = root
+					min = -20
+					max = 20
+					multiplier = 1
+				}
+				modifier = { #Traits
+					scope:threatening_consort = { has_trait = trusting }
+					add = 20
+				}
+				modifier = { #Spouses
+					is_spouse_of = scope:partner
+					add = 5
+				}
+				modifier = { #Grand Consort
+					root = { 
+						has_court_position = grand_consort_court_position
+					}
+					add = 5
+				}
+				modifier = { #Primary Spouse
+					scope:partner = { 
+						exists = primary_spouse
+						primary_spouse = {
+							this = root
+						}
+					}
+					add = 50
+				}
+
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 5
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = favored_consort_modifier
+					}
+					add = 5
+				}
+
+				modifier = { #Favored consorts
+					has_relation_friend = scope:threatening_consort
+					add = 15
+				}
+
+				compare_modifier = { #Intrigue
+					value = intrigue
+					multiplier = 1
+					max = 25
+				}
+
+				scope:threatening_consort = { 
+					add_character_modifier = {
+						modifier = lingrong_ointment_modifier
+					}
+					add_opinion = {
+						target = root
+						modifier = gifted_me_poison_opinion
+					}
+					if = {
+						limit = { can_set_relation_potential_friend_trigger = { CHARACTER = root } }
+						set_relation_potential_friend = root
+					}
+				}
+			}
+			50 = { #They reject the bracelet
+				opinion_modifier = { #Opinion
+					WHO = scope:threatening_consort
+					opinion_target = root
+					min = -20
+					max = 10
+					multiplier = -1
+				}
+				modifier = { #Traits
+					scope:threatening_consort = { has_trait = paranoid }
+					add = 15
+				}
+				compare_modifier = { #Intrigue
+					value = scope:threatening_consort.intrigue
+					multiplier = 1
+					max = 25
+				}
+
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = unfavored_consort_modifier
+					}
+					add = 10
+				}
+				modifier = { #Favored consorts
+					root = { 
+						has_character_modifier = forgotten_consort_modifier
+					}
+					add = 15
+				}
+
+				modifier = { #Primary Spouse
+					scope:partner = { 
+						exists = primary_spouse
+						primary_spouse = {
+							this = scope:threatening_consort
+						}
+					}
+					add = 10
+				}
+				modifier = { #GC
+					scope:threatening_consort = { 
+						has_court_position = grand_consort_court_position
+					}
+					add = 5
+				}
+				modifier = { #SS
+					scope:threatening_consort = { 
+						is_married = yes
+					}
+					add = 5
+				}
+
+				modifier = { #Suspicion
+					scope:threatening_consort = { 
+						has_opinion_modifier = {
+							modifier = suspicion_opinion
+							target = root
+						}
+					}
+					add = 15
+				}
+
+				modifier = { #Herbalist
+					scope:threatening_consort = { 
+						has_trait = lifestyle_herbalist
+					}
+					add = 20
+				}
+				modifier = { #Scheming consort
+					scope:threatening_consort = { 
+						has_character_modifier = scheming_consort_modifier
+					}
+					add = 15
+				}
+
+				modifier = { #Rivals
+					scope:threatening_consort = { 
+						has_relation_rival = root
+					}
+					add = -15
+				}
+				modifier = { #Rivals
+					scope:threatening_consort = { 
+						has_relation_nemesis = root
+					}
+					add = -25
+				}
+
+				add_opinion = {
+					target = scope:threatening_consort
+					modifier = refusal_opinion
+					opinion = -5
+				}
+				scope:threatening_consort = { 
+					add_opinion = {
+						target = root
+						modifier = suspicion_opinion
+						opinion = -10
+					}
+				}
+			}
+		}
+
+		stress_impact = {
+			honest = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+			just = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = 0.25
+				ai_compassion = -0.25
+				ai_greed = 0.25
+				ai_honor = -0.25
+				ai_energy = 0.15
+			}
+
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:threatening_consort
+				min = -20
+				max = 20
+				multiplier = -1
+			}
+
+			modifier = { #Traits
+				add = 10
+				has_trait = disloyal
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = brave
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = ambitious
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = greedy
+			}
+			modifier = { #Traits
+				add = 10
+				has_trait = deceitful
+			}
+			modifier = { #Traits
+				add = -15
+				has_trait = craven
+			}
+			modifier = { #Traits
+				add = -15
+				has_trait = shy
+			}
+
+			modifier = { #Scheming Consorts
+				add = 15
+				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_yanwan
+				add = 15
+			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = 10
+			}
+			modifier = { #Special consorts
+				harem_politics_special_consort_trigger = yes
+				add = 5
+			}
+			
+			modifier = { #Rank
+				exists = scope:partner.primary_spouse
+				this = scope:partner.primary_spouse
+				add = 10
+			}
+			modifier = { #Rank
+				has_court_position = grand_consort_court_position
+				add = 5
+			}
+			modifier = { #Rank
+				is_married = yes
+				add = 5
+			}
+
+			modifier = { #Favor
+				has_character_modifier = beloved_consort_modifier
+				add = 20
+			}
+			modifier = { #Favor
+				has_character_modifier = favor_boost_modifier
+				add = 15
+			}
+			modifier = { #Favor
+				has_character_modifier = favored_consort_modifier
+				add = 10
+			}
+
+			modifier = { #Favor
+				has_character_modifier = unfavored_consort_modifier
+				add = -10
+			}
+			modifier = { #Favor
+				has_character_modifier = forgotten_consort_modifier
+				add = -15
+			}
+
+			modifier = { #Friends
+				has_relation_friend = scope:threatening_consort
+				add = 20
+			}
+			modifier = { #Rivals
+				has_relation_rival = scope:threatening_consort
+				add = -5
+			}
+			modifier = { #Rivals
+				has_relation_nemesis = scope:threatening_consort
+				add = -15
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_relation_lover = scope:partner
+				}
+				add = 15
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_relation_soulmate = scope:partner
+				}
+				add = 25
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					harem_politics_favored_consort_trigger = yes
+				}
+				add = 10
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = 10
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = beauty_good_2
+				}
+				add = 10
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = beauty_good_3
+				}
+				add = 20
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					has_trait = lifestyle_herbalist
+				}
+				add = -20
+			}
+
+			modifier = { #Favored consorts
+				intrigue <= medium_skill_rating
+				add = -5
+			}
+			modifier = { #Favored consorts
+				intrigue <= mediocre_skill_rating
+				add = -5
+			}
+			modifier = { #Favored consorts
+				intrigue <= low_skill_rating
+				add = -5
+			}
+
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= medium_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= decent_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= high_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= very_high_skill_rating
+				}
+				add = -5
+			}
+			modifier = { #Favored consorts
+				scope:threatening_consort = {
+					intrigue >= extremely_high_skill_rating
+				}
+				add = -5
+			}
+		}
+	}
+	
+	#Don't do anything
+	option = {
+		name = harem_politics.0012.d
+		stress_impact = {
+			impatient = minor_stress_impact_gain
+		}
+		
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = 0.25
+				ai_compassion = -0.25
+				ai_greed = 0.25
+				ai_honor = -0.25
+				ai_energy = 0.15
+			}
+
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:threatening_consort
+				min = -20
+				max = 20
+				multiplier = 1
+			}
+
+			modifier = { #Traits
+				add = -25
+				has_trait = impatient
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = shy
+			}
+			modifier = { #Traits
+				add = 15
+				has_trait = craven
+			}
+
+			modifier = { #Scheming Consorts
+				add = -15
+				has_character_modifier = scheming_consort_modifier
+			}
+			modifier = { #Consort Ling
+				has_character_flag = flag_yanwan
+				add = -15
+			}
+			modifier = { #Mei
+				has_character_flag = flag_mei
+				add = -10
+			}
+			modifier = { #Special consorts
+				harem_politics_special_consort_trigger = yes
+				add = -5
+			}
+			
+			modifier = { #Intrigue
+				add = 5
+				intrigue <= medium_skill_rating
+			}
+			modifier = { #Intrigue
+				add = 5
+				intrigue <= mediocre_skill_rating
+			}
+			modifier = { #Intrigue
+				add = 10
+				intrigue <= low_skill_rating
+			}
+			
+			modifier = { #Intrigue
+				add = -5
+				intrigue >= high_skill_rating
+			}
+			modifier = { #Intrigue
+				add = -5
+				intrigue >= very_high_skill_rating
+			}
+			modifier = { #Intrigue
+				add = -10
+				intrigue >= extremely_high_skill_rating
+			}
+
+			modifier = { #Unfavor
+				add = 10
+				has_character_modifier = unfavored_consort_modifier
+			}
+			modifier = { #Unfavor
+				add = 20
+				has_character_modifier = forgotten_consort_modifier
+			}
+
+			modifier = { #Relations
+				add = 10
+				has_relation_rival = scope:threatening_consort
+			}
+			modifier = { #Relations
+				add = 20
+				has_relation_nemesis = scope:threatening_consort
+			}
+
+			modifier = { #Primary Spouse
+				scope:partner = { 
+					exists = primary_spouse
+					primary_spouse = {
+						this = scope:threatening_consort
+					}
+				}
+				add = 15
+			}
+			modifier = { #GC
+				scope:threatening_consort = { 
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			modifier = { #SS
+				scope:threatening_consort = { 
+					is_married = yes
+				}
+				add = 5
+			}
+
+			modifier = { #Traits
+				scope:threatening_consort = { has_trait = paranoid }
+				add = 15
+			}
+
+			modifier = { #Herbalist
+				scope:threatening_consort = { 
+					has_trait = lifestyle_herbalist
+				}
+				add = 20
+			}
+			modifier = { #Scheming consort
+				scope:threatening_consort = { 
+					has_character_modifier = scheming_consort_modifier
+				}
+				add = 20
+			}
+		}
+	}
+	
+	after = {
+		if = {
+			limit = { has_character_flag = is_naked }
+			remove_character_flag = is_naked
+		}
+		scope:recipient = {
+			if = {
+				limit = {
+					has_character_flag = is_naked
+				}
+				remove_character_flag = is_naked
+			}
+		}
+	}
+}
+
 ####################
 ##Bestowing a name##
 ####################

@@ -874,13 +874,21 @@ summon_to_chambers_interaction = {
 
 	is_shown = {
 		scope:actor = {
+			is_landed_or_landless_administrative = yes
 			any_consort = {
 				is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
 				is_imprisoned = no
 				count >= 3
 			}
+			NOR = {
+				has_trait = celibate
+				has_trait = eunuch
+				has_trait = pregnant
+				has_trait = devoted
+			}
 		}
 		scope:recipient = {
+			is_consort_of = scope:actor
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
 			NOT = {
 				has_trait = pregnant
@@ -900,13 +908,90 @@ summon_to_chambers_interaction = {
 			is_physically_able = yes
 			is_healthy = yes
 		}
+		custom_tooltip = {
+			text = already_favored_recipient
+			scope:actor = {
+				NOT = {
+					has_character_flag = summoned_to_chambers_flag
+				}
+			}
+		}
+		# IMPORTANT: ADD THE CUSTOM TOOLTIP FOR THE FLAG. THE FLAG SHOULD BE ADDED FOR 1 YEAR DURING THE EVENT
 	}
 
 	on_accept = {
 		scope:actor = {
-			trigger_event = {
-				id = harem_politics.0028 # Check the event code
-				days = { 3 5 }
+			add_character_flag = {
+				flag = summoned_to_chambers_flag
+				days = 10
+			}
+			# Chance of 2 effects: success, or failure with opportunity to make things better. Maybe an event in which your chosen consort was injured by a jealous rival like Mei/Hurrem?
+			# For any success, there should be 2 possible outcomes: more favor with an opportunity to build a romance and maybe 5 (or 10?) opinion and just some favor with little opinion, like 5
+			random_list = {
+				50 = { # Successful night
+					opinion_modifier = { # Opinion of you
+						who = scope:recipient
+						opinion_target = scope:actor
+						multiplier = 0.5
+					}
+					compatibility_modifier = {
+						who = scope:recipient
+						compatibility_target = scope:actor
+						min = -25
+						max = 25
+						multiplier = 0.5
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = ambitious
+						}
+						add = 10
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = greedy
+						}
+						add = 10
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = arrogant
+						}
+						add = 10
+					}
+				}
+				50 = { # Stressful night
+					opinion_modifier = { # Opinion of you
+						who = scope:recipient
+						opinion_target = scope:actor
+						multiplier = -0.5
+					}
+					compatibility_modifier = {
+						who = scope:recipient
+						compatibility_target = scope:actor
+						min = -25
+						max = 25
+						multiplier = -0.5
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = craven
+						}
+						add = 10
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = shy
+						}
+						add = 15
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = chaste
+						}
+						add = 15
+					}
+				}
 			}
 		}
 	}
