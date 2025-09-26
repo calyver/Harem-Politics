@@ -2262,7 +2262,7 @@ bride_show.3005 = {
 				exists = scope:potential_candidate.court_owner
 			}
 			modifier = { #Weigh down for stress
-				add = -25
+				add = -15
 				has_trait = shy
 			}
 			modifier = { #More likely if root is lustful
@@ -2384,21 +2384,6 @@ bride_show.3005 = {
 					has_trait = golden_lineage
 				}
 			}
-			modifier = { #More likely if the candidate is virtuous
-				add = 10
-				scope:potential_candidate = {
-					num_sinful_traits = 0
-				}
-			}
-			modifier = { #More likely if the candidate is virtuous
-				add = {
-					value = scope:potential_candidate.num_virtuous_traits
-					multiply = 5
-				}
-				scope:potential_candidate = {
-					num_virtuous_traits >= 1
-				}
-			}
 
 			# Skills
 			modifier = { #More likely if candidate has good skills
@@ -2413,6 +2398,7 @@ bride_show.3005 = {
 			}
 			modifier = {
 				has_trait = poet
+				add = 15
 			}
 			modifier = { #More likely if the candidate isn't a criminal
 				add = 5
@@ -2480,10 +2466,6 @@ bride_show.3005 = {
 			remove_short_term_gold = bride_compensation_payment_value
 		}
 		
-		scope:potential_candidate = {
-			bride_show_saved_candidate_effect = yes # Check
-			bride_show_break_betrothal_candidate_effect = yes # Check
-		}
 		hidden_effect = {
 			if = {
 				limit = {
@@ -2550,7 +2532,6 @@ bride_show.3005 = {
 		}
 		
 		scope:potential_candidate = {
-			bride_show_saved_candidate_effect = yes
 			add_character_flag = {
 				flag = rejected_candidate_flag
 				days = 5
@@ -2590,71 +2571,167 @@ bride_show.3005 = {
 			}
 		}
 		ai_chance = {
-			base = 15
-			modifier = { #Paranoid
-				add = 20
-				has_trait = paranoid
+			base = 35
+			# Compatibility
+			compatibility_modifier = { #Trait compatibility
+				who = root
+				compatibility_target = scope:potential_candidate
+				min = -50
+				max = 50
+				multiplier = -2
 			}
-			modifier = { #Shy
-				add = 20
+			option_modifier = {
+				who = scope:liege
+				opinion_target = scope:potential_candidate
+				multiplier = -0.2
+			}
+			# Traits
+			modifier = { #Weigh down for stress
+				add = 35
+				has_trait = paranoid
+				exists = scope:potential_candidate.court_owner
+			}
+			modifier = { #Weigh down for stress
+				add = 10
 				has_trait = shy
 			}
-			modifier = { #Craven
-				add = 10
-				has_trait = craven
+			modifier = { #More likely if root is lustful
+				add = -35
+				has_trait = lustful
 			}
-			modifier = { #More likely if the candidate is not the child of a vassal
-				add = 30
-				scope:potential_candidate = {
-					NOT = {
-						any_close_family_member = { 
-							is_vassal_of = root 
-						}
+
+			# Number of concubines
+			modifier = { #More likely if root doesn't have enough spouses
+				add = 15
+				number_of_concubines >= number_of_desired_concubines
+			}
+
+			# Sender
+			modifier = { #More likely if the candidate was sent by a vassal
+				add = -5
+				scope:potential_candidate.court_owner ?= {
+					OR = {
+						is_tributary_of = root
+						is_vassal_of = root
 					}
 				}
 			}
-			modifier = { #More likely if the candidate doesn't have any good traits
-				add = 15
-				scope:potential_candidate = {
-					NOR = {
-						has_trait = beauty_good
-						has_trait = intellect_good
-						has_trait = physique_good
-						has_trait = fecund
-					}
-				}
-			}
-			modifier = { #More likely if candidate has bad skills
-				add = 15
-				scope:potential_candidate = {
-					NOR = {
-						learning >= medium_skill_rating
-						diplomacy >= medium_skill_rating
-						martial >= medium_skill_rating
-						stewardship >= medium_skill_rating
-						intrigue >= medium_skill_rating
-						prowess >= medium_skill_rating
+			modifier = { #More likely if the candidate was sent by a powerful vassal
+				add = -10
+				scope:potential_candidate.court_owner ?= {
+					OR = {
+						is_powerful_vassal_of = root
+						is_councillor_of = root
 					}
 				}
 			}
 			modifier = {
-				scope:potential_candidate = {
-					num_of_bad_genetic_traits >= 1
-				}
-				add = {
-					value = 25
-					if = {
-						limit = {
-							num_of_bad_genetic_traits >= 2
-						}
-						add = 10
+				government_has_flag = government_is_administrative
+				scope:potential_candidate.court_owner ?= {
+					government_has_flag = government_is_administrative
+					top_liege ?= scope:liege
+					house ?= {
+						is_dominant_family = yes
 					}
 				}
+				add = -15
+			}
+			modifier = {
+				scope:potential_candidate.court_owner ?= {
+					tier_difference = {
+						target = scope:liege
+						value >= -1
+					}
+				}
+				add = -5
+			}
+
+			# Genetic traits
+			modifier = { # Beauty
+				add = -10
+				scope:potential_candidate = {
+					has_trait = beauty_good_1
+				}
+			}
+			modifier = { # Beauty
+				add = -15
+				scope:potential_candidate = {
+					has_trait = beauty_good_2
+				}
+			}
+			modifier = { # Beauty
+				add = -20
+				scope:potential_candidate = {
+					has_trait = beauty_good_3
+				}
+			}
+
+			modifier = { # Physique
+				add = -5
+				scope:potential_candidate = {
+					has_trait = physique_good_1
+				}
+			}
+			modifier = { # Physique
+				add = -10
+				scope:potential_candidate = {
+					has_trait = physique_good_2
+				}
+			}
+			modifier = { # Physique
+				add = -15
+				scope:potential_candidate = {
+					has_trait = physique_good_3
+				}
+			}
+
+			modifier = { # Intellect
+				add = -5
+				scope:potential_candidate = {
+					has_trait = intellect_good_1
+				}
+			}
+			modifier = { # Intellect
+				add = -10
+				scope:potential_candidate = {
+					OR = {
+						has_trait = intellect_good_2
+						has_trait = intellect_good_3
+					}
+				}
+			}
+
+			#Other traits
+			modifier = { #More likely if the candidate has excellent traits
+				add = -25
+				scope:potential_candidate = {
+					has_trait = pure_blooded
+				}
+			}
+			modifier = { #More likely if the candidate has excellent traits
+				add = -40
+				scope:potential_candidate = {
+					has_trait = golden_lineage
+				}
+			}
+
+			modifier = {
+				has_trait = poet
+				add = -15
+			}
+			modifier = { #More likely if the candidate isn't a criminal
+				add = -10
+				NOT = { has_imprisonment_reason = scope:potential_candidate }
 			}
 		}
 	}
 	
 	after = {
+		scope:potential_candidate = {
+			bride_show_saved_candidate_effect = {
+				LIST = potential_candidates_list
+			}
+		}
 		if = {
 			limit = {
 				exists = scope:pc_court_owner
@@ -2662,8 +2739,13 @@ bride_show.3005 = {
 			clear_saved_scope = pc_court_owner
 		}
 		hidden_effect = {
-			bride_show_next_candidate_effect = yes
+			recruit_royal_concubines_next_candidate_effect = yes
 		}
 	}
 
 }
+
+## See your candidates ##
+# bride_show.3006 = {
+
+# }
