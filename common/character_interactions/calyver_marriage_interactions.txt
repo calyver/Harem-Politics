@@ -1342,7 +1342,7 @@ marry_off_interaction = {
 				}
 			}
 		}
-		
+
 		influence = {
 			value = 0
 			if = {
@@ -1376,37 +1376,6 @@ marry_off_interaction = {
 				is_courtier_of = scope:actor
 				AND = {
 					is_child_of = scope:actor
-					target_is_liege_or_above = scope:actor
-				}
-				# LMF: added primary heir's children in your realm
-				AND = {
-					scope:actor = { is_ai = no }
-					any_parent = {
-						is_child_of = scope:actor
-						is_primary_heir_of = scope:actor
-					}
-					target_is_liege_or_above = scope:actor
-				}
-				# LMF: added primary heir's grandchildren in your realm
-				AND = {
-					scope:actor = { is_ai = no }
-					any_parent = {
-						even_if_dead = yes
-						any_parent = {
-							is_child_of = scope:actor
-							is_primary_heir_of = scope:actor
-						}
-					}
-					target_is_liege_or_above = scope:actor
-				}
-				# LMF: added grandchildren/great-grandchildren who are your heirs and in your realm
-				AND = {
-					scope:actor = { is_ai = no }
-					is_primary_heir_of = scope:actor
-					OR = {
-						is_grandchild_of = scope:actor
-						is_great_grandchild_of = scope:actor
-					}
 					target_is_liege_or_above = scope:actor
 				}
 				scope:actor = this
@@ -1501,27 +1470,31 @@ marry_off_interaction = {
 					}
 					remove_short_term_gold = ai_wedding_promise_gold_actor
 				}
+				#if = { # Activity count debugging, left in for QA purposes
+				#	limit = {
+				#		NOT = {
+				#			exists = global_var:wedding_promise
+				#		}
+				#	}
+				#	set_global_variable = {
+				#		name = wedding_promise
+				#		value = 1
+				#	}
+				#}
+				#else = {
+				#	change_global_variable = {
+				#		name = wedding_promise
+				#		add = 1
+				#	}
+				#}
 			}
-		}
-		if = {
-			limit = { exists = global_var:travel_the_distance_is_loaded }
-			ttd_on_send_marriage_effect = yes
 		}
 	}
 
 	on_accept = {
-		marriage_interaction_on_accept_effect = yes
-		
-		# If we're a clan this interaction affects unity
-		add_clan_unity_interaction_effect = {
-			CHARACTER = scope:actor
-			TARGET = scope:recipient
-			VALUE = medium_unity_gain
-			DESC = clan_unity_marry_off.desc
-			REVERSE_NON_HOUSE_TARGET = no
-		}
-		
-		scope:actor = {
+		marriage_interaction_on_accept_effect = yes	
+
+		scope:actor = { 
 			if = {
 				limit = {
 					scope:herd_send_option = yes
@@ -1538,11 +1511,6 @@ marry_off_interaction = {
 				remove_variable = grand_wedding_promise_pending
 			}
 		}
-		
-		if = {
-			limit = { exists = global_var:travel_the_distance_is_loaded }
-			ttd_on_accept_marriage_effect = yes
-		}
 	}
 
 	on_decline = {
@@ -1558,7 +1526,7 @@ marry_off_interaction = {
 				remove_variable = grand_wedding_promise_pending
 			}
 		}
-		
+
 		# If we're a clan this interaction affects unity
 		add_clan_unity_interaction_effect = {
 			CHARACTER = scope:actor
@@ -1566,12 +1534,7 @@ marry_off_interaction = {
 			VALUE = medium_unity_loss
 			DESC = clan_unity_marry_off_decline.desc
 			REVERSE_NON_HOUSE_TARGET = no
-		}
-		
-		if = {
-			limit = { exists = global_var:travel_the_distance_is_loaded }
-			ttd_marriage_proposal_clean_up_effect = yes
-		}
+		}		
 	}
 
 	auto_accept = {
@@ -1582,7 +1545,7 @@ marry_off_interaction = {
 		base = 0 # Should be 0 for all interactions
 		
 		marriage_ai_accept_modifier = yes
-		
+
 		# Unity modifiers
 		evaluate_action_increasing_house_unity = {
 			VALUE = 100
@@ -1616,10 +1579,7 @@ marry_off_interaction = {
 		is_valid = {
 			scope:actor = {
 				gold >= real_wedding_cost_actor_scope
-				trigger_if = {
-					limit = { is_ai = yes }
-					is_available = yes
-				}
+				is_available = yes
 				custom_tooltip = {
 					text = grand_wedding_already_promised_tt
 					NOR = {
@@ -1669,79 +1629,6 @@ marry_off_interaction = {
 					faith = {
 						has_doctrine = doctrine_gender_female_dominated
 					}
-					# LMF: added AI option for cultures with equal or female inheritance to use matrilineal
-					AND = {
-						is_ai = yes
-						scope:secondary_actor = { is_female = yes }
-						culture = {
-							OR = {
-								has_cultural_tradition = tradition_equal_inheritance
-								has_cultural_tradition = tradition_female_only_inheritance
-							}
-						}
-						OR = {
-							is_landed = yes
-							any_heir_title = {}
-						}
-						NOR = {
-							has_game_rule = matrilineal_marriages_never
-							has_game_rule = matrilineal_marriages_female_and_equal
-						}
-					}
-					# LMF: added AI option for female rulers to use matrilineal for their own wedding
-					AND = {
-						is_landed = yes
-						scope:actor = scope:secondary_actor
-						is_female = yes
-						is_ai = yes
-						NOR = {
-							has_trait = humble
-							has_trait = zealous
-							has_game_rule = matrilineal_marriages_never
-							has_game_rule = matrilineal_marriages_female_and_equal
-						}
-					}
-					# LMF: added AI option for dukes+ to use matrilineal for their female heirs
-					AND = {
-						is_landed = yes
-						primary_title.tier >= tier_duchy
-						is_ai = yes
-						scope:secondary_actor = {
-							is_female = yes
-							is_primary_heir_of = scope:actor
-						}
-						NOR = {
-							has_trait = humble
-							has_trait = zealous
-							has_game_rule = matrilineal_marriages_never
-							has_game_rule = matrilineal_marriages_female_and_equal
-						}
-					}
-					# LMF: added AI option for bold dukes+ to use matrilineal once they have enough alliances
-					AND = {
-						is_landed = yes
-						primary_title.tier >= tier_duchy
-						is_ai = yes
-						scope:secondary_actor = {
-							is_female = yes
-							is_close_family_of = scope:actor
-							dynasty ?= scope:actor.dynasty
-						}
-						ai_boldness >= medium_positive_boldness
-						any_ally = {
-							NOR = {
-								target_is_vassal_or_below = scope:actor
-								target_is_liege_or_above = scope:actor
-							}
-							count >= 4
-						}
-						NOR = {
-							has_trait = humble
-							has_trait = zealous
-							has_game_rule = matrilineal_marriages_never
-							has_game_rule = matrilineal_marriages_female_and_equal
-						}
-					}					
 					AND = {
 						scope:secondary_actor = { is_female = yes }
 						faith = { has_doctrine = doctrine_gender_equal }
@@ -1767,7 +1654,7 @@ marry_off_interaction = {
 		localization = MARRIAGE_HOOK
 	}
 	#This option cannot be linked with the hook icon, because recipient isn't known in the right-click menu
-	
+
 	send_option = { # EP3 Influence
 		is_shown = { # Actor must have a government that uses influence 
 			scope:actor = {
@@ -1786,7 +1673,6 @@ marry_off_interaction = {
 		flag = influence_send_option
 		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
 	}
-	
 	send_option = { # MPO Herd
 		is_shown = { # Actor must have a government that uses Herd 
 			scope:actor = {
