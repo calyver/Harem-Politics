@@ -916,6 +916,14 @@ summon_to_chambers_interaction = {
 				}
 			}
 		}
+		custom_tooltip = {
+			text = rejected_from_bed_recipient	# Check
+			scope:recipient = {
+				NOT = {
+					has_character_modifier = rejected_from_marriage_bed_modifier
+				}
+			}
+		}
 	}
 
 	on_accept = {
@@ -927,7 +935,7 @@ summon_to_chambers_interaction = {
 			# Chance of 2 effects: success, or failure with opportunity to make things better. Maybe an event in which your chosen consort was injured by a jealous rival like Mei/Hurrem?
 			# For any success, there should be 2 possible outcomes: more favor with an opportunity to build a romance and maybe 5 (or 10?) opinion and just some favor with little opinion, like 5
 			random_list = {
-				50 = { # Successful night
+				50 = { # Success
 					opinion_modifier = { # Opinion of you
 						who = scope:recipient
 						opinion_target = scope:actor
@@ -940,6 +948,17 @@ summon_to_chambers_interaction = {
 						max = 25
 						multiplier = 0.5
 					}
+					# Experience
+					modifier = {
+						scope:recipient = {
+							any_child = {
+								even_if_dead = yes
+								count > 0
+							}
+						}
+						add = 10
+					}
+					# Traits
 					modifier = {
 						scope:recipient = {
 							has_trait = ambitious
@@ -958,43 +977,142 @@ summon_to_chambers_interaction = {
 						}
 						add = 10
 					}
+					# Relationships
+					modifier = {
+						OR = {
+							has_relation_soulmate = scope:recipient
+							has_relation_lover = scope:recipient
+						}
+						add = 20
+					}
+					modifier = {
+						OR = {
+							has_relation_best_friend = scope:recipient
+							has_relation_friend = scope:recipient
+						}
+						add = 10
+					}
+					# Attraction
+					modifier = {
+						scope:recipient = {
+							is_attracted_to_gender_of = scope:actor
+						}
+						add = 10
+					}
+					modifier = {
+						scope:actor = {
+							is_attracted_to_gender_of = scope:recipient
+						}
+						add = 5
+					}
 					trigger_event = {
 						id = consort_events.0037
 						days = { 7 9 }
 					}
 				}
-				# 0 = { # Stressful night
-				# 	opinion_modifier = { # Opinion of you
-				# 		who = scope:recipient
-				# 		opinion_target = scope:actor
-				# 		multiplier = -0.5
-				# 	}
-				# 	compatibility_modifier = {
-				# 		who = scope:recipient
-				# 		compatibility_target = scope:actor
-				# 		min = -25
-				# 		max = 25
-				# 		multiplier = -0.5
-				# 	}
-				# 	modifier = {
-				# 		scope:recipient = {
-				# 			has_trait = craven
-				# 		}
-				# 		add = 10
-				# 	}
-				# 	modifier = {
-				# 		scope:recipient = {
-				# 			has_trait = shy
-				# 		}
-				# 		add = 15
-				# 	}
-				# 	modifier = {
-				# 		scope:recipient = {
-				# 			has_trait = chaste
-				# 		}
-				# 		add = 15
-				# 	}
-				# }
+				50 = { # Failure
+					opinion_modifier = { # Opinion of you
+						who = scope:recipient
+						opinion_target = scope:actor
+						multiplier = -0.5
+					}
+					compatibility_modifier = {
+						who = scope:recipient
+						compatibility_target = scope:actor
+						min = -25
+						max = 25
+						multiplier = -0.5
+					}
+					# Little experience
+					modifier = {
+						scope:recipient = {
+							any_child = {
+								even_if_dead = yes
+								count = 0
+							}
+						}
+						add = 10
+					}
+					modifier = {
+						scope:actor = {
+							any_child = {
+								even_if_dead = yes
+								count = 0
+							}
+						}
+						add = 5
+					}
+					modifier = {
+						scope:recipient = {
+							age <= 20
+						}
+						add = 10
+					}
+					modifier = {
+						scope:actor = {
+							age <= 20
+						}
+						add = 10
+					}
+					# Traits
+					modifier = {
+						scope:recipient = {
+							has_trait = craven
+						}
+						add = 10
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = shy
+						}
+						add = 15
+					}
+					modifier = {
+						scope:recipient = {
+							has_trait = chaste
+						}
+						add = 20
+					}
+					# Relationships
+					modifier = {
+						scope:recipient = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = scope:actor
+							}
+						}
+						add = 15
+					}
+					modifier = {
+						has_relation_nemesis = scope:actor
+						add = 20
+					}
+					modifier = {
+						has_relation_rival = scope:actor
+						add = 10
+					}
+					# Attraction
+					modifier = {
+						scope:recipient = {
+							NOT = {
+								is_attracted_to_gender_of = scope:actor
+							}
+						}
+						add = 20
+					}
+					modifier = {
+						scope:actor = {
+							NOT = {
+								is_attracted_to_gender_of = scope:recipient
+							}
+						}
+						add = 10
+					}
+					trigger_event = {
+						id = consort_events.0038
+						days = { 7 9 }
+					}
+				}
 			}
 		}
 	}
