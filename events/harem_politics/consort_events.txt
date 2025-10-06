@@ -20767,7 +20767,9 @@ consort_events.0039 = {
 	
 	immediate = {
 		random_consort = {
-			harem_politics_bad_night_jealous_consort_trigger = yes
+			limit = {
+				harem_politics_bad_night_jealous_consort_trigger = yes
+			}
 			weight = {
 				base = 20
 				modifier = {
@@ -20845,6 +20847,14 @@ consort_events.0039 = {
 					pregnancy_assumed_father ?= scope:actor
 					add = -10
 				}
+				modifier = {
+					has_relation_rival = scope:recipient
+					add = 10
+				}
+				modifier = {
+					has_relation_nemesis = scope:recipient
+					add = 20
+				}
 			}
 			save_scope_as = jealous_consort
 		}
@@ -20894,6 +20904,9 @@ consort_events.0039 = {
 				save_scope_as = attendant
 			}
 		}
+		else = {
+			save_scope_as = attendant
+		}
 	}
 	
 	# Investigate the matter
@@ -20910,7 +20923,7 @@ consort_events.0039 = {
 
 	# Ignore them
 	option = {
-		name = consort_events.0039.a
+		name = consort_events.0039.b
 		custom_tooltip = consort_events.0038.c.tt
 		if = {
 			limit = {
@@ -20920,12 +20933,13 @@ consort_events.0039 = {
 		}
 		scope:recipient = {
 			calyver_favor_moderate_loss_effect = yes
-			save_court_physician_as_effect = { SCOPE_NAME = physician }
-			hidden_effect = {
-				if = {
-					limit = { exists = scope:court_physician }
-					wound_treatment_results_effect = { TREATMENT = safe OUTCOME = success }
+			#HANDLE TREATMENT
+			if = { #To send notification message or trigger the right event
+				limit = {
+					court_physician_available_trigger = yes
 				}
+				save_scope_as = sick_character
+				safe_wound_treatment_effect = yes #Wounded 1 only gives a "result of treatment" notification" if you have a physician, i.e. you get no events about it.
 			}
 		}
 		ai_chance = {
@@ -20943,16 +20957,12 @@ consort_events.0040 = {
 	}
 	
 	right_portrait = { 	
-		character = scope:actor
-		animation = worry
+		character = scope:recipient
+		animation = shame
 	}
 	left_portrait = { 	
-		trigger = { exists = scope:attendant }
-		character = scope:recipient
-		animation = grief
-	}
-	lower_center_portrait = { 	
 		character = scope:jealous_consort
+		animation = beg
 	}
 	
 	trigger = {
@@ -20968,6 +20978,7 @@ consort_events.0040 = {
 			add_opinion = {
 				target = scope:actor
 				modifier = thankful_consort_opinion
+				opinion = 30
 			}
 			progress_towards_lover_effect = {
 				CHARACTER = scope:actor
@@ -21009,6 +21020,11 @@ consort_events.0040 = {
 					CONSORT = scope:jealous_consort
 				}
 			}
+			progress_towards_rival_effect = {
+				REASON = consort_rival_reason
+				CHARACTER = scope:recipient
+				OPINION = 0
+			}
 			add_opinion = {
 				target = scope:recipient
 				modifier = hatred_spouse_opinion
@@ -21031,111 +21047,111 @@ consort_events.0040 = {
 		}
 		ai_chance = {
 			base = 10
-			ai_value_modifier = {
-				ai_honor = -0.2
-			}
-			modifier = {
-				add = 20
-				OR = {
-					has_trait = just
-					has_trait = vengeful
-				}
-			}
-			modifier = {
-				add = -20
-				OR = {
-					has_trait = forgiving
-					has_trait = compassionate
-				}
-			}
-			modifier = { #AI's opinion on Hui
-				add = 20
-				opinion = {
-					target = scope:hui
-					value <= medium_negative_opinion
-				}
-			}
-			modifier = { #AI's opinion on Ruyi
-				add = 5
-				opinion = {
-					target = scope:ruyi
-					value >= low_positive_opinion
-				}
-			}
-			modifier = { #AI's opinion on Ruyi
-				add = 15
-				opinion = {
-					target = scope:ruyi
-					value >= medium_positive_opinion
-				}
-			}
-			modifier = { #AI's opinion on Hailan
-				add = 15
-				opinion = {
-					target = scope:hailan
-					value >= medium_positive_opinion
-				}
-			}
+			# ai_value_modifier = {
+			# 	ai_honor = -0.2
+			# }
+			# modifier = {
+			# 	add = 20
+			# 	OR = {
+			# 		has_trait = just
+			# 		has_trait = vengeful
+			# 	}
+			# }
+			# modifier = {
+			# 	add = -20
+			# 	OR = {
+			# 		has_trait = forgiving
+			# 		has_trait = compassionate
+			# 	}
+			# }
+			# modifier = { #AI's opinion on Hui
+			# 	add = 20
+			# 	opinion = {
+			# 		target = scope:hui
+			# 		value <= medium_negative_opinion
+			# 	}
+			# }
+			# modifier = { #AI's opinion on Ruyi
+			# 	add = 5
+			# 	opinion = {
+			# 		target = scope:ruyi
+			# 		value >= low_positive_opinion
+			# 	}
+			# }
+			# modifier = { #AI's opinion on Ruyi
+			# 	add = 15
+			# 	opinion = {
+			# 		target = scope:ruyi
+			# 		value >= medium_positive_opinion
+			# 	}
+			# }
+			# modifier = { #AI's opinion on Hailan
+			# 	add = 15
+			# 	opinion = {
+			# 		target = scope:hailan
+			# 		value >= medium_positive_opinion
+			# 	}
+			# }
 
-			modifier = { #More likely if Ruyi is a powerful vassal's relative
-				add = 15
-				scope:ruyi = {
-					any_close_family_member = {
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-							is_liege_or_above_of = root
-						}
-					}
-				}
-			}
+			# modifier = { #More likely if Ruyi is a powerful vassal's relative
+			# 	add = 15
+			# 	scope:ruyi = {
+			# 		any_close_family_member = {
+			# 			OR = {
+			# 				is_powerful_vassal_of = root
+			# 				is_councillor_of = root
+			# 				is_parent_of = root
+			# 				is_liege_or_above_of = root
+			# 			}
+			# 		}
+			# 	}
+			# }
 
-			modifier = { #Ruyi's favored
-				add = 10
-				scope:ruyi = {
-					has_character_modifier = favored_consort_modifier
-				}
-			}
-			modifier = { #Ruyi's favored
-				add = 20
-				scope:ruyi = {
-					has_character_modifier = beloved_consort_modifier
-				}
-			}
-			modifier = { #Ruyi's favored
-				add = 15
-				scope:ruyi = {
-					has_character_modifier = favor_boost_modifier
-				}
-			}
+			# modifier = { #Ruyi's favored
+			# 	add = 10
+			# 	scope:ruyi = {
+			# 		has_character_modifier = favored_consort_modifier
+			# 	}
+			# }
+			# modifier = { #Ruyi's favored
+			# 	add = 20
+			# 	scope:ruyi = {
+			# 		has_character_modifier = beloved_consort_modifier
+			# 	}
+			# }
+			# modifier = { #Ruyi's favored
+			# 	add = 15
+			# 	scope:ruyi = {
+			# 		has_character_modifier = favor_boost_modifier
+			# 	}
+			# }
 		}
 	}
 
 	# Ignore them
-	option = {
-		name = consort_events.0040.a
-		custom_tooltip = consort_events.0038.c.tt
-		if = {
-			limit = {
-				has_character_flag = summoned_to_chambers_flag
-			}
-			remove_character_flag = summoned_to_chambers_flag
-		}
-		scope:recipient = {
-			calyver_favor_moderate_loss_effect = yes
-			save_court_physician_as_effect = { SCOPE_NAME = physician }
-			hidden_effect = {
-				if = {
-					limit = { exists = scope:court_physician }
-					wound_treatment_results_effect = { TREATMENT = safe OUTCOME = success }
-				}
-			}
-		}
-		ai_chance = {
-			base = 50
-		}
-	}
+	# option = {
+	# 	name = consort_events.0040.a
+	# 	custom_tooltip = consort_events.0038.c.tt
+	# 	if = {
+	# 		limit = {
+	# 			has_character_flag = summoned_to_chambers_flag
+	# 		}
+	# 		remove_character_flag = summoned_to_chambers_flag
+	# 	}
+	# 	scope:recipient = {
+	# 		calyver_favor_moderate_loss_effect = yes
+	# 		save_court_physician_as_effect = { SCOPE_NAME = physician }
+	# 		hidden_effect = {
+	# 			if = {
+	# 				limit = { exists = scope:court_physician }
+	# 				wound_treatment_results_effect = { TREATMENT = safe OUTCOME = success }
+	# 			}
+	# 		}
+	# 	}
+	# 	ai_chance = {
+	# 		base = 50
+	# 	}
+	# }
 }
 ####################
 ##Bestowing a name##
