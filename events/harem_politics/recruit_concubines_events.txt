@@ -868,6 +868,22 @@ scripted_trigger recruit_concubines_eligible_subject_trigger = {
 			royal_concubines_eligible_candidate_trigger = {
 				OVERLORD = scope:liege
 			}
+			# Skills
+			trigger_if = {
+				limit = {
+					scope:liege = { has_variable = personality_skills_important }
+				}
+				OR = {
+					diplomacy >= average_skill_level
+					learning >= average_skill_level
+					trigger_if = {
+						limit = {
+							is_male = yes
+						}
+						prowess >= average_skill_level
+					}
+				}
+			}
 		}
 	}
 }
@@ -909,13 +925,18 @@ bride_show.3002 = {
 					count >= 1
 				}
 			}
-			every_in_list = {
+			ordered_in_list = {
 				list = recruit_concubines_subjects_list
+				order_by = {
+					value = "opinion(root)"
+				}
+				max = 5
+				min = 0
 				trigger_event = bride_show.3003
 			}
 		}
 		trigger_event = {
-			id = bride_show.0004
+			id = bride_show.3004
 			days = 3
 		}
 	}
@@ -938,6 +959,22 @@ scripted_effect add_to_candidate_variable_list_effect = {
 				royal_concubines_eligible_candidate_trigger = {
 					OVERLORD = scope:liege
 				}
+				# Skills
+				trigger_if = {
+					limit = {
+						scope:liege = { has_variable = personality_skills_important }
+					}
+					OR = {
+						diplomacy >= average_skill_level
+						learning >= average_skill_level
+						trigger_if = {
+							limit = {
+								is_male = yes
+							}
+							prowess >= average_skill_level
+						}
+					}
+				}
 			}
 			scope:liege = {
 				add_to_variable_list = {
@@ -949,6 +986,7 @@ scripted_effect add_to_candidate_variable_list_effect = {
 			if = {
 				limit = {
 					exists = betrothed
+					exists = court_owner
 				}
 				court_owner = {
 					run_interaction = {
@@ -964,21 +1002,44 @@ scripted_effect add_to_candidate_variable_list_effect = {
 }
 bride_show.3003 = {
 	type = character_event
-	title = {
+	title = bride_show.3003.t
+	desc = {
+		desc = bride_show.3003.start.desc
 		first_valid = {
 			triggered_desc = {
 				trigger = {
-					scope:liege = {
-						is_female = no
+					scope:jarya = {
+						is_courtier_of = root
+					}
+					NOT = {
+						exists = scope:jarya_1
 					}
 				}
-				desc = bride_show.3003_m.t
+				desc = bride_show.3003.courtier.desc
 			}
-			desc = bride_show.3003_f.t
+			triggered_desc = {
+				trigger = {
+					scope:jarya = {
+						NOT = { is_courtier_of = root }
+					}
+					NOT = {
+						exists = scope:jarya_1
+					}
+				}
+				desc = bride_show.3003.recruit.desc
+			}
+			triggered_desc = {
+				trigger = {
+					scope:jarya = {
+						is_courtier_of = root
+					}
+					exists = scope:jarya_1
+				}
+				desc = bride_show.3003.fallback.desc
+			}
 		}
 	}
-	desc = bride_show.3003.desc
-	theme = realm
+	theme = vassal
 	
 	right_portrait = { 	
 		character = root
@@ -1007,12 +1068,44 @@ bride_show.3003 = {
 					royal_concubines_eligible_candidate_trigger = {
 						OVERLORD = scope:liege
 					}
+					# Skills
+					trigger_if = {
+						limit = {
+							scope:liege = { has_variable = personality_skills_important }
+						}
+						OR = {
+							diplomacy >= average_skill_level
+							learning >= average_skill_level
+							trigger_if = {
+								limit = {
+									is_male = yes
+								}
+								prowess >= average_skill_level
+							}
+						}
+					}
 				}
 			}
 			ordered_courtier = {
 				limit = {
 					royal_concubines_eligible_candidate_trigger = {
 						OVERLORD = scope:liege
+					}
+					# Skills
+					trigger_if = {
+						limit = {
+							scope:liege = { has_variable = personality_skills_important }
+						}
+						OR = {
+							diplomacy >= average_skill_level
+							learning >= average_skill_level
+							trigger_if = {
+								limit = {
+									is_male = yes
+								}
+								prowess >= average_skill_level
+							}
+						}
 					}
 				}
 				order_by = {
@@ -1064,86 +1157,154 @@ bride_show.3003 = {
 						add_to_temporary_list = pool_provinces
 					}
 				}
-				if = {
-					limit = {
-						any_in_list = {
-							list = pool_provinces
-							any_pool_character = {
-								province = this
-								recruit_royal_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							count > 0
-						}
-					}
-					every_in_list = {
+			}
+			if = {
+				limit = {
+					any_in_list = {
 						list = pool_provinces
-			
-						every_pool_character = {
+						any_pool_character = {
 							province = this
-							limit = {
-								recruit_royal_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
+							recruit_royal_concubines_viable_county_trigger = {
+								OVERLORD = scope:liege
+							}
+							# Skills
+							trigger_if = {
+								limit = {
+									scope:liege = { has_variable = personality_skills_important }
+								}
+								OR = {
+									diplomacy >= average_skill_level
+									learning >= average_skill_level
+									trigger_if = {
+										limit = {
+											is_male = yes
+										}
+										prowess >= average_skill_level
+									}
 								}
 							}
-							add_to_temporary_list = pool_candidates
+						}
+						count > 0
+					}
+				}
+				every_in_list = {
+					list = pool_provinces
+		
+					every_pool_character = {
+						province = this
+						limit = {
+							royal_concubines_eligible_candidate_trigger = {
+								OVERLORD = scope:liege
+							}
+							# Skills
+							trigger_if = {
+								limit = {
+									scope:liege = { has_variable = personality_skills_important }
+								}
+								OR = {
+									diplomacy >= average_skill_level
+									learning >= average_skill_level
+									trigger_if = {
+										limit = {
+											is_male = yes
+										}
+										prowess >= average_skill_level
+									}
+								}
+							}
+						}
+						add_to_temporary_list = pool_candidates
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						count >= 1
+					}
+				}
+				# Nothing
+			}
+			else = {
+				scope:liege = {
+					hp_select_concubine_location_effect = yes
+					calyver_create_candidate_effect = yes
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						count = 1
+					}
+				}
+				random_in_list = {
+					list = pool_candidates
+					if = {
+						limit = {
+							NOT = { exists = scope:jarya}
+						}
+						save_scope_as = jarya
+					}
+					else = {
+						save_scope_as = jarya_1
+					}
+				}
+			}
+			else = {
+				ordered_in_list = {
+					list = pool_candidates
+					order_by = {
+						value = 1
+						add = recruit_royal_concubines_value
+					}
+					max = 1
+					if = {
+						limit = {
+							NOT = { exists = scope:jarya}
+						}
+						save_scope_as = jarya
+					}
+					else = {
+						save_scope_as = jarya_1
+					}
+				}
+			}
+			if = {
+				limit = {
+					OR = {
+						AND = {
+							scope:jarya = {
+								NOT = { is_courtier_of = root }
+							}
+							NOT = { exists = scope:jarya_1 }
+						}
+						AND = {
+							scope:jarya_1 ?= {
+								NOT = { is_courtier_of = root }
+							}
 						}
 					}
 				}
 				if = {
 					limit = {
-						any_in_list = {
-							list = pool_candidates
-							count >= 1
+						scope:jarya = {
+							NOT = { is_courtier_of = root }
 						}
 					}
-					# Nothing
-				}
-				else = {
-					scope:liege = {
-						hp_select_concubine_location_effect = yes
-						calyver_create_candidate_effect = yes
-					}
-				}
-				if = {
-					limit = {
-						any_in_list = {
-							list = pool_candidates
-							count = 1
-						}
-					}
-					random_in_list = {
-						list = pool_candidates
-						if = {
-							limit = {
-								NOT = { exists = scope:jarya}
-							}
-							save_scope_as = jarya
-						}
-						else = {
-							save_scope_as = jarya_1
-						}
+					scope:jarya = {
+						save_scope_as = potential_candidate
 					}
 				}
 				else = {
-					ordered_in_list = {
-						list = pool_candidates
-						order_by = {
-							value = 1
-							add = recruit_royal_concubines_value
-						}
-						max = 1
-						if = {
-							limit = {
-								NOT = { exists = scope:jarya}
-							}
-							save_scope_as = jarya
-						}
-						else = {
-							save_scope_as = jarya_1
-						}
+					scope:jarya_1 = {
+						save_scope_as = potential_candidate
 					}
+				}
+				save_scope_value_as = {
+					name = gold_to_pay
+					value = recruit_concubines_payment_value
 				}
 			}
 		}
@@ -1152,8 +1313,10 @@ bride_show.3003 = {
 	# Send the courtier
 	option = {
 		name = bride_show.3003.a
+		custom_tooltip = bride_show.3003.a.tt # Check
 		trigger = {
 			scope:jarya = {
+				is_courtier_of = root
 				royal_concubines_eligible_candidate_trigger = {
 					OVERLORD = scope:liege
 				}
@@ -1167,8 +1330,7 @@ bride_show.3003 = {
 		ai_chance = { #The AI will always choose this
 			base = 30
 			ai_value_modifier = {
-				ai_boldness = -0.15
-				ai_greed = 0.3
+				ai_greed = -0.1
 			}
 			modifier = {
 				OR = {	
@@ -1199,6 +1361,37 @@ bride_show.3003 = {
 				has_trait = ambitious
 				add = 15
 			}
+			modifier = {
+				scope:liege = {
+					opinion = {
+						target = root
+						value <= -10
+					}
+				}
+				add = {
+					value = "scope:liege.opinion(root)"
+					multiply = -0.5
+				}
+			}
+			modifier = {
+				scope:liege = {
+					any_claim = {
+						holder ?= root
+					}
+				}
+				add = {
+					value = scope:liege.highest_held_title_tier
+					multiply = 5
+				}
+			}
+			modifier = {
+				has_relation_rival = scope:liege
+				add = -15
+			}
+			modifier = {
+				has_relation_nemesis = scope:liege
+				add = -30
+			}
 			opinion_modifier = {
 				opinion_target = scope:liege
 				multiplier = 0.4
@@ -1209,49 +1402,86 @@ bride_show.3003 = {
 	# Send the other candidate
 	option = {
 		name = bride_show.3003.b
+		custom_tooltip = bride_show.3003.b.tt # Check
 		trigger = {
-			exists = scope:jarya_1
-			scope:jarya_1 = {
-				royal_concubines_eligible_candidate_trigger = {
-					OVERLORD = scope:liege
+			trigger_if = {
+				limit = {
+					NOT = {
+						exists = scope:jarya_1
+					}
+				}
+				scope:jarya = {
+					NOT = { is_courtier_of = root }
+					royal_concubines_eligible_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
 				}
 			}
-			gold >= minor_gold_value
+			trigger_else = {
+				scope:jarya_1 ?= {
+					royal_concubines_eligible_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+			}
 		}
-		show_as_unavailable = {
-			gold < minor_gold_value
+		remove_short_term_gold = scope:gold_to_pay
+		if = {
+			limit = {
+				NOT = { exists = scope:jarya_1 }
+				scope:jarya = {
+					NOT = { is_courtier_of = root }
+					royal_concubines_eligible_candidate_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+			}
+			scope:jarya = {
+				save_temporary_scope_as = concubine
+			}
 		}
-		remove_short_term_gold = minor_gold_value
-		add_courtier = scope:jarya_1
+		else = {
+			scope:jarya_1 = {
+				save_temporary_scope_as = concubine
+			}
+		}
+		add_courtier = scope:concubine
 		add_to_candidate_variable_list_effect = {
-			CANDIDATE = scope:jarya_1
+			CANDIDATE = scope:concubine
 		}
 		stress_impact = {
 			greedy = minor_stress_impact_gain
 		}
 		ai_chance = {
-			base = 20
+			base = 30
 			ai_value_modifier = {
-				ai_boldness = -0.15
-				ai_greed = -0.3
+				ai_greed = -0.5
+			}
+			modifier = {
+				has_trait = greedy
+				add = -25
+			}
+			modifier = {
+				gold <= scope:gold_to_pay
+				add = -25
 			}
 			modifier = {
 				OR = {	
-					has_relation_lover = scope:jarya_1
-					has_relation_friend = scope:jarya_1
+					has_relation_lover = scope:potential_candidate
+					has_relation_friend = scope:potential_candidate
 				}
 				add = -15
 			}
 			modifier = {
 				OR = {	
-					has_relation_soulmate = scope:jarya_1
-					has_relation_best_friend = scope:jarya_1
+					has_relation_soulmate = scope:potential_candidate
+					has_relation_best_friend = scope:potential_candidate
 				}
 				add = -20
 			}
 			modifier = {
 				number_of_concubines < number_of_desired_concubines
-				scope:jarya_1 = {
+				scope:potential_candidate = {
 					can_become_concubine_of_character_trigger = { CHARACTER = root }
 					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
 						CHARACTER = root
@@ -1261,8 +1491,39 @@ bride_show.3003 = {
 				add = -15
 			}
 			modifier = {
-				has_trait = greedy
-				add = -25
+				has_trait = ambitious
+				add = 15
+			}
+			modifier = {
+				scope:liege = {
+					opinion = {
+						target = root
+						value <= -10
+					}
+				}
+				add = {
+					value = "scope:liege.opinion(root)"
+					multiply = -0.5
+				}
+			}
+			modifier = {
+				scope:liege = {
+					any_claim = {
+						holder ?= root
+					}
+				}
+				add = {
+					value = scope:liege.highest_held_title_tier
+					multiply = 5
+				}
+			}
+			modifier = {
+				has_relation_rival = scope:liege
+				add = -15
+			}
+			modifier = {
+				has_relation_nemesis = scope:liege
+				add = -30
 			}
 			opinion_modifier = {
 				opinion_target = scope:liege
@@ -1271,65 +1532,110 @@ bride_show.3003 = {
 		}
 	}
 
-	# Hire the other candidate
+	# Make them my concubine
 	option = {
 		name = bride_show.3003.c
 		trigger = {
 			allowed_more_concubines = yes
-			scope:jarya_1 ?= {
-				can_become_concubine_of_character_trigger = { CHARACTER = root }
-				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-					CHARACTER = root
-					RECEIVER = root
+			trigger_if = {
+				limit = {
+					NOT = { exists = scope:jarya_1 }
+				}
+				scope:jarya = {
+					NOT = { is_courtier_of = root }
+					can_become_concubine_of_character_trigger = { CHARACTER = root }
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = root
+						RECEIVER = root
+					}
 				}
 			}
-			gold >= minor_gold_value
+			trigger_else = {
+				scope:jarya_1 = {
+					NOT = { is_courtier_of = root }
+					can_become_concubine_of_character_trigger = { CHARACTER = root }
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = root
+						RECEIVER = root
+					}
+				}
+			}
 		}
-		show_as_unavailable = {
-			gold < minor_gold_value
-		}
-		remove_short_term_gold = minor_gold_value
+		remove_short_term_gold = scope:gold_to_pay
 		hidden_effect = {
-			add_courtier = scope:jarya_1
-			scope:jarya_1 = {
+			if = {
+				limit = {
+					NOT = { exists = scope:jarya_1 }
+					scope:jarya = {
+						NOT = { is_courtier_of = root }
+						royal_concubines_eligible_candidate_trigger = {
+							OVERLORD = scope:liege
+						}
+					}
+				}
+				scope:jarya = {
+					save_temporary_scope_as = concubine
+				}
+			}
+			else = {
+				scope:jarya_1 = {
+					save_temporary_scope_as = concubine
+				}
+			}
+			add_courtier = scope:concubine
+			scope:concubine = {
 				return_to_court = yes
 			}
 			run_interaction = {
 				interaction = make_concubine_interaction
 				actor = root
-				recipient = scope:jarya_1
+				recipient = scope:concubine
 				execute_threshold = accept
 			}
 		}
 		show_as_tooltip = {
-			make_concubine = scope:jarya_1
+			make_concubine = scope:concubine
 		}
 		stress_impact = {
 			greedy = minor_stress_impact_gain
+			chaste = minor_stress_impact_gain
 		}
-		ai_chance = {
-			base = 20
+		ai_chance = { #The AI will always choose this
+			base = 30
 			ai_value_modifier = {
-				ai_boldness = 0.15
-				ai_greed = -0.3
+				ai_greed = -0.5
+				ai_boldness = 0.1
+				ai_honor = -0.2
+			}
+			modifier = {
+				has_trait = greedy
+				add = -25
+			}
+			modifier = {
+				has_trait = chaste
+				add = -25
+			}
+			modifier = {
+				gold <= scope:gold_to_pay
+				add = -25
 			}
 			modifier = {
 				OR = {	
-					has_relation_lover = scope:jarya_1
-					has_relation_friend = scope:jarya_1
+					has_relation_lover = scope:potential_candidate
+					has_relation_friend = scope:potential_candidate
 				}
-				add = 25
+				add = 15
 			}
 			modifier = {
 				OR = {	
-					has_relation_soulmate = scope:jarya_1
-					has_relation_best_friend = scope:jarya_1
+					has_relation_soulmate = scope:potential_candidate
+					has_relation_best_friend = scope:potential_candidate
 				}
-				add = 40
+				add = 20
 			}
 			modifier = {
 				number_of_concubines < number_of_desired_concubines
-				scope:jarya_1 = {
+				scope:potential_candidate = {
 					can_become_concubine_of_character_trigger = { CHARACTER = root }
 					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
 						CHARACTER = root
@@ -1339,12 +1645,25 @@ bride_show.3003 = {
 				add = 15
 			}
 			modifier = {
-				has_trait = greedy
-				add = -25
+				has_trait = ambitious
+				add = 15
+			}
+			modifier = {
+				scope:potential_candidate = {
+					num_of_good_genetic_traits > 0
+				}
+				add = {
+					value = scope:potential_candidate.num_of_good_genetic_traits
+					multiply = 5
+				}
+			}
+			modifier = {
+				NOT = { is_attracted_to_gender_of = scope:potential_candidate }
+				ADD = -25
 			}
 			opinion_modifier = {
-				opinion_target = scope:jarya_1
-				multiplier = 0.2
+				opinion_target = scope:potential_candidate
+				multiplier = 0.4
 			}
 		}
 	}
@@ -1352,23 +1671,27 @@ bride_show.3003 = {
 	# Do nothing
 	option = {
 		name = bride_show.3003.d
-		ai_chance = {
-			base = 30
+		stress_impact = {
+			generous = minor_stress_impact_gain
+		}
+		ai_chance = { #The AI will always choose this
+			base = 40
 			ai_value_modifier = {
-				ai_boldness = 0.15
-				ai_greed = 0.3
+				ai_greed = 0.5
+				ai_boldness = 0.1
+				ai_honor = -0.1
 			}
 			modifier = {
-				has_trait = ambitious
-				add = -15
+				has_trait = greedy
+				add = 25
+			}
+			modifier = {
+				has_trait = generous
+				add = 25
 			}
 			opinion_modifier = {
 				opinion_target = scope:liege
 				multiplier = -0.4
-			}
-			modifier = {
-				hp_accepts_harems = no
-				factor = 0
 			}
 		}
 	}

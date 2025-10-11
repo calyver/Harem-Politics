@@ -436,10 +436,25 @@ recruit_concubines_viable_candidate_trigger = {
 
 ## Trigger for kings and above ##
 royal_concubines_eligible_candidate_trigger = {
-	basic_viable_candidate_muslim_trigger = {
+	is_adult = yes
+	is_councillor = no
+	is_virgin_trigger = yes
+	bride_show_viable_consort_trigger = {
 		OVERLORD = $OVERLORD$
 	}
-	is_virgin_trigger = yes
+
+	NOR = {
+		has_trait = beauty_bad
+		any_close_family_member = {
+			highest_held_title_tier >= tier_county
+		}
+		has_character_flag = has_been_offered_as_concubine
+		has_character_modifier = malnourished_modifier
+		current_weight < -50
+		has_character_modifier = obese_modifier
+		current_weight > 50
+		has_trait = beauty_bad
+	}
 	trigger_if = {
 		limit  ={
 			religion = religion:islam_religion
@@ -498,6 +513,22 @@ recruit_royal_concubines_viable_county_trigger = {
 			province = this
 			royal_concubines_eligible_candidate_trigger = {
 				OVERLORD = $OVERLORD$
+			}
+			# Skills
+			trigger_if = {
+				limit = {
+					$OVERLORD$ = { has_variable = personality_skills_important }
+				}
+				OR = {
+					diplomacy >= average_skill_level
+					learning >= average_skill_level
+					trigger_if = {
+						limit = {
+							is_male = yes
+						}
+						prowess >= average_skill_level
+					}
+				}
 			}
 		}
 		NOT = {
@@ -817,7 +848,7 @@ harem_politics_is_valid_bride_show_subject_trigger = {
     trigger_else_if = { # Emperors
         limit = { 
 			$OVERLORD$ = { 
-				highest_held_title_tier = tier_empire 
+				highest_held_title_tier >= tier_empire 
 			} 
 		}
         trigger_if = { # Administrative Emperor
