@@ -11,6 +11,25 @@ scripted_effect bride_show_add_to_candidate_list_effect = {
 	}
 }
 
+scripted_trigger can_still_participate_in_bride_show_trigger = {
+	has_any_illness = no
+	is_alive = yes
+	NOR = {
+		has_trait = devoted
+		has_trait = celibate
+	}
+	can_become_concubine_of_character_valid_trigger = { CHARACTER = root }
+	trigger_if = {
+		limit = {
+			exists = court_owner
+		}
+		court_owner = {
+			harem_politics_valid_bride_show_subject_trigger = {
+				OVERLORD = root
+			}
+		}
+	}
+}
 scripted_effect bride_show_next_candidate_effect = {
 	if = {
 		limit = { #I can still pick candidates
@@ -26,20 +45,34 @@ scripted_effect bride_show_next_candidate_effect = {
 				}
 			}
 		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = elegible_candidates_list
+					can_still_participate_in_bride_show_trigger = no
+					count > 0
+				}
+			}
+			every_in_list = {
+				list = elegible_candidates_list
+				limit = {
+					can_still_participate_in_bride_show_trigger = no
+				}
+				remove_from_list = elegible_candidates_list
+			}
+		}
 		#Characters will be created only if not at least 4 candidates
 		if = {
 			limit = { 
 				OR = { 
 					any_in_list = {
 						list = elegible_candidates_list
-						is_alive = yes
 						count = 0
 					}
 					any_in_list = { #Or in case all of them are teens
 						list = elegible_candidates_list
-						is_adult = no
-						is_alive = yes
-						count = all
+						is_adult = yes
+						count = 0
 					}
 					AND = { #Or if there aren't any candidates with good congenital traits
 						NOT = { exists = scope:candidate_1 }
@@ -50,7 +83,6 @@ scripted_effect bride_show_next_candidate_effect = {
 								has_trait = beauty_good
 								has_trait = physique_good
 							}
-							is_alive = yes
 							count = 0
 						}
 					}
@@ -1020,6 +1052,40 @@ bride_show.0004 = {
 	right_portrait = { 	
 		character = root
 		animation = personality_rational
+	}
+	left_portrait = {
+		trigger = {
+			exists = scope:attendant
+		}
+		character = scope:attendant
+		animation = personality_content
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				OR = {
+					employs_court_position = chief_eunuch_court_position
+					employs_court_position = lady_in_waiting_court_position
+				}
+			}
+			random_courtier = {
+				limit = {
+					OR = {
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+					}
+				}
+				weight = {
+					base = 1
+					modifier = {
+						add = 10
+						sex_same_as = scope:liege
+					}
+				}
+				save_scope_as = attendant
+			}
+		}
 	}
 	
 	# Let's go!
