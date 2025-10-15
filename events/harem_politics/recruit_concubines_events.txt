@@ -979,6 +979,7 @@ scripted_trigger recruit_concubines_eligible_subject_trigger = {
 						}
 						prowess >= average_skill_level
 					}
+					has_trait = poet
 				}
 			}
 		}
@@ -1076,6 +1077,7 @@ scripted_effect add_to_candidate_variable_list_effect = {
 							}
 							prowess >= average_skill_level
 						}
+						has_trait = poet
 					}
 				}
 			}
@@ -1185,6 +1187,7 @@ bride_show.3003 = {
 								}
 								prowess >= average_skill_level
 							}
+							has_trait = poet
 						}
 					}
 				}
@@ -1208,6 +1211,7 @@ bride_show.3003 = {
 								}
 								prowess >= average_skill_level
 							}
+							has_trait = poet
 						}
 					}
 				}
@@ -1284,6 +1288,7 @@ bride_show.3003 = {
 										}
 										prowess >= average_skill_level
 									}
+									has_trait = poet
 								}
 							}
 						}
@@ -1313,6 +1318,7 @@ bride_show.3003 = {
 										}
 										prowess >= average_skill_level
 									}
+									has_trait = poet
 								}
 							}
 						}
@@ -1654,6 +1660,9 @@ bride_show.3003 = {
 					NOT = { exists = scope:jarya_1 }
 				}
 				scope:jarya = {
+					any_consort = {
+						count = 0
+					}
 					NOT = { is_courtier_of = root }
 					can_become_concubine_of_character_trigger = { CHARACTER = root }
 					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
@@ -1664,6 +1673,9 @@ bride_show.3003 = {
 			}
 			trigger_else = {
 				scope:jarya_1 = {
+					any_consort = {
+						count = 0
+					}
 					NOT = { is_courtier_of = root }
 					can_become_concubine_of_character_trigger = { CHARACTER = root }
 					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
@@ -1847,86 +1859,183 @@ scripted_trigger can_still_participate_in_concubine_recruitment_trigger = {
 	}
 }
 
-scripted_effect while_add_skill_to_candidate_effect = {
-	while = {
-		limit = {
-			$SKILL$ < average_skill_level
-		}
-		add_$SKILL$_skill = 1
-	}
-}
 
-scripted_effect random_add_skill_to_candidate_effect = {
-	random_list = {
-		6 = {
-			add_$SKILL$_skill = 1
-		}
-		2 = {
-			add_$SKILL$_skill = 2
-		}
-		1 = {
-			add_$SKILL$_skill = 3
-		}
-	}
-}
 
 scripted_effect recruit_royal_concubines_next_candidate_effect = {
-	if = {
-		limit = { #I can still pick candidates
-			OR = {
-				NOT = {		
-					exists = scope:candidate_3
-				}
-				AND = {	
+	hidden_effect = {
+		if = {
+			limit = { #I can still pick candidates
+				OR = {
 					NOT = {		
-						exists = scope:candidate_4
+						exists = scope:candidate_3
 					}
-					can_have_four_candidates_trigger = yes
+					AND = {	
+						NOT = {		
+							exists = scope:candidate_4
+						}
+						can_have_four_candidates_trigger = yes
+					}
 				}
 			}
-		}
-		if = {
-			limit = {
-				any_in_list = {
-					list = potential_candidates_list
-					can_still_participate_in_concubine_recruitment_trigger = no
-					count > 0
-				}
-			}
-			every_in_list = {
-				list = potential_candidates_list
+			if = {
 				limit = {
-					can_still_participate_in_concubine_recruitment_trigger = no
-				}
-				remove_from_list = potential_candidates_list
-			}
-		}
-		#Characters will be created only if not at least 4 candidates
-		if = {
-			limit = { 
-				OR = { 
 					any_in_list = {
 						list = potential_candidates_list
-						count = 0
+						can_still_participate_in_concubine_recruitment_trigger = no
+						count > 0
 					}
-					AND = { # Or if there aren't any candidates with good congenital traits
-						NOT = { exists = scope:candidate_1 }
-						scope:liege = { has_variable = beauty_important }
+				}
+				every_in_list = {
+					list = potential_candidates_list
+					limit = {
+						can_still_participate_in_concubine_recruitment_trigger = no
+					}
+					remove_from_list = potential_candidates_list
+				}
+			}
+			#Characters will be created only if not at least 4 candidates
+			if = {
+				limit = { 
+					OR = { 
 						any_in_list = {
 							list = potential_candidates_list
-							OR = {	
-								has_trait = beauty_good
-								has_trait = physique_good
-							}
 							count = 0
 						}
+						AND = { # Or if there aren't any candidates with good congenital traits
+							scope:liege = { has_variable = beauty_important }
+							any_in_list = {
+								list = potential_candidates_list
+								OR = {	
+									has_trait = beauty_good
+									has_trait = physique_good
+								}
+								count = 0
+							}
+						}
+						AND = { # Or if there aren't any candidates with good skills
+							scope:liege = { has_variable = personality_skills_important }
+							any_in_list = {
+								list = potential_candidates_list
+								OR = {
+									diplomacy >= average_skill_level
+									learning >= average_skill_level
+									trigger_if = {
+										limit = {
+											is_male = yes
+										}
+										prowess >= average_skill_level
+									}
+									has_trait = poet
+								}
+								count = 0
+							}
+						}
 					}
-					AND = { # Or if there aren't any candidates with good skills
-						NOT = { exists = scope:candidate_1 }
-						scope:liege = { has_variable = personality_skills_important }
-						any_in_list = {
-							list = potential_candidates_list
-							OR = {
+				}
+				if = {
+					limit = {
+						NOT = { exists = scope:concubine_location }
+					}
+					hp_select_concubine_location_effect = yes
+				}
+				calyver_create_candidate_effect = yes
+				scope:bride = {
+					add_to_list = potential_candidates_list
+					add_to_list = created_candidates_list
+					add_character_flag = created_bride_flag
+
+					if = { # Congenital traits
+						limit = {
+							scope:liege = { has_variable = beauty_important }
+							NOR = {
+								has_trait = beauty_good
+								has_trait = intellect_good
+								has_trait = physique_good
+							}
+						}
+						random = {
+							chance = 20
+							modifier = {
+								any_in_list = {
+									list = potential_candidates_list
+									num_of_good_genetic_traits >= 1
+									count = 0
+								}
+								any_in_list = {
+									list = presented_candidates_list
+									num_of_good_genetic_traits >= 1
+									count = 0
+								}
+								add = 55
+							}
+							random_list = {
+								1 = { # Superior genetics
+									random_list = {
+										20 = { # Beauty
+											add_trait = beauty_good_3
+										}
+										9 = { # Intellect
+											modifier = {
+												add = 6
+												scope:liege = {
+													has_variable = personality_skills_important
+												}
+											}
+											add_trait = intellect_good_3
+										}
+										9 = { # Physique										
+											add_trait = physique_good_3
+										}
+										2 = { # Fecund													
+											add_trait = fecund
+										}
+									}											
+								}
+								4 = { # Good genetics
+									random_list = {
+										4 = { # Beauty
+											add_trait = beauty_good_2
+										}
+										1 = { # Intellect
+											modifier = {
+												add = 1
+												scope:liege = {
+													has_variable = personality_skills_important
+												}
+											}									
+											add_trait = intellect_good_2
+										}
+										1 = { # Physique											
+											add_trait = physique_good_2
+										}
+									}											
+								}
+								25 = { # Decent genetics
+									random_list = {
+										4 = { # Beauty
+											add_trait = beauty_good_1
+										}
+										1 = { # Intellect
+											modifier = {
+												add = 1
+												scope:liege = {
+													has_variable = personality_skills_important
+												}
+											}							
+											add_trait = intellect_good_1
+										}
+										1 = { # Physique								
+											add_trait = physique_good_1
+										}
+									}											
+								}
+							}
+						}
+					}
+					if = { # Skills
+						limit = {
+							scope:liege = { has_variable = personality_skills_important }
+							NOR = {
 								diplomacy >= average_skill_level
 								learning >= average_skill_level
 								trigger_if = {
@@ -1935,232 +2044,138 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 									}
 									prowess >= average_skill_level
 								}
-							}
-							count = 0
-						}
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = { exists = scope:concubine_location }
-				}
-				hp_select_concubine_location_effect = yes
-			}
-			calyver_create_candidate_effect = yes
-			scope:bride = {
-				add_to_list = potential_candidates_list
-				add_to_list = created_candidates_list
-				add_character_flag = created_bride_flag
-
-				if = { # Congenital traits
-					limit = {
-						scope:liege = { has_variable = beauty_important }
-					}
-					random = {
-						chance = 20
-						modifier = {
-							any_in_list = {
-								list = potential_candidates_list
-								num_of_good_genetic_traits >= 1
-								count = 0
-							}
-							any_in_list = {
-								list = presented_candidates_list
-								num_of_good_genetic_traits >= 1
-								count = 0
-							}
-							add = 55
-						}
-						random_list = {
-							1 = { # Superior genetics
-								random_list = {
-									20 = { # Beauty
-										add_trait = beauty_good_3
-									}
-									9 = { # Intellect
-										modifier = {
-											add = 6
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}
-										add_trait = intellect_good_3
-									}
-									9 = { # Physique										
-										add_trait = physique_good_3
-									}
-									2 = { # Fecund													
-										add_trait = fecund
-									}
-								}											
-							}
-							4 = { # Good genetics
-								random_list = {
-									4 = { # Beauty
-										add_trait = beauty_good_2
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 1
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}									
-										add_trait = intellect_good_2
-									}
-									1 = { # Physique											
-										add_trait = physique_good_2
-									}
-								}											
-							}
-							25 = { # Decent genetics
-								random_list = {
-									4 = { # Beauty
-										add_trait = beauty_good_1
-									}
-									1 = { # Intellect
-										modifier = {
-											add = 1
-											scope:liege = {
-												has_variable = personality_skills_important
-											}
-										}							
-										add_trait = intellect_good_1
-									}
-									1 = { # Physique								
-										add_trait = physique_good_1
-									}
-								}											
-							}
-						}
-					}
-				}
-				if = { # Skills
-					limit = {
-						scope:liege = { has_variable = personality_skills_important }
-					}
-					random = {
-						chance = 20
-						modifier = {
-							any_in_list = {
-								list = potential_candidates_list
-								OR = {
-									diplomacy >= average_skill_level
-									learning >= average_skill_level
-									trigger_if = {
-										limit = {
-											is_male = yes
-										}
-										prowess >= average_skill_level
-									}
-								}
-								count = 0
-							}
-							any_in_list = {
-								list = presented_candidates_list
-								OR = {
-									diplomacy >= average_skill_level
-									learning >= average_skill_level
-									trigger_if = {
-										limit = {
-											is_male = yes
-										}
-										prowess >= average_skill_level
-									}
-								}
-								count = 0
-							}
-							add = 55
-						}
-						random_list = {
-							1 = { # Diplomacy
-								while_add_skill_to_candidate_effect = {
-									SKILL = diplomacy
-								}
-							}
-							1 = { # Learning
-								while_add_skill_to_candidate_effect = {
-									SKILL = learning
-								}							
-							}
-							1 = { # Prowess
-								trigger = {
-									is_male = yes
-								}
-								while_add_skill_to_candidate_effect = {
-									SKILL = prowess
-								}
+								has_trait = poet
 							}
 						}
 						random = {
-							chance = 10
+							chance = 20
+							modifier = {
+								any_in_list = {
+									list = potential_candidates_list
+									OR = {
+										diplomacy >= average_skill_level
+										learning >= average_skill_level
+										trigger_if = {
+											limit = {
+												is_male = yes
+											}
+											prowess >= average_skill_level
+										}
+										has_trait = poet
+									}
+									count = 0
+								}
+								any_in_list = {
+									list = presented_candidates_list
+									OR = {
+										diplomacy >= average_skill_level
+										learning >= average_skill_level
+										trigger_if = {
+											limit = {
+												is_male = yes
+											}
+											prowess >= average_skill_level
+										}
+										has_trait = poet
+									}
+									count = 0
+								}
+								add = 55
+							}
 							random_list = {
-								3 = { # Diplomacy
-									random_add_skill_to_candidate_effect = {
-										SKILL = diplomacy
+								1 = { # Diplomacy
+									save_temporary_scope_value_as = {
+										name = skill_gain
+										value = {
+											value = average_skill_level
+											subtract = diplomacy
+											add = {
+												integer_range = { min = 0 max = 7 }
+											}
+										}
 									}
+									add_diplomacy_skill = scope:skill_gain
 								}
-								3 = { # Learning
-									random_add_skill_to_candidate_effect = {
-										SKILL = learning
+								1 = { # Learning
+									save_temporary_scope_value_as = {
+										name = skill_gain
+										value = {
+											value = average_skill_level
+											subtract = learning
+											add = {
+												integer_range = { min = 0 max = 7 }
+											}
+										}
 									}
+									add_learning_skill = scope:skill_gain
 								}
-								3 = { # Prowess
+								1 = { # Prowess
 									trigger = {
 										is_male = yes
 									}
-									random_add_skill_to_candidate_effect = {
-										SKILL = prowess
+									save_temporary_scope_value_as = {
+										name = skill_gain
+										value = {
+											value = average_skill_level
+											subtract = prowess
+											add = {
+												integer_range = { min = 0 max = 7 }
+											}
+										}
 									}
+									add_prowess_skill = scope:skill_gain
 								}
+							}
+							random = {
+								chance = 15
+								add_trait = poet
 							}
 						}
 					}
 				}
+				clear_saved_scope = bride
 			}
-			clear_saved_scope = bride
+			if = {
+				limit = {
+					any_in_list = {
+						list = potential_candidates_list
+						count = 1
+					}
+				}
+				random_in_list = {
+					list = potential_candidates_list
+					save_scope_as = potential_candidate
+				}
+			}
+			else = {
+				ordered_in_list = {
+					list = potential_candidates_list
+					order_by = {
+						value = 1
+						add = recruit_royal_concubines_value
+					}
+					save_scope_as = potential_candidate
+				}
+			}
 		}
+
+		#Are we done? Yes
 		if = {
 			limit = {
-				any_in_list = {
-					list = potential_candidates_list
-					count = 1
+				OR = {
+					AND = {	
+						exists = scope:candidate_3
+						can_have_four_candidates_trigger = no
+					}
+					exists = scope:candidate_4
 				}
 			}
-			random_in_list = {
-				list = potential_candidates_list
-				save_scope_as = potential_candidate
-			}
+			# trigger_event = bride_show.0006
 		}
+		#No
 		else = {
-			ordered_in_list = {
-				list = potential_candidates_list
-				order_by = {
-					value = 1
-					add = recruit_royal_concubines_value
-				}
-				save_scope_as = potential_candidate
-			}
+			trigger_event = bride_show.3005
 		}
-	}
-
-	#Are we done? Yes
-	if = {
-		limit = {
-			OR = {
-				AND = {	
-					exists = scope:candidate_3
-					can_have_four_candidates_trigger = no
-				}
-				exists = scope:candidate_4
-			}
-		}
-		trigger_event = bride_show.0006
-	}
-	#No
-	else = {
-		trigger_event = bride_show.3005
 	}
 }
 
@@ -2284,6 +2299,21 @@ bride_show.3005 = {
 		}
 		scope:potential_candidate.court_owner ?= {
 			save_scope_as = pc_court_owner
+			hidden_effect = {
+				if = {
+					limit = {
+						scope:potential_candidate = {
+							is_betrothed = yes
+						}
+					}
+					run_interaction = {
+						interaction = break_betrothal_interaction
+						actor = scope:potential_candidate.court_owner
+						recipient = scope:potential_candidate
+						execute_threshold = accept
+					}
+				}
+			}
 		}
 		save_scope_value_as = {
 			name = gold_to_pay
@@ -2291,18 +2321,21 @@ bride_show.3005 = {
 		}
 	}
 
-	#Make them my concubine
+	# Make them my concubine
 	option = {
 		name = bride_show.3005.a
 		trigger = {
 			allowed_concubines = yes
 			allowed_more_concubines = yes
 			scope:potential_candidate = {
+				any_consort = {
+					count = 0
+				}
 				could_marry_character_trigger = { CHARACTER = scope:liege }
 			}
 		}
 
-		#Reward
+		# Reward
 		if = {
 			limit = {
 				exists = scope:potential_candidate.court_owner
@@ -2337,7 +2370,7 @@ bride_show.3005 = {
 			remove_short_term_gold = scope:gold_to_pay
 		}
 		
-		#Concubinage effects
+		# Concubinage effects
 		hidden_effect = {
 			add_courtier = scope:potential_candidate
 			scope:potential_candidate = {
@@ -2527,329 +2560,279 @@ bride_show.3005 = {
 		}
 	}
 
-	#Recruit to court
-	# option = { # Recruit to court and break betrothal
-	# 	name = bride_show.3005.b
-	# 	trigger = {
-	# 		gold >= bride_compensation_payment_value
-	# 	}
-	# 	show_as_unavailable = { 
-	# 		gold < bride_compensation_payment_value
-	# 	}
+	# Recruit to court
+	option = { # Recruit to court and break betrothal
+		name = bride_show.3005.b
+
+		# Reward
+		if = {
+			limit = {
+				exists = scope:potential_candidate.court_owner
+			}
+			pay_short_term_gold = {
+				target = scope:potential_candidate.court_owner
+				gold = scope:gold_to_pay
+			}
+			
+			#Courtly vassals get a positive opinion
+			if = {
+				limit = {
+					scope:potential_candidate.court_owner = {
+						is_vassal_of = scope:liege
+						has_vassal_stance = courtly
+						agrees_with_bride_show = yes
+					}
+				}
+				scope:potential_candidate.court_owner = {
+					add_opinion = {
+						target = scope:liege
+						modifier = pleased_opinion
+						opinion = 10
+					}
+				}
+			}
+			stress_impact = {
+				paranoid = miniscule_stress_impact_gain
+			}
+		}
+		else = {
+			remove_short_term_gold = scope:gold_to_pay
+		}
 		
-	# 	save_scope_value_as = {
-	# 		name = gold_to_pay
-	# 		value = bride_compensation_payment_value
-	# 	}
-	# 	#Reward
-	# 	if = {
-	# 		limit = {
-	# 			exists = scope:potential_candidate.court_owner
-	# 		}
-	# 		pay_short_term_gold = {
-	# 			target = scope:potential_candidate.court_owner
-	# 			gold = bride_compensation_payment_value
-	# 		}
-	# 		scope:potential_candidate = {
-	# 			save_scope_as = candidate_courtier
-	# 			court_owner = {
-	# 				hidden_effect = {
-	# 					send_interface_toast = {
-	# 						type = event_generic_neutral
-	# 						title = chosen_candidate_t
-	# 						right_icon = scope:liege
-	# 						left_icon = scope:potential_candidate
-	# 						custom_tooltip = chosen_courtier_d
-							
-	# 						show_as_tooltip = {
-	# 							scope:liege = { 
-	# 								pay_short_term_gold = {
-	# 									target = scope:potential_candidate.court_owner
-	# 									gold = bride_compensation_payment_value
-	# 								}
-	# 							}
-	# 						}
-	# 						gain_influence_harem_politics_effect = {
-	# 							RECIPIENT = scope:potential_candidate.court_owner
-	# 							CHARACTER = scope:liege
-	# 							TARGET = scope:potential_candidate
-	# 						}
-	# 					}
-	# 				}
-	# 			}
-	# 		}
-	# 		stress_impact = {
-	# 			paranoid = miniscule_stress_impact_gain
-	# 		}
-	# 	}
-	# 	else = {
-	# 		remove_short_term_gold = bride_compensation_payment_value
-	# 	}
+		hidden_effect = {
+			if = {
+				limit = {
+					scope:potential_candidate = {
+						is_hostage = yes
+					}
+				}
+				scope:potential_candidate = {
+					return_hostage = yes
+				}
+			}
+		}
+		add_courtier = scope:potential_candidate
+		scope:potential_candidate = {
+			hidden_effect = {
+				return_to_court = yes
+			}
+		}
 		
-	# 	hidden_effect = {
-	# 		if = {
-	# 			limit = {
-	# 				scope:potential_candidate = {
-	# 					is_hostage = yes
-	# 				}
-	# 			}
-	# 			scope:potential_candidate = {
-	# 				return_hostage = yes
-	# 			}
-	# 		}
-	# 	}
-	# 	add_courtier = scope:potential_candidate
-	# 	scope:potential_candidate = {
-	# 		hidden_effect = {
-	# 			return_to_court = yes
-	# 		}
-	# 	}
-		
-	# 	ai_chance = {
-	# 		base = 0
-	# 	}
-	# }
+		ai_chance = {
+			base = 0
+		}
+	}
 
 	# Pass
-	# option = {
-	# 	name = bride_show.0005.e
-	# 	if = {
-	# 		limit = { 
-	# 			OR = {
-	# 				AND = {	
-	# 					exists = scope:candidate_2 
-	# 					can_have_four_candidates_trigger = no
-	# 				}
-	# 				exists = scope:candidate_3
-	# 			}
-	# 		}
-	# 		custom_tooltip = bride_show.0005.e_last.tt
-	# 	}
-	# 	else  = {
-	# 		custom_tooltip = bride_show.0005.e.tt
-	# 	}
-		
-	# 	if = {
-	# 		limit = {
-	# 			exists = scope:potential_candidate.court_owner
-	# 			scope:potential_candidate.court_owner = {
-	# 				AND = {
-	# 					is_vassal_of = root
-	# 					has_vassal_stance = courtly
-	# 					any_close_family_member = {
-	# 						this = scope:potential_candidate
-	# 					}
-	# 					agrees_with_bride_show = yes
-	# 				}
-	# 			}
-	# 		}
-	# 		scope:potential_candidate.court_owner = {
-	# 			add_opinion = {
-	# 				target = root
-	# 				modifier = courtly_vassal_rejected_opinion
-	# 			}
-	# 		}
-	# 	}
-		
-	# 	scope:potential_candidate = {
-	# 		add_character_flag = {
-	# 			flag = rejected_candidate_flag
-	# 			days = 5
-	# 		}
-	# 		if = {
-	# 			limit = {
-	# 				NOR = {
-	# 					has_trait = paranoid
-	# 					has_trait = craven
-	# 					has_trait = shy
-	# 					has_trait = chaste
-	# 					has_trait = celibate
-	# 				}
-	# 				is_betrothed = no
-	# 				agrees_with_bride_show = yes
-	# 			}
-	# 			add_opinion = {
-	# 				target = root
-	# 				modifier = rejected_me_opinion
-	# 			}
-	# 		}
-	# 		else_if = {
-	# 			limit = {
-	# 				AND = {
-	# 					OR = {
-	# 						has_trait = arrogant
-	# 						has_trait = greedy
-	# 						has_trait = ambitious
-	# 					}
-	# 					agrees_with_bride_show = yes
-	# 				}
-	# 			}
-	# 			add_opinion = {
-	# 				target = root
-	# 				modifier = rejected_me_opinion
-	# 			}
-	# 		}
-	# 	}
-	# 	ai_chance = {
-	# 		base = 35
-	# 		# Compatibility
-	# 		compatibility_modifier = { #Trait compatibility
-	# 			who = root
-	# 			compatibility_target = scope:potential_candidate
-	# 			min = -50
-	# 			max = 50
-	# 			multiplier = -2
-	# 		}
-	# 		option_modifier = {
-	# 			who = scope:liege
-	# 			opinion_target = scope:potential_candidate
-	# 			multiplier = -0.2
-	# 		}
-	# 		# Traits
-	# 		modifier = { #Weigh down for stress
-	# 			add = 35
-	# 			has_trait = paranoid
-	# 			exists = scope:potential_candidate.court_owner
-	# 		}
-	# 		modifier = { #Weigh down for stress
-	# 			add = 10
-	# 			has_trait = shy
-	# 		}
-	# 		modifier = { #More likely if root is lustful
-	# 			add = -35
-	# 			has_trait = lustful
-	# 		}
-
-	# 		# Number of concubines
-	# 		modifier = { #More likely if root doesn't have enough spouses
-	# 			add = 15
-	# 			number_of_concubines >= number_of_desired_concubines
-	# 		}
-
-	# 		# Sender
-	# 		modifier = { #More likely if the candidate was sent by a vassal
-	# 			add = -5
-	# 			scope:potential_candidate.court_owner ?= {
-	# 				OR = {
-	# 					is_tributary_of = root
-	# 					is_vassal_of = root
-	# 				}
-	# 			}
-	# 		}
-	# 		modifier = { #More likely if the candidate was sent by a powerful vassal
-	# 			add = -10
-	# 			scope:potential_candidate.court_owner ?= {
-	# 				OR = {
-	# 					is_powerful_vassal_of = root
-	# 					is_councillor_of = root
-	# 				}
-	# 			}
-	# 		}
-	# 		modifier = {
-	# 			government_has_flag = government_is_administrative
-	# 			scope:potential_candidate.court_owner ?= {
-	# 				government_has_flag = government_is_administrative
-	# 				top_liege ?= scope:liege
-	# 				house ?= {
-	# 					is_dominant_family = yes
-	# 				}
-	# 			}
-	# 			add = -15
-	# 		}
-	# 		modifier = {
-	# 			scope:potential_candidate.court_owner ?= {
-	# 				tier_difference = {
-	# 					target = scope:liege
-	# 					value >= -1
-	# 				}
-	# 			}
-	# 			add = -5
-	# 		}
-
-	# 		# Genetic traits
-	# 		modifier = { # Beauty
-	# 			add = -10
-	# 			scope:potential_candidate = {
-	# 				has_trait = beauty_good_1
-	# 			}
-	# 		}
-	# 		modifier = { # Beauty
-	# 			add = -15
-	# 			scope:potential_candidate = {
-	# 				has_trait = beauty_good_2
-	# 			}
-	# 		}
-	# 		modifier = { # Beauty
-	# 			add = -20
-	# 			scope:potential_candidate = {
-	# 				has_trait = beauty_good_3
-	# 			}
-	# 		}
-
-	# 		modifier = { # Physique
-	# 			add = -5
-	# 			scope:potential_candidate = {
-	# 				has_trait = physique_good_1
-	# 			}
-	# 		}
-	# 		modifier = { # Physique
-	# 			add = -10
-	# 			scope:potential_candidate = {
-	# 				has_trait = physique_good_2
-	# 			}
-	# 		}
-	# 		modifier = { # Physique
-	# 			add = -15
-	# 			scope:potential_candidate = {
-	# 				has_trait = physique_good_3
-	# 			}
-	# 		}
-
-	# 		modifier = { # Intellect
-	# 			add = -5
-	# 			scope:potential_candidate = {
-	# 				has_trait = intellect_good_1
-	# 			}
-	# 		}
-	# 		modifier = { # Intellect
-	# 			add = -10
-	# 			scope:potential_candidate = {
-	# 				OR = {
-	# 					has_trait = intellect_good_2
-	# 					has_trait = intellect_good_3
-	# 				}
-	# 			}
-	# 		}
-
-	# 		#Other traits
-	# 		modifier = { #More likely if the candidate has excellent traits
-	# 			add = -25
-	# 			scope:potential_candidate = {
-	# 				has_trait = pure_blooded
-	# 			}
-	# 		}
-	# 		modifier = { #More likely if the candidate has excellent traits
-	# 			add = -40
-	# 			scope:potential_candidate = {
-	# 				has_trait = golden_lineage
-	# 			}
-	# 		}
-
-	# 		modifier = {
-	# 			has_trait = poet
-	# 			add = -15
-	# 		}
-	# 		modifier = { #More likely if the candidate isn't a criminal
-	# 			add = -10
-	# 			NOT = { has_imprisonment_reason = scope:potential_candidate }
-	# 		}
-	# 	}
-	# }
-
 	option = {
-		name = bride_show.3005.z
+		name = bride_show.0005.e
+		if = {
+			limit = { 
+				OR = {
+					AND = {	
+						exists = scope:candidate_2 
+						can_have_four_candidates_trigger = no
+					}
+					exists = scope:candidate_3
+				}
+			}
+			custom_tooltip = bride_show.0005.e_last.tt
+		}
+		else  = {
+			custom_tooltip = bride_show.0005.e.tt
+		}
+		
+		if = {
+			limit = {
+				scope:potential_candidate.court_owner ?= {
+					is_vassal_of = root
+					has_vassal_stance = courtly
+					agrees_with_bride_show = yes
+				}
+			}
+			scope:potential_candidate.court_owner = {
+				add_opinion = {
+					target = root
+					modifier = courtly_vassal_rejected_opinion
+				}
+			}
+		}
+		
+		scope:potential_candidate = {
+			add_character_flag = {
+				flag = rejected_candidate_flag
+				days = 5
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_trait = paranoid
+						has_trait = craven
+						has_trait = shy
+						has_trait = chaste
+						has_trait = celibate
+					}
+					agrees_with_bride_show = yes
+				}
+				add_opinion = {
+					target = root
+					modifier = rejected_me_opinion
+				}
+			}
+		}
 		ai_chance = {
-			base = 1
+			base = 35
+			# # Compatibility
+			# compatibility_modifier = { #Trait compatibility
+			# 	who = root
+			# 	compatibility_target = scope:potential_candidate
+			# 	min = -50
+			# 	max = 50
+			# 	multiplier = -2
+			# }
+			# option_modifier = {
+			# 	who = scope:liege
+			# 	opinion_target = scope:potential_candidate
+			# 	multiplier = -0.2
+			# }
+			# # Traits
+			# modifier = { #Weigh down for stress
+			# 	add = 35
+			# 	has_trait = paranoid
+			# 	exists = scope:potential_candidate.court_owner
+			# }
+			# modifier = { #Weigh down for stress
+			# 	add = 10
+			# 	has_trait = shy
+			# }
+			# modifier = { #More likely if root is lustful
+			# 	add = -35
+			# 	has_trait = lustful
+			# }
+
+			# # Number of concubines
+			# modifier = { #More likely if root doesn't have enough spouses
+			# 	add = 15
+			# 	number_of_concubines >= number_of_desired_concubines
+			# }
+
+			# # Sender
+			# modifier = { #More likely if the candidate was sent by a vassal
+			# 	add = -5
+			# 	scope:potential_candidate.court_owner ?= {
+			# 		OR = {
+			# 			is_tributary_of = root
+			# 			is_vassal_of = root
+			# 		}
+			# 	}
+			# }
+			# modifier = { #More likely if the candidate was sent by a powerful vassal
+			# 	add = -10
+			# 	scope:potential_candidate.court_owner ?= {
+			# 		OR = {
+			# 			is_powerful_vassal_of = root
+			# 			is_councillor_of = root
+			# 		}
+			# 	}
+			# }
+			# modifier = {
+			# 	government_has_flag = government_is_administrative
+			# 	scope:potential_candidate.court_owner ?= {
+			# 		government_has_flag = government_is_administrative
+			# 		top_liege ?= scope:liege
+			# 		house ?= {
+			# 			is_dominant_family = yes
+			# 		}
+			# 	}
+			# 	add = -15
+			# }
+			# modifier = {
+			# 	scope:potential_candidate.court_owner ?= {
+			# 		tier_difference = {
+			# 			target = scope:liege
+			# 			value >= -1
+			# 		}
+			# 	}
+			# 	add = -5
+			# }
+
+			# # Genetic traits
+			# modifier = { # Beauty
+			# 	add = -10
+			# 	scope:potential_candidate = {
+			# 		has_trait = beauty_good_1
+			# 	}
+			# }
+			# modifier = { # Beauty
+			# 	add = -15
+			# 	scope:potential_candidate = {
+			# 		has_trait = beauty_good_2
+			# 	}
+			# }
+			# modifier = { # Beauty
+			# 	add = -20
+			# 	scope:potential_candidate = {
+			# 		has_trait = beauty_good_3
+			# 	}
+			# }
+
+			# modifier = { # Physique
+			# 	add = -5
+			# 	scope:potential_candidate = {
+			# 		has_trait = physique_good_1
+			# 	}
+			# }
+			# modifier = { # Physique
+			# 	add = -10
+			# 	scope:potential_candidate = {
+			# 		has_trait = physique_good_2
+			# 	}
+			# }
+			# modifier = { # Physique
+			# 	add = -15
+			# 	scope:potential_candidate = {
+			# 		has_trait = physique_good_3
+			# 	}
+			# }
+
+			# modifier = { # Intellect
+			# 	add = -5
+			# 	scope:potential_candidate = {
+			# 		has_trait = intellect_good_1
+			# 	}
+			# }
+			# modifier = { # Intellect
+			# 	add = -10
+			# 	scope:potential_candidate = {
+			# 		OR = {
+			# 			has_trait = intellect_good_2
+			# 			has_trait = intellect_good_3
+			# 		}
+			# 	}
+			# }
+
+			# #Other traits
+			# modifier = { #More likely if the candidate has excellent traits
+			# 	add = -25
+			# 	scope:potential_candidate = {
+			# 		has_trait = pure_blooded
+			# 	}
+			# }
+			# modifier = { #More likely if the candidate has excellent traits
+			# 	add = -40
+			# 	scope:potential_candidate = {
+			# 		has_trait = golden_lineage
+			# 	}
+			# }
+
+			# modifier = {
+			# 	has_trait = poet
+			# 	add = -15
+			# }
+			# modifier = { #More likely if the candidate isn't a criminal
+			# 	add = -10
+			# 	NOT = { has_imprisonment_reason = scope:potential_candidate }
+			# }
 		}
 	}
 	
