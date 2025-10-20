@@ -545,7 +545,7 @@ recruit_royal_concubines_value = {
 
 	if = { # Prowess
 		limit = {
-			is_male = yes
+			can_be_knight_trigger = { ARMY_OWNER = root }
 		}
 		add = {
 			value = prowess
@@ -863,100 +863,122 @@ recruit_royal_concubines_value = {
 
 # Recruit concubines payment
 recruit_concubines_payment_value = { #To be used as a run-of-the-mill amount
-	value = medium_gold_value_check
-	if = { #Emperors and Kings will pay more
+	value = medium_gold_value
+	if = { # Emperors and Kings will pay more
+		limit = {
+			root.primary_title.tier >= tier_empire
+		}
+		multiply = 0.32
+	}
+	else_if = { # Emperors and Kings will pay more
 		limit = {
 			root.primary_title.tier >= tier_kingdom
 		}
+		multiply = 0.22
+	}
+	else = { # Others
 		multiply = 0.12
-	}	
-	else = { #Dukes
-		multiply = 0.05
 	}
 
 	add = {
 		value = {
-			add = scope:potential_candidate.sum_of_all_skills_value
-			multiply = 0.6
+			add = scope:potential_candidate.diplomacy
+			add = scope:potential_candidate.learning
+			if = {
+				limit = {
+					can_be_knight_trigger = { ARMY_OWNER = scope:liege }
+				}
+				add = scope:potential_candidate.prowess
+			}
+			multiply = 0.5
 		}
 	}
+
+	if = { # Poet
+		limit = {
+			scope:potential_candidate = {
+				has_trait = poet
+			}
+		}
+		multiply = 1.15
+	}
 	
-	if = { #Physique
+	if = { # Physique
 		limit = {
 			scope:potential_candidate = {
 				has_trait = physique_good_1
 			}
 		}
-		multiply = 1.15
+		multiply = 1.25
 	}
-	if = { #Physique
+	if = { # Physique
 		limit = {
 			scope:potential_candidate = {
 				has_trait = physique_good_2
 			}
 		}
-		multiply = 1.2
+		multiply = 1.5
 	}
-	if = { #Physique
+	if = { # Physique
 		limit = {
 			scope:potential_candidate = {
 				has_trait = physique_good_3
 			}
 		}
-		multiply = 1.25
+		multiply = 1.75
 	}
 
-	if = { #Intellect
+	if = { # Intellect
 		limit = {
 			scope:potential_candidate = {
 				has_trait = intellect_good_1
 			}
 		}
-		multiply = 1.15
+		multiply = 1.25
 	}
-	if = { #Intellect
+	if = { # Intellect
 		limit = {
 			scope:potential_candidate = {
 				has_trait = intellect_good_2
 			}
 		}
-		multiply = 1.2
+		multiply = 1.5
 	}
-	if = { #Intellect
+	if = { # Intellect
 		limit = {
 			scope:potential_candidate = {
 				has_trait = intellect_good_3
 			}
 		}
-		multiply = 1.25
+		multiply = 1.75
 	}
 
-	if = { #Beauty
+	if = { # Beauty
 		limit = {
 			scope:potential_candidate = {
 				has_trait = beauty_good_1
 			}
 		}
-		multiply = 1.2
+		multiply = 1.5
 	}
-	if = { #Beauty
+	if = { # Beauty
 		limit = {
 			scope:potential_candidate = {
 				has_trait = beauty_good_2
 			}
 		}
-		multiply = 1.3
+		multiply = 1.75
 	}
-	if = { #Beauty
+	if = { # Beauty
 		limit = {
 			scope:potential_candidate = {
 				has_trait = beauty_good_3
 			}
 		}
-		multiply = 1.4
+		multiply = 2
 	}
 
-	if = { #Pure_blooded
+	if = { # Pure_blooded
 		limit = {
 			scope:potential_candidate = {
 				has_trait = pure_blooded
@@ -973,20 +995,20 @@ recruit_concubines_payment_value = { #To be used as a run-of-the-mill amount
 		multiply = 1.5
 	}
 
-	if = { #Generous
+	if = { # Generous
 		limit = {
 			root = { has_trait = generous }
 		}
 		multiply = 1.15
 	}
-	if = { #Greedy
+	if = { # Greedy
 		limit = {
 			root = { has_trait = greedy }
 		}
 		multiply = 0.75
 	}
 
-	#Inflation
+	# Inflation
 	if = {
 		limit = {
 			culture = {
