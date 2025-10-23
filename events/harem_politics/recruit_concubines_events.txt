@@ -300,7 +300,7 @@ bride_show.2000 = {
 					title = bride_show.2000.t.court_owner
 					right_icon = scope:liege
 					left_icon = scope:jarya
-					custom_tooltip = bride_show.2000.desc.
+					custom_tooltip = bride_show.2000.desc.court_owner
 					if = {
 						limit = {
 							scope:jarya = {
@@ -645,8 +645,9 @@ bride_show.2000 = {
 				is_ai = yes
 				is_character_interaction_valid = {
 					recipient = scope:jarya
-					interaction = ai_make_concubine_interaction
+					interaction = make_concubine_interaction
 				}
+				allowed_more_concubines = yes
 			}
 			random = {
 				chance = 10
@@ -691,9 +692,11 @@ bride_show.2000 = {
 					add = 60
 				}
 				run_interaction = {
-					interaction = ai_make_concubine_interaction
+					interaction = make_concubine_interaction
 					actor = scope:liege
+					secondary_actor = scope:liege
 					recipient = scope:jarya
+					secondary_recipient = scope:jarya
 					execute_threshold = accept
 				}
 			}
@@ -799,11 +802,18 @@ bride_show.3000 = {
 			value = yes
 			days = 30
 		}
-		ai_chance = { #The AI will always choose this
-			base = 20
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 1
 			modifier = {
-				gold <= minor_gold_value
-				factor = 0
+				gold >= medium_gold_value
+				add = 20
+			}
+			modifier = {
+				has_trait = greedy
+				add = -20
 			}
 		}
 	}
@@ -811,7 +821,7 @@ bride_show.3000 = {
 	option = {
 		name = bride_show.0001.b
 		ai_chance = {
-			base = 1
+			base = 10
 		}
 	}
 	after = {
@@ -911,11 +921,18 @@ bride_show.3001 = {
 			value = yes
 			days = 30
 		}
-		ai_chance = { #The AI will always choose this
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
+		ai_chance = {
 			base = 1
 			modifier = {
 				gold >= medium_gold_value
 				add = 20
+			}
+			modifier = {
+				has_trait = greedy
+				add = -20
 			}
 		}
 	}
@@ -934,7 +951,70 @@ bride_show.3001 = {
 		}
 	}
 }
+scripted_trigger has_min_average_skill_level_trigger = {
+	OR = {
+		diplomacy >= average_skill_level
+		learning >= average_skill_level
+		trigger_if = {
+			limit = {
+				can_be_knight_trigger = { ARMY_OWNER = root }
+			}
+			prowess >= average_skill_level
+		}
+		has_trait = poet
+	}
+}
 
+scripted_effect add_random_skill_to_candidate_effect = {
+	random_list = {
+		1 = { # Diplomacy
+			save_scope_value_as = {
+				name = skill_gain
+				value = {
+					value = average_skill_level
+					subtract = diplomacy
+					add = {
+						integer_range = { min = 0 max = 7 }
+					}
+				}
+			}
+			add_diplomacy_skill = scope:skill_gain
+		}
+		1 = { # Learning
+			save_scope_value_as = {
+				name = skill_gain
+				value = {
+					value = average_skill_level
+					subtract = learning
+					add = {
+						integer_range = { min = 0 max = 7 }
+					}
+				}
+			}
+			add_learning_skill = scope:skill_gain
+		}
+		1 = { # Prowess
+			trigger = {
+				can_be_knight_trigger = { ARMY_OWNER = root }
+			}
+			save_scope_value_as = {
+				name = skill_gain
+				value = {
+					value = average_skill_level
+					subtract = prowess
+					add = {
+						integer_range = { min = 0 max = 7 }
+					}
+				}
+			}
+			add_prowess_skill = scope:skill_gain
+		}
+	}
+	random = {
+		chance = 15
+		add_trait = poet
+	}
+}
 ##Managing the eligible subjects##
 scripted_trigger recruit_concubines_eligible_subject_trigger = {
 	harem_politics_valid_bride_show_subject_trigger = {
@@ -1296,13 +1376,134 @@ bride_show.3003 = {
 						scope:bride = {
 							add_to_list = pool_candidates
 
+							if = { # Congenital traits
+								limit = {
+									scope:liege = { has_variable = beauty_important }
+								}
+								if = {
+									limit = {
+										num_of_good_genetic_traits = 0
+									}
+									random = {
+										chance = 30
+										random_list = {
+											1 = { # Superior genetics
+												modifier = {
+													scope:liege.highest_held_title_tier >= tier_empire
+													add = 4
+												}
+												random_list = {
+													20 = { # Beauty
+														add_trait = beauty_good_3
+													}
+													9 = { # Intellect
+														modifier = {
+															add = 6
+															scope:liege = {
+																has_variable = personality_skills_important
+															}
+														}
+														add_trait = intellect_good_3
+													}
+													9 = { # Physique										
+														add_trait = physique_good_3
+													}
+													2 = { # Fecund													
+														add_trait = fecund
+													}
+												}											
+											}
+											4 = { # Good genetics
+												modifier = {
+													scope:liege.highest_held_title_tier >= tier_empire
+													add = 4
+												}
+												random_list = {
+													4 = { # Beauty
+														add_trait = beauty_good_2
+													}
+													1 = { # Intellect
+														modifier = {
+															add = 1
+															scope:liege = {
+																has_variable = personality_skills_important
+															}
+														}									
+														add_trait = intellect_good_2
+													}
+													1 = { # Physique											
+														add_trait = physique_good_2
+													}
+												}											
+											}
+											20 = { # Decent genetics
+												random_list = {
+													4 = { # Beauty
+														add_trait = beauty_good_1
+													}
+													1 = { # Intellect
+														modifier = {
+															add = 1
+															scope:liege = {
+																has_variable = personality_skills_important
+															}
+														}							
+														add_trait = intellect_good_1
+													}
+													1 = { # Physique								
+														add_trait = physique_good_1
+													}
+												}											
+											}
+										}
+									}
+								}
+								if = {
+									limit = {
+										OR = {
+											current_weight <= -30
+											current_weight >= 35
+										}
+									}
+									if = {
+										limit = {
+											current_weight <= -30
+										}
+										save_scope_value_as = {
+											name = weight
+											value = {
+												value = 10
+												add = scope:bride.current_weight
+												multiply = -1
+												add = {
+													integer_range = { min = 0 max = 10 }
+												}
+											}
+										}
+									}
+									else = {
+										save_scope_value_as = {
+											name = weight
+											value = {
+												value = scope:bride.current_weight
+												subtract = -15
+												multiply = -1
+												add = {
+													integer_range = { min = 0 max = -10 }
+												}
+											}
+										}
+									}
+									change_current_weight = scope:weight
+								}
+							}
 							if = { # Skills
 								limit = {
 									scope:liege = { has_variable = personality_skills_important }
 									has_min_average_skill_level_trigger = no
 								}
 								random = {
-									chance = 50
+									chance = 20
 									add_random_skill_to_candidate_effect = yes
 								}
 							}
@@ -1404,12 +1605,13 @@ bride_show.3003 = {
 				}
 				hidden_effect = {
 					scope:potential_candidate = {
+						# Check - this should happen only if they were created, not drawn from pool characters
 						hp_after_consort_creation_effect = yes
+						save_scope_value_as = {
+							name = gold_to_pay
+							value = recruit_concubines_payment_value
+						}
 					}
-				}
-				save_scope_value_as = {
-					name = gold_to_pay
-					value = recruit_concubines_payment_value
 				}
 			}
 		}
@@ -1696,11 +1898,18 @@ bride_show.3003 = {
 			scope:concubine = {
 				return_to_court = yes
 			}
-			run_interaction = {
-				interaction = make_concubine_interaction
-				actor = root
-				recipient = scope:concubine
-				execute_threshold = accept
+			if = {
+				limit = {
+					allowed_more_concubines = yes
+				}
+				run_interaction = {
+					interaction = make_concubine_interaction
+					actor = root
+					secondary_actor = root
+					recipient = scope:concubine
+					secondary_recipient = scope:concubine
+					execute_threshold = accept
+				}
 			}
 		}
 		show_as_tooltip = {
@@ -1845,72 +2054,6 @@ scripted_trigger can_still_participate_in_concubine_recruitment_trigger = {
 	}
 }
 
-scripted_trigger has_min_average_skill_level_trigger = {
-	OR = {
-		diplomacy >= average_skill_level
-		learning >= average_skill_level
-		trigger_if = {
-			limit = {
-				can_be_knight_trigger = { ARMY_OWNER = root }
-			}
-			prowess >= average_skill_level
-		}
-		has_trait = poet
-	}
-}
-
-scripted_effect add_random_skill_to_candidate_effect = {
-	random_list = {
-		1 = { # Diplomacy
-			save_temporary_scope_value_as = {
-				name = skill_gain
-				value = {
-					value = average_skill_level
-					subtract = diplomacy
-					add = {
-						integer_range = { min = 0 max = 7 }
-					}
-				}
-			}
-			add_diplomacy_skill = scope:skill_gain
-		}
-		1 = { # Learning
-			save_temporary_scope_value_as = {
-				name = skill_gain
-				value = {
-					value = average_skill_level
-					subtract = learning
-					add = {
-						integer_range = { min = 0 max = 7 }
-					}
-				}
-			}
-			add_learning_skill = scope:skill_gain
-		}
-		1 = { # Prowess
-			trigger = {
-				can_be_knight_trigger = { ARMY_OWNER = root }
-			}
-			save_temporary_scope_value_as = {
-				name = skill_gain
-				value = {
-					value = average_skill_level
-					subtract = prowess
-					add = {
-						integer_range = { min = 0 max = 7 }
-					}
-				}
-			}
-			add_prowess_skill = scope:skill_gain
-		}
-	}
-	# random = {
-	# 	chance = 15
-	# 	add_trait = poet
-	# }
-	add_trait = poet
-}
-
 scripted_effect recruit_royal_concubines_next_candidate_effect = {
 	hidden_effect = {
 		if = {
@@ -1984,91 +2127,95 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 					if = { # Congenital traits
 						limit = {
 							scope:liege = { has_variable = beauty_important }
-							num_of_good_genetic_traits = 0
 						}
-						random = {
-							chance = 40
-							modifier = {
-								any_in_list = {
-									list = potential_candidates_list
-									num_of_good_genetic_traits >= 1
-									count = 0
-								}
-								any_in_list = {
-									list = presented_candidates_list
-									num_of_good_genetic_traits >= 1
-									count = 0
-								}
-								add = 35
+						if = {
+							limit = {
+								num_of_good_genetic_traits = 0
 							}
-							random_list = {
-								1 = { # Superior genetics
-									modifier = {
-										scope:liege.highest_held_title_tier >= tier_empire
-										add = 4
+							random = {
+								chance = 30
+								modifier = {
+									any_in_list = {
+										list = potential_candidates_list
+										num_of_good_genetic_traits >= 1
+										count = 0
 									}
-									random_list = {
-										20 = { # Beauty
-											add_trait = beauty_good_3
+									any_in_list = {
+										list = presented_candidates_list
+										num_of_good_genetic_traits >= 1
+										count = 0
+									}
+									add = 15
+								}
+								random_list = {
+									1 = { # Superior genetics
+										modifier = {
+											scope:liege.highest_held_title_tier >= tier_empire
+											add = 4
 										}
-										9 = { # Intellect
-											modifier = {
-												add = 6
-												scope:liege = {
-													has_variable = personality_skills_important
-												}
+										random_list = {
+											20 = { # Beauty
+												add_trait = beauty_good_3
 											}
-											add_trait = intellect_good_3
-										}
-										9 = { # Physique										
-											add_trait = physique_good_3
-										}
-										2 = { # Fecund													
-											add_trait = fecund
-										}
-									}											
-								}
-								4 = { # Good genetics
-									modifier = {
-										scope:liege.highest_held_title_tier >= tier_empire
-										add = 4
+											9 = { # Intellect
+												modifier = {
+													add = 6
+													scope:liege = {
+														has_variable = personality_skills_important
+													}
+												}
+												add_trait = intellect_good_3
+											}
+											9 = { # Physique										
+												add_trait = physique_good_3
+											}
+											2 = { # Fecund													
+												add_trait = fecund
+											}
+										}											
 									}
-									random_list = {
-										4 = { # Beauty
-											add_trait = beauty_good_2
+									4 = { # Good genetics
+										modifier = {
+											scope:liege.highest_held_title_tier >= tier_empire
+											add = 4
 										}
-										1 = { # Intellect
-											modifier = {
-												add = 1
-												scope:liege = {
-													has_variable = personality_skills_important
-												}
-											}									
-											add_trait = intellect_good_2
-										}
-										1 = { # Physique											
-											add_trait = physique_good_2
-										}
-									}											
-								}
-								20 = { # Decent genetics
-									random_list = {
-										4 = { # Beauty
-											add_trait = beauty_good_1
-										}
-										1 = { # Intellect
-											modifier = {
-												add = 1
-												scope:liege = {
-													has_variable = personality_skills_important
-												}
-											}							
-											add_trait = intellect_good_1
-										}
-										1 = { # Physique								
-											add_trait = physique_good_1
-										}
-									}											
+										random_list = {
+											4 = { # Beauty
+												add_trait = beauty_good_2
+											}
+											1 = { # Intellect
+												modifier = {
+													add = 1
+													scope:liege = {
+														has_variable = personality_skills_important
+													}
+												}									
+												add_trait = intellect_good_2
+											}
+											1 = { # Physique											
+												add_trait = physique_good_2
+											}
+										}											
+									}
+									20 = { # Decent genetics
+										random_list = {
+											4 = { # Beauty
+												add_trait = beauty_good_1
+											}
+											1 = { # Intellect
+												modifier = {
+													add = 1
+													scope:liege = {
+														has_variable = personality_skills_important
+													}
+												}							
+												add_trait = intellect_good_1
+											}
+											1 = { # Physique								
+												add_trait = physique_good_1
+											}
+										}											
+									}
 								}
 							}
 						}
@@ -2297,6 +2444,58 @@ bride_show.3004 = {
 	}
 }
 
+scripted_effect selected_candidate_opinion_effect = {
+	hidden_effect = {
+		if = { #Scale opinion gain a bit depending on how cool the concubine is
+			limit = {
+				scope:potential_candidate = {
+					OR = {
+						has_trait = beauty_good_2
+						has_trait = beauty_good_3
+						num_of_good_genetic_traits > 1
+						has_relation_lover = scope:liege
+						has_relation_soulmate = scope:liege
+					}
+					trigger_if = {
+						limit = {
+							is_female = yes
+						}
+						age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:potential_candidate.court_owner
+				modifier = grateful_opinion
+				opinion = 10
+			}
+		}
+		else_if = {
+			limit = {
+				scope:potential_candidate = {
+					OR = {
+						is_lowborn = no
+						has_trait = beauty_good_1
+						num_of_good_genetic_traits > 0
+						has_relation_friend = scope:liege
+						has_relation_best_friend = scope:liege
+					}
+					trigger_if = {
+						limit = {
+							is_female = yes
+						}
+						age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:potential_candidate.court_owner
+				modifier = grateful_opinion
+				opinion = 5
+			}
+		}
+	}
+}
 ##Pick your candidates##
 bride_show.3005 = {
 	type = character_event
@@ -2619,44 +2818,45 @@ bride_show.3005 = {
 			}
 		}
 		hidden_effect = {
-			if = {
-				limit = {
-					exists = scope:potential_candidate.court_owner
-				}
-				scope:potential_candidate.court_owner = {
-					save_scope_as = pc_court_owner
-					if = {
-						limit = {
-							scope:potential_candidate = {
-								is_betrothed = yes
+			scope:potential_candidate = {
+				if = {
+					limit = {
+						exists = court_owner
+						court_owner != scope:liege
+					}
+					court_owner = {
+						save_scope_as = pc_court_owner
+						if = {
+							limit = {
+								scope:potential_candidate = {
+									is_betrothed = yes
+								}
+							}
+							run_interaction = {
+								interaction = break_betrothal_interaction
+								actor = scope:potential_candidate.court_owner
+								recipient = scope:potential_candidate
+								execute_threshold = accept
 							}
 						}
-						run_interaction = {
-							interaction = break_betrothal_interaction
-							actor = scope:potential_candidate.court_owner
-							recipient = scope:potential_candidate
-							execute_threshold = accept
-						}
 					}
 				}
-			}
-			else_if = {
-				limit = {
-					scope:potential_candidate = {
+				else_if = {
+					limit = {
 						is_betrothed = yes
 					}
+					run_interaction = {
+						interaction = break_betrothal_interaction
+						actor = scope:potential_candidate
+						recipient = scope:potential_candidate.betrothed
+						execute_threshold = accept
+					}
 				}
-				run_interaction = {
-					interaction = break_betrothal_interaction
-					actor = scope:potential_candidate
-					recipient = scope:potential_candidate.betrothed
-					execute_threshold = accept
+				save_scope_value_as = {
+					name = gold_to_pay
+					value = recruit_concubines_payment_value
 				}
 			}
-		}
-		save_scope_value_as = {
-			name = gold_to_pay
-			value = recruit_concubines_payment_value
 		}
 	}
 
@@ -2698,26 +2898,32 @@ bride_show.3005 = {
 						opinion = 10
 					}
 				}
-				if = {
-					limit = {
-						is_ai = no
-					}
-					send_interface_toast = {
-						type = event_generic_good
-						title = chosen_consort_t
-						right_icon = scope:liege
-						left_icon = scope:potential_candidate
-						show_as_tooltip = {
-							scope:liege = {
-								make_concubine = scope:potential_candidate
-								pay_short_term_gold = {
-									target = scope:potential_candidate.court_owner
-									gold = scope:gold_to_pay
+				hidden_effect = {
+					if = {
+						limit = {
+							is_ai = no
+						}
+						send_interface_toast = {
+							type = event_generic_good
+							title = chosen_consort_t
+							right_icon = scope:liege
+							left_icon = scope:potential_candidate
+							show_as_tooltip = {
+								scope:liege = {
+									make_concubine = scope:potential_candidate
+									pay_short_term_gold = {
+										target = scope:potential_candidate.court_owner
+										gold = scope:gold_to_pay
+									}
+									selected_candidate_opinion_effect = yes
 								}
 							}
 						}
 					}
 				}
+			}
+			hidden_effect = {
+				selected_candidate_opinion_effect = yes
 			}
 			stress_impact = {
 				paranoid = miniscule_stress_impact_gain
@@ -2736,26 +2942,23 @@ bride_show.3005 = {
 					}
 					return_hostage = yes
 				}
-				return_to_court = yes
 				scope:harem_liege = {
 					add_courtier = scope:potential_candidate
 				}
-				if = {
-					limit = {
-						religion != scope:harem_liege.religion
-					}
-					set_character_faith = scope:harem_liege.faith
-					add_character_flag = {
-						flag = abducted_non_believer
-						years = 5
-					}
-				}
+				return_to_court = yes
 			}
-			run_interaction = {
-				interaction = make_concubine_interaction
-				actor = scope:liege
-				recipient = scope:potential_candidate
-				execute_threshold = accept
+			if = {
+				limit = {
+					allowed_more_concubines = yes
+				}
+				run_interaction = {
+					interaction = make_concubine_interaction
+					actor = scope:liege
+					secondary_actor = scope:liege
+					recipient = scope:potential_candidate
+					secondary_recipient = scope:potential_candidate
+					execute_threshold = accept
+				}
 			}
 		}
 		show_as_tooltip = {
@@ -2772,7 +2975,7 @@ bride_show.3005 = {
 				max = 20
 				multiplier = 0.2
 			}
-			option_modifier = {
+			opinion_modifier = {
 				who = scope:liege
 				opinion_target = scope:potential_candidate
 				multiplier = 0.2
@@ -2949,26 +3152,32 @@ bride_show.3005 = {
 						opinion = 5
 					}
 				}
-				if = {
-					limit = {
-						is_ai = no
-					}
-					send_interface_toast = {
-						type = event_generic_good
-						title = chosen_candidate_t
-						right_icon = scope:liege
-						left_icon = scope:potential_candidate
-						show_as_tooltip = {
-							scope:liege = {
-								add_courtier = scope:potential_candidate
-								pay_short_term_gold = {
-									target = scope:potential_candidate.court_owner
-									gold = scope:gold_to_pay
+				hidden_effect = {
+					if = {
+						limit = {
+							is_ai = no
+						}
+						send_interface_toast = {
+							type = event_generic_good
+							title = chosen_candidate_t
+							right_icon = scope:liege
+							left_icon = scope:potential_candidate
+							show_as_tooltip = {
+								scope:liege = {
+									add_courtier = scope:potential_candidate
+									pay_short_term_gold = {
+										target = scope:potential_candidate.court_owner
+										gold = scope:gold_to_pay
+									}
+									selected_candidate_opinion_effect = yes
 								}
 							}
 						}
 					}
 				}
+			}
+			hidden_effect = {
+				selected_candidate_opinion_effect = yes
 			}
 			stress_impact = {
 				paranoid = miniscule_stress_impact_gain
@@ -3034,6 +3243,20 @@ bride_show.3005 = {
 					target = root
 					modifier = courtly_vassal_rejected_opinion
 				}
+				hidden_effect = {
+					if = {
+						limit = {
+							is_ai = no
+						}
+						send_interface_toast = {
+							type = event_generic_bad
+							title = rejected_candidate_t
+							right_icon = scope:liege
+							left_icon = scope:potential_candidate
+							custom_tooltip = bride_show.3005.e.desc
+						}
+					}
+				}
 			}
 		}
 		
@@ -3068,7 +3291,7 @@ bride_show.3005 = {
 				max = 20
 				multiplier = -0.2
 			}
-			option_modifier = {
+			opinion_modifier = {
 				who = scope:liege
 				opinion_target = scope:potential_candidate
 				multiplier = -0.2
@@ -3153,6 +3376,13 @@ bride_show.3005 = {
 				}
 				add = 10
 			}
+			modifier = {
+				exists = scope:potential_candidate.court_owner
+				add = {
+					value = "opinion(scope:potential_candidate.court_owner)"
+					multiply = -0.5
+				}
+			}
 		}
 	}
 	
@@ -3161,6 +3391,23 @@ bride_show.3005 = {
 			bride_show_saved_candidate_effect = {
 				LIST = potential_candidates_list
 			}
+			hidden_effect = {
+				if = {
+					limit = {
+						is_courtier_of = scope:liege
+					}
+					if = {
+						limit = {
+							religion != scope:harem_liege.religion
+						}
+						set_character_faith = scope:harem_liege.faith
+						add_character_flag = {
+							flag = abducted_non_believer
+							years = 5
+						}
+					}
+				}
+			}
 		}
 		if = {
 			limit = {
@@ -3168,9 +3415,10 @@ bride_show.3005 = {
 			}
 			clear_saved_scope = pc_court_owner
 		}
-		recruit_royal_concubines_next_candidate_effect = yes
+		hidden_effect = {
+			recruit_royal_concubines_next_candidate_effect = yes
+		}
 	}
-
 }
 
 bride_show.3006 = {
