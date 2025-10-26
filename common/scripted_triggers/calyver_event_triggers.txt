@@ -257,6 +257,110 @@ harem_politics_is_valid_authority_trigger = {
     }
 }
 
+harem_politics_ranks_the_same_as_target_trigger = {
+	# CHARACTER = is the character being checked
+	# TARGET = is the character being compared to
+	# LIEGE = is the harem owner
+
+	$CHARACTER$ = { 
+		is_valid_harem_member_trigger = {
+			LIEGE = $LIEGE$
+		}
+		NOT = {
+			has_court_position = grand_consort_court_position
+		}
+		trigger_if = {
+			limit = {
+				exists = $LIEGE$.primary_spouse
+			}
+			NOT = {
+				this = $LIEGE$.primary_spouse
+			}
+		}
+	}
+    $TARGET$ = {
+		is_valid_harem_member_trigger = {
+			LIEGE = $LIEGE$
+		}
+		NOR = {
+			is_child_of = $CHARACTER$
+			is_parent_of = $CHARACTER$
+			is_grandparent_of = $CHARACTER$
+			is_uncle_or_aunt_of = $CHARACTER$
+			is_nibling_of = $CHARACTER$
+			is_consort_of = $CHARACTER$
+			has_court_position = grand_consort_court_position
+		}
+		trigger_if = {
+			limit = {
+				exists = $LIEGE$.primary_spouse
+			}
+			NOT = {
+				this = $LIEGE$.primary_spouse
+			}
+		}
+	}
+
+	trigger_if = {
+		limit = {
+			$CHARACTER$ = {
+				NOT = {
+					is_consort_of = $LIEGE$
+				}
+			}
+		}
+		$TARGET$ = {
+			NOT = { is_consort_of = $LIEGE$ }
+		}
+		trigger_if = {
+			limit = {
+				$TARGET$ = {
+					is_uncle_or_aunt_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_uncle_or_aunt_of = $LIEGE$
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_sibling_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_sibling_of = $LIEGE$
+			}
+		}
+	}
+	trigger_else = {
+		trigger_if = {
+			limit = {
+				exists = $LIEGE$.primary_spouse
+				$TARGET$ = {
+					is_spouse_of = $LIEGE$
+					NOT = {
+						this = $LIEGE$.primary_spouse
+					}
+				}
+			}
+			$CHARACTER$ = {
+				is_spouse_of = $LIEGE$
+				NOT = {
+					this = $LIEGE$.primary_spouse
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_concubine_of = $LIEGE$
+				}
+			}
+		}
+	}
+}
+
 #########################
 ## Bride Show triggers ##
 #########################
@@ -525,6 +629,9 @@ recruit_concubines_viable_county_trigger = {
 		NOT = {
 			religion = religion:islam_religion
 		}
+	}
+	holder ?= {
+		religion != religion:islam_religion
 	}
 }
 
