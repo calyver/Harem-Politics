@@ -37654,25 +37654,16 @@ harem_politics.1044 = {
 	    }
 		# You can't be in debt
 		gold >= tiny_gold_value
+		can_have_settled_harem_trigger = yes
 		trigger_if = {
 			limit = {
 				has_ep1_dlc_trigger = yes
 				highest_held_title_tier >= tier_kingdom
 			}
-			trigger_if = {
-				limit = {
-					NOT = {
-						government_has_flag = government_is_tribal
-					}
-				}
-				has_royal_court = yes
-				amenity_level = {
-					type = court_fashion
-					value >= 3
-				}
-			}
-			trigger_else = {
-				government_has_flag = government_is_tribal
+			has_royal_court = yes
+			amenity_level = {
+				type = court_fashion
+				value >= 3
 			}
 		}
 	}
@@ -37873,6 +37864,7 @@ harem_politics.0044 = {
 	}
 	
 	trigger = {
+
 		is_landed_or_landless_administrative = yes
 		is_available_healthy_adult = yes
 		is_available_at_peace_adult = yes
@@ -37882,34 +37874,35 @@ harem_politics.0044 = {
 			}
 			count >= 3
 		}
-		exists = scope:wasteful_consort
-		exists = scope:modest_consort
+		any_courtier = {
+			wasteful_consort_trigger = yes
+			save_temporary_scope_as = temp_wasteful_consort
+		}
+		any_courtier = {
+			modest_consort_trigger = {
+				WASTEFUL_CONSORT = scope:temp_wasteful_consort
+			}
+		}
 		NOR = {
 			has_character_flag = had_harem_expenses_clash_flag
 	    }
 		# You can't be in debt
 		gold >= tiny_gold_value
+		can_have_settled_harem_trigger = yes
 		trigger_if = {
 			limit = {
 				has_ep1_dlc_trigger = yes
 				highest_held_title_tier >= tier_kingdom
 			}
-			trigger_if = {
-				limit = {
-					NOT = {
-						government_has_flag = government_is_tribal
-					}
-				}
-				has_royal_court = yes
-				amenity_level = {
-					type = court_fashion
-					value >= 3
-				}
-			}
-			trigger_else = {
-				government_has_flag = government_is_tribal
+			has_royal_court = yes
+			amenity_level = {
+				type = court_fashion
+				value >= 3
 			}
 		}
+		
+		exists = scope:wasteful_consort
+		exists = scope:modest_consort
 	}
 	
 	immediate = {
@@ -37931,45 +37924,16 @@ harem_politics.0044 = {
 	
 	option = { # Side with the humble consort
         name = harem_politics.0044.a
+		add_character_modifier = {
+			modifier = outmoded_fashion_modifier
+			years = 3
+		}
 		if = {
 			limit = {
-				has_ep1_dlc_trigger = yes
 				has_royal_court = yes
-				NOT = { government_has_flag = government_is_tribal }
+				has_ep1_dlc_trigger = yes
 			}
-			if = {
-				limit = {
-					amenity_level = {
-						type = court_fashion
-						value = 5
-					}
-				}
-				set_amenity_level = { type = court_fashion value = 4 }
-			}
-			else_if = {
-				limit = {
-					amenity_level = {
-						type = court_fashion
-						value = 4
-					}
-				}
-				set_amenity_level = { type = court_fashion value = 3 }
-			}
-			else_if = {
-				limit = {
-					amenity_level = {
-						type = court_fashion
-						value = 3
-					}
-				}
-				set_amenity_level = { type = court_fashion value = 2 }
-			}
-		}
-		else = {
-			add_character_modifier = {
-				modifier = outmoded_fashion_modifier
-				years = 3
-			}
+			change_current_court_grandeur = medium_court_grandeur_loss
 		}
 		scope:modest_consort = {
 			add_opinion = {
@@ -38096,19 +38060,17 @@ harem_politics.0044 = {
 	
 	option = { # Side with the wasteful consort
         name = harem_politics.0044.b
-
+		remove_short_term_gold = tiny_gold_value
+		add_character_modifier = {
+			modifier = extravagant_fashion_modifier
+			years = 3
+		}
 		if = {
 			limit = {
-				NOR = {
-					has_ep1_dlc_trigger = yes
-					highest_held_title_tier >= tier_kingdom
-					has_royal_court = yes
-				}
+				has_royal_court = yes
+				has_ep1_dlc_trigger = yes
 			}
-			add_character_modifier = {
-				modifier = extravagant_fashion_modifier
-				years = 3
-			}
+			change_current_court_grandeur = medium_court_grandeur_gain
 		}
 
 		scope:wasteful_consort = {
@@ -38140,6 +38102,7 @@ harem_politics.0044 = {
 		stress_impact = {
 			humble = minor_stress_impact_gain 
 			content = minor_stress_impact_gain
+			greedy = minor_stress_impact_gain
 			arrogant = minor_stress_impact_loss
 		}
         ai_chance = {
@@ -38234,7 +38197,7 @@ harem_politics.0044 = {
         }
     }
 
-	option = { # Try to reconcile both
+	option = { # Try to reconcile them both
 		name = harem_politics.0044.c
 
 		duel = {
@@ -38344,7 +38307,6 @@ harem_politics.0044 = {
 			}
         }
 	}
-
 
 	after = {
 		add_character_flag = {
