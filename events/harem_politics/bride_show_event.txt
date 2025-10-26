@@ -778,6 +778,7 @@ bride_show.0001 = {
 
 		stress_impact = {
 			humble = minor_stress_impact_gain
+			greedy = minor_stress_impact_gain
 		}
 		
 		set_variable = {
@@ -796,7 +797,52 @@ bride_show.0001 = {
 				add = -25
 			}
 			modifier = {
-				gold < minor_gold_value
+				has_trait = greedy
+				add = -25
+			}
+			modifier = {
+				hp_accepts_polygamy = yes
+				allowed_more_spouses = yes
+				is_valid_for_legitimacy_change = yes
+				NOT = { has_variable = lowborn_legitimacy_cooldown }
+				add = 10
+			}
+			modifier = { #More likely if root doesn't have enough spouses
+				add = 10
+				is_valid_for_legitimacy_change = yes
+				NOT = { has_variable = lowborn_legitimacy_cooldown }
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+				trigger_else = {
+					any_spouse = {
+						count < 1
+					}
+				}
+			}
+			modifier = {
+				gold <= minor_gold_value
 				factor = 0
 			}
 		}
@@ -816,6 +862,10 @@ bride_show.0001 = {
 			}
 			modifier = {
 				has_trait = humble
+				add = 40
+			}
+			modifier = {
+				has_trait = greedy
 				add = 40
 			}
 		}
@@ -921,10 +971,17 @@ bride_show.0002 = {
 			value = yes
 			days = 30
 		}
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
 		ai_chance = { #The AI will always choose this
 			base = 20
 			modifier = {
-				gold < minor_gold_value
+				has_trait = greedy
+				add = -25
+			}
+			modifier = {
+				gold <= minor_gold_value
 				factor = 0
 			}
 		}
@@ -935,6 +992,10 @@ bride_show.0002 = {
 		name = bride_show.0001.b
 		ai_chance = {
 			base = 1
+			modifier = {
+				has_trait = greedy
+				add = 15
+			}
 		}
 	}
 	after = {
@@ -1030,8 +1091,19 @@ bride_show.0003 = {
 			value = yes
 			days = 30
 		}
+		stress_impact = {
+			greedy = minor_stress_impact_gain
+		}
 		ai_chance = {
 			base = 1
+			modifier = {
+				has_trait = greedy
+				add = -25
+			}
+			modifier = {
+				gold <= minor_gold_value
+				factor = 0
+			}
 		}
 	}
 
@@ -1040,6 +1112,10 @@ bride_show.0003 = {
 		name = bride_show.0001.b
 		ai_chance = { #The AI will always choose this
 			base = 15
+			modifier = {
+				has_trait = greedy
+				add = 15
+			}
 		}
 	}
 	after = {
@@ -1921,6 +1997,8 @@ bride_show.0005 = {
 			}
 			modifier = { #Less likely if the candidate is lowborn and low legitimacy
 				add = -60
+				is_valid_for_legitimacy_change = yes
+				NOT = { has_variable = lowborn_legitimacy_cooldown }
 				OR = {
 					AND = {
 						highest_held_title_tier = tier_empire
@@ -1938,7 +2016,6 @@ bride_show.0005 = {
 				scope:potential_candidate = {
 					is_lowborn = yes
 				}
-				can_have_settled_harem_trigger = yes
 			}
 			modifier = { #More likely if the shares same faith
 				scope:potential_candidate.faith = root.faith
