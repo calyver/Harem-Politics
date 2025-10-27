@@ -1672,14 +1672,21 @@ basic_recruit_concubines_decision = {
 								recruit_concubines_viable_county_trigger = {
 									OVERLORD = scope:liege
 								}
+								NOT = { is_in_list = pool_provinces }
 							}
 						}
-						every_realm_province = {
+						ordered_realm_province = {
 							limit = {
 								recruit_concubines_viable_county_trigger = {
 									OVERLORD = scope:liege
 								}
+								NOT = { is_in_list = pool_provinces }
 							}
+							order_by = {
+								value = recruit_muslim_concubines_county_value
+							}
+							max = 3
+							min = 0
 							add_to_temporary_list = pool_provinces
 						}
 					}
@@ -1690,14 +1697,18 @@ basic_recruit_concubines_decision = {
 								recruit_concubines_viable_candidate_trigger = {
 									OVERLORD = scope:liege
 								}
+								NOT = { is_in_list = pool_candidates }
 							}
 						}
-						every_courtier_or_guest = {
+						ordered_courtier_or_guest = {
 							limit = {
 								recruit_concubines_viable_candidate_trigger = {
 									OVERLORD = scope:liege
 								}
+								NOT = { is_in_list = pool_candidates }
 							}
+							min = 0
+							max = 2
 							add_to_list = pool_candidates
 						}
 					}
@@ -1709,6 +1720,7 @@ basic_recruit_concubines_decision = {
 									recruit_concubines_viable_candidate_trigger = {
 										OVERLORD = scope:liege
 									}
+									NOT = { is_in_list = pool_candidates }
 								}
 							}
 						}
@@ -1718,14 +1730,18 @@ basic_recruit_concubines_decision = {
 									recruit_concubines_viable_candidate_trigger = {
 										OVERLORD = scope:liege
 									}
+									NOT = { is_in_list = pool_candidates }
 								}
 							}
-							every_courtier_or_guest = {
+							ordered_courtier_or_guest = {
 								limit = {
 									recruit_concubines_viable_candidate_trigger = {
 										OVERLORD = scope:liege
 									}
+									NOT = { is_in_list = pool_candidates }
 								}
+								min = 0
+								max = 4
 								add_to_list = pool_candidates
 							}
 						}
@@ -1733,11 +1749,16 @@ basic_recruit_concubines_decision = {
 					# Tributary check
 					if = {
 						limit = {
+							any_in_list = {
+								list = pool_candidates
+								count < 3
+							}
 							any_tributary = {
 								any_courtier_or_guest = {
 									recruit_concubines_viable_candidate_trigger = {
 										OVERLORD = scope:liege
 									}
+									NOT = { is_in_list = pool_candidates }
 								}
 							}
 						}
@@ -1750,19 +1771,25 @@ basic_recruit_concubines_decision = {
 									NOT = { is_in_list = pool_candidates }
 								}
 							}
-							every_courtier_or_guest = {
+							ordered_courtier_or_guest = {
 								limit = {
 									recruit_concubines_viable_candidate_trigger = {
 										OVERLORD = scope:liege
 									}
 									NOT = { is_in_list = pool_candidates }
 								}
+								min = 0
+								max = 4
 								add_to_list = pool_candidates
 							}
 						}
 					}
 					if = {
 						limit = {
+							any_in_list = {
+								list = pool_provinces
+								count < 2
+							}
 							any_tributary = {
 								any_realm_province = {
 									recruit_concubines_viable_county_trigger = {
@@ -1773,16 +1800,46 @@ basic_recruit_concubines_decision = {
 							}
 						}
 						every_tributary = {
-							every_realm_province = {
+							ordered_realm_province = {
 								limit = {
 									recruit_concubines_viable_county_trigger = {
 										OVERLORD = scope:liege
 									}
 									NOT = { is_in_list = pool_provinces }
 								}
+								order_by = {
+									value = recruit_muslim_concubines_county_value
+								}
+								max = 3
+								min = 0
 								add_to_temporary_list = pool_provinces
 							}
 						}
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					religion != religion:islam_religion
+					top_liege ?= {
+						religion != religion:islam_religion 
+						any_realm_province = {
+							recruit_concubines_viable_county_trigger = {
+								OVERLORD = scope:liege
+							}
+							NOT = { is_in_list = pool_provinces }
+						}
+					}
+				}
+				top_liege = {
+					every_realm_province = {
+						limit = {
+							recruit_concubines_viable_county_trigger = {
+								OVERLORD = scope:liege
+							}
+							NOT = { is_in_list = pool_provinces }
+						}
+						add_to_temporary_list = pool_provinces
 					}
 				}
 			}
