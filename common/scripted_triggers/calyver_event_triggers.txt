@@ -214,18 +214,75 @@ harem_politics_is_valid_authority_trigger = {
 		# 2. If authority is primary spouse, target must be a consort
         limit = {
             $AUTHORITY$ = {
-				OR = {
-					NOT = {
-						is_consort_of = $LIEGE$
-					}
-					$LIEGE$.primary_spouse ?= { this = $AUTHORITY$ }
+				NOT = {
+					is_consort_of = $LIEGE$
 				}
             }
         }
-    	$TARGET$ = {
-			is_consort_of = $LIEGE$
+		trigger_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_parent_of = $LIEGE$
+				}
+			}
+			always = yes
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_grandparent_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_uncle_or_aunt_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_uncle_or_aunt_of = $LIEGE$
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_sibling_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_sibling_of = $LIEGE$
+					is_uncle_or_aunt_of = $LIEGE$
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else = {
+			$TARGET$ = {
+				is_consort_of = $LIEGE$
+			}
 		}
     }
+	trigger_else_if = {
+		limit = {
+			$AUTHORITY$ = {
+				$LIEGE$.primary_spouse ?= { this = $AUTHORITY$ }
+            }
+		}
+		is_consort_of = $LIEGE$
+	}
     trigger_else_if = {
         # 3. If authority is Grand Consort, target must be a consort but not the PS
         limit = {
@@ -356,6 +413,9 @@ harem_politics_ranks_the_same_as_target_trigger = {
 				$TARGET$ = {
 					is_concubine_of = $LIEGE$
 				}
+			}
+			$CHARACTER$ = {
+				is_concubine_of = $LIEGE$
 			}
 		}
 	}
