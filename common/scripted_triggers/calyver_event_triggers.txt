@@ -467,6 +467,15 @@ can_have_four_candidates_trigger = {
 ######################
 
 ## Basic trigger - used for all the other triggers ##
+bride_show_beauty_important_parameters_trigger = {
+	NOR = {
+		has_character_modifier = malnourished_modifier
+		current_weight < -50
+		has_character_modifier = obese_modifier
+		current_weight > 50
+		has_trait = beauty_bad
+	}
+}
 bride_show_viable_consort_trigger = {
 	is_healthy = yes
 	is_available = yes
@@ -570,13 +579,7 @@ bride_show_viable_candidate_trigger = {
 				}
 			}
 		}
-		NOR = {
-			has_character_modifier = malnourished_modifier
-			current_weight < -50
-			has_character_modifier = obese_modifier
-			current_weight > 50
-			has_trait = beauty_bad
-		}
+		bride_show_beauty_important_parameters_trigger = yes
 	}
 	trigger_if = { #Intellectual parameters
 		limit = {
@@ -605,7 +608,6 @@ basic_viable_candidate_muslim_trigger = {
 		OVERLORD = $OVERLORD$
 	}
 	NOR = {
-		has_trait = beauty_bad
 		any_close_family_member = {
 			highest_held_title_tier >= tier_county
 		}
@@ -652,6 +654,22 @@ recruit_concubines_viable_candidate_trigger = {
 }
 
 ## Trigger for kings and above ##
+min_personality_and_skills_trigger = {
+	OR = {
+		diplomacy >= average_skill_level
+		learning >= average_skill_level
+		trigger_if = {
+			limit = {
+				can_be_knight_trigger = { ARMY_OWNER = root }
+			}
+			prowess >= average_skill_level
+		}
+		has_trait = poet
+	}
+	NOT = {
+		has_trait = intellect_bad
+	}
+}
 royal_concubines_eligible_candidate_trigger = {
 	is_adult = yes
 	is_councillor = no
@@ -661,15 +679,10 @@ royal_concubines_eligible_candidate_trigger = {
 	}
 
 	NOR = {
-		has_trait = beauty_bad
 		any_close_family_member = {
 			highest_held_title_tier >= tier_county
 		}
 		has_character_flag = has_been_offered_as_concubine
-		has_character_modifier = malnourished_modifier
-		current_weight < -50
-		has_character_modifier = obese_modifier
-		current_weight > 50
 	}
 	trigger_if = {
 		limit  ={
@@ -691,15 +704,41 @@ royal_concubines_eligible_candidate_trigger = {
 	trigger_if = {
 		limit = {
 			exists = court_owner
-			exists = betrothed
 		}
-		court_owner = {
-			this != betrothed
-			is_character_interaction_valid = {
-				recipient = prev
-				interaction = break_betrothal_interaction
+		trigger_if = {
+			limit = {
+				exists = betrothed
+			}
+			court_owner = {
+				this != betrothed
+				is_character_interaction_valid = {
+					recipient = prev
+					interaction = break_betrothal_interaction
+				}
 			}
 		}
+		trigger_if = {
+			limit = {
+				court_owner = {
+					is_tributary_of = $OVERLORD$	
+				}
+			}
+			bride_show_beauty_important_parameters_trigger = yes
+		}
+	}
+	# Skills
+	trigger_if = {
+		limit = {
+			$OVERLORD$ = { has_variable = personality_skills_important }
+		}
+		min_personality_and_skills_trigger = yes
+	}
+	# Beauty
+	trigger_if = {
+		limit = {
+			$OVERLORD$ = { has_variable = beauty_important }
+		}
+		bride_show_beauty_important_parameters_trigger = yes
 	}
 }
 
@@ -738,22 +777,6 @@ recruit_royal_concubines_viable_county_trigger = {
 			province = this
 			royal_concubines_eligible_candidate_trigger = {
 				OVERLORD = $OVERLORD$
-			}
-			# Skills
-			trigger_if = {
-				limit = {
-					$OVERLORD$ = { has_variable = personality_skills_important }
-				}
-				OR = {
-					diplomacy >= average_skill_level
-					learning >= average_skill_level
-					trigger_if = {
-						limit = {
-							is_male = yes
-						}
-						prowess >= average_skill_level
-					}
-				}
 			}
 		}
 		NOT = {

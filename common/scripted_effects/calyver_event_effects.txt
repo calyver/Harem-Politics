@@ -13,23 +13,26 @@
 }
 hp_after_jarya_creation_effect = {
 	hp_after_consort_creation_effect = yes
+	add_character_flag = {
+		flag = abducted_non_believer
+		years = 5
+	}
 }
 
 hp_after_special_consort_creation_effect = {
 	hp_after_consort_creation_effect = yes
 	if = {
 		limit = {
-			faith != scope:harem_liege.faith
+			scope:harem_liege.religion = religion:islam_religion
 		}
-		if = {
-			limit = {
-				scope:harem_liege.religion = religion:islam_religion
-				religion != religion:islam_religion
-			}
-			add_character_flag = {
-				flag = abducted_non_believer
-				years = 5
-			}
+		add_character_flag = {
+			flag = abducted_non_believer
+			years = 5
+		}
+	}
+	if = {
+		limit = {
+			faith != scope:harem_liege.faith
 		}
 		set_character_faith = scope:harem_liege.faith
 	}
@@ -87,6 +90,13 @@ hp_select_concubine_location_effect = {
 						religion = religion:islam_religion
 					}
 				}
+				top_liege ?= {
+					any_realm_province = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+				}
 			}
 		}
 		every_neighboring_and_across_water_top_liege_realm_owner = {
@@ -98,73 +108,144 @@ hp_select_concubine_location_effect = {
 				}
 				add_to_temporary_list = concubine_location_list
 			}
-			every_tributary = {
+			if = {
+				limit = {
+					any_in_list = {
+						list = concubine_location_list
+						count < 3
+					}
+					any_tributary = {
+						any_realm_province = {
+							NOR = {
+								religion = religion:islam_religion
+								is_in_list = concubine_location_list
+							}
+						}
+					}
+				}
+				every_tributary = {
+					every_realm_province = {
+						limit = {
+							NOR = {
+								religion = religion:islam_religion
+								is_in_list = concubine_location_list
+							}
+						}
+						add_to_temporary_list = concubine_location_list
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = concubine_location_list
+					count < 3
+				}
+				any_realm_province = {
+					NOR = {
+						religion = religion:islam_religion
+						is_in_list = concubine_location_list
+					}
+				}
+			}
+			every_realm_province = {
+				limit = {
+					NOR = {
+						religion = religion:islam_religion
+						is_in_list = concubine_location_list
+					}
+				}
+				add_to_temporary_list = concubine_location_list
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = concubine_location_list
+					count < 3
+				}
+				top_liege ?= {
+					any_realm_province = {
+						NOR = {
+							religion = religion:islam_religion
+							is_in_list = concubine_location_list
+						}
+					}
+				}
+			}
+			top_liege = {
 				every_realm_province = {
 					limit = {
-						NOT = {
+						NOR = {
 							religion = religion:islam_religion
+							is_in_list = concubine_location_list
 						}
 					}
 					add_to_temporary_list = concubine_location_list
 				}
 			}
 		}
-		every_realm_province = {
-			limit = {
-				NOT = {
-					religion = religion:islam_religion
-				}
+		if = {
+			any_in_list = {
+				list = concubine_location_list
+				count = 1
 			}
-			add_to_temporary_list = concubine_location_list
+			random_in_list = {
+				list = concubine_location_list
+				save_scope_as = concubine_location
+			}
 		}
-		random_in_list = {
-			list = concubine_location_list
-			weight = {
-				base = 30
-				modifier = { # More likely to be captured near bodies of water
-					OR = {
-						is_sea_province = yes
-						is_riverside_province = yes
-						county ?= {
-							OR = {
-								is_coastal_county = yes
-								is_riverside_county = yes
+		else = {
+			random_in_list = {
+				list = concubine_location_list
+				weight = {
+					base = 30
+					modifier = { # More likely to be captured near bodies of water
+						OR = {
+							is_sea_province = yes
+							is_riverside_province = yes
+							county ?= {
+								OR = {
+									is_coastal_county = yes
+									is_riverside_county = yes
+								}
 							}
 						}
+						add = 30
 					}
-					add = 30
-				}
-				modifier = {
-					county.holder ?= {
-						religion = religion:islam_religion
+					modifier = {
+						county.holder ?= {
+							religion = religion:islam_religion
+						}
+						add = -10
 					}
-					add = -10
-				}
-				modifier = {
-					exists = county.holder
-					county.holder.top_liege ?= {
-						religion = religion:islam_religion
+					modifier = {
+						exists = county.holder
+						county.holder.top_liege ?= {
+							religion = religion:islam_religion
+						}
+						add = -15
 					}
-					add = -15
+					modifier = { # Christians were especially captured
+						religion = religion:christianity_religion
+						add = 30
+					}
+					modifier = {
+						geographical_region = world_europe
+						add = 20
+					}
+					modifier = {
+						geographical_region = world_europe_south
+						add = 20
+					}
+					modifier = {
+						geographical_region = world_europe_west_iberia
+						add = 20
+					}
 				}
-				modifier = { # Christians were especially captured
-					religion = religion:christianity_religion
-					add = 30
-				}
-				modifier = {
-					geographical_region = world_europe
-					add = 20
-				}
-				modifier = {
-					geographical_region = world_europe_south
-					add = 20
-				}
-				modifier = {
-					geographical_region = world_europe_west_iberia
-					add = 20
-				}
+				save_scope_as = concubine_location
 			}
-			save_scope_as = concubine_location
 		}
 	}
 	else = {
