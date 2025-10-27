@@ -622,21 +622,35 @@ recruit_concubines_viable_candidate_trigger = {
 	basic_viable_candidate_muslim_trigger = {
 		OVERLORD = $OVERLORD$
 	}
-	NOR = {
-		religion = religion:islam_religion
-	}
 	trigger_if = {
 		limit = {
-			exists = court_owner
+			$OVERLORD$.religion = religion:islam_religion
 		}
-		court_owner = {
-			NOR = {
+		trigger_if = {
+			limit = {
 				religion = religion:islam_religion
-				is_liege_or_above_of = $OVERLORD$
-				is_vassal_or_below_of = $OVERLORD$
-				is_tributary_of = $OVERLORD$
+			}
+			has_character_flag = abducted_non_believer
+		}
+		trigger_else = {
+			religion != religion:islam_religion
+		}
+		trigger_if = {
+			limit = {
+				exists = court_owner
+			}
+			court_owner = {
+				NOR = {
+					religion = religion:islam_religion
+					is_liege_or_above_of = $OVERLORD$
+					is_vassal_or_below_of = $OVERLORD$
+					is_tributary_of = $OVERLORD$
+				}
 			}
 		}
+	}
+	trigger_else = {
+		$OVERLORD$.religion != religion:islam_religion
 	}
 }
 
@@ -709,7 +723,8 @@ recruit_concubines_viable_county_trigger = {
 			religion = religion:islam_religion
 		}
 	}
-	county.holder ?= {
+	exists = county.holder
+	county.holder.top_liege ?= {
 		religion != religion:islam_religion
 	}
 }
@@ -1302,47 +1317,56 @@ harem_politics_valid_event_county_trigger = {
 recruit_concubines_trigger = {
 	is_landed_or_landless_administrative = yes
 	hp_accepts_concubinage = yes
-	religion = religion:islam_religion
 	OR = {
-		any_neighboring_and_across_water_top_liege_realm_owner = {
+		AND = {	
+			religion = religion:islam_religion
 			OR = {
-				any_realm_province = {
-					recruit_concubines_viable_county_trigger = {
-						OVERLORD = root
-					}
-				}
-				any_courtier_or_guest = {
-					recruit_concubines_viable_candidate_trigger = {
-						OVERLORD = root
-					}
-				}
-				any_vassal_or_below = {
-					any_courtier_or_guest = {
-						recruit_concubines_viable_candidate_trigger = {
-							OVERLORD = root
-						}
-					}
-				}
-				any_tributary = {
+				any_neighboring_and_across_water_top_liege_realm_owner = {
 					OR = {
-						any_courtier_or_guest = {
-							recruit_concubines_viable_candidate_trigger = {
-								OVERLORD = root
-							}
-						}
 						any_realm_province = {
 							recruit_concubines_viable_county_trigger = {
 								OVERLORD = root
 							}
 						}
+						any_courtier_or_guest = {
+							recruit_concubines_viable_candidate_trigger = {
+								OVERLORD = root
+							}
+						}
+						any_vassal_or_below = {
+							any_courtier_or_guest = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = root
+								}
+							}
+						}
+						any_tributary = {
+							OR = {
+								any_courtier_or_guest = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = root
+									}
+								}
+								any_realm_province = {
+									recruit_concubines_viable_county_trigger = {
+										OVERLORD = root
+									}
+								}
+							}
+						}
+					}
+				}
+				any_realm_province = {
+					recruit_concubines_viable_county_trigger = {
+						OVERLORD = root
 					}
 				}
 			}
 		}
-		any_realm_province = {
-			recruit_concubines_viable_county_trigger = {
-				OVERLORD = root
-			}
+		AND = {
+			religion != religion:islam_religion
+			government_allows = administrative
+			is_independent_ruler = no
 		}
 	}
 	highest_held_title_tier >= tier_county
