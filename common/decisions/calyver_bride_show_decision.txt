@@ -1486,12 +1486,19 @@ basic_recruit_concubines_decision = {
 		}
 		custom_tooltip = {
 			text = epidemic_bride_show
+			trigger_if = {
+				limit = {
+					exists = capital_county
+				}
+				NOT = {
+					capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+				}
+			}
 			NOR = {
 				realm_has_any_epidemic = {
 					SIZE = 1
 					INTENSITY = minor
 				}
-				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
 			}
 		}
 		custom_tooltip = {
@@ -1511,72 +1518,13 @@ basic_recruit_concubines_decision = {
 	
 	cost = {
 		gold = {
-			value = 0
-			if = {
-				limit = {
-					highest_held_title_tier < tier_kingdom
-				}
-				add = medium_gold_value
-			}
+			value = medium_gold_value
 		}
 		prestige = {
 			value = 0
 			if = {
 				limit = { 
 					NOT = { government_has_flag = government_has_influence } 
-					highest_held_title_tier >= tier_kingdom
-				}
-				add = {
-					add = minor_prestige_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
-						}
-						add = minor_prestige_value
-					}
-				}
-			}
-			# Add extra prestige cost if nomadic
-			if = {
-				limit = {
-					government_has_flag = government_is_nomadic
-				}
-				add = medium_prestige_value
-			}
-			# Add extra prestige cost if not enough vassals
-			if = {
-				limit = {
-					trigger_if = {
-						limit = { government_has_flag = government_is_nomadic }
-						NOT = {
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								any_courtier = {
-									bride_show_viable_candidate_trigger = {
-										OVERLORD = root
-									} 
-								}
-								count >= 4
-							}
-						}
-					}
-					trigger_else = {
-						NOT = {
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								any_courtier = {
-									bride_show_viable_candidate_trigger = {
-										OVERLORD = root
-									} 
-								}
-								count >= 3
-							}
-						}
-					}
 				}
 				add = minor_prestige_value
 			}
@@ -1585,18 +1533,9 @@ basic_recruit_concubines_decision = {
 			value = 0
 			if = {
 				limit = { 
-					government_has_flag = government_has_influence 
-					highest_held_title_tier >= tier_kingdom
+					government_has_flag = government_has_influence
 				}
-				add = {
-					add = minor_influence_value
-					if = {
-						limit = {
-							highest_held_title_tier > tier_duchy
-						}
-						add = minor_influence_value
-					}
-				}
+				add = minor_influence_value
 			}
 		}
 	}
@@ -1894,13 +1833,35 @@ basic_recruit_concubines_decision = {
 					}
 				}
 				top_liege = {
-					every_realm_province = {
+					ordered_realm_province = {
 						limit = {
 							recruit_concubines_viable_county_trigger = {
 								OVERLORD = scope:liege
 							}
 							NOT = { is_in_list = pool_provinces }
 						}
+						order_by = {
+							value = 1
+							if = {
+								limit = {
+									faith = scope:liege.faith
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									any_pool_character = {
+										province = this
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+									}
+								}
+								add = 10
+							}
+						}
+						max = 3
+						min = 0
 						add_to_temporary_list = pool_provinces
 					}
 				}
@@ -1914,6 +1875,7 @@ basic_recruit_concubines_decision = {
 							recruit_concubines_viable_candidate_trigger = {
 								OVERLORD = scope:liege
 							}
+							NOT = { is_in_list = pool_candidates }
 						}
 						count > 0
 					}
@@ -1927,6 +1889,7 @@ basic_recruit_concubines_decision = {
 							recruit_concubines_viable_candidate_trigger = {
 								OVERLORD = scope:liege
 							}
+							NOT = { is_in_list = pool_candidates }
 						}
 						add_to_list = pool_candidates
 					}

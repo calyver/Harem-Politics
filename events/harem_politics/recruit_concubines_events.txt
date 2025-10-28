@@ -8,15 +8,25 @@
 bride_show.2000 = {
 	hidden = yes
 	trigger = {
-		is_landed = yes
+		is_alive = yes
+		is_landed_or_landless_administrative = yes
 		hp_accepts_concubinage = yes
-		religion = religion:islam_religion
-		highest_held_title_tier >= tier_duchy
 		trigger_if = {
 			limit = {
 				has_variable = jarya_recruited
 			}
 			var:jarya_recruited < 4
+		}
+		trigger_if = {
+			limit = {
+				exists = capital_county
+			}
+			NOT = {
+				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+			}
+		}
+		NOR = {
+			has_character_modifier = isolating_modifier
 		}
 	}
 
@@ -99,17 +109,22 @@ bride_show.2000 = {
 						add = -25
 					}
 					modifier = {
+						scope:liege.religion = religion:islam_religion
 						location ?= {
-							exists = county.holder
-							county.holder.top_liege ?= {
+							county.holder ?= {
 								religion != religion:islam_religion
 							}
 						}
 						add = 20
 					}
 					modifier = { # Christians were especially captured
+						scope:liege.religion = religion:islam_religion
 						religion = religion:christianity_religion
 						add = 30
+					}
+					modifier = { # Foreigners were more exotic
+						culture != scope:liege.culture
+						add = 5
 					}
 					modifier = {
 						is_lowborn = no
@@ -196,14 +211,8 @@ bride_show.2000 = {
 						add = 20
 					}
 					modifier = {
-						OR = {
-							has_character_modifier = malnourished_modifier
-							current_weight < -50
-							has_character_modifier = obese_modifier
-							current_weight > 50
-							has_trait = beauty_bad
-						}
-						add = -20
+						bride_show_beauty_important_parameters_trigger = yes
+						add = -10
 					}		
 				}
 				save_scope_as = jarya
@@ -305,7 +314,7 @@ bride_show.2000 = {
 							}
 						}
 						random = {
-							chance = 50
+							chance = 30
 							# Based on current faith
 							modifier = {
 								faith = {
@@ -353,15 +362,11 @@ bride_show.2000 = {
 								add = 20
 							}
 							modifier = {
-								has_trait = ambitious
-								add = 20
-							}
-							modifier = {
-								has_trait = greedy
-								add = 20
-							}
-							modifier = {
-								has_trait = arrogant
+								OR = {
+									has_trait = ambitious
+									has_trait = greedy
+									has_trait = arrogant
+								}
 								add = 20
 							}
 							modifier = {
@@ -385,9 +390,8 @@ bride_show.2000 = {
 							}
 							if = {
 								limit = {
-									NOT = {
-										has_character_flag = abducted_non_believer
-									}
+									scope:liege.religion = religion:islam_religion
+									religion != religion:islam_religion
 								}
 								add_character_flag = {
 									flag = abducted_non_believer
@@ -454,7 +458,13 @@ bride_show.2000 = {
 			}
 			if = {
 				limit = {
-					highest_held_title_tier = tier_duchy
+					OR = {
+						highest_held_title_tier = tier_duchy
+						AND = {
+							highest_held_title_tier = tier_county
+							is_ai = no
+						}
+					}
 				}
 				random = {
 					chance = 50
@@ -3348,10 +3358,10 @@ bride_show.3005 = {
 					}
 					if = {
 						limit = {
-							religion != scope:harem_liege.religion
+							faith != scope:harem_liege.faith
 						}
 						random = {
-							chance = 60
+							chance = 70
 							modifier = {
 								scope:harem_liege = {
 									has_trait = zealous
@@ -3361,6 +3371,7 @@ bride_show.3005 = {
 							if = {
 								limit = {
 									scope:harem_liege.religion = religion:islam_religion
+									religion != religion:islam_religion
 								}
 								add_character_flag = {
 									flag = abducted_non_believer
