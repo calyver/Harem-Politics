@@ -1171,33 +1171,168 @@ bride_show.3003 = {
 		if = {
 			limit = {
 				gold >= minor_gold_value
-				any_neighboring_and_across_water_top_liege_realm_owner = {
-					OR = {
+			}
+			if = {
+				limit = {
+					any_neighboring_and_across_water_top_liege_realm_owner = {
 						any_realm_province = {
 							recruit_royal_concubines_viable_county_trigger = {
 								OVERLORD = scope:liege
 							}
+							NOT = { is_in_list = pool_provinces }
 						}
-						any_tributary = {
-							any_realm_province = {
-								recruit_royal_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
+					}
+				}
+				every_neighboring_and_across_water_top_liege_realm_owner = {
+					ordered_realm_province = {
+						limit = {
+							recruit_royal_concubines_viable_county_trigger = {
+								OVERLORD = scope:liege
+							}
+							NOT = { is_in_list = pool_provinces }
+						}
+						order_by = {
+							value = recruit_muslim_concubines_county_value
+							if = {
+								limit = {
+									any_pool_character = {
+										province = this
+										royal_concubines_eligible_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+									}
 								}
+								add = 10
+							}
+						}
+						max = 1
+						min = 0
+						add_to_temporary_list = pool_provinces
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = pool_provinces
+								any_pool_character = {
+									province = this
+									royal_concubines_eligible_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								count > 0
+							}
+						}
+						every_in_list = {
+							list = pool_provinces
+							every_pool_character = {
+								province = this
+								limit = {
+									royal_concubines_eligible_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_temporary_list = pool_candidates
 							}
 						}
 					}
 				}
 			}
-			every_neighboring_and_across_water_top_liege_realm_owner = {
-				every_realm_province = {
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						NOT = { has_character_flag = concubine_offer_in_progress }
+						count < 1
+					}
+				}
+				if = {
 					limit = {
-						recruit_royal_concubines_viable_county_trigger = {
-							OVERLORD = scope:liege
+						any_neighboring_and_across_water_top_liege_realm_owner = {
+							any_tributary = {
+								any_realm_province = {
+									recruit_royal_concubines_viable_county_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_provinces }
+								}
+							}
 						}
 					}
-					add_to_temporary_list = pool_provinces
+					every_neighboring_and_across_water_top_liege_realm_owner = {
+						every_tributary = {
+							limit = {
+								any_realm_province = {
+									recruit_royal_concubines_viable_county_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_provinces }
+								}
+							}
+							ordered_realm_province = {
+								limit = {
+									recruit_royal_concubines_viable_county_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_provinces }
+								}
+								order_by = {
+									value = recruit_muslim_concubines_county_value
+									if = {
+										limit = {
+											any_pool_character = {
+												province = this
+												royal_concubines_eligible_candidate_trigger = {
+													OVERLORD = scope:liege
+												}
+											}
+										}
+										add = 10
+									}
+								}
+								max = 1
+								min = 0
+								add_to_temporary_list = pool_provinces
+								if = {
+									limit = {
+										any_pool_character = {
+											province = this
+											royal_concubines_eligible_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+											NOT = { is_in_list = pool_candidates }
+										}
+									}
+									every_pool_character = {
+										province = this
+										limit = {
+											royal_concubines_eligible_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+											NOT = { is_in_list = pool_candidates }
+										}
+										add_to_temporary_list = pool_candidates
+									}
+								}
+							}
+						}
+					}
 				}
-				every_tributary = {
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							NOT = { has_character_flag = concubine_offer_in_progress }
+							count < 1
+						}
+						any_realm_province = {
+							recruit_royal_concubines_viable_county_trigger = {
+								OVERLORD = scope:liege
+							}
+							NOT = { is_in_list = pool_provinces }
+						}
+					}
 					every_realm_province = {
 						limit = {
 							recruit_royal_concubines_viable_county_trigger = {
@@ -1205,7 +1340,27 @@ bride_show.3003 = {
 							}
 							NOT = { is_in_list = pool_provinces }
 						}
-						add_to_temporary_list = pool_provinces
+						if = {
+							limit = {
+								any_pool_character = {
+									province = this
+									royal_concubines_eligible_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+							every_pool_character = {
+								province = this
+								limit = {
+									royal_concubines_eligible_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_temporary_list = pool_candidates
+							}
+						}
 					}
 				}
 			}
@@ -1218,8 +1373,9 @@ bride_show.3003 = {
 							royal_concubines_eligible_candidate_trigger = {
 								OVERLORD = scope:liege
 							}
-							NOT = {
+							NOR = {
 								has_character_flag = concubine_offer_in_progress
+								is_in_list = pool_candidates
 							}
 						}
 						count > 0
@@ -1234,8 +1390,9 @@ bride_show.3003 = {
 							royal_concubines_eligible_candidate_trigger = {
 								OVERLORD = scope:liege
 							}
-							NOT = {
+							NOR = {
 								has_character_flag = concubine_offer_in_progress
+								is_in_list = pool_candidates
 							}
 						}
 						add_to_temporary_list = pool_candidates
@@ -1246,6 +1403,7 @@ bride_show.3003 = {
 				limit = {
 					any_in_list = {
 						list = pool_candidates
+						NOT = { has_character_flag = concubine_offer_in_progress }
 						count >= 1
 					}
 				}
@@ -1491,8 +1649,6 @@ bride_show.3003 = {
 				}
 				hidden_effect = {
 					scope:potential_candidate = {
-						# Check - this should happen only if they were created, not drawn from pool characters
-						hp_after_consort_creation_effect = yes
 						save_scope_value_as = {
 							name = gold_to_pay
 							value = recruit_concubines_payment_value
