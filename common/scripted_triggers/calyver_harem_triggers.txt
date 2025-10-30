@@ -1,10 +1,166 @@
-﻿can_be_visited_trigger = {
+﻿## Consorts and relatives ##
+is_virgin_trigger = {
+	any_consort = {
+		even_if_dead = yes
+		count = 0
+	}
+	any_former_spouse = {
+		even_if_dead = yes
+		count = 0
+	}
+	any_former_concubinist = {
+		count = 0
+	}
+	any_child = {
+		even_if_dead = yes
+		count = 0
+	}
 	NOR = {
-		has_character_flag = is_visiting_harem_character_flag
-		has_character_flag = is_being_visited_harem_character_flag
+		has_trait = pregnant
+		has_trait = fornicator
+		has_trait = adulterer
+		has_trait = sodomite
+		has_trait = rakish
+		has_trait = deviant
+		has_trait = incestuous
+		
+		has_variable = had_recent_sex_with
+		has_variable = had_recent_sex
+	}
+	num_of_relation_lover = 0
+	num_of_relation_soulmate = 0
+}
+harem_politics_evil_consort_trigger = {
+	is_capable_adult = yes
+	OR = {
+		has_trait = wrathful
+		has_trait = ambitious
+		has_trait = vengeful
+		has_trait = greedy
+		has_trait = deceitful
+		has_trait = arrogant
+		has_trait = arbitrary
+		has_trait = paranoid
+		has_trait = callous
+		has_trait = sadistic
+	}
+	NOR = {
+		has_trait = forgiving
+		has_trait = compassionate
+		has_trait = just
+		has_trait = honest
 	}
 }
-
+is_valid_harem_member_trigger = {
+	is_adult = yes
+	is_physically_able = yes
+	court_owner ?= {
+		this = $LIEGE$
+	}
+	trigger_if = {
+		limit = {
+			NOT = {
+				is_consort_of = $LIEGE$
+			}
+		}
+		$LIEGE$.religion = religion:islam_religion
+		is_valid_muslim_harem_relative_trigger = {
+			LIEGE = $LIEGE$
+		}
+	}
+	trigger_else = {
+		is_consort_of = $LIEGE$
+	}
+}
+is_valid_muslim_harem_relative_trigger = {
+	# Not married
+	is_married = no
+	# Check the legitimacy of the family line
+	OR = {
+		# Grandparents
+		AND = {
+			is_grandparent_of = $LIEGE$
+			trigger_if = {
+				limit = {
+					$LIEGE$.faith = {
+						NOT = { has_doctrine = doctrine_gender_equal }
+					}
+				}
+				any_child = {
+					is_parent_of = $LIEGE$
+					trigger_if = {
+						limit = {
+							$LIEGE$.faith = {
+								has_doctrine = doctrine_gender_male_dominated
+							}
+						}
+						is_male = yes
+					}
+					trigger_else = {
+						is_male = no
+					}
+				}
+			}
+		}
+		# The mother/father
+		is_parent_of = $LIEGE$
+		AND = { # Aunts/uncles
+			is_uncle_or_aunt_of = $LIEGE$
+			any_sibling = {
+				#Check sex based on religious doctrines
+				trigger_if = {
+					limit = {
+						$LIEGE$.faith = {
+							NOT = { has_doctrine = doctrine_gender_equal }
+						}
+					}
+					trigger_if = {
+						limit = {
+							$LIEGE$.faith = {
+								has_doctrine = doctrine_gender_male_dominated
+							}
+						}
+						is_male = yes
+					}
+					trigger_else = {
+						is_male = no
+					}
+				}
+				is_parent_of = $LIEGE$
+			}
+		}
+		# Siblings
+		is_sibling_of = $LIEGE$
+	}
+	# Check their gender based on religious doctrines
+	trigger_if = {
+		limit = {
+			$LIEGE$.faith = {
+				NOT = { has_doctrine = doctrine_gender_equal }
+			}
+		}
+		trigger_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_male_dominated
+				}
+			}
+			is_male = no
+		}
+		trigger_else_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_female_dominated
+				}
+			}
+			is_male = yes
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+}
+## Ranks ##
 calyver_rank_is_superior_trigger = {
 	$AUTHORITY$ = {
 		OR = {
@@ -43,160 +199,6 @@ calyver_rank_is_superior_trigger = {
 		NOT = {
 			is_parent_of = $HAREM_LIEGE$
 		}
-	}
-}
-
-is_grand_consort_trigger = {
-	has_court_position = grand_consort_court_position
-}
-
-is_secondary_spouse_trigger = {
-	is_married = yes
-	save_temporary_scope_as = harem_spouse
-	NOR = {
-		has_court_position = grand_consort_court_position 
-		any_spouse = {
-			primary_spouse ?= {
-				this = scope:harem_spouse
-			}
-		}
-	}
-}
-
-harem_politics_evil_consort_trigger = {
-	is_capable_adult = yes
-	OR = {
-		has_trait = wrathful
-		has_trait = ambitious
-		has_trait = vengeful
-		has_trait = greedy
-		has_trait = deceitful
-		has_trait = arrogant
-		has_trait = arbitrary
-		has_trait = paranoid
-		has_trait = callous
-		has_trait = sadistic
-	}
-	NOR = {
-		has_trait = forgiving
-		has_trait = compassionate
-		has_trait = just
-		has_trait = honest
-	}
-}
-
-is_demoted_consort_trigger = {
-	OR = {
-		has_character_modifier = demoted_spouse_modifier
-		has_character_modifier = demoted_primary_spouse_modifier
-	}
-}
-
-has_demoted_or_divorced_opinion_trigger = {
-	OR = {
-		has_demoted_or_divorced_as_ps_opinion_trigger = {
-			TARGET = $TARGET$
-		}
-
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_gc
-		}
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_ss
-		}
-
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = demoted_me_as_gc
-		}
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = demoted_me_as_ss
-		}
-
-		has_opinion_modifier = {
-			modifier = dismissed_me_as_gc
-			target = $TARGET$
-		}
-		has_opinion_modifier = {
-			modifier = dismissed_me_as_ss
-			target = $TARGET$
-		}
-	}
-}
-
-has_demoted_or_divorced_as_ps_opinion_trigger = {
-	OR = {
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_ps
-		}
-
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = demoted_me_as_ps
-		}
-
-		has_opinion_modifier = {
-			modifier = dismissed_me_as_ps
-			target = $TARGET$
-		}
-	}
-}
-
-has_divorced_opinion_trigger = {
-	OR = {
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_ps
-		}
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_gc
-		}
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_ss
-		}
-	}
-}
-
-hp_accepts_polygamy = {
-	OR = {
-		AND = { # Can't accept polygamy if the culture only allows concubinage
-			faith = { has_doctrine_parameter = allows_polygamy }
-			NOT = { culture = { has_cultural_tradition = tradition_concubines } }
-		}
-		culture = { has_cultural_parameter = allows_polygamy }  
-	}
-	NOT = {
-		culture = {
-			has_cultural_tradition = tradition_monogamous
-		}
-	}
-}
-
-hp_accepts_concubinage = {
-	OR = {
-		AND = { # Can't accept concubinage if the culture only allows polygamy
-			faith = { has_doctrine_parameter = allows_concubinage }
-			NOT = { culture = { has_cultural_tradition = tradition_polygamous } }
-		}
-		culture = { has_cultural_parameter = allows_concubinage }
-	}
-	NOT = {
-		culture = {
-			has_cultural_tradition = tradition_monogamous
-		}
-	}
-}
-
-is_regular_concubine_of = {
-	is_concubine_of = $LIEGE$
-	NOT = {
-		has_court_position = grand_consort_court_position
 	}
 }
 is_head_of_the_harem_trigger = {
@@ -317,150 +319,141 @@ is_head_of_the_harem_trigger = {
 		is_sibling_of = $LIEGE$
 	}
 }
-
-is_valid_harem_member_trigger = {
-	is_adult = yes
-	is_physically_able = yes
-	court_owner ?= {
-		this = $LIEGE$
-	}
-	trigger_if = {
-		limit = {
-			NOT = {
-				is_consort_of = $LIEGE$
-			}
-		}
-		$LIEGE$.religion = religion:islam_religion
-		is_valid_muslim_harem_relative_trigger = {
-			LIEGE = $LIEGE$
-		}
-	}
-	trigger_else = {
-		is_consort_of = $LIEGE$
-	}
+is_grand_consort_trigger = {
+	has_court_position = grand_consort_court_position
 }
-
-is_valid_muslim_harem_relative_trigger = {
-	# Not married
-	is_married = no
-	# Check the legitimacy of the family line
-	OR = {
-		# Grandparents
-		AND = {
-			is_grandparent_of = $LIEGE$
-			trigger_if = {
-				limit = {
-					$LIEGE$.faith = {
-						NOT = { has_doctrine = doctrine_gender_equal }
-					}
-				}
-				any_child = {
-					is_parent_of = $LIEGE$
-					trigger_if = {
-						limit = {
-							$LIEGE$.faith = {
-								has_doctrine = doctrine_gender_male_dominated
-							}
-						}
-						is_male = yes
-					}
-					trigger_else = {
-						is_male = no
-					}
-				}
-			}
-		}
-		# The mother/father
-		is_parent_of = $LIEGE$
-		AND = { # Aunts/uncles
-			is_uncle_or_aunt_of = $LIEGE$
-			any_sibling = {
-				#Check sex based on religious doctrines
-				trigger_if = {
-					limit = {
-						$LIEGE$.faith = {
-							NOT = { has_doctrine = doctrine_gender_equal }
-						}
-					}
-					trigger_if = {
-						limit = {
-							$LIEGE$.faith = {
-								has_doctrine = doctrine_gender_male_dominated
-							}
-						}
-						is_male = yes
-					}
-					trigger_else = {
-						is_male = no
-					}
-				}
-				is_parent_of = $LIEGE$
-			}
-		}
-		# Siblings
-		is_sibling_of = $LIEGE$
-	}
-	# Check their gender based on religious doctrines
-	trigger_if = {
-		limit = {
-			$LIEGE$.faith = {
-				NOT = { has_doctrine = doctrine_gender_equal }
-			}
-		}
-		trigger_if = {
-			limit = {
-				$LIEGE$.faith = {
-					has_doctrine = doctrine_gender_male_dominated
-				}
-			}
-			is_male = no
-		}
-		trigger_else_if = {
-			limit = {
-				$LIEGE$.faith = {
-					has_doctrine = doctrine_gender_female_dominated
-				}
-			}
-			is_male = yes
-		}
-		trigger_else = {
-			always = no
-		}
-	}
-}
-
-is_virgin_trigger = {
-	any_consort = {
-		even_if_dead = yes
-		count = 0
-	}
-	any_former_spouse = {
-		even_if_dead = yes
-		count = 0
-	}
-	any_former_concubinist = {
-		count = 0
-	}
-	any_child = {
-		even_if_dead = yes
-		count = 0
-	}
+is_secondary_spouse_trigger = {
+	is_married = yes
+	save_temporary_scope_as = harem_spouse
 	NOR = {
-		has_trait = pregnant
-		has_trait = fornicator
-		has_trait = adulterer
-		has_trait = sodomite
-		has_trait = rakish
-		has_trait = deviant
-		has_trait = incestuous
-		
-		has_variable = had_recent_sex_with
-		has_variable = had_recent_sex
+		has_court_position = grand_consort_court_position 
+		any_spouse = {
+			primary_spouse ?= {
+				this = scope:harem_spouse
+			}
+		}
 	}
-	num_of_relation_lover = 0
-	num_of_relation_soulmate = 0
+}
+is_regular_concubine_of = {
+	is_concubine_of = $LIEGE$
+	NOT = {
+		has_court_position = grand_consort_court_position
+	}
 }
 
+## Demoted or Divorced ##
+is_demoted_consort_trigger = {
+	OR = {
+		has_character_modifier = demoted_spouse_modifier
+		has_character_modifier = demoted_primary_spouse_modifier
+	}
+}
+has_demoted_or_divorced_opinion_trigger = {
+	OR = {
+		has_demoted_or_divorced_as_ps_opinion_trigger = {
+			TARGET = $TARGET$
+		}
+
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_ss
+		}
+
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_ss
+		}
+
+		has_opinion_modifier = {
+			modifier = dismissed_me_as_gc
+			target = $TARGET$
+		}
+		has_opinion_modifier = {
+			modifier = dismissed_me_as_ss
+			target = $TARGET$
+		}
+	}
+}
+has_demoted_or_divorced_as_ps_opinion_trigger = {
+	OR = {
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_ps
+		}
+
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_ps
+		}
+
+		has_opinion_modifier = {
+			modifier = dismissed_me_as_ps
+			target = $TARGET$
+		}
+	}
+}
+has_divorced_opinion_trigger = {
+	OR = {
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_ps
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = divorced_me_as_ss
+		}
+	}
+}
+
+## Cultural/Religious Acceptance ##
+hp_accepts_polygamy = {
+	OR = {
+		AND = { # Can't accept polygamy if the culture only allows concubinage
+			faith = { has_doctrine_parameter = allows_polygamy }
+			NOT = { culture = { has_cultural_tradition = tradition_concubines } }
+		}
+		culture = { has_cultural_parameter = allows_polygamy }  
+	}
+	NOT = {
+		culture = {
+			has_cultural_tradition = tradition_monogamous
+		}
+	}
+}
+hp_accepts_concubinage = {
+	OR = {
+		AND = { # Can't accept concubinage if the culture only allows polygamy
+			faith = { has_doctrine_parameter = allows_concubinage }
+			NOT = { culture = { has_cultural_tradition = tradition_polygamous } }
+		}
+		culture = { has_cultural_parameter = allows_concubinage }
+	}
+	NOT = {
+		culture = {
+			has_cultural_tradition = tradition_monogamous
+		}
+	}
+}
+
+## Liege Conditions ##
+can_be_visited_trigger = {
+	NOR = {
+		has_character_flag = is_visiting_harem_character_flag
+		has_character_flag = is_being_visited_harem_character_flag
+	}
+}
 can_have_imperial_consorts_trigger = {
 	highest_held_title_tier >= tier_kingdom
 	can_have_settled_harem_trigger = yes

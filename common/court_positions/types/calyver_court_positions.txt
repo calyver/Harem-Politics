@@ -1,4 +1,324 @@
-﻿grand_consort_court_position = {
+﻿## Vanilla court positions can be found in common/court_positions/types/00_court_positions.txt
+keeper_of_the_harem_court_position = {
+	sort_order = 1018
+	max_available_positions = 1
+	minimum_rank = empire # Should only be available for emperors and hegemons
+	skill = diplomacy
+
+	court_position_asset = {
+		animation = fanning_coyly
+		background = "gfx/interface/illustrations/event_scenes/tgp_wedding_bedroom_asia.dds"
+	}
+
+	opinion = {
+		value = regular_court_position_opinion
+	}
+
+	# How high the aptitude has to be to reach the 5 different modifier levels
+	aptitude_level_breakpoints = { 20 40 60 80 }
+
+	# How good is this character in this position? root scope is the holder of the court position
+	aptitude = {
+		value = 1
+		add = {
+			value = diplomacy
+			multiply = 0.25
+			max = 50
+			desc = court_position_skill_diplomacy
+		}
+		add = {
+			value = intrigue
+			multiply = 0.25
+			max = 50
+			desc = court_position_skill_learning
+		}
+		if = {
+			limit = {
+				has_trait = diligent
+			}
+			add = {
+				value = 5
+				desc = court_position_diligent_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = patient
+			}
+			add = {
+				value = 5
+				desc = court_position_patient_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = calm
+			}
+			add = {
+				value = 5
+				desc = court_position_calm_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = intellect_good_3
+			}
+			add = {
+				value = 10
+				desc = court_position_intellect_good_3_trait
+			}
+		}
+		else_if = {
+			limit = {
+				has_trait = intellect_good_2
+			}
+			add = {
+				value = 10
+				desc = court_position_intellect_good_2_trait
+			}
+		}
+		else_if = {
+			limit = {
+				has_trait = intellect_good_1
+			}
+			add = {
+				value = 5
+				desc = court_position_intellect_good_1_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = shrewd
+			}
+			add = {
+				value = 10
+				desc = court_position_shrewd_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = reclusive
+			}
+			add = {
+				value = -10
+				desc = court_position_reclusive_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = shy
+			}
+			add = {
+				value = -10
+				desc = court_position_shy_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = lazy
+			}
+			add = {
+				value = -10
+				desc = court_position_lazy_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = incapable
+			}
+			multiply = {
+				value = 0
+				desc = court_position_incapable_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = infirm
+			}
+			add = {
+				value = -50
+				desc = court_position_infirm_trait
+			}
+		}
+		# Seneschal
+		if = {
+			limit = {
+				liege.court_position:seneschal_court_position ?= {
+					has_variable = performing_improve_court
+				}
+			}
+			add = {
+				value = liege.court_position:seneschal_court_position.seneschal_improve_court_value
+				desc = seneschal_improve_court_aptitude_desc
+			}
+		}
+	}
+
+	# Is this an available position for this court? (root is court owner)
+	is_shown = {
+		highest_held_title_tier = tier_hegemony
+		government_has_flag = government_is_celestial
+	}
+
+	valid_position = {
+		highest_held_title_tier = tier_hegemony
+		government_has_flag = government_is_celestial
+		save_temporary_scope_as = root_scope
+		can_employ_court_eunuchs_trigger = { CHAR = scope:root_scope }
+	}
+
+	is_shown_character = {
+		scope:employee = {
+			OR = {
+				is_eunuch_trigger = yes
+				is_female = yes
+			}
+			NOT = {
+				is_consort_of = scope:liege
+			}
+			court_position_employee_shown_trigger = yes
+		}
+	}
+
+	valid_character = {
+		scope:employee = {
+			keeper_of_the_harem_validity_trigger = { EMPLOYER = scope:liege }
+		}
+	}
+
+	revoke_cost = { # root is the liege, no other scopes are passed here!
+		prestige =  {
+			value = major_court_position_prestige_revoke_cost
+			# Set to 0 via obligation hook
+			if = {
+				limit = {
+					court_position_obligation_hook_salary_trigger = {
+						POS = keeper_of_the_harem
+						LIEGE = root
+					}
+				}
+				multiply = 0
+			}
+			# Avoid AI prestige issues
+			if = {
+				limit = {
+					exists = this
+					is_ai = yes
+				}
+				multiply = 0
+			}
+			# Special case for events
+			if = {
+				limit = {
+					exists = this
+					has_character_flag = free_revoke_cost
+				}
+				multiply = 0
+			}
+		}
+	}
+
+	salary = {
+		gold = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = no
+					}
+				}
+				add = keeper_of_the_harem_total_salary_value
+			}
+		}
+		treasury = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = yes
+					}
+				}
+				add = keeper_of_the_harem_total_salary_value
+			}
+		}
+		prestige = {
+			value = minor_court_position_prestige_salary
+		}
+		round = no
+	}
+
+	received_salary = {
+		gold = {
+			value = keeper_of_the_harem_total_salary_value
+		}
+		prestige = {
+			value = minor_court_position_prestige_salary
+		}
+		round = no
+	}
+
+	base_employer_modifier = {
+	}
+
+	modifier = {
+	}
+
+	is_powerful_agent = yes
+
+	# These modifiers are employed based on what level the aptitude reaches (levels are defined as breakpoints)
+	scaling_employer_modifiers = {
+		terrible = {
+			spouse_opinion = 5
+		}
+		poor = {
+			spouse_opinion = 10
+		}
+		average = {
+			spouse_opinion = 15
+		}
+		good = {
+			spouse_opinion = 25
+		}
+		excellent = {
+			spouse_opinion = 40
+		}
+	}
+
+	on_court_position_received = {
+		keeper_of_the_harem_title_accepted_effect = yes
+	}
+	on_court_position_revoked = {
+		keeper_of_the_harem_title_revoked_effect = yes
+	}
+	on_court_position_invalidated = {
+		keeper_of_the_harem_title_invalidated_effect = yes
+	}
+	on_court_position_vacated = {
+		court_position_vacated_event_effect = {
+			COURT_POSITION_TYPE = keeper_of_the_harem_court_position
+		}
+	}
+	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
+	ai_position_score = {
+		value = 1000
+		add = court_position_debt_considerations_value
+	}
+	ai_candidate_score = {
+		value = 50
+		add = scope:base_value
+		add = court_position_candidate_score_base_value
+		add = court_position_candidate_aptitude_value
+		if = { # To stop petitioned positions immediately being fired by the AI
+			limit = {
+				court_position_petition_ai_weight_trigger = { ROLE = fire_dragon_engineer }
+			}
+			add = 1000
+		}
+	}
+}
+
+## Harem Politics - Grand Consort Court Position ##
+grand_consort_court_position = {
 	sort_order = 300
 	max_available_positions = 1
 	minimum_rank = kingdom # Should only be available for kings and emperors
