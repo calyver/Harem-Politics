@@ -1,4 +1,165 @@
-﻿### Various Tasks ###
+﻿## Vanilla tasks ##
+keeper_of_the_harem_court_position_task_select_palace_beauties = {
+	court_position_types = { keeper_of_the_harem_court_position }
+
+	is_valid_showing_failures_only = { 
+		scope:liege = {
+			hp_accepts_concubinage = yes
+		}
+	}
+
+	# Monthly cost for the task
+	cost = {
+		round = no
+		gold = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = no
+					}
+				}
+				add = {
+					value = monthly_court_position_task_cost
+					multiply = 2
+					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
+					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
+				}
+			}
+		}
+		treasury = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = yes
+					}
+				}
+				add = {
+					value = monthly_court_position_task_cost
+					multiply = 2
+					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
+					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
+				}
+			}
+		}
+	}
+
+	scaling_employer_modifiers = {
+		terrible = {
+			stress_loss_mult = 0.10
+			stress_gain_mult = -0.01
+		}
+		poor = {
+			stress_loss_mult = 0.12
+			stress_gain_mult = -0.02
+		}
+		average = {
+			stress_loss_mult = 0.15
+			stress_gain_mult = -0.03
+		}
+		good = {
+			stress_loss_mult = 0.20
+			stress_gain_mult = -0.05
+		}
+		excellent = {
+			stress_loss_mult = 0.25
+			stress_gain_mult = -0.08
+		}
+	}
+
+	on_monthly = {
+		scope:liege = {
+			if = {
+				limit = {
+					number_of_fertile_concubines < max_number_of_concubines
+					any_concubine = {
+						is_ai = yes
+						is_designated_diarch = no
+						OR = {
+							AND = {
+								is_female = yes
+								age > define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+							}
+							AND = {
+								is_male = yes
+								age > define:NCharacter|MALE_ATTRACTION_CUTOFF_AGE
+							}
+						}
+						NOR = {
+							any_child = {
+								exists = yes
+							}
+							has_relation_best_friend = scope:liege
+							has_relation_friend = scope:liege
+							has_relation_lover = scope:liege
+							has_relation_soulmate = scope:liege
+						}
+					}
+				}
+				random_concubine = {
+					limit = {
+						is_ai = yes
+						is_designated_diarch = no
+						OR = {
+							AND = {
+								is_female = yes
+								age > define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+							}
+							AND = {
+								is_male = yes
+								age > define:NCharacter|MALE_ATTRACTION_CUTOFF_AGE
+							}
+						}
+						NOR = {
+							any_child = {
+								exists = yes
+							}
+							has_relation_best_friend = scope:liege
+							has_relation_friend = scope:liege
+							has_relation_lover = scope:liege
+							has_relation_soulmate = scope:liege
+						}
+					}
+					save_scope_as = aging_concubine
+				}
+				remove_concubine = scope:aging_concubine
+			}
+			if = {
+				limit = {
+					allowed_more_concubines = yes
+				}
+				hp_select_concubine_location_effect = yes
+				calyver_create_candidate_effect = yes
+				add_courtier = scope:bride
+				if = {
+					limit = {
+						is_character_interaction_valid = {
+							recipient = scope:new_concubine
+							interaction = ai_make_concubine_interaction
+						}
+					}
+					run_interaction = {
+						interaction = ai_make_concubine_interaction
+						actor = scope:liege
+						recipient = scope:new_concubine
+						execute_threshold = accept
+					}
+				}
+			}
+		}
+	}
+
+	on_start = {
+		custom_tooltip = keeper_of_the_harem_select_palace_beauties.tt
+	}
+
+	ai_will_do = {
+		value = 0 # we handle this somewhere else for the AI, instead
+	}
+}
+
+### Grand consort Tasks ###
 
 grand_consort_task_instill_virtues = {
 	court_position_types = { grand_consort_court_position }

@@ -2,7 +2,7 @@
 keeper_of_the_harem_court_position = {
 	sort_order = 1018
 	max_available_positions = 1
-	minimum_rank = empire # Should only be available for emperors and hegemons
+	minimum_rank = kingdom # Should only be available for kings and above
 	skill = diplomacy
 
 	court_position_asset = {
@@ -163,10 +163,20 @@ keeper_of_the_harem_court_position = {
 	}
 
 	valid_position = {
-		highest_held_title_tier = tier_kingdom
-		can_have_imperial_consorts_trigger = yes
+		highest_held_title_tier >= tier_kingdom
 		is_faith_dominant_gender = yes
 		save_temporary_scope_as = root_scope
+		OR = {
+			highest_held_title_tier = tier_kingdom
+			custom_tooltip = {
+				text = minimum_consorts_tooltip
+				any_consort = {
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:root_scope }
+					is_imprisoned = no
+					count >= 4
+				}
+			}
+		}
 		can_employ_court_eunuchs_trigger = { CHAR = scope:root_scope }
 	}
 
@@ -174,7 +184,20 @@ keeper_of_the_harem_court_position = {
 		scope:employee = {
 			OR = {
 				is_eunuch_trigger = yes
-				is_female = yes
+				trigger_if = {
+					limit = {
+						is_female = yes
+						scope:liege = {
+							faith_dominant_gender_male_or_equal = yes
+						}
+					}
+				}
+				trigger_else = {
+					is_female = no
+					scope:liege = {
+						faith_dominant_gender_female_or_equal = yes
+					}
+				}
 			}
 			NOT = {
 				is_consort_of = scope:liege
