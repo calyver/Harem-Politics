@@ -1491,41 +1491,93 @@ grand_consort_court_position = {
 						any_close_family_member = {
 							tier_difference = {
 								target = scope:liege
-								value >= 1
+								value >= -2
 							}
 							NOT = { is_child_of = scope:liege }
 						}
 					}
 				}
-				add = 40
+				add = {
+					value = 5
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= -1
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 5
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= 0
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= 1
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 30
+					}
+				}
 			}
+			# Children
 			if = {
 				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							tier_difference = {
-								target = scope:liege
-								value = 0
-							}
-							NOT = { is_child_of = scope:liege }
+					any_child = {
+						is_child_of = scope:employee
+						is_bastard_child_trigger = no
+						NOT = {
+							has_trait = disinherited
 						}
 					}
 				}
-				add = 25
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							tier_difference = {
-								target = scope:liege
-								value = -1
+				every_child = {
+					limit = {
+						is_child_of = scope:employee
+						is_bastard_child_trigger = no
+						NOT = {
+							has_trait = disinherited
+						}
+					}
+					add = {
+						value = 5
+						if = {
+							limit = {
+								is_player_heir_of = scope:liege
 							}
-							NOT = { is_child_of = scope:liege }
+							add = 15
+						}
+						if = {
+							limit = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:liege }
+							}
+							add = 5
 						}
 					}
 				}
-				add = 10
 			}
 			# Relations
 			if = {
@@ -1565,8 +1617,7 @@ grand_consort_court_position = {
 			if = {
 				limit = {
 					scope:employee = {
-						has_variable = favor
-						var:favor >= beloved_consort_lower_limit
+						harem_politics_beloved_consort_trigger = yes
 					}
 				}
 				add = 20
@@ -1574,8 +1625,7 @@ grand_consort_court_position = {
 			if = {
 				limit = {
 					scope:employee = {
-						has_variable = favor
-						var:favor >= favorite_consort_lower_limit
+						harem_politics_favored_consort_trigger = yes
 					}
 				}
 				add = 15
@@ -1586,13 +1636,12 @@ grand_consort_court_position = {
 						has_character_modifier = favor_boost_modifier
 					}
 				}
-				add = 25
+				add = 10
 			}
 			if = {
 				limit = {
 					scope:employee = {
-						has_variable = favor
-						var:favor <= unfavored_consort_upper_limit
+						harem_politics_unfavored_consort_trigger = yes
 					}
 				}
 				add = -10
@@ -1600,8 +1649,7 @@ grand_consort_court_position = {
 			if = {
 				limit = {
 					scope:employee = {
-						has_variable = favor
-						var:favor <= forgotten_consort_upper_limit
+						harem_politics_forgotten_consort_trigger = yes
 					}
 				}
 				add = -10
