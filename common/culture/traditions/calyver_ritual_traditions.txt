@@ -374,6 +374,102 @@ tradition_harem = {
 	ai_will_do = { value = 0 }
 }
 
+tradition_magnificent_courts = {
+	category = realm
+
+	layers = {
+		0 = intrigue
+		1 = mediterranean
+		4 = ceremony.dds
+	}
+
+	can_pick = {
+		custom_tooltip = {
+			text = cannot_have_tradition_byzantine_succession
+			NOR = { 
+				culture_tradition:tradition_byzantine_succession = { is_in_list = traits } 
+				culture_tradition:tradition_court_eunuchs = { is_in_list = traits } 
+			}
+		}
+		custom_tooltip = {
+			scope:character = {
+				OR = {
+					any_courtier = { is_eunuch_trigger = yes }
+					any_vassal = { is_eunuch_trigger = yes }
+					any_councillor = { is_eunuch_trigger = yes }
+				}
+			}
+			text = no_eunuch_in_realms
+		}
+	}
+	
+	parameters = {
+		can_castrate_prisoners = yes
+		eunuch_trait_bonuses = yes
+		can_appoint_chief_eunuch = yes
+	}
+
+	cost = {
+		prestige = {
+			add = {
+				value = tradition_base_cost
+				desc = BASE
+				format = "BASE_VALUE_FORMAT"
+			}
+			if = {
+				limit = {
+					NOR = {
+						culture_pillar:ethos_courtly = { is_in_list = traits }
+						culture_pillar:ethos_communal = { is_in_list = traits }
+						culture_pillar:ethos_spiritual = { is_in_list = traits }
+					}
+				}
+				add = {
+					value = tradition_incompatible_ethos_penalty
+					desc = not_courtly_communal_or_spiritual_desc
+				}
+			}
+			if = {
+				limit = {
+					NOT = {
+						scope:character = {
+							any_councillor = { is_eunuch_trigger = yes }
+						}
+					}
+				}
+				add = {
+					value = tradition_unfulfilled_criteria_penalty
+					desc = no_eunuch_councillors_desc
+				}
+			}
+
+			if = {
+				limit = {
+					culture_tradition_reduction_trigger = { TRADITION = tradition_court_eunuchs }
+				}
+				multiply = {
+					value = 0.5
+					desc = inspired_by_culture_desc
+				}
+			}
+			
+			multiply = tradition_replacement_cost_if_relevant
+		}
+	}
+
+	ai_will_do = {
+		value = 200
+		if = {
+			limit = {
+				NOT = {
+					scope:character.religion = religion:islam_religion
+				}
+			}
+			multiply = 0
+		}
+	}
+}
+
 ## AUH ##
 tradition_tgp_court_machinations = {
 	category = regional
@@ -416,7 +512,13 @@ tradition_tgp_court_machinations = {
 				}
 			}
 		}
-		
+		custom_tooltip = {
+			text = cannot_have_tradition_byzantine_succession
+			NOR = { 
+				culture_tradition:tradition_byzantine_succession = { is_in_list = traits } 
+				culture_tradition:tradition_court_eunuchs = { is_in_list = traits } 
+			}
+		}
 	}
 	
 	can_pick_for_hybridization = {
