@@ -328,11 +328,19 @@ is_pure_consort_trigger = {
 		has_character_modifier = pure_consort_modifier
 		has_character_modifier = pure_lord_modifier
 	}
+	has_opinion_modifier = {
+		modifier = appointed_as_special_consort
+		target = $HAREM_LIEGE$
+	}
 }
 is_virtuous_consort_trigger = {
 	OR = {
 		has_character_modifier = virtuous_consort_modifier
 		has_character_modifier = virtuous_lord_modifier
+	}
+	has_opinion_modifier = {
+		modifier = appointed_as_special_consort
+		target = $HAREM_LIEGE$
 	}
 }
 is_worthy_consort_trigger = {
@@ -340,35 +348,48 @@ is_worthy_consort_trigger = {
 		has_character_modifier = worthy_consort_modifier
 		has_character_modifier = worthy_lord_modifier
 	}
+	has_opinion_modifier = {
+		modifier = appointed_as_special_consort
+		target = $HAREM_LIEGE$
+	}
 }
 is_imperial_consort_trigger = {
 	OR = {
 		has_character_modifier = imperial_consort_modifier
 		has_character_modifier = imperial_lord_modifier
 	}
+	has_opinion_modifier = {
+		modifier = appointed_as_special_consort
+		target = $HAREM_LIEGE$
+	}
 }
 is_special_consort_trigger = {
 	OR = {
 		is_grand_consort_trigger = yes
-		is_pure_consort_trigger = yes
-		is_virtuous_consort_trigger = yes
-		is_worthy_consort_trigger = yes
-		is_imperial_consort_trigger = yes
+		is_pure_consort_trigger = {
+			HAREM_LIEGE = $HAREM_LIEGE$
+		}
+		is_virtuous_consort_trigger = {
+			HAREM_LIEGE = $HAREM_LIEGE$
+		}
+		is_worthy_consort_trigger = {
+			HAREM_LIEGE = $HAREM_LIEGE$
+		}
+		is_imperial_consort_trigger = {
+			HAREM_LIEGE = $HAREM_LIEGE$
+		}
 	}
-	exists = court_owner
-	is_consort_of = court_owner
+	is_consort_of = $HAREM_LIEGE$
+	court_owner ?= {
+		this = $HAREM_LIEGE$
+		can_appoint_char_as_special_consort_trigger = yes
+	}
 	trigger_if = {
 		limit = {
-			exists = court_owner.primary_spouse
+			exists = $HAREM_LIEGE$.primary_spouse
 		}
-		this != court_owner.primary_spouse
+		this != $HAREM_LIEGE$.primary_spouse
 	}
-	court_owner = {
-		can_appoint_char_as_special_consort_trigger = yes
-		save_temporary_scope_as = harem_liege
-	}
-	has_variable = appointed_special_consort_by
-	var:appointed_special_consort_by = scope:harem_liege
 }
 is_secondary_spouse_trigger = {
 	is_married = yes
@@ -385,7 +406,39 @@ is_secondary_spouse_trigger = {
 is_regular_concubine_of = {
 	is_concubine_of = $LIEGE$
 	NOT = {
-		has_court_position = grand_consort_court_position
+		is_special_consort_trigger = {
+			HAREM_LIEGE = $LIEGE$
+		}
+	}
+}
+
+# Can be replaced? #
+is_childless_aged_concubine_trigger = {
+	is_ai = yes
+	is_designated_diarch = no
+	OR = {
+		AND = {
+			is_female = yes
+			age > define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+		}
+		AND = {
+			is_male = yes
+			age > define:NCharacter|MALE_ATTRACTION_CUTOFF_AGE
+		}
+	}
+	is_regular_concubine_of = {
+		HAREM_LIEGE = scope:liege
+	}
+	harem_politics_favored_consort_trigger = no # Can't be favored
+	any_child = {
+		is_child_of = scope:liege
+		count = 0
+	}
+	NOR = {
+		has_relation_best_friend = scope:liege
+		has_relation_friend = scope:liege
+		has_relation_lover = scope:liege
+		has_relation_soulmate = scope:liege
 	}
 }
 
@@ -543,5 +596,22 @@ has_unsettled_government_trigger = {
 can_appoint_char_as_special_consort_trigger = {
 	can_have_imperial_consorts_trigger = yes
 	highest_held_title_tier >= tier_empire
+}
+has_four_consorts_limit_trigger = {
+	any_consort = {
+		OR = {
+			is_grand_consort_trigger = yes
+			is_pure_consort_trigger = {
+				HAREM_LIEGE = $HAREM_LIEGE$
+			}
+			is_virtuous_consort_trigger = {
+				HAREM_LIEGE = $HAREM_LIEGE$
+			}
+			is_worthy_consort_trigger = {
+				HAREM_LIEGE = $HAREM_LIEGE$
+			}
+		}
+		count = 4
+	}
 }
 
