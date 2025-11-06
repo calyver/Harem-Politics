@@ -1,29 +1,332 @@
-﻿hp_after_consort_creation_effect = {
+﻿# Chance of having a lowborn
+hp_set_consort_to_lowborn_effect = {
 	if = {
 		limit = {
-			scope:harem_liege = {
+			scope:liege = {
 				OR = {
 					religion = religion:islam_religion
 					has_unsettled_government_trigger = yes
+					AND = {
+						hp_accepts_concubinage = yes
+						allowed_more_concubines = yes
+					}
 				}
 			}
+			is_lowborn = no
 		}
-		set_to_lowborn = yes
+		random = {
+			change = 50
+			modifier = {
+				scope:liege = {
+					has_variable = family_background_important
+				}
+				add = -20
+			}
+			modifier = {
+				scope:liege = {
+					allowed_more_spouses = yes
+					can_have_settled_harem_trigger = yes
+				}
+				add = -20
+			}
+			modifier = {
+				scope:liege = {
+					government_allows = administrative
+					is_independent_ruler = no
+				}
+				add = 50
+			}
+			modifier = {
+				scope:liege = {
+					religion = religion:islam_religion
+				}
+				add = 100
+			}
+			set_to_lowborn = yes
+		}
 	}
 }
+# Sovereigns have a higher chance of having consorts with good traits
+hp_sovereign_bride_traits_effect = {
+
+	random = {
+		chance = 20
+		modifier = { # Emperors
+			add = 5
+			scope:liege = {
+				highest_held_title_tier >= tier_empire
+			}
+		}
+		modifier = { #Kings
+			add = 10
+			scope:liege = {
+				highest_held_title_tier >= tier_kingdom
+			}
+		}
+		modifier = {
+			scope:liege = { has_variable = beauty_important }
+			add = 10
+		}
+		modifier = {
+			scope:liege = { has_variable = personality_skills_important }
+			add = 5
+		}
+		# For balance
+		modifier = {
+			any_in_list = {
+				list = presented_candidates_list
+				num_of_good_genetic_traits >= 1
+				count > 0
+			}
+			add = -10
+		}
+		modifier = {
+			any_in_list = {
+				list = presented_candidates_list
+				num_of_good_genetic_traits >= 1
+				count > 1
+			}
+			add = -5
+		}
+		modifier = {
+			any_in_list = {
+				list = presented_candidates_list
+				num_of_good_genetic_traits >= 1
+				count > 2
+			}
+			add = -5
+		}
+		random_list = {
+			1 = { # Superior genetics
+				modifier = { #Emperors
+					add = 5
+					scope:liege = {
+						highest_held_title_tier >= tier_empire
+					}
+				}
+				modifier = { #Kings
+					add = 3
+					scope:liege = {
+						highest_held_title_tier >= tier_kingdom
+					}
+				}
+				random_list = {
+					20 = { # Beauty
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 5
+						}
+						add_trait = beauty_good_3
+					}
+					9 = { # Intellect
+						modifier = {
+							scope:liege = { has_variable = personality_skills_important }
+							add = 10
+						}
+						add_trait = intellect_good_3
+					}
+					9 = { # Physique
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 5
+						}
+						add_trait = physique_good_3
+					}
+					2 = { # Fecund													
+						add_trait = fecund
+					}
+				}											
+			}
+			4 = { # Good genetics
+				modifier = { #Emperors
+					add = 5
+					scope:liege = {
+						highest_held_title_tier >= tier_empire
+					}
+				}
+				modifier = { #Kings
+					add = 3
+					scope:liege = {
+						highest_held_title_tier >= tier_kingdom
+					}
+				}
+				random_list = {
+					4 = { # Beauty
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 2
+						}
+						add_trait = beauty_good_2
+					}
+					1 = { # Intellect
+						modifier = {
+							scope:liege = { has_variable = personality_skills_important }
+							add = 5
+						}
+						add_trait = intellect_good_2
+					}
+					1 = { # Physique
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 2
+						}
+						add_trait = physique_good_2
+					}
+				}											
+			}
+			25 = { # Decent genetics
+				random_list = {
+					4 = { # Beauty
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 2
+						}
+						add_trait = beauty_good_1
+					}
+					1 = { # Intellect
+						modifier = {
+							scope:liege = { has_variable = personality_skills_important }
+							add = 5
+						}
+						add_trait = intellect_good_1
+					}
+					1 = { # Physique
+						modifier = {
+							scope:liege = { has_variable = beauty_important }
+							add = 2
+						}
+						add_trait = physique_good_1
+					}
+				}											
+			}
+		}
+	}
+	random = {
+		chance = 20
+		modifier = {
+			scope:liege = { has_variable = personality_skills_important }
+			add = 5
+		}
+		add_trait = lifestyle_poet
+	}
+}
+# Regular jarya have a lower chance of having good traits
+hp_regular_jarya_traits_effect = {
+	# Lower chance genetic traits for regular Muslim concubines (dukes/below)
+	random = {
+		chance = 10  # Lower base chance
+		random_list = {
+			1 = { # Superior genetics
+				random_list = {
+					20 = { # Beauty
+						add_trait = beauty_good_3
+					}
+					9 = { # Intellect
+						add_trait = intellect_good_3
+					}
+					9 = { # Physique
+						add_trait = physique_good_3
+					}
+					2 = { # Fecund													
+						add_trait = fecund
+					}
+				}											
+			}
+			4 = { # Good genetics
+				random_list = {
+					4 = { # Beauty	
+						add_trait = beauty_good_2
+					}
+					1 = { # Intellect
+						add_trait = intellect_good_2
+					}
+					1 = { # Physique
+						add_trait = physique_good_2
+					}
+				}											
+			}
+			25 = { # Decent genetics
+				random_list = {
+					4 = { # Beauty	
+						add_trait = beauty_good_1
+					}
+					1 = { # Intellect
+						add_trait = intellect_good_1
+					}
+					1 = { # Physique
+						add_trait = physique_good_1
+					}
+				}											
+			}
+		}
+	}
+	random = {
+		chance = 10
+		add_trait = lifestyle_poet
+	}
+}
+# Regular jarya have a lower chance of changing religion
+hp_low_chance_religion_change_effect = {
+	# Low chance religion change for bride show and admin vassals
+	if = {
+		limit = {
+			faith != scope:liege.faith
+		}
+		random = {
+			chance = 30  # 30% chance
+			modifier = {
+				scope:liege = {
+					has_trait = zealous
+				}
+				add = 30
+			}
+			set_character_faith = scope:liege.faith
+		}
+	}
+}
+# After jarya creation
 hp_after_jarya_creation_effect = {
-	hp_after_consort_creation_effect = yes
+	hp_set_consort_to_lowborn_effect = yes
 	add_character_flag = {
 		flag = abducted_non_believer
 		years = 5
 	}
-}
-
-hp_after_special_consort_creation_effect = {
-	hp_after_consort_creation_effect = yes
+	# Liege is a sovereign
 	if = {
 		limit = {
-			scope:harem_liege.religion = religion:islam_religion
+			scope:liege = {
+				highest_held_title_tier >= tier_kingdom
+				OR = {
+					is_independent_ruler = yes
+					NOT = { government_allows = administrative }
+				}
+			}
+		}
+		# Better genetics
+		hp_sovereign_bride_traits_effect = yes
+		# High chance religion change
+		if = {
+			limit = {
+				faith != scope:liege.faith
+			}
+			random = {
+				chance = 70  # 70% chance
+				set_character_faith = scope:liege.faith
+			}
+		}
+	}
+	else = {
+		# Regular chance of good genetics and religion change
+		hp_regular_jarya_traits_effect = yes
+		hp_low_chance_religion_change_effect = yes
+	}
+}
+# For easter egg consorts
+hp_after_special_consort_creation_effect = {
+	hp_set_consort_to_lowborn_effect = yes
+	if = {
+		limit = {
+			scope:liege.religion = religion:islam_religion
 		}
 		add_character_flag = {
 			flag = abducted_non_believer
@@ -32,81 +335,110 @@ hp_after_special_consort_creation_effect = {
 	}
 	if = {
 		limit = {
-			faith != scope:harem_liege.faith
+			faith != scope:liege.faith
 		}
-		set_character_faith = scope:harem_liege.faith
+		set_character_faith = scope:liege.faith
 	}
 }
-
+# For the bride show decision
 bs_after_consort_creation_effect = {
+	hp_set_consort_to_lowborn_effect = yes
+	# Sovereigns should have better traits
 	if = {
 		limit = {
 			scope:liege = {
+				highest_held_title_tier >= tier_kingdom
 				OR = {
-					has_unsettled_government_trigger = yes
-					AND = {
-						hp_accepts_concubinage = yes
-						allowed_more_concubines = yes
-					}
+					is_independent_ruler = yes
+					NOT = { government_allows = administrative }
 				}
 			}
 		}
-		random = {
-			chance = 50
-			modifier = {
-				scope:liege = {
-					has_variable = family_background_important
-				}
-				add = -30
-			}
-			set_to_lowborn = yes
-		}
+		# Better genetics
+		hp_sovereign_bride_traits_effect = yes
+	}
+	else = {
+		# Regular chance of good traits
+		hp_regular_jarya_traits_effect = yes
 	}
 }
 
+# Location for concubine creation
 hp_select_concubine_location_effect = {
 	if = {
 		limit = {
-			religion = religion:islam_religion
-			OR = {
-				any_neighboring_and_across_water_top_liege_realm_owner = {
-					OR = {
-						any_realm_province = {
-							NOT = {
-								religion = religion:islam_religion
-							}
-						}
-						any_tributary = {
+			NOT = { exists = scope:concubine_location }
+		}
+		if = {
+			limit = {
+				religion = religion:islam_religion
+				OR = {
+					any_neighboring_and_across_water_top_liege_realm_owner = {
+						OR = {
 							any_realm_province = {
 								NOT = {
 									religion = religion:islam_religion
 								}
 							}
+							any_tributary = {
+								any_realm_province = {
+									NOT = {
+										religion = religion:islam_religion
+									}
+								}
+							}
 						}
 					}
-				}
-				any_realm_province = {
-					NOT = {
-						religion = religion:islam_religion
-					}
-				}
-				top_liege ?= {
 					any_realm_province = {
 						NOT = {
 							religion = religion:islam_religion
 						}
 					}
-				}
-			}
-		}
-		every_neighboring_and_across_water_top_liege_realm_owner = {
-			every_realm_province = {
-				limit = {
-					NOT = {
-						religion = religion:islam_religion
+					top_liege ?= {
+						any_realm_province = {
+							NOT = {
+								religion = religion:islam_religion
+							}
+						}
 					}
 				}
-				add_to_temporary_list = concubine_location_list
+			}
+			every_neighboring_and_across_water_top_liege_realm_owner = {
+				every_realm_province = {
+					limit = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+					add_to_temporary_list = concubine_location_list
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = concubine_location_list
+							count < 3
+						}
+						any_tributary = {
+							any_realm_province = {
+								NOR = {
+									religion = religion:islam_religion
+									is_in_list = concubine_location_list
+								}
+							}
+						}
+					}
+					every_tributary = {
+						every_realm_province = {
+							limit = {
+								NOR = {
+									religion = religion:islam_religion
+									is_in_list = concubine_location_list
+								}
+							}
+							add_to_temporary_list = concubine_location_list
+						}
+					}
+				}
 			}
 			if = {
 				limit = {
@@ -114,7 +446,30 @@ hp_select_concubine_location_effect = {
 						list = concubine_location_list
 						count < 3
 					}
-					any_tributary = {
+					any_realm_province = {
+						NOR = {
+							religion = religion:islam_religion
+							is_in_list = concubine_location_list
+						}
+					}
+				}
+				every_realm_province = {
+					limit = {
+						NOR = {
+							religion = religion:islam_religion
+							is_in_list = concubine_location_list
+						}
+					}
+					add_to_temporary_list = concubine_location_list
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = concubine_location_list
+						count < 3
+					}
+					top_liege ?= {
 						any_realm_province = {
 							NOR = {
 								religion = religion:islam_religion
@@ -123,7 +478,7 @@ hp_select_concubine_location_effect = {
 						}
 					}
 				}
-				every_tributary = {
+				top_liege = {
 					every_realm_province = {
 						limit = {
 							NOR = {
@@ -135,177 +490,129 @@ hp_select_concubine_location_effect = {
 					}
 				}
 			}
-		}
-		if = {
-			limit = {
-				any_in_list = {
-					list = concubine_location_list
-					count < 3
-				}
-				any_realm_province = {
-					NOR = {
-						religion = religion:islam_religion
-						is_in_list = concubine_location_list
-					}
-				}
-			}
-			every_realm_province = {
+			if = {
 				limit = {
-					NOR = {
-						religion = religion:islam_religion
-						is_in_list = concubine_location_list
+					any_in_list = {
+						list = concubine_location_list
+						count = 1
 					}
 				}
-				add_to_temporary_list = concubine_location_list
-			}
-		}
-		if = {
-			limit = {
-				any_in_list = {
+				random_in_list = {
 					list = concubine_location_list
-					count < 3
+					save_scope_as = concubine_location
 				}
-				top_liege ?= {
-					any_realm_province = {
-						NOR = {
-							religion = religion:islam_religion
-							is_in_list = concubine_location_list
+			}
+			else = {
+				random_in_list = {
+					list = concubine_location_list
+					weight = {
+						base = 30
+						modifier = { # More likely to be captured near bodies of water
+							OR = {
+								is_sea_province = yes
+								is_riverside_province = yes
+								county ?= {
+									OR = {
+										is_coastal_county = yes
+										is_riverside_county = yes
+									}
+								}
+							}
+							add = 30
+						}
+						modifier = {
+							county.holder ?= {
+								religion = religion:islam_religion
+							}
+							add = -10
+						}
+						modifier = {
+							exists = county.holder
+							county.holder.top_liege ?= {
+								religion = religion:islam_religion
+							}
+							add = -15
+						}
+						modifier = { # Christians were especially captured
+							religion = religion:christianity_religion
+							add = 30
+						}
+						modifier = {
+							geographical_region = world_europe
+							add = 20
+						}
+						modifier = {
+							geographical_region = world_europe_south
+							add = 20
+						}
+						modifier = {
+							geographical_region = world_europe_west_iberia
+							add = 20
 						}
 					}
-				}
-			}
-			top_liege = {
-				every_realm_province = {
-					limit = {
-						NOR = {
-							religion = religion:islam_religion
-							is_in_list = concubine_location_list
-						}
-					}
-					add_to_temporary_list = concubine_location_list
+					save_scope_as = concubine_location
 				}
 			}
 		}
-		if = {
+		else_if = {
 			limit = {
-				any_in_list = {
-					list = concubine_location_list
-					count = 1
+				exists = capital_province
+			}
+			capital_province = {
+				save_scope_as = concubine_location
+			}
+		}
+		else_if = {
+			limit = {
+				exists = location.province_owner
+			}
+			location.county.title_province = {
+				save_scope_as = concubine_location
+			}
+		}
+		else_if = {
+			limit = {
+				any_neighboring_province = {
+					exists = county
 				}
 			}
-			random_in_list = {
-				list = concubine_location_list
+			random_neighboring_province = {
+				limit = {
+					exists = county
+				}
 				save_scope_as = concubine_location
 			}
 		}
 		else = {
-			random_in_list = {
-				list = concubine_location_list
+			random_province = {
 				weight = {
-					base = 30
-					modifier = { # More likely to be captured near bodies of water
-						OR = {
-							is_sea_province = yes
-							is_riverside_province = yes
-							county ?= {
-								OR = {
-									is_coastal_county = yes
-									is_riverside_county = yes
-								}
-							}
-						}
-						add = 30
-					}
-					modifier = {
-						county.holder ?= {
-							religion = religion:islam_religion
-						}
-						add = -10
-					}
-					modifier = {
-						exists = county.holder
-						county.holder.top_liege ?= {
-							religion = religion:islam_religion
-						}
-						add = -15
-					}
+					base = 1
 					modifier = { # Christians were especially captured
 						religion = religion:christianity_religion
-						add = 30
+						add = 5
 					}
 					modifier = {
 						geographical_region = world_europe
-						add = 20
+						add = 5
 					}
 					modifier = {
 						geographical_region = world_europe_south
-						add = 20
+						add = 5
 					}
 					modifier = {
 						geographical_region = world_europe_west_iberia
-						add = 20
+						add = 5
 					}
 				}
 				save_scope_as = concubine_location
 			}
-		}
-	}
-	else_if = {
-		limit = {
-			exists = capital_province
-		}
-		capital_province = {
-			save_scope_as = concubine_location
-		}
-	}
-	else_if = {
-		limit = {
-			exists = location.province_owner
-		}
-		location.county.title_province = {
-			save_scope_as = concubine_location
-		}
-	}
-	else_if = {
-		limit = {
-			any_neighboring_province = {
-				exists = county
-			}
-		}
-		random_neighboring_province = {
-			limit = {
-				exists = county
-			}
-			save_scope_as = concubine_location
-		}
-	}
-	else = {
-		random_province = {
-			weight = {
-				base = 1
-				modifier = { # Christians were especially captured
-					religion = religion:christianity_religion
-					add = 5
-				}
-				modifier = {
-					geographical_region = world_europe
-					add = 5
-				}
-				modifier = {
-					geographical_region = world_europe_south
-					add = 5
-				}
-				modifier = {
-					geographical_region = world_europe_west_iberia
-					add = 5
-				}
-			}
-			save_scope_as = concubine_location
 		}
 	}
 }
 
 hp_character_creation_effect = {
+	# Choose the reference location
+	hp_select_concubine_location_effect = yes
 	create_character = {
 		location = root.capital_province
 		template = $CHARACTER$_template
