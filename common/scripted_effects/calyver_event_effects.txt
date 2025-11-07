@@ -434,62 +434,66 @@ hp_select_concubine_location_effect = {
 		limit = {
 			NOT = { exists = scope:concubine_location }
 		}
-		if = {
-			limit = {
-				religion = religion:islam_religion
-				OR = {
-					any_neighboring_and_across_water_top_liege_realm_owner = {
-						religion != religion:islam_religion
-						OR = {
-							any_realm_province = {
-								NOT = {
-									religion = religion:islam_religion
-								}
-							}
-							any_tributary = {
-								religion != religion:islam_religion
-								any_realm_province = {
-									NOT = {
-										religion = religion:islam_religion
-									}
-								}
-							}
-						}
-					}
-					any_realm_province = {
-						NOT = {
-							religion = religion:islam_religion
-						}
-					}
-					top_liege ?= {
-						any_realm_province = {
-							NOT = {
-								religion = religion:islam_religion
-							}
-						}
-					}
-				}
-			}
-			every_neighboring_and_across_water_top_liege_realm_owner = {
+		scope:liege = {
+			if = {
 				limit = {
-					religion != religion:islam_religion
+					religion = religion:islam_religion
 				}
-				every_realm_province = {
+				# 1) CHECK FOR NEIGHBORS FIRST, THEN ADD THEIR PROVINCES
+				if = {
 					limit = {
-						NOT = {
-							religion = religion:islam_religion
+						any_neighboring_and_across_water_top_liege_realm_owner = {
+							religion != religion:islam_religion
+							any_realm_province = {
+								NOT = { religion = religion:islam_religion }
+							}
 						}
 					}
-					add_to_temporary_list = concubine_location_list
+					every_neighboring_and_across_water_top_liege_realm_owner = {
+						limit = {
+							religion != religion:islam_religion
+						}
+						every_realm_province = {
+							limit = {
+								NOT = { religion = religion:islam_religion }
+							}
+							add_to_temporary_list = concubine_location_list
+						}
+					}
 				}
+				# 2) IF FEWER THAN 3, ADD OWN REALM
 				if = {
 					limit = {
 						any_in_list = {
 							list = concubine_location_list
-							count < 3
+							count = 0
 						}
-						any_tributary = {
-							religion != religion:islam_religion
+						any_realm_province = {
+							NOR = {
+								religion = religion:islam_religion
+								is_in_list = concubine_location_list
+							}
+						}
+					}
+					every_realm_province = {
+						limit = {
+							NOR = {
+								religion = religion:islam_religion
+								is_in_list = concubine_location_list
+							}
+						}
+						add_to_temporary_list = concubine_location_list
+					}
+				}
+				# 3) IF STILL FEWER THAN 3, ADD TOP LIEGE'S REALM
+				if = {
+					limit = {
+						any_in_list = {
+							list = concubine_location_list
+							count = 0
+						}
+						top_liege ?= {
+							this != scope:liege
 							any_realm_province = {
 								NOR = {
 									religion = religion:islam_religion
@@ -498,10 +502,7 @@ hp_select_concubine_location_effect = {
 							}
 						}
 					}
-					every_tributary = {
-						limit = {
-							religion != religion:islam_religion
-						}
+					top_liege = {
 						every_realm_province = {
 							limit = {
 								NOR = {
@@ -514,56 +515,7 @@ hp_select_concubine_location_effect = {
 					}
 				}
 			}
-			if = {
-				limit = {
-					any_in_list = {
-						list = concubine_location_list
-						count < 3
-					}
-					any_realm_province = {
-						NOR = {
-							religion = religion:islam_religion
-							is_in_list = concubine_location_list
-						}
-					}
-				}
-				every_realm_province = {
-					limit = {
-						NOR = {
-							religion = religion:islam_religion
-							is_in_list = concubine_location_list
-						}
-					}
-					add_to_temporary_list = concubine_location_list
-				}
-			}
-			if = {
-				limit = {
-					any_in_list = {
-						list = concubine_location_list
-						count < 3
-					}
-					top_liege ?= {
-						any_realm_province = {
-							NOR = {
-								religion = religion:islam_religion
-								is_in_list = concubine_location_list
-							}
-						}
-					}
-				}
-				top_liege = {
-					every_realm_province = {
-						limit = {
-							NOR = {
-								religion = religion:islam_religion
-								is_in_list = concubine_location_list
-							}
-						}
-						add_to_temporary_list = concubine_location_list
-					}
-				}
-			}
+			# PICK A LOCATION
 			if = {
 				limit = {
 					any_in_list = {
@@ -576,90 +528,55 @@ hp_select_concubine_location_effect = {
 					save_scope_as = concubine_location
 				}
 			}
-			else = {
-				random_in_list = {
+			else_if = {
+				limit = {
+					any_in_list = {
+						list = concubine_location_list
+						count > 1
+					}
+				}
+				ordered_in_list = {
 					list = concubine_location_list
-					weight = {
-						base = 30
-						modifier = { # More likely to be captured near bodies of water
-							OR = {
-								is_sea_province = yes
-								is_riverside_province = yes
-								county ?= {
-									OR = {
-										is_coastal_county = yes
-										is_riverside_county = yes
-									}
-								}
-							}
-							add = 30
-						}
-						modifier = {
-							county.holder ?= {
-								religion = religion:islam_religion
-							}
-							add = -10
-						}
-						modifier = {
-							exists = county.holder
-							county.holder.top_liege ?= {
-								religion = religion:islam_religion
-							}
-							add = -15
-						}
-						modifier = { # Christians were especially captured
-							religion = religion:christianity_religion
-							add = 30
-						}
-						modifier = {
-							geographical_region = world_europe
-							add = 20
-						}
-						modifier = {
-							geographical_region = world_europe_south
-							add = 20
-						}
-						modifier = {
-							geographical_region = world_europe_west_iberia
-							add = 20
-						}
+					order_by = {
+						value = 1
+						add = recruit_muslim_concubines_county_value
 					}
 					save_scope_as = concubine_location
 				}
 			}
-		}
-		else_if = {
-			limit = {
-				exists = capital_province
-			}
-			capital_province = {
-				save_scope_as = concubine_location
-			}
-		}
-		else_if = {
-			limit = {
-				exists = location.province_owner
-			}
-			location.county.title_province = {
-				save_scope_as = concubine_location
-			}
-		}
-		else_if = {
-			limit = {
-				any_neighboring_province = {
-					exists = county
-				}
-			}
-			random_neighboring_province = {
+			else_if = {
 				limit = {
-					exists = county
+					exists = capital_province
 				}
-				save_scope_as = concubine_location
+				capital_province = {
+					save_scope_as = concubine_location
+				}
 			}
-		}
-		else = { # Last resort
-			random_province = {
-				save_scope_as = concubine_location
+			else_if = {
+				limit = {
+					exists = location.province_owner
+				}
+				location.county.title_province = {
+					save_scope_as = concubine_location
+				}
+			}
+			else_if = {
+				limit = {
+					any_neighboring_province = {
+						exists = county
+					}
+				}
+				random_neighboring_province = {
+					limit = {
+						exists = county
+					}
+					save_scope_as = concubine_location
+				}
+			}
+			else = { # Last resort
+				random_province = {
+					save_scope_as = concubine_location
+				}
 			}
 		}
 	}
