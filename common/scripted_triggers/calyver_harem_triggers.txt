@@ -165,40 +165,18 @@ grand_consort_validity_trigger = {
 	is_landed = no
 	custom_tooltip = {
 		text = grand_consort_valid_character_tooltip
-		trigger_if = {
-			limit = {
-				scope:liege = {
-					religion = religion:islam_religion
-					primary_spouse ?= {
-						is_courtier_of = scope:liege
-						NOT = {
-							is_head_of_the_harem_trigger = {
-								LIEGE = scope:liege
-							}
-						}
-					}
-				}
-			}
-			this = scope:liege.primary_spouse
-		}
-		trigger_else_if = {
-			limit = {
-				scope:liege = {
-					hp_accepts_polygamy = yes
-				}
-			}
-			is_spouse_of = scope:liege
-			NOT = { this = scope:liege.primary_spouse }
-		}
-		trigger_else = {
-			is_concubine_of = scope:liege
+		trigger = {
+			always = yes
 		}
 	}
 	custom_tooltip = {
 		text = none_does_not_have_a_full_time_job
 		trigger_if = {
 			limit = { NOT = { has_court_position = grand_consort_court_position } }
-			court_position_does_not_already_have_a_job_trigger = yes # This positions is considered a job, and cannot be held at the same time as another similar position
+			NOR = {
+				is_councillor = yes
+				has_any_court_position = yes
+			}
 		}
 	}
 }
@@ -570,9 +548,11 @@ hp_accepts_polygamy = {
 			faith = { has_doctrine_parameter = allows_polygamy }
 			culture = { has_cultural_parameter = allows_polygamy }  
 		}
-		NOT = {
-			culture = {
-				has_cultural_parameter = blocks_polygamy
+		culture = {
+			NOR = {
+				has_cultural_tradition = tradition_monogamous
+				has_cultural_tradition = tradition_concubines
+				has_cultural_tradition = tradition_tgp_court_machinations
 			}
 		}
 	}
@@ -584,9 +564,10 @@ hp_accepts_concubinage = {
 			faith = { has_doctrine_parameter = allows_concubinage }
 			culture = { has_cultural_parameter = allows_concubinage }
 		}
-		NOT = {
-			culture = {
-				has_cultural_parameter = blocks_concubinage
+		culture = {
+			NOR = {
+				has_cultural_tradition = tradition_monogamous
+				has_cultural_tradition = tradition_polygamous
 			}
 		}
 	}
@@ -621,6 +602,7 @@ can_have_imperial_consorts_trigger = {
 can_have_settled_harem_trigger = {
 	custom_tooltip = {
 		text = your_government_is_settled_tooltip
+		hp_accepts_harems = yes
 		NOR = {
 			government_has_flag = government_is_tribal
 			government_has_flag = government_is_nomadic

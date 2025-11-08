@@ -1,6 +1,17 @@
 ﻿## Vanilla court positions can be found in common/court_positions/types/00_court_positions.txt
 keeper_of_the_harem_court_position = {
-	sort_order = 1018
+	sort_order = {
+		value = 370
+		if = {
+			limit = {
+				primary_title = title:h_china
+				culture = {
+					has_cultural_pillar = heritage_chinese
+				}
+			}
+			add = 648
+		}
+	}
 	max_available_positions = 1
 	minimum_rank = kingdom # Should only be available for kings and above
 	skill = diplomacy
@@ -159,7 +170,6 @@ keeper_of_the_harem_court_position = {
 		has_tgp_dlc_trigger = yes
 		highest_held_title_tier >= tier_kingdom
 		can_have_settled_harem_trigger = yes
-		hp_accepts_harems = yes
 	}
 
 	valid_position = {
@@ -333,7 +343,7 @@ keeper_of_the_harem_court_position = {
 ## Harem Politics - Grand Consort Court Position ##
 grand_consort_court_position = {
 	sort_order = {
-		value = 70
+		value = 390
 		if = {
 			limit = {
 				primary_title = title:h_china
@@ -341,7 +351,7 @@ grand_consort_court_position = {
 					has_cultural_pillar = heritage_chinese
 				}
 			}
-			add = 950
+			add = 630
 		}
 	}
 	max_available_positions = 1
@@ -1082,7 +1092,6 @@ grand_consort_court_position = {
 
 	is_shown = {
 		can_have_settled_harem_trigger = yes
-		hp_accepts_harems = yes
 		trigger_if = {
 			limit = {
 				is_ai = yes
@@ -1099,6 +1108,32 @@ grand_consort_court_position = {
 	is_shown_character = {
 		scope:employee = {
 			is_courtier_of = scope:liege
+			trigger_if = {
+				limit = {
+					scope:liege = {
+						religion = religion:islam_religion
+						primary_spouse ?= {
+							is_courtier_of = scope:liege
+							NOT = {
+								is_head_of_the_harem_trigger = {
+									LIEGE = scope:liege
+								}
+							}
+						}
+					}
+				}
+				this = scope:liege.primary_spouse
+			}
+			trigger_else_if = {
+				limit = {
+					scope:liege = { hp_accepts_polygamy = yes }
+				}
+				is_spouse_of = scope:liege
+				this != scope:liege.primary_spouse
+			}
+			trigger_else = {
+				is_concubine_of = scope:liege
+			}
 			court_position_employee_shown_trigger = yes
 		}
 	}
