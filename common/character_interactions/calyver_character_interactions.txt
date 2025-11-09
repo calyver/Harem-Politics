@@ -1421,7 +1421,7 @@ check_harem_window_interaction = {
 	interface_priority = 90
 	common_interaction = yes
 
-	auto_accept = yes
+	needs_confirmation = { always = no }  # Skip confirmation popup, open decision directly
 
 	is_shown = {
 		scope:actor = {
@@ -1430,7 +1430,9 @@ check_harem_window_interaction = {
 		}
 		scope:recipient = {
 			OR = {
-				is_consort_of = scope:actor
+				is_valid_harem_member_trigger = {
+					LIEGE = scope:actor
+				}
 				this = scope:actor
 			}
 		}
@@ -1447,14 +1449,17 @@ check_harem_window_interaction = {
 		}
 	}
 
-	on_accept = {
-		custom_tooltip = check_harem_interaction_effect_tooltip
-		scope:actor = {
-			hidden_effect = {
-				execute_decision = check_harem_decision
-			}
+	on_send = {
+		open_view_data = {
+			view = decision_detail
+			data = decision:check_harem_decision
+			player = scope:actor
 		}
 	}
+	
+	# No on_accept needed since we're opening the decision window in on_send
+	# The decision window will handle the actual execution
+	
 	ai_will_do = {
 		base = 0
 	}

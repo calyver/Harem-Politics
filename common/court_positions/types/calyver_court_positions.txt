@@ -376,43 +376,48 @@ grand_consort_court_position = {
 		if = { #Related to liege
 			limit = {
 				exists = employer
-				exists = employer.top_liege
+				employer.top_liege ?= {
+					this != employer
+				}
 				any_close_family_member = {
 					this = root.employer.top_liege
 				}
 			}
 			add = { 
-				value = 100
+				value = 40
 				desc = grand_consort_prominent_family_description
 			}
 		}
 		else_if = { #Related to dominant houses
 			limit = {
 				employer ?= {
-					government_has_flag = government_is_administrative
+					government_allows = administrative
 					exists = house
 				}
-				any_close_family_member = {
-					OR = {
-						AND = {
-							exists = root.employer.top_liege
-							top_liege ?= root.employer.top_liege
-						}
+				house ?= {
+					NOT = { this = employer.house }
+					is_dominant_family = yes
+					any_house_member = {
 						top_liege ?= root.employer
+						government_allows = administrative
 					}
-					house ?= {
-						is_dominant_family = yes
-						NOT = { this = root.employer.house }
-					}
-					government_has_flag = government_is_administrative
+
 				}
 			}
 			add = { 
-				value = 75
+				value = 20
+				if = {
+					limit = {
+						any_close_family_member = {
+							this = root.house.house_head
+						}
+					}
+					add = 10
+				}
 				desc = grand_consort_prominent_family_description
 			}
 		}
-		else_if = {
+		else_if = { # Powerful families
 			limit = {
 				exists = employer
 				any_close_family_member = {
@@ -424,7 +429,31 @@ grand_consort_court_position = {
 				}
 			}
 			add = { 
-				value = 50
+				value = 15
+				if = {
+					limit = {
+						any_close_family_member = {
+							primary_title.tier >= tier_empire
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_close_family_member = {
+							primary_title.tier >= tier_kingdom
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_powerful_vassal_of = root.employer
+						}
+					}
+					add = 10
+				}
 				desc = grand_consort_prominent_family_description
 			}
 		}
@@ -436,20 +465,66 @@ grand_consort_court_position = {
 				}
 			}
 			add = { 
-				value = 25
+				value = 10
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_vassal_of = root.employer
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						employer ?= {
+							government_allows = administrative
+						}
+						house ?= {
+							any_house_member = {
+								government_allows = administrative
+								top_liege ?= root.employer
+								this = root.house.house_head
+								is_close_family_of = root
+							}
+						}
+					}
+				}
 				desc = grand_consort_good_family_description 
 			}
 		}
 		else_if = {
 			limit = {
 				any_close_family_member = {
-					is_landed_or_landless_administrative = yes
 					primary_title.tier >= tier_county
+					is_landed_or_landless_administrative = yes
 				}
 			}
 			add = { 
-				value = 15
-				desc = grand_consort_decent_family_description
+				value = 5
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_vassal_of = root.employer
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						employer ?= {
+							government_allows = administrative
+						}
+						house ?= {
+							any_house_member = {
+								government_allows = administrative
+								top_liege ?= root.employer
+								this = root.house.house_head
+								is_close_family_of = root
+							}
+						}
+					}
+				}
+				desc = grand_consort_decent_family_description 
 			}
 		}
 		else_if = {
@@ -459,7 +534,7 @@ grand_consort_court_position = {
 				}
 			}
 			add = { 
-				value = 10
+				value = 5
 				desc = grand_consort_decent_family_description
 			}
 		}
@@ -476,21 +551,83 @@ grand_consort_court_position = {
 		
 		if = {
 			limit = {
+				exists = employer
 				any_child = {
-					count >= 3
+					is_child_of = employer
+					count >= 1
 				}
 			}
 			add = { 
-				value = 10
+				value = 5
 				if = {
 					limit = {
 						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							count >= 2
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							count >= 3
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
 							count >= 4
 						}
 					}
 					add = 5
 				}
+				# The right gender
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
+							count >= 1
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
+							count >= 2
+						}
+					}
+					add = 2
+				}
 				desc = grand_consort_fertile_description
+			}
+		}
+
+		# The primary heir
+		if = {
+			limit = {
+				employer ?= {
+					primary_heir ?= {
+						is_child_of = root
+					}
+				}
+			}
+			add = {
+				value = 10
+				desc = grand_consort_primary_heir_description
 			}
 		}
 		
