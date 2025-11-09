@@ -165,16 +165,38 @@ grand_consort_validity_trigger = {
 	is_landed = no
 	custom_tooltip = {
 		text = grand_consort_valid_character_tooltip
-		trigger = {
-			always = yes
-		}
+		trigger_if = {
+				limit = {
+					$EMPLOYER$ = {
+						religion = religion:islam_religion
+						primary_spouse ?= {
+							is_courtier_of = $EMPLOYER$
+							NOT = {
+								is_head_of_the_harem_trigger = {
+									LIEGE = $EMPLOYER$
+								}
+							}
+						}
+					}
+				}
+				this = $EMPLOYER$.primary_spouse
+			}
+			trigger_else_if = {
+				limit = {
+					$EMPLOYER$ = { hp_accepts_polygamy = yes }
+				}
+				is_spouse_of = $EMPLOYER$
+				this != $EMPLOYER$.primary_spouse
+			}
+			trigger_else = {
+				is_concubine_of = $EMPLOYER$
+			}
 	}
 	custom_tooltip = {
 		text = none_does_not_have_a_full_time_job
 		trigger_if = {
 			limit = { NOT = { has_court_position = grand_consort_court_position } }
-			NOR = {
-				is_councillor = yes
+			NOT = {
 				has_any_court_position = yes
 			}
 		}
