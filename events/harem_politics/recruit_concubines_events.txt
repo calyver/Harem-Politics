@@ -2387,30 +2387,48 @@ bride_show.3005 = {
 	title = bride_show.3005.t
 	desc = {
 		first_valid = { # Introduction
-			triggered_desc = { # The first candidate
+			triggered_desc = { # The last candidate
 				trigger = {
-					NOT = { exists = scope:candidate_1 }
-				}
-				desc = bride_show.3005.candidate_1.desc
-			}
-			triggered_desc = { # The second candidate
-				trigger = {
-					OR = { 
-						NOT = { exists = scope:candidate_2 }
-						AND = {
-							NOT = { exists = scope:candidate_3 } 
-							can_have_four_candidates_trigger = yes
+					trigger_if = {
+						limit = {
+							can_have_four_candidates_trigger = no
 						}
-						AND = {
-							NOT = { exists = scope:candidate_4 }
+						exists = scope:candidate_2
+					}
+					trigger_else_if = {
+						limit = {
+							can_have_five_candidates_trigger = no
+						}
+						exists = scope:candidate_3
+					}
+					trigger_else = {
+						exists = scope:candidate_4
+					}
+				}
+				desc = bride_show.3005.candidate_3.desc
+			}
+			triggered_desc = { # Middle candidates (2nd, 3rd if can have 4+, 4th if can have 5)
+				trigger = {
+					exists = scope:candidate_1
+					trigger_if = {
+						limit = {
 							can_have_five_candidates_trigger = yes
 						}
+						NOT = { exists = scope:candidate_4 }
+					}
+					trigger_else_if = {
+						limit = { can_have_four_candidates_trigger = yes }
+						NOT = { exists = scope:candidate_3 }
+					}
+					trigger_else = {
+						always = yes
 					}
 				}
 				desc = bride_show.3005.candidate_2.desc
 			}
-			# The last candidate
-			desc = bride_show.3005.candidate_3.desc
+			triggered_desc = { # First candidate (fallback - no candidates exist yet)
+				desc = bride_show.3005.candidate_1.desc
+			}
 		}
 		first_valid = { # Physical traits
 			triggered_desc = { # Fecund - the harem head exists
@@ -3328,7 +3346,7 @@ bride_show.3006 = {
 	theme = diplomacy
 	
 	right_portrait = { 	
-		character = root
+		character = scope:right_portrait_character
 		animation = personality_honorable
 	}
 	left_portrait = { 	
@@ -3338,7 +3356,7 @@ bride_show.3006 = {
 	lower_left_portrait = { 	
 		character = scope:candidate_2
 	}
-	lower_center_portrait = { 	
+	lower_center_portrait = {
 		trigger = {
 			exists = scope:candidate_4
 		}
@@ -3353,6 +3371,17 @@ bride_show.3006 = {
 	}
 
 	immediate = {
+		if = {
+			limit = {
+				exists = scope:candidate_5
+			}
+			scope:candidate_5 = {
+				save_scope_as = right_portrait_character
+			}
+		}
+		else = {
+			save_scope_as = right_portrait_character
+		}
 	}
 	
 	option = {
