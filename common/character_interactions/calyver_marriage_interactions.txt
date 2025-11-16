@@ -1,4 +1,5 @@
-﻿#New marriage interaction effect
+﻿## Vanilla ##
+#New marriage interaction effect
 arrange_marriage_interaction = {
 	icon = icon_marriage
 	category = interaction_category_diplomacy
@@ -2606,444 +2607,6 @@ divorce_character_interaction = {
 	}
 }
 
-#Demote a spouse to a concubine
-demote_spouse_interaction = {
-	category = interaction_category_diplomacy
-	use_diplomatic_range = no
-	icon = concubine_icon
-
-	desc = demote_spouse_interaction_desc
-	cost = { 
-		piety = divorce_cost 
-		influence = {
-			value = 0
-			if = {
-				limit = { 
-					scope:actor = {
-						government_has_flag = government_has_influence 
-					}
-				}
-				if = { #If recipient comes from a powerful family or the same rank, some influence
-					limit = {
-						scope:recipient = {
-							any_close_family_member = {
-								NOR = { 
-									this = scope:actor 
-									is_child_of = scope:actor
-								}
-								OR = {
-									is_powerful_vassal_of = scope:actor
-									is_councillor_of = scope:actor
-									tier_difference = {
-										target = scope:actor
-										value = 0
-									}
-									AND = { #Or belongs to the same realm
-										government_has_flag = government_has_influence
-										exists = scope:actor.top_liege
-										exists = scope:actor.house
-										top_liege ?= {
-											this = scope:actor.top_liege
-										}
-										house ?= {
-											is_powerful_family = yes
-											NOT = { this = scope:actor.house }
-											is_dominant_family = no
-										}
-									}
-								}
-							}
-						}
-					}
-					add = medium_influence_value
-				}
-				if = { #If recipient comes from a dominant family, massive influence
-					limit = {
-						scope:recipient = {
-							any_close_family_member = {
-								NOR = { 
-									this = scope:actor 
-									is_child_of = scope:actor
-								}
-								OR = {
-									tier_difference = {
-										target = scope:actor
-										value > 0
-									}
-									AND = { #Or belongs to the same realm
-										government_has_flag = government_has_influence
-										OR = {
-											AND = {
-												exists = scope:actor.top_liege
-												top_liege ?= {
-													this = scope:actor.top_liege
-												}
-											}
-											is_vassal_or_below_of = scope:actor
-										}
-										exists = scope:actor.house
-										house ?= {
-											NOT = { this = scope:actor.house }
-											is_dominant_family = yes
-										}
-									}
-								}
-							}
-						}
-					}
-					add = {
-						value = major_influence_value
-						if = {
-							limit = { #More for someone who far outranks you
-								scope:recipient = {
-									any_close_family_member = {
-										NOR = { 
-											this = scope:actor 
-											is_child_of = scope:actor
-										}
-										tier_difference = {
-											target = scope:actor
-											value > 1
-										}
-									}
-								}
-							}
-							add = major_influence_value
-						}
-					}
-				}
-			}
-		}
-		prestige = {
-			value = 0
-			if = {
-				limit = { 
-					NOT = { 
-						scope:actor = {
-							government_has_flag = government_has_influence 
-						}
-					} 
-				}
-				if = { #If recipient comes from a powerful family or the same rank, some prestige
-					limit = {
-						scope:recipient = {							
-							any_close_family_member = {
-								NOR = { 
-									this = scope:actor 
-									is_child_of = scope:actor
-								}
-								OR = {
-									is_powerful_vassal_of = scope:actor
-									is_councillor_of = scope:actor
-									tier_difference = {
-										target = scope:actor
-										value = 0
-									}
-									AND = { #Or belongs to the same realm
-										government_has_flag = government_has_influence
-										exists = scope:actor.top_liege
-										exists = scope:actor.house
-										top_liege ?= {
-											this = scope:actor.top_liege
-										}
-										house ?= {
-											is_powerful_family = yes
-											NOT = { this = scope:actor.house }
-											is_dominant_family = no
-										}
-									}
-								}
-							}
-						}
-					}
-					add = medium_prestige_value
-				}
-				if = { #If recipient comes from a dominant family, massive prestige
-					limit = {
-						scope:recipient = {
-							any_close_family_member = {
-								NOR = { 
-									this = scope:actor 
-									is_child_of = scope:actor
-								}
-								OR = {
-									tier_difference = {
-										target = scope:actor
-										value > 0
-									}
-									AND = { #Or belongs to the same realm
-										government_has_flag = government_has_influence
-										OR = {
-											AND = {
-												exists = scope:actor.top_liege
-												top_liege ?= {
-													this = scope:actor.top_liege
-												}
-											}
-											is_vassal_or_below_of = scope:actor
-										}
-										exists = scope:actor.house
-										house ?= {
-											NOT = { this = scope:actor.house }
-											is_dominant_family = yes
-										}
-									}
-								}
-							}
-						}
-					}
-					add = {
-						value = major_prestige_value
-						if = {
-							limit = { #More for someone who far outranks you
-								scope:recipient = {
-									any_close_family_member = {
-										NOR = { 
-											this = scope:actor 
-											is_child_of = scope:actor
-										}
-										tier_difference = {
-											target = scope:actor
-											value > 1
-										}
-									}
-								}
-							}
-							add = major_prestige_value
-						}
-					}
-				}
-			}
-		}
-	}
-
-	is_shown = {
-		scope:actor = {
-			faith = {
-				# We are not required to seek approval of a spiritual HoF
-				NAND = {
-					has_doctrine = doctrine_divorce_approval
-					has_doctrine = doctrine_spiritual_head
-					exists = religious_head
-				}
-				# We are not required to seek approval of a house head
-				NAND = {
-					has_doctrine = doctrine_divorce_approval
-					exists = scope:actor.house
-					exists = scope:actor.house.house_head
-					scope:actor = { is_house_head = no }
-				}
-			}
-			hp_accepts_concubinage = yes
-		}
-		scope:recipient = {
-			is_spouse_of = scope:actor
-			is_concubine = no # Can set aside Concubines at any time
-			is_landed = no
-			is_imprisoned = no
-		}
-	}
-
-	is_valid_showing_failures_only = {
-		custom_description = {
-			text = take_concubine_allowed_more
-			object = scope:recipient
-			scope:actor = {
-				allowed_more_concubines = yes
-			}
-		}
-		custom_tooltip = {
-			NOT = {
-				scope:actor.culture = {
-					has_cultural_parameter = cannot_divorce
-				}
-			}
-			text = CULTURE_FORBIDS_DIVORCE
-		}
-		custom_tooltip = {
-			scope:actor = { NOT = { religion = religion:islam_religion } }
-			text = take_concubine_ex_spouse_faith
-		}
-		# custom_tooltip = {
-		# 	scope:recipient = {
-		# 		NOT = { has_character_flag = flag_new_consort }
-		# 	}
-		# 	text = RECENTLY_MARRIED_SPOUSE
-		# }
-		scope:recipient = { is_busy_in_events_localised = yes }
-		scope:recipient = { NOT = { has_strong_hook = scope:actor } }
-		scope:actor = { NOT = { allowed_more_concubines = no } }
-	}
-
-	auto_accept = yes
-
-	on_accept = {
-		scope:actor = {
-			save_scope_as = secondary_actor
-			show_as_tooltip = {
-				make_concubine = scope:recipient
-			}
-		}
-		scope:recipient = {
-			save_scope_as = secondary_recipient
-		}
-		spouse_demotion_effect = {
-			ACTOR = scope:actor
-			RECIPIENT = scope:recipient
-		}
-	}
-	
-	# AI
-	ai_targets = {
-		ai_recipients = spouses
-	}
-	ai_frequency = 36
-	
-	ai_potential = {
-		is_ruler = yes
-	}
-
-	ai_will_do = {
-		base = 0
-
-		modifier = { #More likely if criminal
-			add = 10
-			scope:actor = {
-				has_trait = just
-				has_imprisonment_reason = scope:recipient
-			}
-		}
-		modifier = { #Secret
-			scope:actor = {
-				OR = {
-					has_trait = just
-					has_trait = honest
-				}
-			}
-			scope:recipient = {
-				any_secret = {
-					is_known_by = scope:actor
-					is_criminal_for = secret_owner
-				}
-			}
-			add = 10
-		}
-		modifier = { #Rival
-			scope:actor = {
-				has_relation_rival = scope:recipient
-				has_relation_nemesis = scope:recipient
-			}
-			add = 20
-		}
-		modifier = { #Influential consort
-			scope:recipient = {
-				any_close_family_member = {
-					OR = {
-						is_powerful_vassal_of = scope:actor
-						is_councillor_of = scope:actor
-						highest_held_title_tier >= tier_kingdom
-						trigger_if = {
-							limit = {
-								scope:actor = {
-									government_has_flag = government_is_administrative
-									exists = house
-								}
-							}
-							government_has_flag = government_is_administrative
-							house ?= {
-								is_dominant_family = yes
-								NOT = { this = scope:actor.house }
-							}
-							trigger_if = {
-								limit = {
-									exists = scope:actor.top_liege
-								}
-								top_liege ?= {
-									this = scope:actor.top_liege
-								}
-							}
-							trigger_else = {
-								top_liege ?= {
-									this = scope:actor
-								}
-							}
-						}
-					}
-				}
-			}
-			add = -50
-		}
-		modifier = { #Influential consort
-			scope:recipient = {
-				any_close_family_member = {
-					tier_difference = {
-						target = scope:actor
-						value >= -1
-					}
-				}
-			}
-			add = -15
-		}
-		modifier = { #Influential consort
-			scope:recipient = {
-				any_close_family_member = {
-					tier_difference = {
-						target = scope:actor
-						value >= 0
-					}
-				}
-			}
-			add = -10
-		}
-		modifier = { #Influential consort
-			scope:recipient = {
-				any_close_family_member = {
-					tier_difference = {
-						target = scope:actor
-						value >= 1
-					}
-				}
-			}
-			add = -10
-		}
-		modifier = { #Influential consort
-			scope:recipient = {
-				any_close_family_member = {
-					is_liege_or_above_of = scope:actor
-				}
-			}
-			add = -150
-		}
-		modifier = { #Sinner
-			scope:recipient = {
-				num_sinful_traits >= 1
-				num_virtuous_traits = 0
-			}
-			scope:actor = {
-				has_trait = zealous
-			}
-			add = 10
-		}
-		modifier = { #Unfavored
-			scope:recipient = {
-				has_character_modifier = unfavored_consort_modifier
-			}
-			add = 10
-		}
-		modifier = { #Favored
-			scope:recipient = {
-				has_character_modifier = favored_consort_modifier
-			}
-			add = -20
-		}
-
-		# Unity modifiers
-		evaluate_action_decreasing_house_unity = {
-			VALUE = 100
-		}
-	}
-}
-
 offer_concubine = {
 	category = interaction_category_diplomacy
 	icon = concubine_icon
@@ -4076,4 +3639,443 @@ offer_concubine = {
 		scope:actor = { has_usable_hook = scope:recipient }
 	}
 	extra_icon = "gfx/interface/icons/character_interactions/hook_icon.dds"
+}
+
+## Harem Politics ##
+#Demote a spouse to a concubine
+demote_spouse_interaction = {
+	category = interaction_category_diplomacy
+	use_diplomatic_range = no
+	icon = concubine_icon
+
+	desc = demote_spouse_interaction_desc
+	cost = { 
+		piety = divorce_cost 
+		influence = {
+			value = 0
+			if = {
+				limit = { 
+					scope:actor = {
+						government_has_flag = government_has_influence 
+					}
+				}
+				if = { #If recipient comes from a powerful family or the same rank, some influence
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									is_powerful_vassal_of = scope:actor
+									is_councillor_of = scope:actor
+									tier_difference = {
+										target = scope:actor
+										value = 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_has_influence
+										exists = scope:actor.top_liege
+										exists = scope:actor.house
+										top_liege ?= {
+											this = scope:actor.top_liege
+										}
+										house ?= {
+											is_powerful_family = yes
+											NOT = { this = scope:actor.house }
+											is_dominant_family = no
+										}
+									}
+								}
+							}
+						}
+					}
+					add = medium_influence_value
+				}
+				if = { #If recipient comes from a dominant family, massive influence
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									tier_difference = {
+										target = scope:actor
+										value > 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_has_influence
+										OR = {
+											AND = {
+												exists = scope:actor.top_liege
+												top_liege ?= {
+													this = scope:actor.top_liege
+												}
+											}
+											is_vassal_or_below_of = scope:actor
+										}
+										exists = scope:actor.house
+										house ?= {
+											NOT = { this = scope:actor.house }
+											is_dominant_family = yes
+										}
+									}
+								}
+							}
+						}
+					}
+					add = {
+						value = major_influence_value
+						if = {
+							limit = { #More for someone who far outranks you
+								scope:recipient = {
+									any_close_family_member = {
+										NOR = { 
+											this = scope:actor 
+											is_child_of = scope:actor
+										}
+										tier_difference = {
+											target = scope:actor
+											value > 1
+										}
+									}
+								}
+							}
+							add = major_influence_value
+						}
+					}
+				}
+			}
+		}
+		prestige = {
+			value = 0
+			if = {
+				limit = { 
+					NOT = { 
+						scope:actor = {
+							government_has_flag = government_has_influence 
+						}
+					} 
+				}
+				if = { #If recipient comes from a powerful family or the same rank, some prestige
+					limit = {
+						scope:recipient = {							
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									is_powerful_vassal_of = scope:actor
+									is_councillor_of = scope:actor
+									tier_difference = {
+										target = scope:actor
+										value = 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_has_influence
+										exists = scope:actor.top_liege
+										exists = scope:actor.house
+										top_liege ?= {
+											this = scope:actor.top_liege
+										}
+										house ?= {
+											is_powerful_family = yes
+											NOT = { this = scope:actor.house }
+											is_dominant_family = no
+										}
+									}
+								}
+							}
+						}
+					}
+					add = medium_prestige_value
+				}
+				if = { #If recipient comes from a dominant family, massive prestige
+					limit = {
+						scope:recipient = {
+							any_close_family_member = {
+								NOR = { 
+									this = scope:actor 
+									is_child_of = scope:actor
+								}
+								OR = {
+									tier_difference = {
+										target = scope:actor
+										value > 0
+									}
+									AND = { #Or belongs to the same realm
+										government_has_flag = government_has_influence
+										OR = {
+											AND = {
+												exists = scope:actor.top_liege
+												top_liege ?= {
+													this = scope:actor.top_liege
+												}
+											}
+											is_vassal_or_below_of = scope:actor
+										}
+										exists = scope:actor.house
+										house ?= {
+											NOT = { this = scope:actor.house }
+											is_dominant_family = yes
+										}
+									}
+								}
+							}
+						}
+					}
+					add = {
+						value = major_prestige_value
+						if = {
+							limit = { #More for someone who far outranks you
+								scope:recipient = {
+									any_close_family_member = {
+										NOR = { 
+											this = scope:actor 
+											is_child_of = scope:actor
+										}
+										tier_difference = {
+											target = scope:actor
+											value > 1
+										}
+									}
+								}
+							}
+							add = major_prestige_value
+						}
+					}
+				}
+			}
+		}
+	}
+
+	is_shown = {
+		scope:actor = {
+			faith = {
+				# We are not required to seek approval of a spiritual HoF
+				NAND = {
+					has_doctrine = doctrine_divorce_approval
+					has_doctrine = doctrine_spiritual_head
+					exists = religious_head
+				}
+				# We are not required to seek approval of a house head
+				NAND = {
+					has_doctrine = doctrine_divorce_approval
+					exists = scope:actor.house
+					exists = scope:actor.house.house_head
+					scope:actor = { is_house_head = no }
+				}
+			}
+			hp_accepts_concubinage = yes
+		}
+		scope:recipient = {
+			is_spouse_of = scope:actor
+			is_concubine = no # Can set aside Concubines at any time
+			is_landed = no
+			is_imprisoned = no
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		custom_description = {
+			text = take_concubine_allowed_more
+			object = scope:recipient
+			scope:actor = {
+				allowed_more_concubines = yes
+			}
+		}
+		custom_tooltip = {
+			NOT = {
+				scope:actor.culture = {
+					has_cultural_parameter = cannot_divorce
+				}
+			}
+			text = CULTURE_FORBIDS_DIVORCE
+		}
+		custom_tooltip = {
+			scope:actor = { NOT = { religion = religion:islam_religion } }
+			text = take_concubine_ex_spouse_faith
+		}
+		# custom_tooltip = {
+		# 	scope:recipient = {
+		# 		NOT = { has_character_flag = flag_new_consort }
+		# 	}
+		# 	text = RECENTLY_MARRIED_SPOUSE
+		# }
+		scope:recipient = { is_busy_in_events_localised = yes }
+		scope:recipient = { NOT = { has_strong_hook = scope:actor } }
+		scope:actor = { NOT = { allowed_more_concubines = no } }
+	}
+
+	auto_accept = yes
+
+	on_accept = {
+		scope:actor = {
+			save_scope_as = secondary_actor
+			show_as_tooltip = {
+				make_concubine = scope:recipient
+			}
+		}
+		scope:recipient = {
+			save_scope_as = secondary_recipient
+		}
+		spouse_demotion_effect = {
+			ACTOR = scope:actor
+			RECIPIENT = scope:recipient
+		}
+	}
+	
+	# AI
+	ai_targets = {
+		ai_recipients = spouses
+	}
+	ai_frequency = 36
+	
+	ai_potential = {
+		is_ruler = yes
+	}
+
+	ai_will_do = {
+		base = 0
+
+		modifier = { #More likely if criminal
+			add = 10
+			scope:actor = {
+				has_trait = just
+				has_imprisonment_reason = scope:recipient
+			}
+		}
+		modifier = { #Secret
+			scope:actor = {
+				OR = {
+					has_trait = just
+					has_trait = honest
+				}
+			}
+			scope:recipient = {
+				any_secret = {
+					is_known_by = scope:actor
+					is_criminal_for = secret_owner
+				}
+			}
+			add = 10
+		}
+		modifier = { #Rival
+			scope:actor = {
+				has_relation_rival = scope:recipient
+				has_relation_nemesis = scope:recipient
+			}
+			add = 20
+		}
+		modifier = { #Influential consort
+			scope:recipient = {
+				any_close_family_member = {
+					OR = {
+						is_powerful_vassal_of = scope:actor
+						is_councillor_of = scope:actor
+						highest_held_title_tier >= tier_kingdom
+						trigger_if = {
+							limit = {
+								scope:actor = {
+									government_has_flag = government_is_administrative
+									exists = house
+								}
+							}
+							government_has_flag = government_is_administrative
+							house ?= {
+								is_dominant_family = yes
+								NOT = { this = scope:actor.house }
+							}
+							trigger_if = {
+								limit = {
+									exists = scope:actor.top_liege
+								}
+								top_liege ?= {
+									this = scope:actor.top_liege
+								}
+							}
+							trigger_else = {
+								top_liege ?= {
+									this = scope:actor
+								}
+							}
+						}
+					}
+				}
+			}
+			add = -50
+		}
+		modifier = { #Influential consort
+			scope:recipient = {
+				any_close_family_member = {
+					tier_difference = {
+						target = scope:actor
+						value >= -1
+					}
+				}
+			}
+			add = -15
+		}
+		modifier = { #Influential consort
+			scope:recipient = {
+				any_close_family_member = {
+					tier_difference = {
+						target = scope:actor
+						value >= 0
+					}
+				}
+			}
+			add = -10
+		}
+		modifier = { #Influential consort
+			scope:recipient = {
+				any_close_family_member = {
+					tier_difference = {
+						target = scope:actor
+						value >= 1
+					}
+				}
+			}
+			add = -10
+		}
+		modifier = { #Influential consort
+			scope:recipient = {
+				any_close_family_member = {
+					is_liege_or_above_of = scope:actor
+				}
+			}
+			add = -150
+		}
+		modifier = { #Sinner
+			scope:recipient = {
+				num_sinful_traits >= 1
+				num_virtuous_traits = 0
+			}
+			scope:actor = {
+				has_trait = zealous
+			}
+			add = 10
+		}
+		modifier = { #Unfavored
+			scope:recipient = {
+				has_character_modifier = unfavored_consort_modifier
+			}
+			add = 10
+		}
+		modifier = { #Favored
+			scope:recipient = {
+				has_character_modifier = favored_consort_modifier
+			}
+			add = -20
+		}
+
+		# Unity modifiers
+		evaluate_action_decreasing_house_unity = {
+			VALUE = 100
+		}
+	}
 }
