@@ -24,12 +24,9 @@ set_primary_spouse_interaction = {
 		scope:actor = {
 			is_spouse_of = scope:recipient
 		}
-		NOT = {
-			scope:actor.primary_spouse = scope:recipient
-		}
+		scope:actor.primary_spouse != scope:recipient
 	}
 	is_valid_showing_failures_only = {
-		scope:recipient = { is_busy_in_events_localised = yes }
 		scope:recipient = {
 			NOT = {
 				has_trait = incapable
@@ -64,7 +61,14 @@ set_primary_spouse_interaction = {
 	ai_target_quick_trigger = {
 		adult = yes
 	}
-	ai_frequency = 72
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 144
+		kingdom = 72
+		empire = 72
+		hegemony = 72
+	}
 
 	ai_potential = {
 		any_spouse = {
@@ -156,6 +160,24 @@ set_primary_spouse_interaction = {
 				}
 			}
 		}
+		modifier = { # Same dynasty
+			add = -25
+			scope:actor = {
+				exists = dynasty
+				primary_spouse ?= {
+					dynasty ?= scope:actor.dynasty
+				}
+			}
+		}
+		modifier = { # Same house
+			add = -25
+			scope:actor = {
+				exists = house
+				primary_spouse ?= {
+					house ?= scope:actor.house
+				}
+			}
+		}
 		modifier = { #Nobility
 			add = -25
 			scope:recipient = {
@@ -203,6 +225,20 @@ set_primary_spouse_interaction = {
 				}
 			}
 		}
+		modifier = { # Same dynasty
+			add = 25
+			scope:actor = {
+				exists = dynasty
+				scope:recipient.dynasty ?= scope:actor.dynasty
+			}
+		}
+		modifier = { # Same house
+			add = 25
+			scope:actor = {
+				exists = house
+				scope:recipient.house ?= scope:actor.house
+			}
+		}
 		modifier = { #Relations
 			add = -50
 			scope:actor = {
@@ -225,38 +261,19 @@ set_primary_spouse_interaction = {
 		modifier = { #Favor
 			add = -15
 			scope:actor.primary_spouse = {
-				has_variable = favor
-				var:favor >= neutral_consort_lower_limit
+				harem_politics_unfavored_consort_trigger = no
 			}
 		}
 		modifier = { #Favor
 			add = -10
 			scope:actor.primary_spouse = {
-				has_variable = favor
-				var:favor >= favorite_consort_lower_limit
+				harem_politics_favored_consort_trigger = yes
 			}
 		}
 		modifier = { #Favor
-			add = -10
+			add = -15
 			scope:actor.primary_spouse = {
-				OR = {	
-					AND = {
-						has_variable = favor
-						var:favor >= beloved_consort_lower_limit
-					}
-					has_character_modifier = favor_boost_modifier
-				}
-			}
-		}
-		modifier = { #Landed relatives
-			add = 15
-			scope:actor.primary_spouse = {
-				any_close_family_member = {
-					is_landed_or_landless_administrative = yes
-				}
-			}
-			scope:recipient = {
-				is_landed_or_landless_administrative = no
+				harem_politics_beloved_consort_trigger = yes
 			}
 		}
 		modifier = { #Recently did it
@@ -277,9 +294,9 @@ set_primary_spouse_interaction = {
 			}
 		}
 		modifier = {
-			factor = 0.5
-			scope:actor = {
-				has_trait = stubborn
+			factor = 0
+			scope:recipient = {
+				harem_politics_forgotten_consort_trigger = yes
 			}
 		}
 		modifier = {
@@ -289,6 +306,18 @@ set_primary_spouse_interaction = {
 					has_trait = forgiving
 					has_trait = compassionate
 				}
+			}
+		}
+		modifier = {
+			factor = 0.5
+			scope:recipient = {
+				harem_politics_unfavored_consort_trigger = yes
+			}
+		}
+		modifier = {
+			factor = 0.5
+			scope:actor = {
+				has_trait = stubborn
 			}
 		}
 	}
@@ -1481,7 +1510,7 @@ check_harem_window_interaction = {
 
 # 	is_shown = {
 # 		scope:actor = {
-# 			can_appoint_char_as_ranked_consort_trigger = yes
+# 			can_appoint_ranked_consorts_trigger = yes
 # 			hp_accepts_harems = yes
 # 			NOR = {
 # 				has_trait_with_flag = illness
