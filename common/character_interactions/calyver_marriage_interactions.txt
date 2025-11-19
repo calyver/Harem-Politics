@@ -1191,7 +1191,7 @@ marry_off_interaction = {
 	common_interaction = yes
 
 	desc = marry_off_interaction_desc
-	
+
 	send_name = marry_off_send
 	needs_recipient_to_open = no
 	special_interaction = arrange_marriage_interaction
@@ -1222,13 +1222,13 @@ marry_off_interaction = {
 		if = {
 			limit = {
 				scope:actor = {
-					is_landless_adventurer = yes
+					has_government = landless_adventurer_government
 				}
 			}
 			scope:secondary_actor = {
 				if = {
 					limit = {
-						NOT = { scope:actor = this }
+						scope:actor != this
 					}
 					add_to_list = characters
 				}
@@ -1311,24 +1311,28 @@ marry_off_interaction = {
 		#otherwise, populate with anyone eligible
 		else = {
 			scope:secondary_actor = {
+				every_opposite_sex_spouse_candidate = { add_to_list = characters }
 				if = {
-					limit = {
-						allowed_to_marry_same_sex_trigger = yes
-					}
-					every_opposite_sex_spouse_candidate = {
-						add_to_list = characters
-					}
+					limit = { allowed_to_marry_same_sex_trigger = yes }
 					every_same_sex_spouse_candidate = {
 						limit = {
-							NOT = { scope:secondary_actor = this }
+							scope:secondary_actor != this
 						}
 						add_to_list = characters
 					}
 				}
-				else = {
-					every_opposite_sex_spouse_candidate = {
-						add_to_list = characters
+			}
+			# Cleanup list if insular culture
+			if = {
+				limit = {
+					scope:secondary_actor.culture = { has_cultural_parameter = reduced_marriage_acceptance_distant_realms }
+				}
+				every_in_list = {
+					list = characters
+					limit = {
+						NOT = { top_liege.culture = scope:secondary_actor.top_liege.culture }
 					}
+					remove_from_list = characters
 				}
 			}
 		}
@@ -1391,7 +1395,7 @@ marry_off_interaction = {
 		trigger_if = {
 			limit = {
 				scope:actor = {
-					is_landless_adventurer = yes
+					has_government = landless_adventurer_government
 				}
 			}
 			scope:secondary_actor = {
@@ -1429,14 +1433,13 @@ marry_off_interaction = {
 	is_valid_showing_failures_only = {
 		#Diplomatic availability & prison
 		scope:secondary_actor = {
-			is_busy_in_events_localised = yes
 			is_imprisoned = no
 			bp2_valid_for_standard_interactions_trigger = yes
 		}
 		marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = secondary_actor }
 		trigger_if = {
 			limit = {
-				NOT = { scope:secondary_actor = scope:secondary_recipient }
+				scope:secondary_actor != scope:secondary_recipient
 			}
 			marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = secondary_recipient }
 		}
@@ -1449,7 +1452,6 @@ marry_off_interaction = {
 
 		#Diplomatic availability & prison (located here because these will never be set at the start)
 		scope:recipient = {
-			is_busy_in_events_localised = yes
 			is_imprisoned = no
 		}
 		NOT = {
@@ -1458,9 +1460,8 @@ marry_off_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { NOT = { scope:recipient = scope:secondary_recipient } }
+			limit = { scope:recipient != scope:secondary_recipient }
 			scope:secondary_recipient = {
-				is_busy_in_events_localised = yes
 				is_imprisoned = no
 				bp2_valid_for_standard_interactions_trigger = yes
 			}
@@ -1474,7 +1475,7 @@ marry_off_interaction = {
 					is_pool_guest = yes
 					host = {
 						is_ai = no
-						NOT = { this = scope:actor }
+						this != scope:actor
 					}
 				}
 				NOT = { is_pool_guest_of = host }
@@ -1487,7 +1488,7 @@ marry_off_interaction = {
 			limit = {
 				scope:grand_wedding_promise = yes
 			}
-			scope:actor = { 
+			scope:actor = {
 				set_variable = {
 					name = grand_wedding_promise_pending
 					days = 10
@@ -1520,9 +1521,9 @@ marry_off_interaction = {
 	}
 
 	on_accept = {
-		marriage_interaction_on_accept_effect = yes	
+		marriage_interaction_on_accept_effect = yes
 
-		scope:actor = { 
+		scope:actor = {
 			if = {
 				limit = {
 					scope:herd_send_option = yes
@@ -1543,9 +1544,9 @@ marry_off_interaction = {
 
 	on_decline = {
 		scope:actor = {
-			if = {	
-				limit = { NOT = { this = scope:recipient } }
-				trigger_event = marriage_interaction.0011	
+			if = {
+				limit = { this != scope:recipient }
+				trigger_event = marriage_interaction.0011
 			}
 			if = {
 				limit = {
@@ -1562,16 +1563,16 @@ marry_off_interaction = {
 			VALUE = medium_unity_loss
 			DESC = clan_unity_marry_off_decline.desc
 			REVERSE_NON_HOUSE_TARGET = no
-		}		
+		}
 	}
 
 	auto_accept = {
 		marriage_interaction_auto_accept_trigger = yes #Strong hook conditions
 	}
-	
+
 	ai_accept = {
 		base = 0 # Should be 0 for all interactions
-		
+
 		marriage_ai_accept_modifier = yes
 
 		# Unity modifiers
@@ -1647,7 +1648,7 @@ marry_off_interaction = {
 			}
 		}
 	}
-	
+
 	send_option = {
 		flag = matrilineal
 		localization = "MATRILINEAL_OFFER"
@@ -1671,7 +1672,7 @@ marry_off_interaction = {
 			}
 		}
 	}
-	
+
 	send_option = {
 		is_valid = {
 			scope:actor = {
@@ -1684,7 +1685,7 @@ marry_off_interaction = {
 	#This option cannot be linked with the hook icon, because recipient isn't known in the right-click menu
 
 	send_option = { # EP3 Influence
-		is_shown = { # Actor must have a government that uses influence 
+		is_shown = { # Actor must have a government that uses influence
 			scope:actor = {
 				government_has_flag = government_has_influence
 			}
@@ -1702,7 +1703,7 @@ marry_off_interaction = {
 		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
 	}
 	send_option = { # MPO Herd
-		is_shown = { # Actor must have a government that uses Herd 
+		is_shown = { # Actor must have a government that uses Herd
 			scope:actor = {
 				government_has_flag = government_is_nomadic
 				is_ai = no
@@ -1719,12 +1720,12 @@ marry_off_interaction = {
 		flag = herd_send_option
 		localization = TRADE_HERD_FOR_BETTER_AI_ACCEPTANCE
 	}
-	
+
 	send_options_exclusive = no
-	
+
 	show_effects_in_notification = no
 	greeting = positive
-	
+
 	notification_text = {
 		first_valid = {
 			triggered_desc = {
@@ -1741,7 +1742,7 @@ marry_off_interaction = {
 					}
 				}
 				desc = {
-					first_valid = {	
+					first_valid = {
 						triggered_desc = {
 							trigger = {
 								scope:matrilineal = yes
@@ -1794,7 +1795,7 @@ marry_off_interaction = {
 				}
 			}
 			desc = {
-				first_valid = {	
+				first_valid = {
 					triggered_desc = {
 						trigger = {
 							scope:matrilineal = yes
