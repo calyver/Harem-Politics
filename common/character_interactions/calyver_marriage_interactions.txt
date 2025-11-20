@@ -1909,18 +1909,26 @@ make_concubine_interaction = {
 #Now for AI
 ai_make_concubine_interaction = {
 	hidden = yes
-	
+
 	ai_targets = {
 		ai_recipients = prisoners
 	}
 	ai_targets = {
 		ai_recipients = courtiers
+		max = 10
 	}
 	ai_target_quick_trigger = {
 		adult = yes
 		owner_attracted = yes # Not optimal, but saves a lot of performance
 	}
-	ai_frequency = 12
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 60
+		duchy = 12
+		kingdom = 12
+		empire = 12
+		hegemony = 3
+	}
 
 	ai_potential = {
 		is_playable_character = yes
@@ -1946,7 +1954,7 @@ ai_make_concubine_interaction = {
 
 	ai_will_do = {
 		base = 0
-		
+
 		modifier = { # Basic Filtering
 			add = 100
 			scope:actor = {
@@ -1965,22 +1973,10 @@ ai_make_concubine_interaction = {
 				num_of_good_genetic_traits >= 1
 			}
 		}
-		modifier = { # Multiple good genetic traits
-			add = 15
-			scope:recipient = {
-				num_of_good_genetic_traits > 1
-			}
-		}
 		modifier = { # Bad genetic traits
 			add = -30
 			scope:recipient = {
 				num_of_bad_genetic_traits >= 1
-			}
-		}
-		modifier = { # Multiple bad genetic traits
-			add = -30
-			scope:recipient = {
-				num_of_bad_genetic_traits > 1
 			}
 		}
 		#Traits
@@ -2011,7 +2007,7 @@ ai_make_concubine_interaction = {
 				is_young_character = yes
 			}
 		}
-		
+
 		modifier = {
 			add = 100
 			scope:recipient = {
@@ -2090,10 +2086,7 @@ ai_make_concubine_interaction = {
 					accepts_incest_with_trigger = { CHARACTER = scope:recipient }
 					sexually_liberal_trigger = yes
 					AND = {
-						AND = {
-							exists = primary_heir
-							primary_heir = { NOT = { dynasty = root.dynasty }	}
-						}
+						primary_heir ?= { dynasty != root.dynasty	}
 						NOT = {
 							primary_title = {
 								any_title_heir = {	dynasty = root.dynasty 	}
@@ -2105,15 +2098,14 @@ ai_make_concubine_interaction = {
 		}
 
 		modifier = { # Incest Filtering: Not likely, but keep the door open...
-			factor = 0.2 
+			factor = 0.2
 			scope:actor = {
 				relation_with_character_is_incestuous_in_my_faith_trigger = { CHARACTER = scope:recipient }
 				OR = {
 					accepts_incest_with_trigger = { CHARACTER = scope:recipient }
 					sexually_liberal_trigger = yes
 					AND = {
-						exists = primary_heir
-						primary_heir = { NOT = { dynasty = root.dynasty }	}
+						primary_heir ?= { dynasty != root.dynasty	}
 						NOT = {
 							primary_title = {
 								any_title_heir = {	dynasty = root.dynasty 	}
@@ -2124,14 +2116,14 @@ ai_make_concubine_interaction = {
 			}
 		}
 
-		modifier = { # Less likely if married to a player and the target is the player heir 
+		modifier = { # Less likely if married to a player and the target is the player heir
 			factor = 0.4
 			scope:actor = {
 				any_spouse = {
 					is_ai = no
-					scope:recipient = {	
+					scope:recipient = {
 						OR = {
-							is_primary_heir_of = prev 
+							is_primary_heir_of = prev
 							is_heir_of = prev
 						}
 					}
