@@ -4509,29 +4509,42 @@ calyver_dismiss_concubine_effect = {
 			}
 			# Then they should remain in court
 		}
-		else_if = { #Dismiss to relevant court, or to pool
+		else_if = {
 			limit = {
-				any_close_family_member = {
-					is_landed_or_landless_administrative = yes
-				}
+				is_courtier_of = scope:actor
 			}
-			random_close_family_member = {
+			if = { #Dismiss to relevant court, or to pool
 				limit = {
-					is_child_of = scope:recipient
-					is_landed_or_landless_administrative = yes
+					any_close_family_member = {
+						is_landed_or_landless_administrative = yes
+					}
 				}
-				alternative_limit = {
-					is_parent_of = scope:recipient
-					is_landed_or_landless_administrative = yes
+				random_close_family_member = {
+					limit = {
+						is_child_of = scope:recipient
+						is_landed_or_landless_administrative = yes
+					}
+					alternative_limit = {
+						is_parent_of = scope:recipient
+						is_landed_or_landless_administrative = yes
+					}
+					alternative_limit = {
+						is_landed_or_landless_administrative = yes
+					}
+					add_courtier = scope:recipient
 				}
-				alternative_limit = {
-					is_landed_or_landless_administrative = yes
-				}
-				add_courtier = scope:recipient
 			}
-		}
-		else = {
-			move_to_pool = yes
+			else = {
+				if = {
+					limit = { NOT = { exists = var:last_visited_ruler } }
+					set_variable = {
+						name = last_visited_ruler
+						value = scope:actor
+						years = 5
+					}
+				}
+				move_to_pool = yes
+			}
 		}
 	}		
 	scope:actor = {
