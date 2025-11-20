@@ -2169,6 +2169,17 @@ find_concubine = {
 		scope:actor = { # The UI will open to the already filled left first if we don't tell it we've got "our side" actor which is always ourselves
 			save_scope_as = secondary_actor
 		}
+		if = {
+			limit = {
+				# This is needed for the UI to function properly. Initially UI opens with player as both actor and recipient
+				# After UI opens with empty recipient, player can click on a candidate
+				# When candidate is selected both primary and secondary recipient must be set for the interaction to work
+				scope:actor != scope:recipient
+			}
+			scope:recipient = {
+				save_scope_as = secondary_recipient
+			}
+		}
 	}
 
 	populate_recipient_list = {
@@ -2206,7 +2217,7 @@ find_concubine = {
 		}
 		trigger_if = {
 			limit = {
-				NOT = { scope:actor = scope:recipient }
+				scope:actor != scope:recipient
 			}
 			scope:actor = {
 				trigger_if = {
@@ -2260,7 +2271,7 @@ find_concubine = {
 		}
 		trigger_if = {
 			limit = {
-				NOT = { scope:actor = scope:recipient }
+				scope:actor != scope:recipient
 			}
 			scope:recipient = {
 				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
@@ -2281,7 +2292,7 @@ find_concubine = {
 	ai_will_do = {
 		base = 0
 	}
-	
+
 	on_accept = {
 		concubine_on_accept_effect = yes
 	}
