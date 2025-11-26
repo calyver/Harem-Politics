@@ -3195,14 +3195,36 @@ offer_concubine = {
 		}
 
 		modifier = { # If secondary_recipient is close to actor, a good character, or if actor should take them as concubine
-			add = -120
-			scope:secondary_recipient = {
-				is_of_minor_interest_trigger = {
-					CHARACTER = scope:actor
+			add = {
+				value = -120
+				if = {
+					limit = {
+						scope:secondary_recipient = {
+							is_close_or_extended_family_of = scope:actor
+						}
+						scope:actor = {
+							NOT = { religion = religion:islam_religion }
+							is_vassal_or_below_of = scope:recipient
+							trigger_if = {
+								limit = {
+									government_allows = administrative
+								}
+								top_liege ?= scope:recipient
+							}
+						}
+					}
+					add = 120
 				}
-				AND = {
-					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-					scope:actor = { number_of_concubines < number_of_desired_concubines }
+			}
+			scope:secondary_recipient = {
+				OR = {
+					is_of_minor_interest_trigger = {
+						CHARACTER = scope:actor
+					}
+					AND = {
+						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+						scope:actor = { number_of_concubines < number_of_desired_concubines }
+					}
 				}
 			}
 		}
@@ -3265,12 +3287,12 @@ offer_concubine = {
 		# Liege modifiers - Non-Administrative Realms
 		modifier = { # More likely to send concubines to liege or above in non-admin realms
 			add = {
-				value = 30
+				value = 15
 				if = {
 					limit = {
 						scope:actor.liege ?= scope:recipient
 					}
-					add = 10
+					add = 15
 				}
 				if = {
 					limit = {
@@ -3320,6 +3342,39 @@ offer_concubine = {
 					limit = {
 						scope:actor = {
 							is_close_family_of = scope:secondary_recipient
+						}
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							any_consort = {
+								OR = {	
+									is_close_family_of = scope:actor
+									house ?= {
+										any_house_member = {
+											this = scope:actor
+										}
+									}
+								}
+							}
+						}
+					}
+					add = -20
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							number_of_concubines >= number_of_desired_concubines
+						}
+					}
+					add = -10
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							allowed_more_spouses = no
 						}
 					}
 					add = 10
@@ -3407,6 +3462,39 @@ offer_concubine = {
 					}
 					add = 10
 				}
+				if = {
+					limit = {
+						scope:recipient = {
+							any_consort = {
+								OR = {	
+									is_close_family_of = scope:actor
+									house ?= {
+										any_house_member = {
+											this = scope:actor
+										}
+									}
+								}
+							}
+						}
+					}
+					add = -20
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							number_of_concubines >= number_of_desired_concubines
+						}
+					}
+					add = -10
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							allowed_more_spouses = no
+						}
+					}
+					add = 10
+				}
 			}
 			scope:actor = {
 				government_allows = administrative
@@ -3478,14 +3566,25 @@ offer_concubine = {
 				if = {
 					limit = {
 						scope:actor = {
-							house ?= {
-								any_house_member = {
-									this = scope:secondary_recipient
+							OR = {
+								house ?= {
+									any_house_member = {
+										this = scope:secondary_recipient
+									}
 								}
+								is_extended_family_of = scope:secondary_recipient
 							}
 						}
 					}
 					add = -5
+				}
+				if = {
+					limit = {
+						scope:recipient = {
+							number_of_concubines >= number_of_desired_concubines
+						}
+					}
+					add = -10
 				}
 			}
 			scope:actor = {
@@ -3499,6 +3598,12 @@ offer_concubine = {
 					house ?= {
 						any_house_member = {
 							this = scope:recipient
+						}
+					}
+					house ?= {
+						OR = {
+							is_powerful_family = yes
+							is_dominant_family = yes
 						}
 					}
 					is_close_family_of = scope:secondary_recipient
@@ -3525,6 +3630,18 @@ offer_concubine = {
 					OR = {
 						is_powerful_family = yes
 						is_dominant_family = yes
+					}
+				}
+				NOT = {
+					any_consort = {
+						OR = {	
+							is_extended_family_of = scope:actor
+							house ?= {
+								any_house_member = {
+									this = scope:actor
+								}
+							}
+						}
 					}
 				}
 			}
