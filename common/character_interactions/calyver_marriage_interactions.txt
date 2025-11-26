@@ -3260,10 +3260,26 @@ offer_concubine = {
 			VALUE = 100
 		}
 
-		# Harem Politics modifiers
-		modifier = { # More likely if both are administrative and recipient's house is important
+		## Harem Politics modifiers ##
+
+		# Liege modifiers - Non-Administrative Realms
+		modifier = { # More likely to send concubines to liege or above in non-admin realms
 			add = {
 				value = 10
+				if = {
+					limit = {
+						scope:actor.liege ?= scope:recipient
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							is_powerful_vassal_of = scope:recipient
+						}
+					}
+					add = 10
+				}
 				if = {
 					limit = {
 						scope:actor = {
@@ -3286,13 +3302,7 @@ offer_concubine = {
 							has_trait = humble
 						}
 					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:actor.top_liege ?= scope:recipient
-					}
-					add = 20
+					add = -10
 				}
 				if = {
 					limit = {
@@ -3316,11 +3326,12 @@ offer_concubine = {
 				}
 			}
 			scope:actor = {
-				government_has_flag = government_has_influence
-				exists = top_liege
-				NOT = { has_character_flag = received_influence_offer_concubine_flag }
+				NOT = { government_allows = administrative }
+				is_vassal_or_below_of = scope:recipient
 				trigger_if = {
-					limit = { religion = religion:islam_religion }
+					limit = {
+						religion = religion:islam_religion
+					}
 					NOR = {
 						is_close_or_extended_family_of = scope:secondary_recipient
 						house ?= {
@@ -3332,18 +3343,188 @@ offer_concubine = {
 				}
 			}
 			scope:recipient = {
+				NOT = { government_allows = administrative }
+			}
+		}
+
+		modifier = { # More likely to send to top_liege in administrative realms (base bonus)
+			add = {
+				value = 30
+				if = {
+					limit = {
+						scope:actor = {
+							house ?= {
+								OR = {
+									is_powerful_family = yes
+									is_dominant_family = yes
+								}
+							}
+						}
+					}
+					add = 15
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = ambitious
+						}
+					}
+					add = 15
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = content
+						}
+					}
+					add = -20
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = humble
+						}
+					}
+					add = -15
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							house ?= {
+								any_house_member = {
+									this = scope:secondary_recipient
+								}
+							}
+						}
+					}
+					add = 15
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							is_close_family_of = scope:secondary_recipient
+						}
+					}
+					add = 10
+				}
+			}
+			scope:actor = {
+				government_allows = administrative
+				government_has_flag = government_has_influence
+				top_liege ?= scope:recipient
+				NOR = { 
+					has_character_flag = received_influence_offer_concubine_flag 
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+				}
+				trigger_if = {
+					limit = {
+						religion = religion:islam_religion
+					}
+					NOR = {
+						is_close_or_extended_family_of = scope:secondary_recipient
+						house ?= {
+							any_house_member = {
+								this = scope:secondary_recipient
+							}
+						}
+					}
+				}
+			}
+			scope:recipient = {
+				government_allows = administrative
+				government_has_flag = government_has_influence
+			}
+		}
+
+		modifier = { # More likely to send to fellow vassals in admin realms
+			add = {
+				value = 5
+				if = {
+					limit = {
+						scope:recipient.house ?= {
+							is_dominant_family = yes
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = ambitious
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = content
+						}
+					}
+					add = -10
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							has_trait = humble
+						}
+					}
+					add = -5
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							house ?= {
+								any_house_member = {
+									this = scope:secondary_recipient
+								}
+							}
+						}
+					}
+					add = -5
+				}
+			}
+			scope:actor = {
+				government_allows = administrative
+				government_has_flag = government_has_influence
+				top_liege ?= {
+					this != scope:recipient
+				}
+				NOR = { 
+					has_character_flag = received_influence_offer_concubine_flag 
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+					is_close_family_of = scope:secondary_recipient
+				}
+				trigger_if = {
+					limit = {
+						religion = religion:islam_religion
+					}
+					NOR = {
+						is_close_or_extended_family_of = scope:secondary_recipient
+						house ?= {
+							any_house_member = {
+								this = scope:secondary_recipient
+							}
+						}
+					}
+				}
+			}
+			scope:recipient = {
+				government_allows = administrative
 				government_has_flag = government_has_influence
 				top_liege ?= scope:actor.top_liege
 				house ?= {
 					OR = {
 						is_powerful_family = yes
 						is_dominant_family = yes
-						scope:actor.top_liege = scope:recipient
-					}
-					NOR = {
-						any_house_member = {
-							this = scope:actor
-						}
 					}
 				}
 			}
