@@ -2639,9 +2639,9 @@ offer_concubine = {
 	}
 	ai_frequency_by_tier = {
 		barony = 0
-		county = 36
+		county = 48
 		duchy = 36
-		kingdom = 48
+		kingdom = 36
 		empire = 48
 		hegemony = 60
 	}
@@ -3171,7 +3171,17 @@ offer_concubine = {
 		base = 0
 
 		modifier = { # Basic Filtering
-			add = 100
+			add = {
+				value = 10
+				if = {
+					limit = {
+						scope:recipient = {
+							is_liege_or_above_of = scope:actor
+						}
+					}
+					add = 20
+				}
+			}
 			scope:recipient = {
 				number_of_concubines < number_of_desired_concubines
 			}
@@ -3213,7 +3223,28 @@ offer_concubine = {
 							}
 						}
 					}
-					add = 120
+					add = {
+						value = 90
+						if = {
+							limit = {
+								scope:recipient = {
+									NOT = {
+										any_consort {
+											OR = {
+												is_close_family_of = scope:actor
+												house ?= {
+													any_house_member = {
+														this = scope:actor
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+							add = 30
+						}
+					}
 				}
 			}
 			scope:secondary_recipient = {
@@ -3221,6 +3252,7 @@ offer_concubine = {
 					is_of_minor_interest_trigger = {
 						CHARACTER = scope:actor
 					}
+					is_consort_of = scope:actor
 					AND = {
 						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
 						scope:actor = { number_of_concubines < number_of_desired_concubines }
@@ -3230,7 +3262,7 @@ offer_concubine = {
 		}
 
 		modifier = { # If secondary_recipient could be an agent...
-			add = 35
+			add = 55
 			scope:actor = {
 				any_scheme = {
 					scheme_target_character ?= scope:recipient
@@ -3724,16 +3756,6 @@ offer_concubine = {
 							this = scope:secondary_recipient
 						}
 					}
-				}
-			}
-		}
-		modifier = { # Admin vassals will always prefer sending concubines to their top_liege
-			factor = 0.2
-			scope:actor = {
-				government_allows = administrative
-				is_vassal_or_below_of = scope:recipient
-				top_liege ?= {
-					this != scope:recipient
 				}
 			}
 		}
