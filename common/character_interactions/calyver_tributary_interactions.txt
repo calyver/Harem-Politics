@@ -11,7 +11,7 @@ demand_concubine_interaction = {
 		prestige = {
 			value = 0
 			if = {
-				limit = { 
+				limit = {
 					NAND = {
 						scope:actor = {
 							government_has_flag = government_has_influence 
@@ -100,6 +100,14 @@ demand_concubine_interaction = {
 						}
 						add = monumental_prestige_value
 					}
+					if = {
+						limit = {
+							scope:recipient = {
+								is_powerful_vassal_of = scope:actor
+							}
+						}
+						add = medium_prestige_value
+					}
 				}
 			}
 		}
@@ -114,25 +122,18 @@ demand_concubine_interaction = {
 					scope:recipient = {
 						government_has_flag = government_has_influence 
 						is_vassal_or_below_of = scope:actor
-						exists = house
-						house = {	
-							NOT = { this = scope:actor.house }
+						house ?= {	
+							this != scope:actor.house
 						}
 					}
 				}
 				add = {
 					if = { # Demanding to the Imperial Family
 						limit = {
+							exists = scope:actor.top_liege
 							scope:recipient.house = {
 								any_house_member = {
-									is_independent_ruler = yes
-									government_has_flag = government_has_influence 
-									any_vassal_or_below = {
-										OR = {
-											this = scope:actor
-											this = scope:recipient
-										}
-									}
+									this = scope:actor.top_liege
 								}
 							}
 						}
@@ -154,19 +155,6 @@ demand_concubine_interaction = {
 						}
 						add = major_influence_value
 					}
-					else_if = {
-						limit = {
-							scope:actor = {
-								house = {
-									is_powerful_family = no
-								}
-							}
-							scope:recipient.house = {
-								is_powerful_family = no
-							}
-						}
-						add = medium_influence_value
-					}
 					else = {
 						add = minor_influence_value
 					}
@@ -185,7 +173,7 @@ demand_concubine_interaction = {
 	ai_frequency_by_tier = {
 		barony = 0
 		county = 0
-		duchy = 24
+		duchy = 36
 		kingdom = 12
 		empire = 12
 		hegemony = 12
@@ -472,6 +460,15 @@ demand_concubine_interaction = {
 				}
 			}
 		}
+		modifier = {
+			add = 10
+			scope:actor = {
+				tier_difference = {
+					target = scope:recipient
+					value >= 3
+				}
+			}
+		}
 
 		modifier = {
 			add = 10
@@ -518,15 +515,35 @@ demand_concubine_interaction = {
 					prowess >= extremely_high_skill_rating
 					exists = inspiration
 					AND = {
+						OR = {
+							AND = {
+								is_female = yes
+								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
+							}
+							AND = {
+								is_male = yes
+								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
+							}
+						}
 						diplomacy >= monumentally_high_skill_rating
 						scope:actor.cp:councillor_chancellor ?= { diplomacy < monumentally_high_skill_rating }
 					}
 					AND = {
-						diplomacy >= monumentally_high_skill_rating
+						OR = {
+							AND = {
+								is_female = yes
+								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
+							}
+							AND = {
+								is_male = yes
+								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
+							}
+						}
+						stewardship >= monumentally_high_skill_rating
 						scope:actor.cp:councillor_steward ?= { stewardship < monumentally_high_skill_rating }
 					}
 					AND = {
-						diplomacy >= monumentally_high_skill_rating
+						intrigue >= monumentally_high_skill_rating
 						scope:actor.cp:councillor_spymaster ?= { intrigue < monumentally_high_skill_rating }
 					}
 					has_conventionally_attractive_trigger = yes
@@ -604,7 +621,7 @@ demand_concubine_interaction = {
 					modifier = demanded_concubine_opinion
 					opinion = -50
 				}
-				clear_saved_scope = secondary_actor
+				clear_saved_scope = secondary_actor	# Check why this is cleared
 			}
 		}
 		demand_concubine_interaction_on_accept_effect = yes
