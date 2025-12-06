@@ -49,39 +49,34 @@ marriage_interaction_on_accept_effect = {
 				}
 				if = {
 					limit = { is_ai = no }
-					if = { #Marrying a lowborn PS will always decrease legitimacy
-						limit = {
-							OR = {
-								NOT = { exists = primary_spouse }
-								primary_spouse ?= scope:secondary_recipient
+					send_interface_toast = {
+						type = event_toast_effect_good
+						title = married_lowborn_toast
+						left_icon = scope:actor
+						if = { #Marrying a lowborn PS will always decrease legitimacy
+							limit = {
+								OR = {
+									NOT = { exists = primary_spouse }
+									primary_spouse ?= scope:secondary_recipient
+								}
 							}
-						}
-						send_interface_toast = {
-							type = event_toast_effect_good
-							title = married_lowborn_toast
-							left_icon = scope:actor
 							add_legitimacy = {
 								value = medium_legitimacy_loss
 								multiply = scope:actor.primary_title.tier
 							}
 						}
-					}
-					else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
-						limit = {
-							primary_spouse ?= { 
-								NOT = { 
-									this = scope:secondary_recipient 
+						else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
+							limit = {
+								primary_spouse ?= { 
+									NOT = { 
+										this = scope:secondary_recipient 
+									}
+								}
+								NOR = {
+									government_has_flag = government_is_tribal
+									government_has_flag = government_is_nomadic
 								}
 							}
-							NOR = {
-								government_has_flag = government_is_tribal
-								government_has_flag = government_is_nomadic
-							}
-						}
-						send_interface_toast = {
-							type = event_toast_effect_good
-							title = married_lowborn_toast
-							left_icon = scope:actor
 							add_legitimacy = {
 								value = -5
 								multiply = scope:actor.primary_title.tier
