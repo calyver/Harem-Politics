@@ -4115,21 +4115,29 @@ update_active_consort_opinion_effect = {
 			limit = {
 				is_spouse_of = $PARTNER$
 				$PARTNER$ = { any_consort = { count >= 2 }}
-				NOT = { hp_accepts_harems = yes }
 				NOT = { faith = { has_doctrine = tenet_polyamory }}
 			}
 			if = {
 				limit = {
 					$PARTNER$ = { any_concubine = { count >= 1 }}
+					hp_accepts_concubinage = no
 				}
 				add_opinion = {
 					target = $PARTNER$
 					modifier = spouse_does_not_believe_in_concubines_opinion
 				}
 				#Remove the opinion modifier if you flip-flop and go get concubines after getting rid of them all...
-				remove_opinion = {
-					target = $PARTNER$
-					modifier = spouse_does_not_believe_in_former_concubines_opinion
+				if = {
+					limit = {
+						has_opinion_modifier = {
+							modifier = spouse_does_not_believe_in_former_concubines_opinion
+							target = $PARTNER$
+						}
+					}
+					remove_opinion = {
+						target = $PARTNER$
+						modifier = spouse_does_not_believe_in_former_concubines_opinion
+					}
 				}
 			}
 			else_if = {
@@ -4139,6 +4147,19 @@ update_active_consort_opinion_effect = {
 				add_opinion = {
 					target = $PARTNER$
 					modifier = polygamous_marriage_opinion
+				}
+				#Remove the opinion modifier if you flip-flop and go get spouses after getting rid of them all...
+				if = {
+					limit = {
+						has_opinion_modifier = {
+							modifier = former_polygamous_marriage_opinion
+							target = $PARTNER$
+						}
+					}
+					remove_opinion = {
+						target = $PARTNER$
+						modifier = former_polygamous_marriage_opinion
+					}
 				}
 			}
 		}
