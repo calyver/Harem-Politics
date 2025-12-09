@@ -1156,55 +1156,56 @@ concubine_on_accept_effect = {
 ## Harem Politics ##
 make_concubine_harem_politics_effect = {
 	# First save the scopes with specific names for House Unity
-	$CHARACTER$ = { save_scope_as = harem_actor } #The actor
-	$TARGET$ = { save_scope_as = harem_recipient } #The concubine
-
-	if = {
-		limit = {
-			has_demoted_or_divorced_opinion_trigger = {
-				TARGET = $CHARACTER$
-			}
-		}
-		spouse_demotion_effect = {
-			ACTOR = $CHARACTER$
-			RECIPIENT = $TARGET$
-		}
-	}
-	else = {
+	$CHARACTER$ = { save_scope_as = harem_actor } # The actor
+	$TARGET$ = { # The concubine
+		save_scope_as = harem_recipient
 		if = {
 			limit = {
-				is_landed = no
+				has_demoted_or_divorced_opinion_trigger = {
+					TARGET = $CHARACTER$
+				}
 			}
-			add_character_flag = {
-				flag = flag_new_consort
-				years = 2
+			spouse_demotion_effect = {
+				ACTOR = $CHARACTER$
+				RECIPIENT = $TARGET$
 			}
 		}
-		if = {
-			limit = {
-				has_variable = favor
+		else = {
+			if = {
+				limit = {
+					is_landed = no
+				}
+				add_character_flag = {
+					flag = flag_new_consort
+					years = 2
+				}
 			}
-			remove_variable = favor
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				remove_variable = favor
+			}
+			
+			# Now we can use the saved scopes for House Unity
+			add_clan_unity_interaction_effect = {
+				CHARACTER = scope:harem_actor
+				TARGET = scope:harem_recipient
+				VALUE = minor_unity_gain
+				DESC = clan_unity_concubinage.desc
+				REVERSE_NON_HOUSE_TARGET = no
+			}
+			child_demotion_effect = {
+				PARENT_1 = $CHARACTER$
+				PARENT_2 = $TARGET$
+			}
 		}
-		
-		# Now we can use the saved scopes for House Unity
-		add_clan_unity_interaction_effect = {
-			CHARACTER = scope:harem_actor
-			TARGET = scope:harem_recipient
-			VALUE = minor_unity_gain
-			DESC = clan_unity_concubinage.desc
-			REVERSE_NON_HOUSE_TARGET = no
+		stress_impact = {
+			shy = miniscule_stress_impact_gain
+			paranoid = miniscule_stress_impact_gain
+			craven = miniscule_stress_impact_gain
+			chaste = miniscule_stress_impact_gain
 		}
-		child_demotion_effect = {
-			PARENT_1 = $CHARACTER$
-			PARENT_2 = $TARGET$
-		}
-	}
-	stress_impact = {
-		shy = miniscule_stress_impact_gain
-		paranoid = miniscule_stress_impact_gain
-		craven = miniscule_stress_impact_gain
-		chaste = miniscule_stress_impact_gain
 	}
 }
 
@@ -5450,7 +5451,7 @@ demand_concubine_interaction_on_accept_effect = {
 				modifier = forced_me_concubine_marriage_opinion
 			}
 		}
-
+		
 		# Family members of victim are also angry that you've forced them into concubinage.
 		every_close_family_member = {
 			limit = { 
@@ -5488,14 +5489,14 @@ demand_concubine_interaction_on_accept_effect = {
 					modifier = relative_in_blasphemous_union_opinion
 				}
 			}
-		}	
+		}
 
 		# Not up to them anymore...
 		if = {
 			limit = { has_trait = celibate }
 			remove_trait = celibate
-		}			
-				
+		}
+		
 		# Spouses, if any exist, are also furious.
 		if = {
 			limit = {
@@ -5504,6 +5505,7 @@ demand_concubine_interaction_on_accept_effect = {
 				NOT = { any_spouse = { this = scope:actor } }
 			}
 			every_spouse = {
+				limit = { this != scope:actor }
 				hidden_effect = {
 					if = {
 						limit = {
@@ -5529,7 +5531,9 @@ demand_concubine_interaction_on_accept_effect = {
 				}
 				if = {
 					limit = {
-						NOT = { any_spouse = { this = scope:actor } }
+						NOT = {
+							this = scope:recipient
+						}
 					}
 					add_opinion = {
 						target = scope:actor
