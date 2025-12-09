@@ -5407,33 +5407,33 @@ marriage_legitimacy_rank_effect = {
 demand_concubine_interaction_on_accept_effect = {
 	scope:secondary_actor = {
 		trigger_event = marriage_interaction.0040
+		hidden_effect = {
+			if = {
+				limit = {
+					any_consort = {
+						NOT = { this = scope:actor }
+						count >= 1
+					}
+				}
+				every_consort = {
+					limit = {
+						NOT = { this = scope:actor }
+					}
+					scope:secondary_actor = {
+						former_consort_forced_concubine_effect = {
+							PARTNER = prev
+							CONSORT = scope:secondary_actor
+						}
+					}
+				}
+			}
+		}
 		if = {
 			# Victim is angry for being forced into concubinage.
 			limit = {
 				OR = {
 					has_trait = celibate
 					is_imprisoned = yes
-				}
-			}
-			hidden_effect = {
-				if = {
-					limit = {
-						any_consort = {
-							NOT = { this = scope:actor }
-							count >= 1
-						}
-					}
-					every_consort = {
-						limit = {
-							NOT = { this = scope:actor }
-						}
-						scope:secondary_actor = {
-							former_consort_forced_concubine_effect = {
-								PARTNER = prev
-								CONSORT = scope:secondary_actor
-							}
-						}
-					}
 				}
 			}
 			if = {
@@ -5455,7 +5455,7 @@ demand_concubine_interaction_on_accept_effect = {
 		# Family members of victim are also angry that you've forced them into concubinage.
 		every_close_family_member = {
 			limit = { 
-				NOT = { this = scope:actor } # Don't hate yourself.
+				this != scope:actor # Don't hate yourself.
 			}
 			custom = all_family_members
 			add_opinion = {
@@ -5502,7 +5502,7 @@ demand_concubine_interaction_on_accept_effect = {
 			limit = {
 				is_married = yes
 				#A check to make sure you haven't somehow married them during the consideration time
-				NOT = { any_spouse = { this = scope:actor } }
+				any_spouse = { this != scope:actor }
 			}
 			every_spouse = {
 				limit = { this != scope:actor }
@@ -5531,9 +5531,7 @@ demand_concubine_interaction_on_accept_effect = {
 				}
 				if = {
 					limit = {
-						NOT = {
-							this = scope:recipient
-						}
+						this != scope:recipient
 					}
 					add_opinion = {
 						target = scope:actor
@@ -5553,14 +5551,13 @@ demand_concubine_interaction_on_accept_effect = {
 			limit = {
 				is_concubine = yes
 				#A check to make sure you haven't somehow gotten them as concubine during the consideration time
-				NOT = { any_consort = { this = scope:actor } }
+				any_consort = { this != scope:actor }
 			}
 			this.concubinist = {
 				if = {
 					limit = {
-						NOT = {
-							this = scope:recipient
-						}
+						this != scope:recipient
+						this != scope:actor
 					}
 					add_opinion = {
 						target = scope:actor
@@ -5576,7 +5573,7 @@ demand_concubine_interaction_on_accept_effect = {
 			limit = {
 				exists = betrothed
 				#A check to make sure you haven't somehow gotten betrothed to them during the consideration time
-				NOT = { betrothed = scope:actor }
+				betrothed != scope:actor
 			}
 			break_betrothal = betrothed
 		}
@@ -5605,62 +5602,60 @@ demand_concubine_interaction_on_accept_effect = {
 			title = msg_concubine_offered_reversed_title
 			right_icon = scope:recipient
 			left_icon = scope:secondary_actor
-			scope:actor = {
-				make_concubine = scope:secondary_actor
-				if = { #Scale opinion gain a bit depending on how cool the concubine is
-					limit = {
-						scope:secondary_actor = {
-							OR = {
-								has_trait = beauty_good_2
-								has_trait = beauty_good_3
-								num_of_good_genetic_traits > 1
-								has_relation_lover = scope:actor
-								has_relation_soulmate = scope:actor
+			make_concubine = scope:secondary_actor
+			if = { #Scale opinion gain a bit depending on how cool the concubine is
+				limit = {
+					scope:secondary_actor = {
+						OR = {
+							has_trait = beauty_good_2
+							has_trait = beauty_good_3
+							num_of_good_genetic_traits > 1
+							has_relation_lover = scope:actor
+							has_relation_soulmate = scope:actor
+						}
+						trigger_if = {
+							limit = {
+								is_female = yes
 							}
-							trigger_if = {
-								limit = {
-									is_female = yes
-								}
-								age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-							}
+							age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
 						}
 					}
-					add_opinion = {
-						target = scope:recipient
-						modifier = grateful_opinion
-						opinion = 40
-					}
 				}
-				else_if = {
-					limit = {
-						scope:secondary_actor = {
-							OR = {
-								is_lowborn = no
-								has_trait = beauty_good_1
-								num_of_good_genetic_traits > 0
-								has_relation_friend = scope:actor
-								has_relation_best_friend = scope:actor
+				add_opinion = {
+					target = scope:recipient
+					modifier = grateful_opinion
+					opinion = 40
+				}
+			}
+			else_if = {
+				limit = {
+					scope:secondary_actor = {
+						OR = {
+							is_lowborn = no
+							has_trait = beauty_good_1
+							num_of_good_genetic_traits > 0
+							has_relation_friend = scope:actor
+							has_relation_best_friend = scope:actor
+						}
+						trigger_if = {
+							limit = {
+								is_female = yes
 							}
-							trigger_if = {
-								limit = {
-									is_female = yes
-								}
-								age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-							}
+							age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
 						}
 					}
-					add_opinion = {
-						target = scope:recipient
-						modifier = grateful_opinion
-						opinion = 30
-					}
 				}
-				else = {
-					add_opinion = {
-						target = scope:recipient
-						modifier = grateful_opinion
-						opinion = 20
-					}
+				add_opinion = {
+					target = scope:recipient
+					modifier = grateful_opinion
+					opinion = 30
+				}
+			}
+			else = {
+				add_opinion = {
+					target = scope:recipient
+					modifier = grateful_opinion
+					opinion = 20
 				}
 			}
 		}
