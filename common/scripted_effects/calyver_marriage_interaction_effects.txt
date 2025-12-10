@@ -5602,67 +5602,147 @@ demand_concubine_interaction_on_accept_effect = {
 		}
 	}
 
-	# Send us a notification about what we just did.
-	scope:actor = {
-		send_interface_toast = {
-			type = event_toast_effect_neutral
-			title = msg_concubine_offered_reversed_title
-			right_icon = scope:recipient
-			left_icon = scope:secondary_actor
-			make_concubine = scope:secondary_actor
-			if = { #Scale opinion gain a bit depending on how cool the concubine is
-				limit = {
-					scope:secondary_actor = {
-						OR = {
-							has_trait = beauty_good_2
-							has_trait = beauty_good_3
-							num_of_good_genetic_traits > 1
-							has_relation_lover = scope:actor
-							has_relation_soulmate = scope:actor
-						}
-						trigger_if = {
-							limit = {
-								is_female = yes
-							}
-							age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-						}
-					}
-				}
-				add_opinion = {
-					target = scope:recipient
-					modifier = grateful_opinion
-					opinion = 40
+	# Send us a notification about what we just did. If the secondary_actor somehow ended up as a consort (spouse/concubine) or betrothed to actor during the consideration time of this request we'll send a message about that instead (should only happen to AI tho)
+	if = {
+		limit = { #Invalidation message
+			scope:secondary_actor = {
+				OR = {
+					any_consort = { count >= 1 }
+					exists = betrothed
 				}
 			}
-			else_if = {
+		}
+		scope:secondary_actor = {
+			# If they've somehow already become entangled with the recipient we tell this
+			if = {
 				limit = {
-					scope:secondary_actor = {
-						OR = {
-							is_lowborn = no
-							has_trait = beauty_good_1
-							num_of_good_genetic_traits > 0
-							has_relation_friend = scope:actor
-							has_relation_best_friend = scope:actor
-						}
-						trigger_if = {
-							limit = {
-								is_female = yes
-							}
-							age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-						}
+					OR = {
+						is_consort_of = scope:actor
+						betrothed ?= scope:actor
 					}
 				}
-				add_opinion = {
-					target = scope:recipient
-					modifier = grateful_opinion
-					opinion = 30
+				scope:actor = {
+					save_scope_as = spouse
+				}
+			}
+			# Else, if they've married or gotten betrothed to someone else, we say this
+			else_if = {
+				limit = {
+					exists = betrothed
+				}
+				betrothed = {
+					save_scope_as = spouse
 				}
 			}
 			else = {
-				add_opinion = {
-					target = scope:recipient
-					modifier = grateful_opinion
-					opinion = 20
+				random_consort = {
+					limit = {
+						scope:secondary_actor.primary_spouse ?= this
+					}
+					alternative_limit = {
+						always = yes
+					}
+					save_scope_as = spouse
+				}
+			}
+		}
+		scope:actor = {
+			send_interface_toast = {
+				type = event_toast_effect_neutral
+				title = msg_concubine_offered_invalidated_recipient_title
+				right_icon = scope:actor
+				left_icon = scope:secondary_actor
+				if = {
+					limit = {
+						scope:secondary_actor = { is_consort_of = scope:spouse }
+					}
+					custom_tooltip = msg_concubine_demanded_invalidated_consort
+				}
+				else = {
+					custom_tooltip = msg_concubine_demanded_invalidated_betrothed
+				}
+			}
+		}
+		scope:recipient = {
+			send_interface_toast = {
+				type = event_toast_effect_neutral
+				title = msg_concubine_offered_invalidated_title
+				right_icon = scope:actor
+				left_icon = scope:secondary_actor
+				if = {
+					limit = {
+						scope:secondary_actor = { is_consort_of = scope:spouse }
+					}
+					custom_tooltip = msg_concubine_demanded_invalidated_consort
+				}
+				else = {
+					custom_tooltip = msg_concubine_demanded_invalidated_betrothed
+				}
+			}
+		}
+	}
+	else = { #Proper notification
+		scope:actor = {
+			send_interface_toast = {
+				type = event_toast_effect_neutral
+				title = msg_concubine_offered_reversed_title
+				right_icon = scope:recipient
+				left_icon = scope:secondary_actor
+				make_concubine = scope:secondary_actor
+				if = { #Scale opinion gain a bit depending on how cool the concubine is
+					limit = {
+						scope:secondary_actor = {
+							OR = {
+								has_trait = beauty_good_2
+								has_trait = beauty_good_3
+								num_of_good_genetic_traits > 1
+								has_relation_lover = scope:actor
+								has_relation_soulmate = scope:actor
+							}
+							trigger_if = {
+								limit = {
+									is_female = yes
+								}
+								age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+							}
+						}
+					}
+					add_opinion = {
+						target = scope:recipient
+						modifier = grateful_opinion
+						opinion = 40
+					}
+				}
+				else_if = {
+					limit = {
+						scope:secondary_actor = {
+							OR = {
+								is_lowborn = no
+								has_trait = beauty_good_1
+								num_of_good_genetic_traits > 0
+								has_relation_friend = scope:actor
+								has_relation_best_friend = scope:actor
+							}
+							trigger_if = {
+								limit = {
+									is_female = yes
+								}
+								age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+							}
+						}
+					}
+					add_opinion = {
+						target = scope:recipient
+						modifier = grateful_opinion
+						opinion = 30
+					}
+				}
+				else = {
+					add_opinion = {
+						target = scope:recipient
+						modifier = grateful_opinion
+						opinion = 20
+					}
 				}
 			}
 		}
