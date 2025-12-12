@@ -3613,6 +3613,132 @@ set_primary_spouse_effect = {
 make_primary_spouse_effect = {
 	$PARTNER$ = {
 		save_scope_as = demoter
+		#Legitimacy loss
+		if = {
+			limit = {
+				is_valid_for_legitimacy_change = yes
+			}
+			if = { #Do they have the same status?
+				limit = {
+					scope:previous_primary_spouse ?= {
+						is_lowborn = no
+					}
+					scope:new_primary_spouse = {
+						is_lowborn = no
+					}
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
+			else_if = { #Does the previous PS outrank the new one?
+				limit = {
+					scope:previous_primary_spouse ?= {
+						is_lowborn = no
+					}
+					scope:new_primary_spouse = {
+						is_lowborn = yes
+					}
+				}
+				add_legitimacy = {
+					value = medium_legitimacy_loss
+					multiply = primary_title.tier
+				}
+			}
+			else = {
+				#Legitimacy gain from marrying into a higher rank
+				marriage_legitimacy_rank_effect = {
+					RULER = $PARTNER$
+					OTHER = scope:new_primary_spouse
+				}
+			}
+		}
+		hidden_effect = {
+			every_consort = {
+				calyver_downgrade_active_consort_opinion_effect = yes
+				if = { #Opinions
+					limit = {
+						NOR = {
+							has_relation_best_friend = scope:new_primary_spouse
+							has_relation_friend = scope:new_primary_spouse
+							has_relation_soulmate = scope:new_primary_spouse
+							has_relation_lover = scope:new_primary_spouse
+
+							has_relation_best_friend = $PARTNER$
+							has_relation_soulmate = $PARTNER$
+
+							this = scope:new_primary_spouse
+							
+							AND = {
+								exists = scope:previous_primary_spouse
+								this = scope:previous_primary_spouse
+							}
+						}
+					}
+					if = { #Envy
+						limit = {
+							harem_politics_evil_consort_trigger = yes
+							trigger_if = {
+								limit = {
+									hp_accepts_harems = no
+								}
+								OR = {
+									has_trait = ambitious
+									has_trait = arrogant
+									has_trait = greedy
+								}
+							}
+							trigger_else = {
+								hp_accepts_harems = yes
+							}
+							NOT = {
+								has_opinion_modifier = {
+									modifier = envy_consort_opinion
+									target = scope:new_primary_spouse
+								}
+							}
+						}
+						add_opinion = {
+							target = scope:new_primary_spouse
+							modifier = envy_consort_opinion
+						}
+					}
+					if = { #AI
+						limit = {
+							is_ai = no
+						}
+						send_interface_toast = {
+							type = event_generic_bad
+							title = new_primary_spouse_t
+							right_icon = scope:new_primary_spouse
+							left_icon = scope:demoter
+							custom_tooltip = new_primary_spouse_desc
+							if = { #Stress
+								limit = {
+									scope:new_primary_spouse = {
+										harem_politics_evil_consort_trigger = yes
+									}
+								}
+								stress_impact = {
+									craven = minor_stress_impact_gain
+									paranoid = minor_stress_impact_gain
+								}
+							}
+						}
+					}
+					else_if = { #Stress
+						limit = {
+							is_ai = yes
+							scope:new_primary_spouse = {
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+						stress_impact = {
+							craven = minor_stress_impact_gain
+							paranoid = minor_stress_impact_gain
+						}
+					}
+				}
+			}
+		}
 	}
 	scope:new_primary_spouse = {
 		hidden_effect = {
@@ -3736,134 +3862,6 @@ make_primary_spouse_effect = {
 		else_if = {
 			limit = { $PARTNER$.primary_title.tier = tier_empire }
 			add_prestige = { value = major_prestige_gain }
-		}
-
-		$PARTNER$ = {
-			#Legitimacy loss
-			if = {
-				limit = {
-					is_valid_for_legitimacy_change = yes
-				}
-				if = { #Do they have the same status?
-					limit = {
-						scope:previous_primary_spouse ?= {
-							is_lowborn = no
-						}
-						scope:new_primary_spouse = {
-							is_lowborn = no
-						}
-					}
-					add_legitimacy = minor_legitimacy_loss
-				}
-				else_if = { #Does the previous PS outrank the new one?
-					limit = {
-						scope:previous_primary_spouse ?= {
-							is_lowborn = no
-						}
-						scope:new_primary_spouse = {
-							is_lowborn = yes
-						}
-					}
-					add_legitimacy = {
-						value = medium_legitimacy_loss
-						multiply = primary_title.tier
-					}
-				}
-				else = {
-					#Legitimacy gain from marrying into a higher rank
-					marriage_legitimacy_rank_effect = {
-						RULER = $PARTNER$
-						OTHER = scope:new_primary_spouse
-					}
-				}
-			}
-			hidden_effect = {
-				every_consort = {
-					if = { #Opinions
-						limit = {
-							NOR = {
-								has_relation_best_friend = scope:new_primary_spouse
-								has_relation_friend = scope:new_primary_spouse
-								has_relation_soulmate = scope:new_primary_spouse
-								has_relation_lover = scope:new_primary_spouse
-
-								has_relation_best_friend = $PARTNER$
-								has_relation_soulmate = $PARTNER$
-
-								this = scope:new_primary_spouse
-								
-								AND = {
-									exists = scope:previous_primary_spouse
-									this = scope:previous_primary_spouse
-								}
-							}
-						}
-						if = { #Envy
-							limit = {
-								harem_politics_evil_consort_trigger = yes
-								trigger_if = {
-									limit = {
-										hp_accepts_harems = no
-									}
-									OR = {
-										has_trait = ambitious
-										has_trait = arrogant
-										has_trait = greedy
-									}
-								}
-								trigger_else = {
-									hp_accepts_harems = yes
-								}
-								NOT = {
-									has_opinion_modifier = {
-										modifier = envy_consort_opinion
-										target = scope:new_primary_spouse
-									}
-								}
-							}
-							add_opinion = {
-								target = scope:new_primary_spouse
-								modifier = envy_consort_opinion
-							}
-						}
-						if = { #AI
-							limit = {
-								is_ai = no
-							}
-							send_interface_toast = {
-								type = event_generic_bad
-								title = new_primary_spouse_t
-								right_icon = scope:new_primary_spouse
-								left_icon = scope:demoter
-								custom_tooltip = new_primary_spouse_desc
-								if = { #Stress
-									limit = {
-										scope:new_primary_spouse = {
-											harem_politics_evil_consort_trigger = yes
-										}
-									}
-									stress_impact = {
-										craven = minor_stress_impact_gain
-										paranoid = minor_stress_impact_gain
-									}
-								}
-							}
-						}
-						else_if = { #Stress
-							limit = {
-								is_ai = yes
-								scope:new_primary_spouse = {
-									harem_politics_evil_consort_trigger = yes
-								}
-							}
-							stress_impact = {
-								craven = minor_stress_impact_gain
-								paranoid = minor_stress_impact_gain
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 }
