@@ -3512,6 +3512,12 @@ set_primary_spouse_effect = {
 					is_lowborn = no
 				}
 			}
+			if = { # Legitimacy loss
+				limit = {
+					is_valid_for_legitimacy_change = yes
+				}
+				add_legitimacy = minor_legitimacy_loss
+			}
 			every_vassal_or_below = {
 				limit = { has_vassal_stance = courtly }
 				custom = every_courtly_vassal
@@ -3539,6 +3545,15 @@ set_primary_spouse_effect = {
 					is_lowborn = yes
 				}
 			}
+			if = { # Legitimacy loss
+				limit = {
+					is_valid_for_legitimacy_change = yes
+				}
+				add_legitimacy = {
+					value = medium_legitimacy_loss
+					multiply = primary_title.tier
+				}
+			}
 			every_vassal_or_below = {
 				limit = { has_vassal_stance = courtly }
 				custom = every_courtly_vassal
@@ -3558,6 +3573,12 @@ set_primary_spouse_effect = {
 				}
 			}
 		}
+		else = { #Legitimacy gain from marrying into a higher rank
+			marriage_legitimacy_rank_effect = {
+				RULER = scope:actor
+				OTHER = scope:recipient
+			}
+		}
 	}
 	make_primary_spouse_effect = {
 		PARTNER = scope:actor
@@ -3568,44 +3589,6 @@ set_primary_spouse_effect = {
 make_primary_spouse_effect = {
 	$PARTNER$ = {
 		save_scope_as = demoter
-		#Legitimacy loss
-		if = {
-			limit = {
-				is_valid_for_legitimacy_change = yes
-			}
-			if = { #Do they have the same status?
-				limit = {
-					scope:previous_primary_spouse ?= {
-						is_lowborn = no
-					}
-					scope:new_primary_spouse = {
-						is_lowborn = no
-					}
-				}
-				add_legitimacy = minor_legitimacy_loss
-			}
-			else_if = { #Does the previous PS outrank the new one?
-				limit = {
-					scope:previous_primary_spouse ?= {
-						is_lowborn = no
-					}
-					scope:new_primary_spouse = {
-						is_lowborn = yes
-					}
-				}
-				add_legitimacy = {
-					value = medium_legitimacy_loss
-					multiply = primary_title.tier
-				}
-			}
-			else = {
-				#Legitimacy gain from marrying into a higher rank
-				marriage_legitimacy_rank_effect = {
-					RULER = $PARTNER$
-					OTHER = scope:new_primary_spouse
-				}
-			}
-		}
 		hidden_effect = {
 			every_consort = {
 				calyver_downgrade_active_consort_opinion_effect = yes
