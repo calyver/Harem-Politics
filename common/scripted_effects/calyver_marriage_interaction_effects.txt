@@ -3650,11 +3650,16 @@ make_primary_spouse_effect = {
 							custom_tooltip = new_primary_spouse_desc
 							if = { #Stress
 								limit = {
-									scope:new_primary_spouse = {
-										harem_politics_evil_consort_trigger = yes
+									OR = {
+										has_relation_rival = scope:new_primary_spouse
+										has_relation_nemesis = scope:new_primary_spouse
+										scope:new_primary_spouse = {
+											harem_politics_evil_consort_trigger = yes
+										}
 									}
 								}
 								stress_impact = {
+									base = minor_stress_impact_gain
 									craven = minor_stress_impact_gain
 									paranoid = minor_stress_impact_gain
 								}
@@ -3664,11 +3669,16 @@ make_primary_spouse_effect = {
 					else_if = { #Stress
 						limit = {
 							is_ai = yes
-							scope:new_primary_spouse = {
-								harem_politics_evil_consort_trigger = yes
+							OR = {
+								has_relation_rival = scope:new_primary_spouse
+								has_relation_nemesis = scope:new_primary_spouse
+								scope:new_primary_spouse = {
+									harem_politics_evil_consort_trigger = yes
+								}
 							}
 						}
 						stress_impact = {
+							base = minor_stress_impact_gain
 							craven = minor_stress_impact_gain
 							paranoid = minor_stress_impact_gain
 						}
@@ -3925,14 +3935,18 @@ calyver_update_active_consort_opinion_effect = {
 				}
 				# Stress
 				if = {
-					limit = {		
-						$SPOUSE$ = {
-							harem_politics_evil_consort_trigger = yes
+					limit = {
+						OR = {
+							has_relation_rival = $SPOUSE$
+							has_relation_nemesis = $SPOUSE$
+							$SPOUSE$ = {
+								harem_politics_evil_consort_trigger = yes
+							}
 						}
 					}
 					stress_impact = {
+						base = minor_stress_impact_gain
 						craven = minor_stress_impact_gain
-						shy = minor_stress_impact_gain
 						paranoid = minor_stress_impact_gain
 					}
 				}
@@ -3949,34 +3963,51 @@ calyver_downgrade_active_consort_opinion_effect = {
 				exists = scope:is_being_divorced
 				exists = scope:is_being_set_aside
 			}
+			exists = scope:previous_primary_spouse
+			this != scope:previous_primary_spouse
 		}
 		#Consorts will update their opinions on previous primary spouse
 		if = {
 			limit = {
-				exists = scope:previous_primary_spouse
-				this != scope:previous_primary_spouse
-			}
-			if = {
-				limit = {
-					has_opinion_modifier = {
-						target = scope:previous_primary_spouse
-						modifier = envy_consort_opinion
-					}
-				}
-				remove_opinion = {
+				has_opinion_modifier = {
 					target = scope:previous_primary_spouse
 					modifier = envy_consort_opinion
 				}
 			}
-			if = { #Craven consorts don't feel threatened by a despot primary spouse
-				limit = {
+			remove_opinion = {
+				target = scope:previous_primary_spouse
+				modifier = envy_consort_opinion
+			}
+		}
+		if = { #Craven consorts don't feel threatened by a despot primary spouse
+			limit = {
+				OR = {
+					has_relation_rival = scope:previous_primary_spouse
+					has_relation_nemesis = scope:previous_primary_spouse
 					scope:previous_primary_spouse = {
 						harem_politics_evil_consort_trigger = yes
 					}
 				}
+			}
+			if = {
+				limit = {
+					is_ai = no
+				}
+				send_interface_toast = {
+					type = event_generic_good
+					title = demoted_primary_spouse_t
+					right_icon = scope:previous_primary_spouse
+					stress_impact = {
+						base = minor_stress_impact_loss
+						craven = minor_stress_impact_loss
+						paranoid = minor_stress_impact_loss
+					}
+				}
+			}
+			else = {
 				stress_impact = {
+					base = minor_stress_impact_loss
 					craven = minor_stress_impact_loss
-					shy = minor_stress_impact_loss
 					paranoid = minor_stress_impact_loss
 				}
 			}
