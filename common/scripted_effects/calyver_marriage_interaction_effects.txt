@@ -3354,78 +3354,6 @@ set_primary_spouse_effect = {
 			scope:recipient = {
 				save_scope_as = new_primary_spouse
 			}
-			every_consort = {
-				limit = { this != scope:recipient }
-				calyver_downgrade_active_consort_opinion_effect = yes
-				#Consorts will update their opinions on new primary_spouse
-				if = {
-					limit = {
-						scope:recipient = {
-							NOT = { 
-								has_demoted_or_divorced_as_ps_opinion_trigger = {
-									TARGET = scope:actor
-								}
-							}
-						}
-						harem_politics_evil_consort_trigger = yes
-						NOR = {
-							has_relation_best_friend = scope:recipient
-							has_relation_friend = scope:recipient
-							has_relation_soulmate = scope:recipient
-							has_relation_lover = scope:recipient
-							has_relation_soulmate = scope:actor
-							has_opinion_modifier = {
-								modifier = forced_me_concubine_marriage_opinion
-								target = scope:actor
-							}
-							AND = {
-								exists = scope:previous_primary_spouse
-								this = scope:previous_primary_spouse
-							}
-						}
-						trigger_if = {
-							limit = {
-								hp_accepts_harems = no
-							}
-							OR = {
-								has_trait = ambitious
-								has_trait = arrogant
-								has_trait = greedy
-							}
-						}
-						trigger_else = {
-							hp_accepts_harems = yes
-						}
-						opinion = {
-							target = scope:recipient
-							value <= low_positive_opinion
-						}
-					}
-					add_opinion = {
-						target = scope:recipient
-						modifier = envy_consort_opinion
-					}
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							harem_politics_evil_consort_trigger = yes
-						}
-					}
-					stress_impact = {
-						craven = minor_stress_impact_gain
-						paranoid = minor_stress_impact_gain
-					}
-				}
-				# if = {
-				# 	limit = {
-				# 		NOT = {
-				# 			this = scope:recipient
-				# 		}
-				# 	}
-				# 	#Trigger event
-				# }
-			}
 			# Managing GC opinions
 			if = {
 				limit = {
@@ -3656,26 +3584,37 @@ make_primary_spouse_effect = {
 				calyver_downgrade_active_consort_opinion_effect = yes
 				if = { #Opinions
 					limit = {
-						NOR = {
-							has_relation_best_friend = scope:new_primary_spouse
-							has_relation_friend = scope:new_primary_spouse
-							has_relation_soulmate = scope:new_primary_spouse
-							has_relation_lover = scope:new_primary_spouse
-
-							has_relation_best_friend = $PARTNER$
-							has_relation_soulmate = $PARTNER$
-
-							this = scope:new_primary_spouse
-							
-							AND = {
-								exists = scope:previous_primary_spouse
-								this = scope:previous_primary_spouse
-							}
-						}
+						this != scope:new_primary_spouse
 					}
-					if = { #Envy
+					if = {
 						limit = {
+							scope:new_primary_spouse = {
+								NOT = { 
+									has_demoted_or_divorced_as_ps_opinion_trigger = {
+										TARGET = scope:actor
+									}
+								}
+							}
 							harem_politics_evil_consort_trigger = yes
+							NOR = {
+								has_relation_best_friend = scope:new_primary_spouse
+								has_relation_friend = scope:new_primary_spouse
+								has_relation_soulmate = scope:new_primary_spouse
+								has_relation_lover = scope:new_primary_spouse
+								has_relation_soulmate = scope:actor
+								has_opinion_modifier = {
+									modifier = forced_me_concubine_marriage_opinion
+									target = scope:actor
+								}
+								AND = {
+									exists = scope:previous_primary_spouse
+									this = scope:previous_primary_spouse
+								}
+								has_opinion_modifier = {
+									modifier = envy_consort_opinion
+									target = scope:new_primary_spouse
+								}
+							}
 							trigger_if = {
 								limit = {
 									hp_accepts_harems = no
@@ -3689,11 +3628,9 @@ make_primary_spouse_effect = {
 							trigger_else = {
 								hp_accepts_harems = yes
 							}
-							NOT = {
-								has_opinion_modifier = {
-									modifier = envy_consort_opinion
-									target = scope:new_primary_spouse
-								}
+							opinion = {
+								target = scope:new_primary_spouse
+								value <= low_positive_opinion
 							}
 						}
 						add_opinion = {
