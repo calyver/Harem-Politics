@@ -10615,9 +10615,11 @@ ep3_laamp_flavour_ewan.2021 = {
 						is_female = yes
 					}
 				}
-				save_scope_value_as = {
-					name = dominant_partner
-					value = flag:matrilineal
+				scope:follower_1 = {
+					save_scope_as = dominant_partner
+				}
+				scope:follower_2 = {
+					save_scope_as = partner
 				}
 			}
 			100 = {
@@ -10632,9 +10634,11 @@ ep3_laamp_flavour_ewan.2021 = {
 						is_male = yes
 					}
 				}
-				save_scope_value_as = {
-					name = dominant_partner
-					value = flag:patrilineal
+				scope:follower_1 = {
+					save_scope_as = dominant_partner
+				}
+				scope:follower_2 = {
+					save_scope_as = partner
 				}
 			}
 			100 = {
@@ -10649,9 +10653,11 @@ ep3_laamp_flavour_ewan.2021 = {
 						is_female = yes
 					}
 				}
-				save_scope_value_as = {
-					name = dominant_partner
-					value = flag:matrilineal
+				scope:follower_2 = {
+					save_scope_as = dominant_partner
+				}
+				scope:follower_1 = {
+					save_scope_as = partner
 				}
 			}
 			100 = {
@@ -10666,9 +10672,11 @@ ep3_laamp_flavour_ewan.2021 = {
 						is_male = yes
 					}
 				}
-				save_scope_value_as = {
-					name = dominant_partner
-					value = flag:patrilineal
+				scope:follower_2 = {
+					save_scope_as = dominant_partner
+				}
+				scope:follower_1 = {
+					save_scope_as = partner
 				}
 			}
 		}
@@ -10680,13 +10688,12 @@ ep3_laamp_flavour_ewan.2021 = {
 
 		if = {
 			limit = {
-				scope:dominant_partner = flag:matrilineal
-				scope:follower_1 = { is_female = yes }
+				scope:dominant_partner = { is_female = yes }
 			}
-			scope:follower_1 = { marry_matrilineal = scope:follower_2 }
+			scope:dominant_partner = { marry_matrilineal = scope:partner }
 		}
 		else = {
-			scope:follower_2 = { marry = scope:follower_1 }
+			scope:dominant_partner = { marry = scope:partner }
 		}
 
 		# No stress here.
@@ -10700,52 +10707,18 @@ ep3_laamp_flavour_ewan.2021 = {
 	option = {
 		name = ep3_laamp_flavour_ewan.2021.b
 		trigger = {
-			OR = {
-				AND = {
-					scope:dominant_partner = flag:matrilineal
-					OR = {
-						scope:follower_1 = {
-							is_female = yes
-							faith = { has_doctrine = doctrine_concubines }
-						}
-						scope:follower_2 = {
-							is_female = yes
-							faith = { has_doctrine = doctrine_concubines }
-						}
-					}
-				}
-				AND = {
-					scope:dominant_partner = flag:patrilineal
-					OR = {
-						scope:follower_1 = {
-							is_male = yes
-							faith = { has_doctrine = doctrine_concubines }
-						}
-						scope:follower_2 = {
-							is_male = yes
-							faith = { has_doctrine = doctrine_concubines }
-						}
-					}
-				}
+			scope:dominant_partner = {
+				hp_accepts_concubinage = yes
 			}
 		}
 
 		# Apply the concubinage.
-		if = {
-			limit = {
-				scope:dominant_partner = flag:matrilineal
-				scope:follower_1 = { is_female = yes }
-			}
-			scope:follower_1 = { make_concubine = scope:follower_2 }
-		}
-		else = {
-			scope:follower_2 = { make_concubine = scope:follower_1 }
-		}
+		scope:dominant_partner = { make_concubine = scope:partner }
 		# If your faith doesn't allow concubinage, pay piety for this.
 		if = {
 			limit = {
 				NOT = {
-					faith = { has_doctrine = doctrine_concubines }
+					faith = { has_doctrine_parameter = allows_concubinage }
 				}
 			}
 			add_piety = major_piety_loss
