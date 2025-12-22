@@ -828,70 +828,47 @@ harem_politics_valid_bride_show_subject_trigger = {
 		}
 	}
 }
-harem_politics_minimum_valid_subject_requirements_trigger = {
-	harem_politics_valid_bride_show_subject_trigger = {
-		OVERLORD = $OVERLORD$
-	}
-	trigger_if = { #For a nomad's subjects, what matters it their obedience.
+harem_politics_valid_tributary_requirements_trigger = {
+	harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+	trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
 		limit = {
-			$OVERLORD$ = {	
-				government_has_flag = government_is_nomadic
+			highest_held_title_tier = $OVERLORD$.highest_held_title_tier
+		}
+		OR = {
+			has_dread_level_towards = {
+				target = $OVERLORD$
+				level >= 1
+			}
+			opinion = {
+				target = $OVERLORD$
+				value >= 15
 			}
 		}
-		is_obedient_to = $OVERLORD$
 	}
-	trigger_else = { #Non-nomadic requirements
-		trigger_if = { #Tributary requirements
-			limit = {
-				NOT = {
-					is_vassal_or_below_of = $OVERLORD$
-				}
+	trigger_else_if = { #Else, they need to dread them more
+		limit = {
+			highest_held_title_tier > $OVERLORD$.highest_held_title_tier
+		}
+		OR = {
+			has_dread_level_towards = {
+				target = $OVERLORD$
+				level >= 2
 			}
-			trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
-				limit = {
-					highest_held_title_tier = $OVERLORD$.highest_held_title_tier
-				}
-				OR = {
-					has_dread_level_towards = {
-						target = $OVERLORD$
-						level >= 1
-					}
-					opinion = {
-						target = $OVERLORD$
-						value >= 15
-					}
-				}
-			}
-			trigger_else_if = { #Else, they need to dread them more
-				limit = {
-					highest_held_title_tier > $OVERLORD$.highest_held_title_tier
-				}
-				OR = {
-					has_dread_level_towards = {
-						target = $OVERLORD$
-						level >= 2
-					}
-					opinion = {
-						target = $OVERLORD$
-						value >= 30
-					}
-				}
-			}
-			trigger_else = { #Or lower tier than their suzerain
-				highest_held_title_tier < $OVERLORD$.highest_held_title_tier
-				opinion = {
-					target = $OVERLORD$
-					value >= -10
-				}
+			opinion = {
+				target = $OVERLORD$
+				value >= 30
 			}
 		}
-		trigger_else = { #Vassals are always valid
-			always = yes
+	}
+	trigger_else = { #Or lower tier than their suzerain
+		highest_held_title_tier < $OVERLORD$.highest_held_title_tier
+		opinion = {
+			target = $OVERLORD$
+			value >= -10
 		}
 	}
 }
 harem_politics_is_valid_bride_show_subject_trigger = {
-    harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
 	# Nomadic rulers
 	trigger_if = {
 		limit = {
@@ -899,35 +876,31 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 				government_has_flag = government_is_nomadic
 			}
 		}
-		trigger_if = {
-			limit = {
-				is_vassal_or_below_of = $OVERLORD$
-			}
-			is_obedient_to = $OVERLORD$
-		}
-		trigger_else = {
-			# Tributaries are always valid for nomadic rulers
-			always = yes
-		}
+		harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+		is_obedient_to = $OVERLORD$
 	}
-	# Admin rulers
+	# Vassals
 	trigger_else_if = {
 		limit = {
-			government_allows = administrative
+			is_vassal_or_below_of = $OVERLORD$
 		}
-		$OVERLORD$ = {
-			is_governor = no
-			is_independent_ruler = yes
-		}
-		trigger_if = { # Low Imperial Bureaucracy
-			limit = { 
-				$OVERLORD$ = { 
-					has_realm_law = imperial_bureaucracy_0 
-				} 
+		harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+		# Admin rulers
+		trigger_if = {
+			limit = {
+				$OVERLORD$ = {
+					government_allows = administrative
+				}
 			}
-			trigger_if = {
-				limit = {
-					is_vassal_or_below_of = $OVERLORD$
+			$OVERLORD$ = {
+				is_governor = no
+				is_independent_ruler = yes
+			}
+			trigger_if = { # Low Imperial Bureaucracy
+				limit = { 
+					$OVERLORD$ = { 
+						has_realm_law = imperial_bureaucracy_0 
+					} 
 				}
 				trigger_if = {
 					limit = {
@@ -949,19 +922,11 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					NOT = { is_powerful_vassal_of = $OVERLORD$ }
 				}
 			}
-			trigger_else = { #Nothing else to check
-				always = yes
-			}
-		}
-		trigger_else_if = { # Limited Imperial Bureaucracy
-			limit = { 
-				$OVERLORD$ = { 
-					has_realm_law = imperial_bureaucracy_1 
-				} 
-			}
-			trigger_if = {
-				limit = {
-					is_vassal_or_below_of = $OVERLORD$
+			trigger_else_if = { # Limited Imperial Bureaucracy
+				limit = { 
+					$OVERLORD$ = { 
+						has_realm_law = imperial_bureaucracy_1 
+					} 
 				}
 				trigger_if = {
 					limit = {
@@ -972,21 +937,21 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 					}
 				}
 				trigger_else = {
-					NOT = { is_powerful_vassal_of = $OVERLORD$ }
+					trigger_if = { # Kings and above
+						limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+						NOT = { is_powerful_vassal_of = $OVERLORD$ }
+					}
+					trigger_else = {
+						always = yes
+					}
 				}
 			}
-			trigger_else = { #Nothing else to check
+			trigger_else = { # High Imperial Bureaucracy+
 				always = yes
 			}
 		}
-		trigger_else = { # High Imperial Bureaucracy+
-			always = yes
-		}
-	}
-	# Feudal/Clan/Tribal/Others rulers
-	trigger_else = {
-		trigger_if = {
-			limit = { is_vassal_of = $OVERLORD$ }
+		# Feudal/Clan/Tribal/Others rulers
+		trigger_else = {
 			trigger_if = { # Low Authority
 				limit = {
 					$OVERLORD$ = {
@@ -1024,9 +989,10 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 			}
 			trigger_else = { always = yes }
 		}
-		trigger_else = {
-			always = yes
-		}
+	}
+	# Tributaries
+	trigger_else = {
+		harem_politics_valid_tributary_requirements_trigger = { OVERLORD = $OVERLORD$ }
 	}
 }
 
