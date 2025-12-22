@@ -788,6 +788,7 @@ recruit_royal_concubines_viable_county_trigger = {
 #####################################
 ## Bride Show subject requirements ##
 #####################################
+# Base trigger #
 harem_politics_valid_bride_show_subject_trigger = {
 	OR = {
 		is_vassal_of = $OVERLORD$
@@ -891,6 +892,7 @@ harem_politics_minimum_valid_subject_requirements_trigger = {
 }
 harem_politics_is_valid_bride_show_subject_trigger = {
     harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+	# Nomadic rulers
 	trigger_if = {
 		limit = {
 			$OVERLORD$ = {
@@ -908,6 +910,80 @@ harem_politics_is_valid_bride_show_subject_trigger = {
 			always = yes
 		}
 	}
+	# Admin rulers
+	trigger_else_if = {
+		limit = {
+			government_allows = administrative
+		}
+		$OVERLORD$ = {
+			is_governor = no
+			is_independent_ruler = yes
+		}
+		trigger_if = { # Low Imperial Bureaucracy
+			limit = { 
+				$OVERLORD$ = { 
+					has_realm_law = imperial_bureaucracy_0 
+				} 
+			}
+			trigger_if = {
+				limit = {
+					is_vassal_or_below_of = $OVERLORD$
+				}
+				trigger_if = {
+					limit = {
+						government_allows = administrative
+					}
+					house ?= {
+						is_dominant_family = no
+						is_powerful_family = no
+					}
+				}
+				trigger_else = {
+					trigger_if = {
+						limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+						tier_difference = {
+							target = $OVERLORD$
+							value <= -2
+						}
+					}
+					NOT = { is_powerful_vassal_of = $OVERLORD$ }
+				}
+			}
+			trigger_else = { #Nothing else to check
+				always = yes
+			}
+		}
+		trigger_else_if = { # Limited Imperial Bureaucracy
+			limit = { 
+				$OVERLORD$ = { 
+					has_realm_law = imperial_bureaucracy_1 
+				} 
+			}
+			trigger_if = {
+				limit = {
+					is_vassal_or_below_of = $OVERLORD$
+				}
+				trigger_if = {
+					limit = {
+						government_allows = administrative
+					}
+					house ?= {
+						is_dominant_family = no
+					}
+				}
+				trigger_else = {
+					NOT = { is_powerful_vassal_of = $OVERLORD$ }
+				}
+			}
+			trigger_else = { #Nothing else to check
+				always = yes
+			}
+		}
+		trigger_else = { # High Imperial Bureaucracy+
+			always = yes
+		}
+	}
+
     trigger_else_if = { # Dukes
         limit = { $OVERLORD$ = { highest_held_title_tier = tier_duchy } }
         trigger_if = { # Only sovereigns can host a bride show
