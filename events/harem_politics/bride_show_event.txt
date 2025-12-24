@@ -154,7 +154,7 @@ scripted_effect bride_show_next_candidate_effect = {
 						limit = {
 							any_close_or_extended_family_member = {
 								OR = {	
-									is_vassal_of = scope:liege
+									is_vassal_or_below_of = scope:liege
 									is_tributary_of = scope:liege
 								}
 							}
@@ -165,7 +165,7 @@ scripted_effect bride_show_next_candidate_effect = {
 						limit = {
 							any_close_or_extended_family_member = {
 								OR = {	
-									is_vassal_of = scope:liege
+									is_vassal_or_below_of = scope:liege
 									is_tributary_of = scope:liege
 								}
 							}
@@ -175,11 +175,22 @@ scripted_effect bride_show_next_candidate_effect = {
 					}
 					if = { #Child of powerful vassals are preferred
 						limit = {
-							any_close_family_member = {
-								OR = {
-									is_powerful_vassal_of = scope:liege
-									is_councillor_of = scope:liege
-									is_parent_of = scope:liege
+							OR = {
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = scope:liege
+										is_councillor_of = scope:liege
+										is_parent_of = scope:liege
+									}
+								}
+								trigger_if = {
+									limit = { scope:liege = { government_allows = administrative } }
+									house ?= {
+										OR = {
+											is_dominant_family = yes
+											is_powerful_family = yes
+										}
+									}
 								}
 							}
 						}
@@ -199,14 +210,25 @@ scripted_effect bride_show_next_candidate_effect = {
 					}
 					if = { #More if it was set
 						limit = {
-							any_close_family_member = {
-								OR = {
-									is_powerful_vassal_of = scope:liege
-									is_councillor_of = scope:liege
-									is_parent_of = scope:liege
-									AND = {
-										is_tributary_of = scope:liege
-										is_lowborn = no
+							OR = {
+								any_close_family_member = {
+									OR = {
+										is_powerful_vassal_of = scope:liege
+										is_councillor_of = scope:liege
+										is_parent_of = scope:liege
+										AND = {
+											is_tributary_of = scope:liege
+											is_lowborn = no
+										}
+									}
+								}
+								trigger_if = {
+									limit = { scope:liege = { government_allows = administrative } }
+									house ?= {
+										OR = {
+											is_dominant_family = yes
+											is_powerful_family = yes
+										}
 									}
 								}
 							}
@@ -1305,7 +1327,7 @@ scripted_effect bride_show_break_betrothal_candidate_effect = {
 					is_close_or_extended_family_of = root
 					AND	= {
 						agrees_with_bride_show = yes
-						is_vassal_of = root
+						is_vassal_or_below_of = root
 						has_vassal_stance = courtly
 					}
 				}
@@ -1882,7 +1904,7 @@ bride_show.0005 = {
 			if = {
 				limit = {
 					scope:potential_candidate.court_owner = {
-						is_vassal_of = root
+						is_vassal_or_below_of = root
 						has_vassal_stance = courtly
 						any_close_family_member = {
 							this = scope:potential_candidate
@@ -2057,16 +2079,25 @@ bride_show.0005 = {
 			modifier = { #More likely if the candidate is the child of a vassal
 				add = 35
 				scope:potential_candidate = {
-					any_close_family_member = { is_vassal_of = root }
+					any_close_family_member = { is_vassal_or_below_of = root }
 				}
 			}
 			modifier = { #More likely if the candidate is the child of a powerful vassal
 				add = 40
 				scope:potential_candidate = {
-					any_close_family_member = { 
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
+					OR = {
+						any_close_family_member = { 
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+								is_parent_of = root
+							}
+						}
+						trigger_if = {
+							limit = { root = { government_allows = administrative } }
+							house ?= {
+								is_powerful_family = yes
+							}
 						}
 					}
 				}
@@ -2416,7 +2447,7 @@ bride_show.0005 = {
 			if = {
 				limit = {
 					scope:potential_candidate.court_owner = {
-						is_vassal_of = root
+						is_vassal_or_below_of = root
 						has_vassal_stance = courtly
 						any_close_family_member = {
 							this = scope:potential_candidate
@@ -2516,16 +2547,25 @@ bride_show.0005 = {
 			modifier = { #More likely if the candidate is the child of a vassal
 				add = 5
 				scope:potential_candidate = {
-					any_close_family_member = { is_vassal_of = root }
+					any_close_family_member = { is_vassal_or_below_of = root }
 				}
 			}
 			modifier = { #More likely if the candidate is the child of a powerful vassal
 				add = 10
 				scope:potential_candidate = {
-					any_close_family_member = { 
-						OR = {
-							is_powerful_vassal_of = root
-							is_councillor_of = root
+					OR = {
+						any_close_family_member = { 
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+								is_parent_of = root
+							}
+						}
+						trigger_if = {
+							limit = { root = { government_allows = administrative } }
+							house ?= {
+								is_powerful_family = yes
+							}
 						}
 					}
 				}
@@ -2910,7 +2950,7 @@ bride_show.0005 = {
 							custom_tooltip = broken_betrothal_d
 							if = {
 								limit = {
-									is_vassal_of = root
+									is_vassal_or_below_of = root
 									has_vassal_stance = courtly
 									any_close_family_member = {
 										this = scope:potential_candidate
@@ -2981,7 +3021,7 @@ bride_show.0005 = {
 		if = {
 			limit = {
 				scope:potential_candidate.court_owner ?= {
-					is_vassal_of = root
+					is_vassal_or_below_of = root
 					has_vassal_stance = courtly
 					is_close_family_of = scope:potential_candidate
 					agrees_with_bride_show = yes
@@ -3053,7 +3093,10 @@ bride_show.0005 = {
 				scope:potential_candidate = {
 					NOT = {
 						any_close_family_member = { 
-							is_vassal_of = root 
+							OR = {
+								is_vassal_or_below_of = root 
+								is_tributary_of = root
+							}
 						}
 					}
 				}
@@ -3350,7 +3393,7 @@ bride_show.0007 = {
 		first_valid = {
 			triggered_desc = { #Vassals
 				trigger = {
-					is_vassal_of = scope:liege
+					is_vassal_or_below_of = scope:liege
 				}
 				desc = bride_show.0007.start_vassal.desc
 			}
@@ -3361,7 +3404,7 @@ bride_show.0007 = {
 		first_valid = {
 			triggered_desc = { #Vassal
 				trigger = {
-					is_vassal_of = scope:liege
+					is_vassal_or_below_of = scope:liege
 				}
 				desc = bride_show.0007.end_vassal.desc
 			}
@@ -3386,15 +3429,14 @@ bride_show.0007 = {
 		save_scope_as = subject_scope
 		if = {
 			limit = {
-				is_vassal_of = scope:liege
+				is_vassal_or_below_of = scope:liege
 			}
 			if = {
 				limit = {
 					OR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						hp_accepts_concubinage = yes
-						hp_accepts_polygamy = yes
+						hp_accepts_harems = yes
 					}
 				}
 				if = {
@@ -3415,15 +3457,7 @@ bride_show.0007 = {
 					}
 				}
 			}
-			else_if = {
-				limit = {
-					NOR = { 
-						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-						culture = { has_cultural_tradition = tradition_legalistic }
-						hp_accepts_concubinage = yes
-						hp_accepts_polygamy = yes
-					}
-				}
+			else = {
 				add_opinion = {
 					target = scope:liege
 					modifier = bride_show_vassal_opinion
@@ -3437,8 +3471,7 @@ bride_show.0007 = {
 					OR = { 
 						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 						culture = { has_cultural_tradition = tradition_legalistic }
-						hp_accepts_concubinage = yes
-						hp_accepts_polygamy = yes
+						hp_accepts_harems = yes
 					}
 				}
 				add_opinion = {
@@ -3447,15 +3480,7 @@ bride_show.0007 = {
 					opinion = -20
 				}
 			}
-			else_if = {
-				limit = {
-					NOR = { 
-						culture = { has_cultural_tradition = tradition_ep3_palace_politics }
-						culture = { has_cultural_tradition = tradition_legalistic }
-						hp_accepts_concubinage = yes
-						hp_accepts_polygamy = yes
-					}
-				}
+			else = {
 				add_opinion = {
 					target = scope:liege
 					modifier = bride_show_vassal_opinion
@@ -3469,7 +3494,7 @@ bride_show.0007 = {
 	option = {
 		name = bride_show.0007.a
 		trigger = {
-			is_vassal_of = scope:liege
+			is_vassal_or_below_of = scope:liege
 		}
 		scope:liege = {
 			add_to_variable_list = {
@@ -3487,7 +3512,7 @@ bride_show.0007 = {
 		name = bride_show.0007.b
 		trigger = {
 			NOT = {
-				is_vassal_of = scope:liege
+				is_vassal_or_below_of = scope:liege
 			}
 		}
 		# Accepting it is akin to being treated as a vassal
@@ -3629,7 +3654,7 @@ bride_show.0007 = {
 		name = bride_show.0007.c
 		trigger = {
 			NOT = {
-				is_vassal_of = scope:liege
+				is_vassal_or_below_of = scope:liege
 			}
 		}
 		if = {
@@ -3943,7 +3968,7 @@ bride_show.1000 = {
 				OVERLORD = scope:liege
 			}
 			NOT = {
-				is_vassal_of = scope:liege
+				is_vassal_or_below_of = scope:liege
 			}
 			count >= 1
 		}
@@ -3953,7 +3978,7 @@ bride_show.1000 = {
 			list = bride_show_preliminary_list
 			limit = {
 				NOT = {
-					is_vassal_of = scope:liege
+					is_vassal_or_below_of = scope:liege
 				}
 			}
 			order_by = {
@@ -4094,7 +4119,7 @@ bride_show.1001 = {
 		}
 		if = {
 			limit = {
-				any_vassal = {
+				any_vassal_or_below = {
 					harem_politics_is_valid_bride_show_subject_trigger = {
 						OVERLORD = scope:liege
 					}
@@ -4106,7 +4131,7 @@ bride_show.1001 = {
 					count >= 1
 				}
 			}
-			every_vassal = {
+			every_vassal_or_below = {
 				limit = {
 					harem_politics_is_valid_bride_show_subject_trigger = {
 						OVERLORD = scope:liege
