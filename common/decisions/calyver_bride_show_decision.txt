@@ -1186,10 +1186,20 @@ basic_recruit_concubines_decision = {
 			triggered_desc = {
 				trigger = {
 					is_female = no
+					allowed_to_marry_same_sex_trigger = no
+					religion = religion:islam_religion
 				}
 				desc = recruit_concubines_decision_desc_muslim_m
 			}
-			desc = recruit_concubines_decision_desc_muslim_f
+			triggered_desc = {
+				trigger = {
+					is_female = yes
+					allowed_to_marry_same_sex_trigger = no
+					religion = religion:islam_religion
+				}
+				desc = recruit_concubines_decision_desc_muslim_f
+			}
+			desc = recruit_concubines_decision_desc
 		}
 	}
 	selection_tooltip = {
@@ -1197,10 +1207,32 @@ basic_recruit_concubines_decision = {
 			triggered_desc = {
 			    trigger = {
 					is_female = yes
+					religion = religion:islam_religion
 			    }
 			    desc = recruit_concubines_selection_decision_tooltip_muslim_f
 			}
-			desc = recruit_concubines_selection_decision_tooltip_muslim_m
+			triggered_desc = {
+				trigger = {
+					is_female = no
+					religion = religion:islam_religion
+				}
+				desc = recruit_concubines_selection_decision_tooltip_muslim_m
+			}
+			triggered_desc = {
+				trigger = {
+					is_female = yes
+					allowed_to_marry_same_sex_trigger = no
+				}
+				desc = recruit_concubines_selection_decision_tooltip_f
+			}
+			triggered_desc = {
+				trigger = {
+					is_female = no
+					allowed_to_marry_same_sex_trigger = no
+				}
+				desc = recruit_concubines_selection_decision_tooltip_m
+			}
+			desc = recruit_concubines_selection_decision_tooltip
 		}
 	}
 
@@ -1213,10 +1245,17 @@ basic_recruit_concubines_decision = {
 	is_shown = {
 		recruit_concubines_trigger = yes
 		OR = {
+			# Admin vassals
 			AND = {
 				government_allows = administrative
 				is_independent_ruler = no
 			}
+			# Ceremonial regents
+			AND = {
+				tgp_realm_has_ceremonial_liege_trigger = yes
+				tgp_is_ceremonial_regent_trigger = yes
+			}
+			# Muslim rulers
 			highest_held_title_tier <= tier_duchy
 		}
 	}
@@ -1225,7 +1264,7 @@ basic_recruit_concubines_decision = {
 		is_adult = yes
 		is_at_war = no
 	}
-	
+
 	is_valid_showing_failures_only = {
 		is_available = yes
 		NOT = {
@@ -1264,8 +1303,8 @@ basic_recruit_concubines_decision = {
 			NOT = { has_character_modifier = mourner_modifier }
 		}
 	}
-	
-	
+
+
 	cooldown = { years = 3 }
 	
 	cost = {
@@ -1282,57 +1321,10 @@ basic_recruit_concubines_decision = {
 			# First check if there are available characters
 			if = {
 				limit = {
-					any_realm_province = {
-						recruit_concubines_viable_county_trigger = {
-							OVERLORD = scope:liege
-						}
-					}
-				}
-				every_realm_province = {
-					limit = {
-						recruit_concubines_viable_county_trigger = {
-							OVERLORD = scope:liege
-						}
-					}
-					add_to_temporary_list = pool_provinces
-				}
-			}
-			if = {
-				limit = {
 					scope:liege.religion = religion:islam_religion
 					any_neighboring_and_across_water_top_liege_realm_owner = {
-						OR = {
-							any_realm_province = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							any_courtier_or_guest = {
-								recruit_concubines_viable_candidate_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							any_vassal_or_below = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-							any_tributary = {
-								OR = {
-									any_courtier_or_guest = {
-										recruit_concubines_viable_candidate_trigger = {
-											OVERLORD = scope:liege
-										}
-									}
-									any_realm_province = {
-										recruit_concubines_viable_county_trigger = {
-											OVERLORD = scope:liege
-										}
-									}
-								}
-							}
+						any_realm_province = {
+							religion != religion:islam_religion
 						}
 					}
 				}
@@ -1341,17 +1333,13 @@ basic_recruit_concubines_decision = {
 					if = {
 						limit = {
 							any_realm_province = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
+								religion != religion:islam_religion
 								NOT = { is_in_list = pool_provinces }
 							}
 						}
 						ordered_realm_province = {
 							limit = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
+								religion != religion:islam_religion
 								NOT = { is_in_list = pool_provinces }
 							}
 							order_by = {
@@ -1395,57 +1383,15 @@ basic_recruit_concubines_decision = {
 								list = pool_candidates
 								count < 3
 							}
-							any_tributary = {
-								any_realm_province = {
-									recruit_concubines_viable_county_trigger = {
-										OVERLORD = scope:liege
-									}
-									NOT = { is_in_list = pool_provinces }
-								}
+							any_realm_province = {
+								religion != religion:islam_religion
 							}
 						}
-						every_tributary = {
-							ordered_realm_province = {
-								limit = {
-									recruit_concubines_viable_county_trigger = {
-										OVERLORD = scope:liege
-									}
-									NOT = { is_in_list = pool_provinces }
-								}
-								order_by = {
-									value = recruit_muslim_concubines_county_value
-								}
-								max = 2
-								min = 0
-								add_to_temporary_list = pool_provinces
+						every_realm_province = {
+							limit = {
+								religion != religion:islam_religion
 							}
-							if = {
-								limit = {
-									any_in_list = {
-										list = pool_provinces
-										any_pool_character = {
-											province = this
-											recruit_concubines_viable_candidate_trigger = {
-												OVERLORD = scope:liege
-											}
-										}
-										count > 0
-									}
-								}
-								every_in_list = {
-									list = pool_provinces
-						
-									every_pool_character = {
-										province = this
-										limit = {
-											recruit_concubines_viable_candidate_trigger = {
-												OVERLORD = scope:liege
-											}
-										}
-										add_to_list = pool_candidates
-									}
-								}
-							}
+							add_to_temporary_list = pool_provinces
 						}
 					}
 					# Courtier check
@@ -1507,70 +1453,23 @@ basic_recruit_concubines_decision = {
 									NOT = { is_in_list = pool_candidates }
 								}
 								min = 0
-								max = 4
-								add_to_list = pool_candidates
-							}
-						}
-					}
-					# Tributary check
-					if = {
-						limit = {
-							any_in_list = {
-								list = pool_candidates
-								count < 3
-							}
-							any_tributary = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-									NOT = { is_in_list = pool_candidates }
-								}
-							}
-						}
-						every_tributary = {
-							limit = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-									NOT = { is_in_list = pool_candidates }
-								}
-							}
-							ordered_courtier_or_guest = {
-								limit = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-									NOT = { is_in_list = pool_candidates }
-								}
-								min = 0
-								max = 4
+								max = 5
 								add_to_list = pool_candidates
 							}
 						}
 					}
 				}
 			}
-			else_if = {
-				limit = {
-					religion != religion:islam_religion
-					top_liege ?= {
-						religion != religion:islam_religion 
+			else = {
+				# First check own realm
+				if = {
+					limit = {
 						any_realm_province = {
-							recruit_concubines_viable_county_trigger = {
-								OVERLORD = scope:liege
-							}
 							NOT = { is_in_list = pool_provinces }
 						}
 					}
-				}
-				top_liege = {
 					ordered_realm_province = {
 						limit = {
-							recruit_concubines_viable_county_trigger = {
-								OVERLORD = scope:liege
-							}
 							NOT = { is_in_list = pool_provinces }
 						}
 						order_by = {
@@ -1583,6 +1482,12 @@ basic_recruit_concubines_decision = {
 							}
 							if = {
 								limit = {
+									culture = scope:liege.culture
+								}
+								add = 5
+							}
+							if = {
+								limit = {
 									any_pool_character = {
 										province = this
 										recruit_concubines_viable_candidate_trigger = {
@@ -1590,12 +1495,83 @@ basic_recruit_concubines_decision = {
 										}
 									}
 								}
-								add = 10
+								add = 20
 							}
 						}
-						max = 2
+						max = 3
 						min = 0
 						add_to_temporary_list = pool_provinces
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = pool_provinces
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								count > 0
+							}
+						}
+						every_in_list = {
+							list = pool_provinces
+				
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							religion != religion:islam_religion 
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+					}
+					every_liege_or_above = {
+						ordered_realm_province = {
+							limit = {
+								NOT = { is_in_list = pool_provinces }
+							}
+							order_by = {
+								value = 1
+								if = {
+									limit = {
+										faith = scope:liege.faith
+									}
+									add = 5
+								}
+								if = {
+									limit = {
+										any_pool_character = {
+											province = this
+											recruit_concubines_viable_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+										}
+									}
+									add = 10
+								}
+							}
+							max = 2
+							min = 0
+							add_to_temporary_list = pool_provinces
+						}
 					}
 				}
 			}
@@ -1667,7 +1643,7 @@ basic_recruit_concubines_decision = {
 		duchy = 48
 		kingdom = 36
 		empire = 36
-		hegemony = 0
+		hegemony = 36
 	}
 
 	ai_will_do = {
