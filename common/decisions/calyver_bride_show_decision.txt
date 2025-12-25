@@ -1436,6 +1436,70 @@ basic_recruit_concubines_decision = {
 						}
 					}
 				}
+				# Check your liege's realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							any_realm_province = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+					}
+					every_liege_or_above = {
+						limit = {
+							any_realm_province = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+						ordered_realm_province = {
+							limit = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+							order_by = {
+								value = recruit_muslim_concubines_county_value
+							}
+							max = 2
+							min = 0
+							add_to_temporary_list = pool_provinces
+						}
+						if = {
+							limit = {
+								any_in_list = {
+									list = pool_provinces
+									any_pool_character = {
+										province = this
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+										NOT = { is_in_list = pool_candidates }
+									}
+									count > 0
+								}
+							}
+							every_in_list = {
+								list = pool_provinces
+						
+								every_pool_character = {
+									province = this
+									limit = {
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+										NOT = { is_in_list = pool_candidates }
+									}
+									add_to_list = pool_candidates
+								}
+							}
+						}
+					}
+				}
 				# Own courtiers check for Muslims
 				if = {
 					limit = {
@@ -1497,6 +1561,154 @@ basic_recruit_concubines_decision = {
 							min = 0
 							max = 5
 							add_to_list = pool_candidates
+						}
+					}
+				}
+				# Fallback - check every province with eligible candidates
+				# Check your own realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_realm_province = {
+							any_pool_character = {
+								province = this
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+					}
+					every_realm_province = {
+						limit = {
+							any_pool_character = {
+								province = this
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+						every_pool_character = {
+							province = this
+							limit = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+							add_to_list = pool_candidates
+						}
+					}
+				}
+				# Check your liege's realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							any_realm_province = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+					}
+					every_liege_or_above = {
+						limit = {
+							any_realm_province = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+						every_realm_province = {
+							limit = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+				# Check neighboring realms
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_neighboring_and_across_water_top_liege_realm_owner = {
+							any_realm_province = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+					}
+					every_neighboring_and_across_water_top_liege_realm_owner = {
+						limit = {
+							any_realm_province = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+						every_realm_province = {
+							limit = {
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
 						}
 					}
 				}
@@ -1683,7 +1895,7 @@ basic_recruit_concubines_decision = {
 
 	ai_check_interval_by_tier = {
 		barony = 0
-		county = 60
+		county = 96
 		duchy = 48
 		kingdom = 36
 		empire = 36
