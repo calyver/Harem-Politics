@@ -1,8 +1,8 @@
 ﻿namespace = bride_show
 
-###################
-###Recruit Jarya###
-###################
+########################
+###Recruit Concubines###
+########################
 
 ## For dukes ##
 bride_show.2000 = {
@@ -91,7 +91,6 @@ bride_show.2000 = {
 			random_in_list = {
 				list = pool_candidates
 				limit = {
-					NOT = { is_courtier_of = scope:liege }
 					recruit_concubines_viable_candidate_trigger = {
 						OVERLORD = scope:liege
 					}
@@ -118,6 +117,12 @@ bride_show.2000 = {
 					}
 					modifier = { # Foreigners were more exotic
 						culture != scope:liege.culture
+						scope:liege.religion = religion:islam_religion
+						add = 5
+					}
+					modifier = { # Foreigners were more exotic
+						culture = scope:liege.culture
+						scope:liege.religion != religion:islam_religion
 						add = 5
 					}
 					modifier = {
@@ -136,7 +141,6 @@ bride_show.2000 = {
 							add = diplomacy
 							add = learning
 						}
-						add = 10
 					}
 					# Good genetics
 					modifier = { #Trait considerations
@@ -202,7 +206,7 @@ bride_show.2000 = {
 					# Health
 					modifier = {
 						is_healthy = yes
-						add = 20
+						add = 25
 					}
 					modifier = {
 						bride_show_beauty_important_parameters_trigger = yes
@@ -213,82 +217,127 @@ bride_show.2000 = {
 			}
 		}
 		if = {
-			limit = {	
-				scope:jarya.court_owner ?= {
-					NOR = {
-						this = scope:liege
-						is_close_family_of = scope:jarya
+			limit = {
+				exists = scope:jarya.court_owner
+			}
+			if = {
+				limit = {
+					scope:jarya.court_owner = {
+						NOT = { this = scope:liege }
+						is_ai = no
+					}
+					scope:jarya = {
+						is_of_major_or_minor_interest_trigger = { CHARACTER = scope:jarya.court_owner }
 					}
 				}
-			}
-			scope:jarya.court_owner = {
-				send_interface_toast = {
-					type = event_generic_bad
-					title = bride_show.2000.t.court_owner
-					right_icon = scope:liege
-					left_icon = scope:jarya
-					custom_tooltip = bride_show.2000.desc.court_owner
-					if = {
-						limit = {
-							scope:jarya = {
-								is_betrothed = yes
-							}
+				if = {
+					limit = {
+						scope:liege.faith.religion = religion:islam_religion
+					}
+					scope:jarya.court_owner = {
+						send_interface_toast = {
+							type = event_generic_bad
+							title = bride_show.2000.t.court_owner
+							right_icon = scope:liege
+							left_icon = scope:jarya
+							custom_tooltip = bride_show.2000.desc.court_owner
 						}
-						run_interaction = {
-							interaction = break_betrothal_interaction
-							actor = scope:jarya.court_owner
-							recipient = scope:jarya
-							execute_threshold = accept
-						}
+					}
+				}
+				else = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = bride_show.2000.t.court_owner
+						right_icon = scope:liege
+						left_icon = scope:jarya
+						custom_tooltip = bride_show.2000.desc.court_owner
 					}
 				}
 			}
 		}
-		if = {
-			limit = {
-				scope:jarya = {
+		scope:jarya = {
+			if = {
+				limit = {
 					is_betrothed = yes
+					betrothed ?= { this != scope:liege }
 				}
-			}
-			run_interaction = {
-				interaction = break_betrothal_interaction
-				actor = scope:jarya
-				recipient = scope:jarya.betrothed
-				execute_threshold = accept
+				scope:liege = {
+					save_scope_as = actor
+				}
+				betrothed = { trigger_event = marriage_interaction.0041 }
+				clear_saved_scope = actor
+				break_betrothal = betrothed
 			}
 		}
 		send_interface_toast = {
 			type = event_generic_neutral
 			title = bride_show.2000.t
 			right_icon = scope:jarya
-			scope:liege = {
-				add_courtier = scope:jarya
-			}
+			add_courtier = scope:jarya
 			scope:jarya = {
-				add_opinion = {
-					target = scope:liege
-					modifier = upset_opinion
-					opinion = -10
-				}
-				stress_impact = {
-					base = minor_stress_impact_gain
+				if = {
+					limit = {
+						scope:liege.faith.religion = religion:islam_religion
+					}
+					add_opinion = {
+						target = scope:liege
+						modifier = upset_opinion
+						opinion = -10
+					}
+					stress_impact = {
+						base = minor_stress_impact_gain
+					}
+					add_character_flag = {
+						flag = recently_abducted_concubine
+						years = 2
+					}
+					if = {
+						limit = {
+							any_close_family_member = {
+								NOT = { this = scope:liege }
+								count >= 1
+							}
+						}
+						every_close_family_member = {
+							limit = {
+								NOT = { this = scope:liege }
+							}
+							add_opinion = {
+								target = scope:liege
+								modifier = abducted_close_family_crime
+							}
+							if = {
+								limit = {
+									is_ai = no
+								}
+								send_interface_toast = {
+									type = event_generic_bad
+									title = bride_show.2000.t.close_family
+									right_icon = scope:liege
+									left_icon = scope:jarya
+									custom_tooltip = bride_show.2000.desc.court_owner
+								}
+							}
+						}
+					}
 				}
 				#In case they received a marriage proposal already
 				# add_character_flag = {
 				# 	flag = has_been_offered_as_concubine
 				# 	days = 1
 				# }
-				add_character_flag = {
-					flag = recently_abducted_concubine
-					years = 2
-				}
 				remove_from_list = pool_candidates
 				add_character_flag = {
 					flag = blocked_from_leaving
 					years = 5
 				}
 				hidden_effect = {
-					return_to_court = yes
+					if = {
+						limit = {
+							NOT = { is_courtier_of = scope:liege }
+						}
+						return_to_court = yes
+					}
 					# Chance of conversion to liege's faith
 					if = {
 						limit = {
@@ -383,35 +432,6 @@ bride_show.2000 = {
 								}
 							}
 							set_character_faith = scope:liege.faith
-						}
-					}
-					if = {
-						limit = {
-							any_close_family_member = {
-								NOT = { this = scope:liege }
-								count >= 1
-							}
-						}
-						every_close_family_member = {
-							limit = {
-								NOT = { this = scope:liege }
-							}
-							add_opinion = {
-								target = scope:liege
-								modifier = abducted_close_family_crime
-							}
-							if = {
-								limit = {
-									is_ai = no
-								}
-								send_interface_toast = {
-									type = event_generic_bad
-									title = bride_show.2000.t.close_family
-									right_icon = scope:liege
-									left_icon = scope:jarya
-									custom_tooltip = bride_show.2000.desc.court_owner
-								}
-							}
 						}
 					}
 					# They should be lowborn
