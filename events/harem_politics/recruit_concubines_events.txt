@@ -94,6 +94,7 @@ bride_show.2000 = {
 					recruit_concubines_viable_candidate_trigger = {
 						OVERLORD = scope:liege
 					}
+					NOT = { is_courtier_of = scope:liege }
 				}
 				weight = {
 					base = 50
@@ -218,39 +219,40 @@ bride_show.2000 = {
 		}
 		if = {
 			limit = {
-				exists = scope:jarya.court_owner
+				scope:jarya.court_owner ?= {
+					NOT = { this = scope:liege }
+					is_ai = no
+				}
+				scope:jarya = {
+					is_of_major_or_minor_interest_trigger = { CHARACTER = scope:jarya.court_owner }
+				}
 			}
 			if = {
 				limit = {
-					scope:jarya.court_owner = {
-						NOT = { this = scope:liege }
-						is_ai = no
-					}
-					scope:jarya = {
-						is_of_major_or_minor_interest_trigger = { CHARACTER = scope:jarya.court_owner }
-					}
+					scope:liege.faith.religion = religion:islam_religion
 				}
-				if = {
-					limit = {
-						scope:liege.faith.religion = religion:islam_religion
-					}
-					scope:jarya.court_owner = {
-						send_interface_toast = {
-							type = event_generic_bad
-							title = bride_show.2000.t.court_owner
-							right_icon = scope:liege
-							left_icon = scope:jarya
-							custom_tooltip = bride_show.2000.desc.court_owner
-						}
-					}
-				}
-				else = {
+				scope:jarya.court_owner = {
 					send_interface_toast = {
-						type = event_generic_neutral
-						title = bride_show.2000.t.court_owner
+						type = event_generic_bad
+						title = bride_show.2000.t.court_owner.abducted
 						right_icon = scope:liege
 						left_icon = scope:jarya
-						custom_tooltip = bride_show.2000.desc.court_owner
+						custom_tooltip = bride_show.2000.desc.court_owner.abducted
+					}
+				}
+			}
+			else = {
+				scope:jarya.court_owner = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = bride_show.2000.t.court_owner.recruited
+						right_icon = scope:liege
+						left_icon = scope:jarya
+						show_as_tooltip = {
+							scope:liege = {
+								add_courtier = scope:jarya
+							}
+						}
 					}
 				}
 			}
@@ -287,10 +289,6 @@ bride_show.2000 = {
 					stress_impact = {
 						base = minor_stress_impact_gain
 					}
-					add_character_flag = {
-						flag = recently_abducted_concubine
-						years = 2
-					}
 					if = {
 						limit = {
 							any_close_family_member = {
@@ -315,11 +313,15 @@ bride_show.2000 = {
 									title = bride_show.2000.t.close_family
 									right_icon = scope:liege
 									left_icon = scope:jarya
-									custom_tooltip = bride_show.2000.desc.court_owner
+									custom_tooltip = bride_show.2000.desc.court_owner.abducted
 								}
 							}
 						}
 					}
+				}
+				add_character_flag = {
+					flag = recently_abducted_concubine
+					years = 2
 				}
 				#In case they received a marriage proposal already
 				# add_character_flag = {
@@ -332,12 +334,7 @@ bride_show.2000 = {
 					years = 5
 				}
 				hidden_effect = {
-					if = {
-						limit = {
-							NOT = { is_courtier_of = scope:liege }
-						}
-						return_to_court = yes
-					}
+					return_to_court = yes
 					# Chance of conversion to liege's faith
 					if = {
 						limit = {
