@@ -883,14 +883,19 @@ bride_show.3001 = {
 }
 
 ##Managing the eligible subjects##
-scripted_trigger quick_valid_candidate_for_recruitment_trigger = {
-	can_take_as_concubine_character_trigger = { CHARACTER = $CHARACTER$ }
-	any_consort = {
-		count = 0
+scripted_trigger is_valid_candidate_for_recruitment_trigger = {
+	royal_concubines_eligible_candidate_trigger = {
+		OVERLORD = $OVERLORD$
 	}
-	can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-		CHARACTER = $CHARACTER$
-		RECEIVER = $CHARACTER$
+	trigger_if = {
+		limit = {
+			exists = court_owner
+		}
+		court_owner = {
+			harem_politics_valid_bride_show_subject_trigger = {
+				OVERLORD = $OVERLORD$
+			}
+		}
 	}
 }
 scripted_trigger recruit_concubines_eligible_subject_trigger = {
@@ -1580,7 +1585,7 @@ bride_show.3003 = {
 			allowed_more_concubines = yes
 			scope:potential_candidate ?= {
 				NOT = { is_courtier_of = root }
-				quick_valid_candidate_for_recruitment_trigger = { CHARACTER = root }
+				is_valid_candidate_for_recruitment_trigger = { OVERLORD = root }
 			}
 			exists = scope:gold_to_pay
 		}
@@ -1805,7 +1810,9 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 				limit = {
 					any_in_list = {
 						list = potential_candidates_list
-						can_still_participate_in_concubine_recruitment_trigger = no
+						royal_concubines_eligible_candidate_trigger = {
+							OVERLORD = scope:liege
+						}
 						count > 0
 					}
 				}
@@ -1813,6 +1820,11 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 					list = potential_candidates_list
 					limit = {
 						can_still_participate_in_concubine_recruitment_trigger = no
+						NOT = {
+							royal_concubines_eligible_candidate_trigger = {
+								OVERLORD = scope:liege
+							}
+						}
 					}
 					remove_from_list = potential_candidates_list
 				}
@@ -2447,10 +2459,7 @@ bride_show.3005 = {
 			allowed_concubines = yes
 			allowed_more_concubines = yes
 			scope:potential_candidate = {
-				any_consort = {
-					count = 0
-				}
-				quick_valid_candidate_for_recruitment_trigger = { CHARACTER = scope:liege }
+				is_valid_candidate_for_recruitment_trigger = { OVERLORD = scope:liege }
 			}
 		}
 
