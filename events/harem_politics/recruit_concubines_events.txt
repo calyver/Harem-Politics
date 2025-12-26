@@ -1040,13 +1040,25 @@ scripted_effect add_to_candidate_variable_list_effect = {
 			if = {
 				limit = {
 					exists = betrothed
-					exists = court_owner
 				}
-				court_owner = {
+				if = {
+					limit = {
+						exists = court_owner
+					}
+					court_owner = {
+						run_interaction = {
+							interaction = break_betrothal_interaction
+							actor = $CANDIDATE$.court_owner
+							recipient = $CANDIDATE$
+							execute_threshold = accept
+						}
+					}
+				}
+				else = {
 					run_interaction = {
 						interaction = break_betrothal_interaction
-						actor = $CANDIDATE$.court_owner
-						recipient = $CANDIDATE$
+						actor = $CANDIDATE$
+						recipient = $CANDIDATE$.betrothed
 						execute_threshold = accept
 					}
 				}
@@ -1807,18 +1819,11 @@ bride_show.3003 = {
 	option = {
 		name = bride_show.3003.c
 		trigger = {
+			allowed_concubines = yes
+			allowed_more_concubines = yes
 			scope:potential_candidate ?= {
 				NOT = { is_courtier_of = root }
-				royal_concubines_eligible_candidate_trigger = {
-					OVERLORD = scope:liege
-				}
-				# Skills appear here because otherwise the option to recruit would show the option available because the vassal has high skills
-				trigger_if = {
-					limit = {
-						scope:liege = { has_variable = personality_skills_important }
-					}
-					min_personality_and_skills_trigger = yes
-				}
+				can_become_concubine_of_character_trigger = { CHARACTER = root }
 			}
 			exists = scope:gold_to_pay
 		}
