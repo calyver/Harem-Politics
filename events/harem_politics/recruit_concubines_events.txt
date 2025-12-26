@@ -877,7 +877,7 @@ bride_show.3001 = {
 		# Manage your subjects #
 		trigger_event = {
 			id = bride_show.3002
-			days = { 5 10 }
+			days = { 4 9 }
 		}
 	}
 }
@@ -990,12 +990,15 @@ bride_show.3002 = {
 				}
 				max = scope:max_subject_value
 				min = 0
-				trigger_event = bride_show.3003
+				trigger_event = {
+					id = bride_show.3003
+					days = { 1 2 }
+				}
 			}
 		}
 		trigger_event = {
 			id = bride_show.3004
-			days = 10
+			days = 11
 		}
 	}
 }
@@ -1069,7 +1072,7 @@ bride_show.3003 = {
 						is_courtier_of = root
 					}
 					NOT = {
-						exists = scope:jarya_1
+						exists = scope:potential_candidate
 					}
 				}
 				desc = bride_show.3003.courtier.desc
@@ -1079,9 +1082,7 @@ bride_show.3003 = {
 					scope:jarya = {
 						NOT = { is_courtier_of = root }
 					}
-					NOT = {
-						exists = scope:jarya_1
-					}
+					exists = scope:potential_candidate
 				}
 				desc = bride_show.3003.recruit.desc
 			}
@@ -1090,7 +1091,7 @@ bride_show.3003 = {
 					scope:jarya = {
 						is_courtier_of = root
 					}
-					exists = scope:jarya_1
+					exists = scope:potential_candidate
 				}
 				desc = bride_show.3003.fallback.desc
 			}
@@ -1108,9 +1109,11 @@ bride_show.3003 = {
 	}
 	lower_center_portrait = {
 		trigger = {
-			exists = scope:jarya_1
+			scope:potential_candidate ?= {
+				this != scope:jarya
+			}
 		}
-		character = scope:jarya_1
+		character = scope:potential_candidate
 	}
 
 	trigger = {
@@ -1257,55 +1260,6 @@ bride_show.3003 = {
 			if = {
 				limit = {
 					any_in_list = {
-						list = pool_provinces
-						any_pool_character = {
-							province = this
-							royal_concubines_eligible_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-							# Skills appear here because otherwise the option to recruit would show the option available because the vassal has high skills
-							trigger_if = {
-								limit = {
-									scope:liege = { has_variable = personality_skills_important }
-								}
-								min_personality_and_skills_trigger = yes
-							}
-							NOR = {
-								has_character_flag = concubine_offer_in_progress
-								is_in_list = pool_candidates
-							}
-						}
-						count > 0
-					}
-				}
-				every_in_list = {
-					list = pool_provinces
-		
-					every_pool_character = {
-						province = this
-						limit = {
-							royal_concubines_eligible_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-							# Skills appear here because otherwise the option to recruit would show the option available because the vassal has high skills
-							trigger_if = {
-								limit = {
-									scope:liege = { has_variable = personality_skills_important }
-								}
-								min_personality_and_skills_trigger = yes
-							}
-							NOR = {
-								has_character_flag = concubine_offer_in_progress
-								is_in_list = pool_candidates
-							}
-						}
-						add_to_temporary_list = pool_candidates
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_in_list = {
 						list = pool_candidates
 						NOT = { has_character_flag = concubine_offer_in_progress }
 						count >= 1
@@ -1346,16 +1300,14 @@ bride_show.3003 = {
 					}
 					if = {
 						limit = {
-							NOT = { exists = scope:jarya}
+							NOT = { exists = scope:jarya }
 						}
 						save_scope_as = jarya
 					}
-					else = {
-						save_scope_as = jarya_1
-					}
+					save_scope_as = potential_candidate
 					add_character_flag = {
 						flag = concubine_offer_in_progress
-						days = 10
+						days = 15
 					}
 				}
 			}
@@ -1372,58 +1324,28 @@ bride_show.3003 = {
 						add = recruit_royal_concubines_value
 					}
 					max = 1
+					min = 0
 					if = {
 						limit = {
-							NOT = { exists = scope:jarya}
+							NOT = { exists = scope:jarya }
 						}
 						save_scope_as = jarya
 					}
-					else = {
-						save_scope_as = jarya_1
-					}
+					save_scope_as = potential_candidate  
 					add_character_flag = {
 						flag = concubine_offer_in_progress
-						days = 10
+						days = 15
 					}
 				}
 			}
 			if = {
 				limit = {
-					OR = {
-						AND = {
-							scope:jarya = {
-								NOT = { is_courtier_of = root }
-							}
-							NOT = { exists = scope:jarya_1 }
-						}
-						AND = {
-							scope:jarya_1 ?= {
-								NOT = { is_courtier_of = root }
-							}
-						}
-					}
+					exists = scope:potential_candidate
 				}
-				if = {
-					limit = {
-						scope:jarya = {
-							NOT = { is_courtier_of = root }
-						}
-					}
-					scope:jarya = {
-						save_scope_as = potential_candidate
-					}
-				}
-				else = {
-					scope:jarya_1 = {
-						save_scope_as = potential_candidate
-					}
-				}
-				hidden_effect = {
-					scope:potential_candidate = {
-						save_scope_value_as = {
-							name = gold_to_pay
-							value = recruit_concubines_payment_value
-						}
+				scope:potential_candidate = {
+					save_scope_value_as = {
+						name = gold_to_pay
+						value = recruit_concubines_payment_value
 					}
 				}
 			}
