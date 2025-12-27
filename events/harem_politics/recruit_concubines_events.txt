@@ -1213,6 +1213,9 @@ bride_show.3003 = {
 											}
 											min_personality_and_skills_trigger = yes
 										}
+										NOT = {
+											has_character_flag = concubine_offer_in_progress
+										}
 									}
 								}
 								add = 10
@@ -1373,15 +1376,8 @@ bride_show.3003 = {
 		trigger = {
 			scope:jarya = {
 				is_courtier_of = root
-				royal_concubines_eligible_candidate_trigger = {
+				is_valid_candidate_for_recruitment_trigger = {
 					OVERLORD = scope:liege
-				}
-				# Skills appear here because otherwise the option to recruit would show the option available because the vassal has high skills
-				trigger_if = {
-					limit = {
-						scope:liege = { has_variable = personality_skills_important }
-					}
-					min_personality_and_skills_trigger = yes
 				}
 			}
 		}
@@ -1473,13 +1469,6 @@ bride_show.3003 = {
 				NOT = { is_courtier_of = root }
 				royal_concubines_eligible_candidate_trigger = {
 					OVERLORD = scope:liege
-				}
-				# Skills appear here because otherwise the option to recruit would show the option available because the vassal has high skills
-				trigger_if = {
-					limit = {
-						scope:liege = { has_variable = personality_skills_important }
-					}
-					min_personality_and_skills_trigger = yes
 				}
 			}
 			exists = scope:gold_to_pay
@@ -1585,7 +1574,7 @@ bride_show.3003 = {
 			allowed_more_concubines = yes
 			scope:potential_candidate ?= {
 				NOT = { is_courtier_of = root }
-				is_valid_candidate_for_recruitment_trigger = { OVERLORD = root }
+				bride_show_viable_consort_trigger = { OVERLORD = root }
 			}
 			exists = scope:gold_to_pay
 		}
@@ -1810,8 +1799,10 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 				limit = {
 					any_in_list = {
 						list = potential_candidates_list
-						royal_concubines_eligible_candidate_trigger = {
-							OVERLORD = scope:liege
+						NOT = {
+							royal_concubines_eligible_candidate_trigger = {
+								OVERLORD = scope:liege
+							}
 						}
 						count > 0
 					}
@@ -2257,12 +2248,11 @@ bride_show.3005 = {
 					scope:potential_candidate = {
 						diplomacy >= average_skill_level
 						learning >= average_skill_level
-						OR = {
-							AND = {
+						trigger_if = {
+							limit = {
 								can_be_knight_trigger = { ARMY_OWNER = root }
-								prowess >= average_skill_level
 							}
-							NOT = { can_be_knight_trigger = { ARMY_OWNER = root } }
+							prowess >= average_skill_level
 						}
 					}
 				}
@@ -2354,6 +2344,7 @@ bride_show.3005 = {
 		}
 		if = {
 			limit = {
+				NOT = { exists = scope:harem_head }
 				any_courtier = {
 					is_head_of_the_harem_trigger = {
 						LIEGE = scope:liege
@@ -2406,6 +2397,7 @@ bride_show.3005 = {
 					add = age
 				}
 				max = 1
+				min = 0
 				save_scope_as = harem_head
 			}
 		}
@@ -2735,6 +2727,18 @@ bride_show.3005 = {
 	# Recruit to court
 	option = { # Recruit to court and break betrothal
 		name = bride_show.0005.c
+		trigger = {
+			trigger_if = {
+				limit = {
+					exists = scope:potential_candidate.court_owner
+				}
+				scope:potential_candidate.court_owner = {
+					harem_politics_valid_bride_show_subject_trigger = {
+						OVERLORD = scope:liege
+					}
+				}
+			}
+		}
 
 		# Reward
 		if = {
@@ -2796,22 +2800,21 @@ bride_show.3005 = {
 		}
 		
 		hidden_effect = {
-			if = {
-				limit = {
-					scope:potential_candidate = {
+			scope:potential_candidate = {
+				if = {
+					limit = {
 						is_hostage = yes
 					}
-				}
-				scope:potential_candidate = {
 					return_hostage = yes
 				}
-			}
-		}
-		add_courtier = scope:potential_candidate
-		scope:potential_candidate = {
-			hidden_effect = {
+				scope:harem_liege = {
+					add_courtier = scope:potential_candidate
+				}
 				return_to_court = yes
 			}
+		}
+		show_as_tooltip = { 
+			add_courtier = scope:potential_candidate
 		}
 		
 		ai_chance = {
