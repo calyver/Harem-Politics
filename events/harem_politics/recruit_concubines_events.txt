@@ -1591,6 +1591,17 @@ bride_show.3003 = {
 				limit = {
 					allowed_more_concubines = yes
 				}
+				if = {
+					limit = {
+						exists = scope:concubine.betrothed
+					}
+					run_interaction = {
+						interaction = break_betrothal_interaction
+						actor = root
+						recipient = scope:concubine.betrothed
+						execute_threshold = accept
+					}
+				}
 				run_interaction = {
 					interaction = make_concubine_interaction
 					actor = root
@@ -1687,6 +1698,51 @@ bride_show.3003 = {
 				gold <= scope:gold_to_pay
 				factor = 0
 			}
+		}
+	}
+
+	# Recruit to court
+	option = { # Recruit to court and break betrothal
+		name = bride_show.0005.c
+		trigger = {
+			exists = scope:gold_to_pay
+			exists = scope:potential_candidate
+		}
+
+		# Reward
+		remove_short_term_gold = scope:gold_to_pay
+		
+		hidden_effect = {
+			scope:potential_candidate = {
+				if = {
+					limit = {
+						is_hostage = yes
+					}
+					return_hostage = yes
+				}
+				root = {
+					add_courtier = scope:potential_candidate
+				}
+				return_to_court = yes
+				if = {
+					limit = {
+						exists = betrothed
+					}
+					run_interaction = {
+						interaction = break_betrothal_interaction
+						actor = root
+						recipient = scope:potential_candidate.betrothed
+						execute_threshold = accept
+					}
+				}
+			}
+		}
+		show_as_tooltip = { 
+			add_courtier = scope:potential_candidate
+		}
+		
+		ai_chance = {
+			base = 0
 		}
 	}
 
