@@ -5322,9 +5322,9 @@ concubine_offer_on_accept_effect = {
 					}
 				}
 				gain_influence_harem_politics_effect = {
-					RECIPIENT = scope:actor
-					CHARACTER = scope:recipient
-					TARGET = scope:secondary_recipient
+					ACTOR = scope:actor
+					RECIPIENT = scope:recipient
+					CONCUBINE = scope:secondary_recipient
 				}
 			}
 		}
@@ -5933,28 +5933,34 @@ child_demotion_effect = {
 }
 
 gain_influence_harem_politics_effect = {
-	# RECIPIENT is the character receiving influence
-	# CHARACTER is the character receiving the TARGET
-	# TARGET is offered consort
-	$RECIPIENT$ = {
+	# ACTOR is the character receiving influence
+	# RECIPIENT is the character receiving the CONCUBINE
+	# CONCUBINE is offered consort
+	$ACTOR$ = {
 		if = {
 			limit = {
 				government_has_flag = government_has_influence
 				NOT = { has_character_flag = received_influence_offer_concubine_flag }
 				exists = house
 
-				$CHARACTER$ = {
+				$RECIPIENT$ = {
 					government_has_flag = government_has_influence
 					
 					house ?= {
-						this != $RECIPIENT$.house
+						this != $ACTOR$.house
 						# Same realm check
-						house_head.top_liege = $RECIPIENT$.house.house_head.top_liege
+						house_head.top_liege = $ACTOR$.house.house_head.top_liege
 						OR = {
 							is_powerful_family = yes
 							is_dominant_family = yes
 							any_house_member = {
-								this = $RECIPIENT$.house.house_head.top_liege
+								OR = {
+									this = $ACTOR$.house.house_head.top_liege
+									trigger_if = {
+										limit = { $ACTOR$ = { tgp_realm_has_ceremonial_liege_trigger = yes } }
+										tgp_has_ceremonial_liege_title_trigger = yes
+									}
+								}
 							}
 						}
 					}
@@ -5964,37 +5970,48 @@ gain_influence_harem_politics_effect = {
 				value = miniscule_influence_gain
 				if = {
 					limit = {
-						$TARGET$.house ?= $RECIPIENT$.house
+						$CONCUBINE$.house ?= $ACTOR$.house
 					}
 					add = miniscule_influence_gain
-				}
-				if = {
-					limit = {
-						$TARGET$ = {
-							is_close_family_of = $RECIPIENT$
-						}
-					}
 					if = {
 						limit = {
-							$CHARACTER$ = {
-								is_independent_ruler = yes
-								this = $RECIPIENT$.house.house_head.top_liege
+							$CONCUBINE$ = {
+								is_close_family_of = $ACTOR$
 							}
 						}
-						multiply = 2
-					}
-					else_if = {
-						limit = {
-							$CHARACTER$.house = {
-								OR = {	
-									is_dominant_family = yes
-									any_house_member = {
-										this = $RECIPIENT$.house.house_head.top_liege
+						if = {
+							limit = {
+								$RECIPIENT$ = {
+									OR = {
+										this = $ACTOR$.house.house_head.top_liege
+										AND = {
+											tgp_realm_has_ceremonial_liege_trigger = yes
+											tgp_has_ceremonial_liege_title_trigger = yes
+										}
 									}
 								}
 							}
+							multiply = 2
 						}
-						multiply = 1.5
+						else_if = {
+							limit = {
+								$RECIPIENT$.house = {
+									OR = {	
+										is_dominant_family = yes
+										any_house_member = {
+											OR = {
+												this = $ACTOR$.house.house_head.top_liege
+												trigger_if = {
+													limit = { $ACTOR$ = { tgp_realm_has_ceremonial_liege_trigger = yes } }
+													tgp_has_ceremonial_liege_title_trigger = yes
+												}
+											}
+										}
+									}
+								}
+							}
+							multiply = 1.5
+						}
 					}
 				}
 			}
