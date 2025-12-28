@@ -5952,9 +5952,6 @@ gain_influence_harem_politics_effect = {
 				exists = house
 				exists = top_liege
 				NOT = { has_character_flag = received_influence_offer_concubine_flag }
-				$TARGET$ = {
-					house ?= $RECIPIENT$.house
-				}
 				$CHARACTER$ = {
 					government_has_flag = government_has_influence
 
@@ -5976,7 +5973,13 @@ gain_influence_harem_politics_effect = {
 				}
 			}
 			change_influence = {
-				value = 20
+				value = miniscule_influence_gain
+				if = {
+					limit = {
+						$TARGET$.house ?= $RECIPIENT$.house
+					}
+					add = miniscule_influence_gain
+				}
 				if = {
 					limit = {
 						$TARGET$ = {
@@ -6016,13 +6019,20 @@ calyver_house_relations_effect = {
 	# RECIPIENT = Character receiving the house relation change
 	# VALUE = the value change
 	# REASON = the reason for the change
-	if = {
-		limit = {
-			$RECIPIENT$.house ?= {
-				this != $ACTOR$.house
+	$ACTOR$.house ?= {
+		if = {
+			limit = {
+				$RECIPIENT$.house ?= {
+					this != $ACTOR$.house
+				}
+				OR = {
+					any_house_relation = {
+						any_relation_house = { this = $RECIPIENT$.house }
+					}
+					$VALUE$ >= house_relation_improve_major_value
+					$VALUE$ <= house_relation_damage_major_value
+				}
 			}
-		}
-		$ACTOR$.house ?= {
 			change_house_relation_effect = {
 				HOUSE = $RECIPIENT$.house
 				VALUE = $VALUE$
