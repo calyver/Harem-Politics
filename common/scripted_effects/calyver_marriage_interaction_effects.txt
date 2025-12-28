@@ -5321,19 +5321,10 @@ concubine_offer_on_accept_effect = {
 						TITLE = scope:dummy_gender
 					}
 				}
-				if = {
-					limit = {
-						NOT = { has_character_flag = received_influence_offer_concubine_flag }
-					}
-					gain_influence_harem_politics_effect = {
-						RECIPIENT = scope:actor
-						CHARACTER = scope:recipient
-						TARGET = scope:secondary_recipient
-					}
-					add_character_flag = {
-						flag = received_influence_offer_concubine_flag
-						years = 3
-					}
+				gain_influence_harem_politics_effect = {
+					RECIPIENT = scope:actor
+					CHARACTER = scope:recipient
+					TARGET = scope:secondary_recipient
 				}
 			}
 		}
@@ -5949,24 +5940,21 @@ gain_influence_harem_politics_effect = {
 		if = {
 			limit = {
 				government_has_flag = government_has_influence
-				exists = house
-				exists = top_liege
 				NOT = { has_character_flag = received_influence_offer_concubine_flag }
+				exists = house
+
 				$CHARACTER$ = {
 					government_has_flag = government_has_influence
-
-					OR = { # Same realm check
-						top_liege ?= $RECIPIENT$.top_liege
-						this = $RECIPIENT$.top_liege
-					}
 					
 					house ?= {
-						NOT = { this = $RECIPIENT$.house }
+						this != $RECIPIENT$.house
+						# Same realm check
+						house_head.top_liege = $RECIPIENT$.house.house_head.top_liege
 						OR = {
 							is_powerful_family = yes
 							is_dominant_family = yes
 							any_house_member = {
-								this = $RECIPIENT$.top_liege
+								this = $RECIPIENT$.house.house_head.top_liege
 							}
 						}
 					}
@@ -5990,7 +5978,7 @@ gain_influence_harem_politics_effect = {
 						limit = {
 							$CHARACTER$ = {
 								is_independent_ruler = yes
-								this = $RECIPIENT$.top_liege
+								this = $RECIPIENT$.house.house_head.top_liege
 							}
 						}
 						multiply = 2
@@ -6001,7 +5989,7 @@ gain_influence_harem_politics_effect = {
 								OR = {	
 									is_dominant_family = yes
 									any_house_member = {
-										this = $RECIPIENT$.top_liege
+										this = $RECIPIENT$.house.house_head.top_liege
 									}
 								}
 							}
@@ -6009,6 +5997,10 @@ gain_influence_harem_politics_effect = {
 						multiply = 1.5
 					}
 				}
+			}
+			add_character_flag = {
+				flag = received_influence_offer_concubine_flag
+				years = 3
 			}
 		}
 	}
