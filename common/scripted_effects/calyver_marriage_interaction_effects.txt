@@ -1939,7 +1939,7 @@ spouse_demotion_effect = {
 			ACTOR = $ACTOR$
 			RECIPIENT = $RECIPIENT$
 			VALUE = house_relation_damage_minor_value
-			REASON = harem_demoted
+			REASON = harem_demoted_decrease
 			TITLE = scope:dummy_gender
 		}
 	}
@@ -3364,7 +3364,7 @@ set_primary_spouse_effect = {
 				ACTOR = scope:actor
 				RECIPIENT = scope:previous_primary_spouse
 				VALUE = house_relation_damage_minor_value
-				REASON = harem_demoted
+				REASON = harem_demoted_decrease
 				TITLE = scope:dummy_gender
 			}
 		}
@@ -3758,7 +3758,7 @@ make_primary_spouse_effect = {
 			ACTOR = $PARTNER$
 			RECIPIENT = scope:new_primary_spouse
 			VALUE = house_relation_improve_minor_value
-			REASON = harem_promoted
+			REASON = harem_promoted_increase
 			TITLE = scope:dummy_gender
 		}
 	}
@@ -5298,7 +5298,29 @@ concubine_offer_on_accept_effect = {
 						}
 					}
 				}
-
+				if = {
+					limit = {
+						scope:secondary_recipient = {
+							is_close_or_extended_family_of = scope:actor
+						}
+						scope:actor = {
+							OR = {
+								is_vassal_or_below_of = scope:recipient
+								is_liege_or_above_of = scope:recipient
+								is_tributary_of = scope:recipient
+								scope:recipient.suzerain ?= this
+								scope:recipient.top_suzerain ?= this
+							}
+						}
+					}
+					calyver_house_relations_effect = {
+						ACTOR = scope:actor
+						RECIPIENT = scope:recipient
+						VALUE = house_relation_improve_minor_value
+						REASON = concubinage_offer_increase
+						TITLE = scope:dummy_gender
+					}
+				}
 				if = {
 					limit = {
 						NOT = { has_character_flag = received_influence_offer_concubine_flag }
@@ -5517,9 +5539,19 @@ demand_concubine_interaction_on_accept_effect = {
 				}
 				release_from_prison = yes
 			}
+			else = {
+				remove_trait = celibate
+			}
 			add_opinion = {
 				target = scope:actor
 				modifier = forced_me_concubine_marriage_opinion
+			}
+			calyver_house_relations_effect = {
+				ACTOR = scope:actor
+				RECIPIENT = scope:secondary_actor
+				VALUE = house_relation_damage_minor_value
+				REASON = concubinage_decrease
+				TITLE = scope:dummy_gender
 			}
 		}
 
