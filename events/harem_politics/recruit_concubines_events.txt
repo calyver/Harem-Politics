@@ -1855,11 +1855,7 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 				limit = {
 					any_in_list = {
 						list = potential_candidates_list
-						NOT = {
-							royal_concubines_eligible_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-						}
+						can_still_participate_in_concubine_recruitment_trigger = no
 						count > 0
 					}
 				}
@@ -1867,11 +1863,6 @@ scripted_effect recruit_royal_concubines_next_candidate_effect = {
 					list = potential_candidates_list
 					limit = {
 						can_still_participate_in_concubine_recruitment_trigger = no
-						NOT = {
-							royal_concubines_eligible_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-						}
 					}
 					remove_from_list = potential_candidates_list
 				}
@@ -2050,9 +2041,35 @@ bride_show.3004 = {
 		hidden_effect = {
 			every_in_list = {
 				variable = eligible_candidates_list
+				limit = {
+					can_still_participate_in_concubine_recruitment_trigger = yes
+				}
 				add_to_list = potential_candidates_list
 			}
 			clear_variable_list = eligible_candidates_list
+			if = {
+				limit = {
+					any_in_list = {
+						list = eligible_candidates_list
+						court_owner ?= {
+							is_ai = no
+							harem_politics_valid_bride_show_subject_trigger = {
+								OVERLORD = scope:liege
+							}
+						}
+						count > 0
+					}
+				}
+				every_in_list = {
+					limit = {
+						is_ai = no
+						harem_politics_valid_bride_show_subject_trigger = {
+							OVERLORD = scope:liege
+						}
+					}
+					trigger_event = bride_show.3007
+				}
+			}
 			recruit_royal_concubines_next_candidate_effect = yes
 		}
 		ai_chance = {
@@ -3129,6 +3146,92 @@ bride_show.3006 = {
 		bride_show_ending_effect = yes
 		ai_chance = {
 			base = 1
+		}
+	}
+}
+
+# Notification for subjects #
+bride_show.3007 = {
+	hidden = yes
+	trigger = {
+		is_ai = no
+		any_in_list = {
+			list = eligible_candidates_list
+			is_courtier_of = root
+			count >= 1
+		}
+	}
+	immediate = {
+		save_scope_as = subject
+		if = {
+			limit = {
+				any_in_list = {
+					list = eligible_candidates_list
+					is_courtier_of = root
+					count > 1
+				}
+			}
+			set_variable = {
+				name = num_courtiers_summoned
+				value = -1
+			}
+			every_in_list = {
+				list = eligible_candidates_list
+				limit = {
+					is_courtier_of = root
+				}
+				root = {
+					change_variable = {
+						name = num_courtiers_summoned
+						add = 1
+					}
+				}
+				add_to_list = summoned_courtiers_list
+			}
+			ordered_in_list = {
+				list = summoned_courtiers_list
+
+				order_by = {
+					value = bride_show_candidate_weights_for_root_value
+				}
+				if = {
+					limit = {
+						NOT = {
+							exists = scope:drafted_candidate
+						}
+					}
+					save_scope_as = drafted_candidate
+				}
+				remove_from_list = summoned_courtiers_list
+			}
+		}
+		else = {
+			random_in_list = {
+				list = eligible_candidates_list
+				limit = {
+					is_courtier_of = root
+				}
+				save_scope_as = drafted_candidate
+			}
+		}
+
+		send_interface_toast = {
+			type = event_generic_neutral
+			title = bride_show.3005.t
+			right_icon = scope:liege
+			left_icon = scope:drafted_candidate
+			if = {
+				limit = {
+					NOT = {
+						has_variable = num_courtiers_summoned
+					}
+				}
+				custom_tooltip = bride_show_1_courtiers_desc
+			}
+			else = {
+				custom_tooltip = bride_show_more_courtiers_desc
+				remove_variable = num_courtiers_summoned
+			}
 		}
 	}
 }
