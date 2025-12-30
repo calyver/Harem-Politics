@@ -175,7 +175,7 @@ grand_consort_gained_court_position_effect = {
 	}
 	scope:employee = {
 		# Shared effects
-		if = {
+		if = { # They're not a demoted PS
 			limit = {
 				NOT = {
 					has_demoted_or_divorced_as_ps_opinion_trigger = {
@@ -183,8 +183,8 @@ grand_consort_gained_court_position_effect = {
 					}
 				}
 			}
-			clear_negative_consort_modifiers_effect = yes
-			if = {
+			clear_negative_consort_modifiers_effect = yes # They're no longer unfavored
+			if = { # They weren't forced into concubinage or previously demoted
 				limit = {
 					NOR = {
 						has_opinion_modifier = {
@@ -269,24 +269,33 @@ grand_consort_gained_court_position_effect = {
 					NOT = { exists = scope:liege.primary_spouse }
 				}
 			}
-			# Notify relatives
-			every_close_family_member = {
-				limit = { this != scope:liege }
-				hidden_effect = {
-					send_interface_message = {
-						type = event_generic_good_text 
-						title = grand_consort_promotion_t 
-						right_icon = scope:employee
-						left_icon = scope:liege
-						desc = grand_consort_promotion_desc 
-					}
-				}
-			}
-
+			# Notify relatives if the GC isn't the demoted PS
 			if = {
 				limit = {
 					NOT = {
 						has_demoted_or_divorced_as_ps_opinion_trigger = {
+							TARGET = scope:liege
+						}
+					}
+				}
+				every_close_family_member = {
+					limit = { this != scope:liege }
+					hidden_effect = {
+						send_interface_message = {
+							type = event_generic_good_text 
+							title = grand_consort_promotion_t 
+							right_icon = scope:employee
+							left_icon = scope:liege
+							desc = grand_consort_promotion_desc 
+						}
+					}
+				}
+			}
+
+			if = { # Newly appointed GC
+				limit = {
+					NOT = {
+						has_demoted_or_divorced_opinion_trigger = {
 							TARGET = scope:liege
 						}
 					}
@@ -307,30 +316,19 @@ grand_consort_gained_court_position_effect = {
 					REASON = harem_promoted_increase
 					TITLE = scope:dummy_gender
 				}
+				# Favor
+				calyver_favor_huge_gain_effect = yes
+				# Prestige
 				if = {
-					limit = {
-						NOT = {
-							has_demoted_or_divorced_opinion_trigger = {
-								TARGET = scope:liege
-							}
-						}
-					}
-					# Favor
-					calyver_favor_huge_gain_effect = yes
-					# Prestige
-					if = {
-						limit = { scope:liege.primary_title.tier = tier_kingdom }
-						add_prestige = { value = minor_prestige_gain }
-					}
-					else_if = {
-						limit = { scope:liege.primary_title.tier >= tier_empire }
-						add_prestige = { value = medium_prestige_gain }
-					}
+					limit = { scope:liege.primary_title.tier = tier_kingdom }
+					add_prestige = { value = minor_prestige_gain }
+				}
+				else_if = {
+					limit = { scope:liege.primary_title.tier >= tier_empire }
+					add_prestige = { value = medium_prestige_gain }
 				}
 			}
-
-			# Reinstatement
-			if = {
+			else_if = { # Reinstatement
 				limit = {
 					OR = {
 						has_opinion_modifier = {
