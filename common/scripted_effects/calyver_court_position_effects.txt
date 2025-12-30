@@ -38,22 +38,9 @@ grand_consort_gained_court_position_effect = {
 								}
 							}
 						}
-						#Update the primary spouse's opinion on the Grand Consort
+						# Update their opinion
 						if = {
 							limit = {
-								is_head_of_the_harem_trigger = {
-									LIEGE = scope:liege
-								}
-								OR = {
-									has_trait = craven
-									has_trait = paranoid
-									has_trait = shy
-
-									harem_politics_evil_consort_trigger = yes
-
-									has_relation_rival = scope:employee
-									has_relation_nemesis = scope:employee
-								}
 								NOR = {
 									has_relation_best_friend = scope:employee
 									has_relation_friend = scope:employee
@@ -61,86 +48,99 @@ grand_consort_gained_court_position_effect = {
 									has_relation_lover = scope:employee
 
 									has_relation_soulmate = scope:liege
-
-									has_trait = trusting
 								}
 								opinion = {
 									target = scope:employee
 									value <= low_positive_opinion
 								}
 							}
-							add_opinion = {
-								target = scope:employee
-								modifier = threatening_consort_opinion
-							}
-							add_opinion = { #Feeling the pressure
-								modifier = respect_opinion
-								opinion = -10
-								target = scope:liege
-							}
-						}
-						#Consorts will update their opinions on new Grand Consort
-						if = {
-							limit = {
-								harem_politics_evil_consort_trigger = yes
-								trigger_if = {
-									limit = {
-										hp_accepts_harems = no
-									}
-									OR = {
-										has_trait = ambitious
-										has_trait = arrogant
-										has_trait = greedy
-									}
-								}
-								trigger_else = {
-									hp_accepts_harems = yes
-								}
-								NOR = {
+							# Update the head of the harem's opinion on the Grand Consort
+							if = {
+								limit = {
 									is_head_of_the_harem_trigger = {
 										LIEGE = scope:liege
 									}
-
-									has_relation_best_friend = scope:employee
-									has_relation_friend = scope:employee
-									has_relation_soulmate = scope:employee
-									has_relation_lover = scope:employee
-
-									has_relation_soulmate = scope:liege
-								}
-								opinion = {
-									target = scope:employee
-									value <= low_positive_opinion
-								}
-							}
-							if = {
-								limit = {
-									is_consort_of = scope:liege
-									NOR = {
-										has_opinion_modifier = {
-											target = scope:employee
-											modifier = envy_consort_opinion
-										}
-										has_demoted_or_divorced_as_ps_opinion_trigger = {
-											TARGET = scope:liege
-										}
+									OR = {
+										has_trait = craven
+										has_trait = paranoid
+										has_trait = shy
+	
+										harem_politics_evil_consort_trigger = yes
+	
+										has_relation_rival = scope:employee
+										has_relation_nemesis = scope:employee
 									}
+									NOT = { has_trait = trusting }
 								}
 								add_opinion = {
 									target = scope:employee
-									modifier = envy_consort_opinion
+									modifier = threatening_consort_opinion
 								}
-							}
-							if = { # Your other relatives don't like you surpassing their authority
-								limit = {
-									NOT = {
-										is_consort_of = scope:liege
-									}
-								}
-								add_opinion = {
+								add_opinion = { #Feeling the pressure
 									modifier = respect_opinion
 									opinion = -10
 									target = scope:liege
+								}
+							}
+							# Others will also update their opinion
+							else_if = {
+								limit = {
+									harem_politics_evil_consort_trigger = yes
+									trigger_if = {
+										limit = {
+											hp_accepts_harems = no
+										}
+										OR = {
+											has_trait = ambitious
+											has_trait = arrogant
+											has_trait = greedy
+										}
+									}
+									trigger_else = {
+										hp_accepts_harems = yes
+									}
+									NOR = {
+										is_head_of_the_harem_trigger = {
+											LIEGE = scope:liege
+										}
+										has_relation_rival = scope:liege
+										has_relation_nemesis = scope:liege
+									}
+								}
+								if = {
+									limit = {
+										is_consort_of = scope:liege
+										NOR = {
+											has_opinion_modifier = {
+												target = scope:employee
+												modifier = envy_consort_opinion
+											}
+											has_demoted_or_divorced_as_ps_opinion_trigger = {
+												TARGET = scope:liege
+											}
+										}
+									}
+									add_opinion = {
+										target = scope:employee
+										modifier = envy_consort_opinion
+									}
+								}
+								if = { # Your other relatives don't like you surpassing their authority
+									limit = {
+										NOT = {
+											is_consort_of = scope:liege
+										}
+									}
+									add_opinion = {
+										modifier = respect_opinion
+										opinion = -10
+										target = scope:liege
+									}
+									add_opinion = {
+										target = scope:employee
+										modifier = threatening_consort_opinion
+										opinion = -5
+									}
 								}
 							}
 						}
