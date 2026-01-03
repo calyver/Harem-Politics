@@ -1233,7 +1233,7 @@ make_concubine_harem_politics_effect = {
 	$CHARACTER$ = { save_scope_as = harem_actor } # The actor
 	$TARGET$ = { # The concubine
 		save_scope_as = harem_recipient
-		if = {
+		if = { # New concubine
 			limit = {
 				NOR = {
 					has_demoted_or_divorced_opinion_trigger = {
@@ -1245,7 +1245,7 @@ make_concubine_harem_politics_effect = {
 					}
 				}
 			}
-			if = {
+			if = { # Forced
 				limit = {
 					has_opinion_modifier = {
 						modifier = forced_me_concubine_marriage_opinion
@@ -1260,54 +1260,40 @@ make_concubine_harem_politics_effect = {
 					TITLE = scope:dummy_gender
 				}
 			}
-			else_if = {
-				limit = {
-					hp_accepts_concubinage = yes
-					any_close_or_extended_family_member = {
-						NOT = { is_child_of = $CHARACTER$ }
-						OR = {
-							is_vassal_or_below_of = $CHARACTER$
-							is_liege_or_above_of = $CHARACTER$
-							is_tributary_of = $CHARACTER$
-							$CHARACTER$.suzerain ?= this
-							$CHARACTER$.top_suzerain ?= this
-						}
+			else = {				
+				# Now we can use the saved scopes for House Unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:harem_actor
+					TARGET = scope:harem_recipient
+					VALUE = minor_unity_gain
+					DESC = clan_unity_concubinage.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				if = { # Positive house relations
+					limit = {
 						hp_accepts_concubinage = yes
+						any_close_or_extended_family_member = {
+							NOT = { is_child_of = $CHARACTER$ }
+							OR = {
+								is_vassal_or_below_of = $CHARACTER$
+								is_liege_or_above_of = $CHARACTER$
+								is_tributary_of = $CHARACTER$
+								$CHARACTER$.suzerain ?= this
+								$CHARACTER$.top_suzerain ?= this
+							}
+							hp_accepts_concubinage = yes
+						}
+					}
+					calyver_house_relations_effect = {
+						ACTOR = $CHARACTER$
+						RECIPIENT = $TARGET$
+						VALUE = house_relation_improve_minor_value
+						REASON = concubinage_increase
+						TITLE = scope:dummy_gender
 					}
 				}
-				calyver_house_relations_effect = {
-					ACTOR = $CHARACTER$
-					RECIPIENT = $TARGET$
-					VALUE = house_relation_improve_minor_value
-					REASON = concubinage_increase
-					TITLE = scope:dummy_gender
-				}
 			}
-		}
-		if = {
-			limit = {
-				has_demoted_or_divorced_opinion_trigger = {
-					TARGET = $CHARACTER$
-				}
-			}
-			spouse_demotion_effect = {
-				ACTOR = $CHARACTER$
-				RECIPIENT = $TARGET$
-			}
-		}
-		else_if = {
-			limit = {
-				has_opinion_modifier = {
-					modifier = set_me_aside_opinion
-					target = $CHARACTER$
-				}
-			}
-			remove_opinion = {
-				target = $CHARACTER$
-				modifier = set_me_aside_opinion
-			}
-		}
-		else = {
+			# Flag allocation
 			if = {
 				limit = {
 					is_landed = no
@@ -1323,19 +1309,39 @@ make_concubine_harem_politics_effect = {
 				}
 				remove_variable = favor
 			}
-			
-			# Now we can use the saved scopes for House Unity
-			add_clan_unity_interaction_effect = {
-				CHARACTER = scope:harem_actor
-				TARGET = scope:harem_recipient
-				VALUE = minor_unity_gain
-				DESC = clan_unity_concubinage.desc
-				REVERSE_NON_HOUSE_TARGET = no
+		}
+		if = { # Demoted consort
+			limit = {
+				has_demoted_or_divorced_opinion_trigger = {
+					TARGET = $CHARACTER$
+				}
+				NOT = {
+					has_opinion_modifier = {
+						modifier = set_me_aside_opinion
+						target = $CHARACTER$
+					}
+				}
 			}
-			child_demotion_effect = {
-				PARENT_1 = $CHARACTER$
-				PARENT_2 = $TARGET$
+			spouse_demotion_effect = {
+				ACTOR = $CHARACTER$
+				RECIPIENT = $TARGET$
 			}
+		}
+		if = { # Dismissed concubine
+			limit = {
+				has_opinion_modifier = {
+					modifier = set_me_aside_opinion
+					target = $CHARACTER$
+				}
+			}
+			remove_opinion = {
+				target = $CHARACTER$
+				modifier = set_me_aside_opinion
+			}
+		}
+		child_demotion_effect = {
+			PARENT_1 = $CHARACTER$
+			PARENT_2 = $TARGET$
 		}
 		stress_impact = {
 			shy = miniscule_stress_impact_gain
