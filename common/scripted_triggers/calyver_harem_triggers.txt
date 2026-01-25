@@ -202,6 +202,32 @@ grand_consort_validity_trigger = {
 		}
 	}
 }
+high_consort_validity_trigger = {
+	base_court_position_validity_trigger = { EMPLOYER = $EMPLOYER$ }
+	is_landed = no
+	custom_tooltip = {
+		text = grand_consort_valid_character_tooltip
+		trigger_if = {
+			limit = {
+				$EMPLOYER$ = { hp_accepts_polygamy = yes }
+			}
+			is_spouse_of = $EMPLOYER$
+			NOT = { this = $EMPLOYER$.primary_spouse }
+		}
+		trigger_else = {
+			is_concubine_of = $EMPLOYER$
+		}
+	}
+	custom_tooltip = {
+		text = none_does_not_have_a_full_time_job
+		trigger_if = {
+			limit = { NOT = { has_court_position = $HIGH$_consort_court_position } }
+			NOT = {
+				has_any_court_position = yes
+			}
+		}
+	}
+}
 ## Ranks ##
 calyver_rank_is_superior_trigger = {
 	$AUTHORITY$ = {
@@ -365,16 +391,9 @@ is_grand_consort_trigger = {
 	has_court_position = grand_consort_court_position
 }
 # The Four Consorts
-# is_pure_consort_trigger = {
-# 	OR = {
-# 		has_character_modifier = pure_consort_modifier
-# 		has_character_modifier = pure_lord_modifier
-# 	}
-# 	has_opinion_modifier = {
-# 		modifier = appointed_as_special_consort
-# 		target = $HAREM_LIEGE$
-# 	}
-# }
+is_pure_consort_trigger = {
+	has_court_position = grand_consort_court_position
+}
 # is_virtuous_consort_trigger = {
 # 	OR = {
 # 		has_character_modifier = virtuous_consort_modifier
@@ -408,9 +427,7 @@ is_grand_consort_trigger = {
 is_high_consort_trigger = {
 	OR = {
 		is_grand_consort_trigger = yes
-		# is_pure_consort_trigger = {
-		# 	LIEGE = $LIEGE$
-		# }
+		is_pure_consort_trigger = yes
 		# is_virtuous_consort_trigger = {
 		# 	LIEGE = $LIEGE$
 		# }
@@ -495,38 +512,76 @@ is_demoted_consort_trigger = {
 }
 has_demoted_or_divorced_opinion_trigger = {
 	OR = {
-		has_demoted_or_divorced_as_ps_opinion_trigger = {
+		has_divorced_opinion_trigger = {
 			TARGET = $TARGET$
 		}
-
+		has_demoted_opinion_trigger = {
+			TARGET = $TARGET$
+		}
+		has_dismissed_opinion_trigger = {
+			TARGET = $TARGET$
+		}
+	}
+}
+# Divorced
+has_divorced_opinion_trigger = {
+	OR = {
 		has_opinion_modifier = {
 			target = $TARGET$
-			modifier = divorced_me_as_gc
+			modifier = divorced_me_as_ps
+		}
+		has_divorced_as_hc_opinion_trigger = {
+			TARGET = $TARGET$
 		}
 		has_opinion_modifier = {
 			target = $TARGET$
 			modifier = divorced_me_as_ss
 		}
-
+	}
+}
+# Demoted
+has_demoted_opinion_trigger = {
+	OR = {
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_ps
+		}
 		has_opinion_modifier = {
 			target = $TARGET$
 			modifier = demoted_me_as_gc
 		}
 		has_opinion_modifier = {
 			target = $TARGET$
+			modifier = demoted_me_as_hc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
 			modifier = demoted_me_as_ss
-		}
-
-		has_opinion_modifier = {
-			modifier = dismissed_me_as_gc
-			target = $TARGET$
-		}
-		has_opinion_modifier = {
-			modifier = dismissed_me_as_ss
-			target = $TARGET$
 		}
 	}
 }
+# Dismissed
+has_dismissed_opinion_trigger = {
+	OR = {
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_ps
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_hc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_ss
+		}
+	}
+}
+# The Primary Spouse
 has_demoted_or_divorced_as_ps_opinion_trigger = {
 	OR = {
 		has_opinion_modifier = {
@@ -545,23 +600,37 @@ has_demoted_or_divorced_as_ps_opinion_trigger = {
 		}
 	}
 }
-has_divorced_opinion_trigger = {
+# The Four Consorts #
+has_demoted_or_divorced_as_hc_opinion_trigger = {
 	OR = {
-		has_opinion_modifier = {
-			target = $TARGET$
-			modifier = divorced_me_as_ps
-		}
 		has_opinion_modifier = {
 			target = $TARGET$
 			modifier = divorced_me_as_gc
 		}
 		has_opinion_modifier = {
 			target = $TARGET$
-			modifier = divorced_me_as_ss
+			modifier = divorced_me_as_hc
+		}
+
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = demoted_me_as_hc
+		}
+
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_gc
+		}
+		has_opinion_modifier = {
+			target = $TARGET$
+			modifier = dismissed_me_as_hc
 		}
 	}
 }
-
 ## Cultural/Religious Acceptance ##
 hp_accepts_polygamy = {
 	custom_tooltip = {

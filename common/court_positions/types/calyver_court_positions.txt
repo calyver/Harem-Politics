@@ -1929,3 +1929,1433 @@ grand_consort_court_position = {
 		}
 	}
 }
+
+# The Four Consorts #
+# Pure Consort #
+pure_consort_court_position = {
+	sort_order = {
+		value = 388
+		if = {
+			limit = {
+				primary_title = title:h_china
+				culture = {
+					has_cultural_pillar = heritage_chinese
+				}
+			}
+			add = 630
+		}
+	}
+	max_available_positions = 1
+	minimum_rank = empire # Should only be available for kings and emperors
+	skill = diplomacy
+
+	# China male - the Pure Lord
+	court_position_asset = {
+		trigger = {
+			OR = {
+				AND = {
+					trigger_if = {
+						limit = {
+							employs_court_position = pure_consort_court_position
+						}
+						any_court_position_holder = {
+							type = pure_consort_court_position
+							is_male = yes
+						}
+					}
+					trigger_else = {
+						is_female = yes
+					}
+				}
+				court_owner ?= {
+					trigger_if = {
+						limit = {
+							employs_court_position = pure_consort_court_position
+						}
+						any_court_position_holder = {
+							type = pure_consort_court_position
+							is_male = yes
+						}
+					}
+					trigger_else = {
+						is_female = yes
+					}
+				}
+			}
+		}
+		animation = personality_honorable
+		background = "gfx/interface/illustrations/event_scenes/tgp_asia_estate.dds"
+		localization_key = pure_consort_male
+	}
+
+	court_position_asset = {
+		animation = fanning_coyly
+		background = "gfx/interface/illustrations/event_scenes/tgp_asia_estate.dds"
+	}
+
+	opinion = {
+		value = grand_consort_position_opinion
+	}
+
+	# How high the aptitude has to be to reach the 5 different modifier levels
+	aptitude_level_breakpoints = { 20 40 60 80 }
+
+	# How good is this character in this position? root scope is the holder of the court position
+	aptitude = {
+		value = 1
+		if = { #Related to liege
+			limit = {
+				exists = employer
+				employer.top_liege ?= {
+					this != employer
+				}
+				any_close_family_member = {
+					this = root.employer.top_liege
+				}
+			}
+			add = { 
+				value = 40
+				desc = grand_consort_prominent_family_description
+			}
+		}
+		else_if = { #Related to dominant houses
+			limit = {
+				employer ?= {
+					government_allows = administrative
+					exists = house
+				}
+				house ?= {
+					NOT = { this = root.employer.house }
+					is_dominant_family = yes
+					any_house_member = {
+						top_liege ?= root.employer
+						government_allows = administrative
+					}
+
+				}
+			}
+			add = { 
+				value = 20
+				if = {
+					limit = {
+						any_close_family_member = {
+							this = root.house.house_head
+						}
+					}
+					add = 10
+				}
+				desc = grand_consort_prominent_family_description
+			}
+		}
+		else_if = { # Powerful families
+			limit = {
+				exists = employer
+				any_close_family_member = {
+					OR = {
+						primary_title.tier >= tier_kingdom
+						is_councillor_of = root.employer
+						is_powerful_vassal_of = root.employer
+					}
+				}
+			}
+			add = { 
+				value = 15
+				if = {
+					limit = {
+						any_close_family_member = {
+							primary_title.tier >= tier_empire
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_close_family_member = {
+							primary_title.tier >= tier_kingdom
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_powerful_vassal_of = root.employer
+						}
+					}
+					add = 10
+				}
+				desc = grand_consort_prominent_family_description
+			}
+		}
+		else_if = {
+			limit = {
+				any_close_family_member = {
+					primary_title.tier >= tier_duchy
+					is_landed_or_landless_administrative = yes
+				}
+			}
+			add = { 
+				value = 10
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_vassal_of = root.employer
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						employer ?= {
+							government_allows = administrative
+						}
+						house ?= {
+							any_house_member = {
+								government_allows = administrative
+								top_liege ?= root.employer
+								this = root.house.house_head
+								is_close_family_of = root
+							}
+						}
+					}
+					add = 5
+				}
+				desc = grand_consort_good_family_description 
+			}
+		}
+		else_if = {
+			limit = {
+				any_close_family_member = {
+					primary_title.tier >= tier_county
+					is_landed_or_landless_administrative = yes
+				}
+			}
+			add = { 
+				value = 5
+				if = {
+					limit = {
+						any_close_family_member = {
+							is_vassal_of = root.employer
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						employer ?= {
+							government_allows = administrative
+						}
+						house ?= {
+							any_house_member = {
+								government_allows = administrative
+								top_liege ?= root.employer
+								this = root.house.house_head
+								is_close_family_of = root
+							}
+						}
+					}
+					add = 5
+				}
+				desc = grand_consort_decent_family_description 
+			}
+		}
+		else_if = {
+			limit = {
+				any_close_family_member = {
+					is_landed_or_landless_administrative = yes
+				}
+			}
+			add = { 
+				value = 5
+				desc = grand_consort_decent_family_description
+			}
+		}
+		
+		if = {
+			limit = {
+				is_lowborn = yes
+			}
+			add = { 
+				value = -10
+				desc = grand_consort_lowborn_description
+			}
+		}
+		
+		if = {
+			limit = {
+				exists = employer
+				any_child = {
+					is_child_of = employer
+					count >= 1
+				}
+			}
+			add = { 
+				value = 5
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							count >= 2
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							count >= 3
+						}
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							count >= 4
+						}
+					}
+					add = 5
+				}
+				# The right gender
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
+							count >= 1
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = {
+						any_child = {
+							is_child_of = employer
+							is_alive = yes
+							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
+							count >= 2
+						}
+					}
+					add = 2
+				}
+				desc = grand_consort_fertile_description
+			}
+		}
+
+		# The primary heir
+		if = {
+			limit = {
+				employer ?= {
+					primary_heir ?= {
+						is_child_of = root
+					}
+				}
+			}
+			add = {
+				value = 10
+				desc = grand_consort_primary_heir_description
+			}
+		}
+		
+		if = { #Beauty
+			limit = {
+				has_trait = beauty_good_3
+			}
+			add = { 
+				value = 15
+				desc = court_position_beauty_good_3_trait
+			}
+		}
+		else_if = { #Beauty
+			limit = {
+				has_trait = beauty_good_2
+			}
+			add = { 
+				value = 10
+				desc = court_position_beauty_good_2_trait
+			}
+		}
+		else_if = { #Beauty
+			limit = {
+				has_trait = beauty_good_1
+			}
+			add = { 
+				value = 5
+				desc = court_position_beauty_good_1_trait
+			}
+		}
+
+		if = { #Intellect
+			limit = {
+				has_trait = intellect_good_3
+			}
+			add = { 
+				value = 30
+				desc = court_position_intellect_good_3_trait
+			}
+		}
+		else_if = { #Intellect
+			limit = {
+				has_trait = intellect_good_2
+			}
+			add = { 
+				value = 20
+				desc = court_position_intellect_good_2_trait
+			}
+		}
+		else_if = { #Intellect
+			limit = {
+				has_trait = intellect_good_1
+			}
+			add = {
+				value = 10
+				desc = court_position_intellect_good_1_trait
+			}
+		}
+
+		if = { #Intellect
+			limit = {
+				has_trait = intellect_bad_3
+			}
+			add = { 
+				value = -30
+				desc = court_position_intellect_bad_trait
+			}
+		}
+		else_if = { #Intellect
+			limit = {
+				has_trait = intellect_bad_2
+			}
+			add = { 
+				value = -20
+				desc = court_position_intellect_bad_trait
+			}
+		}
+		else_if = { #Intellect
+			limit = {
+				has_trait = intellect_bad_1
+			}
+			add = {
+				value = -10
+				desc = court_position_intellect_bad_trait
+			}
+		}
+
+		if = { #Diplomacy
+			limit = {
+				diplomacy >= decent_skill_rating
+			}
+			add = { 
+				value = 5
+				if = {
+					limit = {
+						diplomacy >= high_skill_rating
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						diplomacy >= very_high_skill_rating
+					}
+					add = 10
+				}
+				desc = court_position_skill_diplomacy
+			}
+		}
+
+		if = { #Stewardship
+			limit = {
+				stewardship >= decent_skill_rating
+			}
+			add = { 
+				value = 5
+				if = {
+					limit = {
+						stewardship >= high_skill_rating
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						stewardship >= very_high_skill_rating
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						stewardship >= extremely_high_skill_rating
+					}
+					add = 5
+				}
+				desc = court_position_skill_stewardship
+			}
+		}
+
+		if = { #Learning
+			limit = {
+				learning >= decent_skill_rating
+			}
+			add = { 
+				value = 5
+				if = {
+					limit = {
+						learning >= high_skill_rating
+					}
+					add = 5
+				}
+				if = {
+					limit = {
+						learning >= very_high_skill_rating
+					}
+					add = 5
+				}
+				desc = court_position_skill_learning
+			}
+		}
+
+		if = { #Bad Diplomacy
+			limit = {
+				diplomacy < mediocre_skill_rating
+			}
+			add = { 
+				value = -5
+				desc = court_position_skill_diplomacy
+			}
+		}
+		if = { #Bad Stewardship
+			limit = {
+				stewardship < mediocre_skill_rating
+			}
+			add = { 
+				value = -5
+				if = {
+					limit = {
+						stewardship < low_skill_rating
+					}
+					add = -5
+				}
+				desc = court_position_skill_stewardship
+			}
+		}
+		
+		if = {
+			limit = {
+				has_trait = patient
+			}
+			add = { 
+				value = 10
+				desc = court_position_patient_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = humble
+			}
+			add = { 
+				value = 5
+				desc = court_position_humble_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = calm
+			}
+			add = { 
+				value = 10
+				desc = court_position_calm_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = wrathful
+			}
+			add = { 
+				value = -10
+				desc = court_position_wrathful_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = callous
+			}
+			add = { 
+				value = -10
+				desc = court_position_callous_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = sadistic
+			}
+			add = { 
+				value = -10
+				desc = court_position_sadistic_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = vengeful
+			}
+			add = { 
+				value = -10
+				desc = court_position_vengeful_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = diligent
+			}
+			add = { 
+				value = 15
+				desc = court_position_diligent_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = lazy
+			}
+			add = { 
+				value = -15
+				desc = court_position_lazy_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = greedy
+			}
+			add = {
+				value = -10
+				desc = court_position_greedy_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = generous
+			}
+			add = {
+				value = 10
+				desc = court_position_generous_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = arrogant
+			}
+			add = {
+				value = -5
+				desc = court_position_arrogant_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = ambitious
+			}
+			add = {
+				value = -10
+				desc = court_position_ambitious_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = content
+			}
+			add = {
+				value = 10
+				desc = court_position_content_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = forgiving
+			}
+			add = {
+				value = 10
+				desc = court_position_forgiving_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = compassionate
+			}
+			add = {
+				value = 10
+				desc = court_position_compassionate_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = shy
+			}
+			add = { 
+				value = -10
+				desc = court_position_shy_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = gregarious
+			}
+			add = { 
+				value = 10
+				desc = court_position_gregarious_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = craven
+			}
+			add = {
+				value = -10
+				desc = court_position_craven_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = paranoid
+			}
+			add = {
+				value = -10
+				desc = court_position_paranoid_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = honest
+			}
+			add = {
+				value = 10
+				desc = court_position_honest_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = deceitful
+			}
+			add = {
+				value = -10
+				desc = court_position_deceitful_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = just
+			}
+			add = {
+				value = 15
+				desc = court_position_just_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = arbitrary
+			}
+			add = {
+				value = -15
+				desc = court_position_arbitrary_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = impatient
+			}
+			add = {
+				value = -10
+				desc = court_position_impatient_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = temperate
+			}
+			add = {
+				value = 10
+				desc = court_position_temperate_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = gluttonous
+			}
+			add = {
+				value = -10
+				desc = court_position_gluttonous_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = fickle
+			}
+			add = {
+				value = -5
+				desc = court_position_fickle_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = stubborn
+			}
+			add = {
+				value = -5
+				desc = court_position_stubborn_trait
+			}
+		}
+
+		if = {
+			limit = {
+				has_trait = shrewd
+			}
+			add = {
+				value = 10
+				desc = court_position_shrewd_trait
+			}
+		}
+		if = {
+			limit = {
+				has_trait = reclusive
+			}
+			add = {
+				value = -10
+				desc = court_position_reclusive_trait
+			}
+		}
+		if = { #Being a poet helps a little bit
+			limit = {
+				has_trait = lifestyle_poet
+			}
+			add = {
+				value = 10
+				desc = court_position_poet_trait
+			}
+		}
+		
+		if = { #Favored consort
+			limit = {
+				harem_politics_favored_consort_trigger = yes
+			}
+			add = {
+				value = 10
+				if = {
+					limit = {
+						has_character_modifier = favor_boost_modifier
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						has_character_modifier = beloved_consort_modifier
+					}
+					add = 10
+				}
+				desc = court_position_loved_consort
+			}
+		}
+		
+		if = { #Unfavored consort
+			limit = {
+				OR = {
+					harem_politics_unfavored_consort_trigger = yes
+					is_demoted_consort_trigger = yes
+				}
+			}
+			add = {
+				value = -10
+				if = {
+					limit = {
+						OR = {	
+							has_character_modifier = forgotten_consort_modifier
+							has_character_modifier = demoted_primary_spouse_modifier
+						}
+					}
+					add = -10
+				}
+				desc = court_position_unfavored_consort
+			}
+		}
+		
+		if = { #Low birth
+			limit = {
+				OR = {
+					has_trait = bastard
+					has_trait = wild_oat
+					has_trait = legitimized_bastard
+					has_trait = disputed_heritage
+					has_trait = bastard_founder
+				}
+			}
+			add = {
+				value = -20
+				desc = court_position_low_birth_consort
+			}
+		}
+
+		if = { #Virtuous
+			limit = {
+				exists = employer
+				faith = employer.faith
+				num_virtuous_traits >= 1
+			}
+			add = {
+				value = 10
+				if = {
+					limit = {
+						num_virtuous_traits >= 2
+					}
+					add = 10
+				}
+				desc = court_position_virtuous_consort
+			}
+		}
+		if = { #Sinful
+			limit = {
+				exists = employer
+				faith = employer.faith
+				num_sinful_traits >= 1
+			}
+			add = {
+				value = -10
+				if = {
+					limit = {
+						num_sinful_traits >= 2
+					}
+					add = -10
+				}
+				desc = court_position_sinful_consort
+			}
+		}
+		
+		add = court_position_aptitude_traveling_friends_value
+		add = court_position_aptitude_family_business_value
+		add = court_position_aptitude_low_penalty_value
+
+		# Seneschal
+		if = {
+			limit = {
+				liege.court_position:seneschal_court_position ?= {
+					has_variable = performing_improve_court
+				}
+			}
+			add = {
+				value = liege.court_position:seneschal_court_position.seneschal_improve_court_value
+				desc = seneschal_improve_court_aptitude_desc
+			}
+		}
+		# Yeke Jarquchi
+		if = {
+			limit = {
+				liege.court_position:yeke_jarquchi_court_position ?= {
+					has_variable = performing_improve_court
+				}
+			}
+			add = {
+				value = liege.court_position:yeke_jarquchi_court_position.yeke_jarquchi_improve_court_value
+				desc = yeke_jarquchi_improve_court_aptitude_desc
+			}
+		}
+	}
+
+	is_shown = {
+		can_have_four_consorts_trigger = yes
+		trigger_if = {
+			limit = {
+				is_ai = yes
+				highest_held_title_tier <= tier_county
+			}
+			always = no
+		}
+	}
+
+	valid_position = {
+		can_have_four_consorts_trigger = yes
+	}
+
+	is_shown_character = {
+		scope:employee = {
+			is_courtier_of = scope:liege
+			court_position_employee_shown_trigger = yes
+		}
+	}
+
+	valid_character = {
+		scope:employee = {
+			high_consort_validity_trigger = { 
+				EMPLOYER = scope:liege 
+				HIGH = pure
+			}
+		}
+	}
+
+	revoke_cost = { # root is the liege, no other scopes are passed here!
+		prestige =  {
+			value = major_court_position_prestige_revoke_cost
+			# Set to 0 via obligation hook
+			if = {
+				limit = {
+					court_position_obligation_hook_salary_trigger = {
+						POS = pure_consort
+						LIEGE = root
+					}
+				}
+				multiply = 0
+			}
+			# Avoid AI prestige issues
+			if = {
+				limit = {
+					exists = this
+					is_ai = yes
+				}
+				multiply = 0
+			}
+			# Special case for events
+			if = {
+				limit = {
+					exists = this
+					has_character_flag = free_revoke_cost
+				}
+				multiply = 0
+			}
+		}
+	}
+
+	salary = {
+		gold = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = no
+					}
+				}
+				add = high_consort_total_salary_value
+			}
+		}
+		treasury = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = yes
+					}
+				}
+				add = high_consort_total_salary_value
+			}
+		}
+		prestige = {
+			value = high_consort_prestige_salary_value
+		}
+		round = no
+	}
+
+	received_salary = {
+		gold = {
+			value = high_consort_total_salary_value
+		}
+		prestige = {
+			value = high_consort_prestige_salary_value
+		}
+		round = no
+	}
+	
+	is_powerful_agent = yes
+
+	# These modifiers are employed based on what level the aptitude reaches (levels are defined as breakpoints)
+	scaling_employer_modifiers = {
+		terrible = {
+			monthly_court_grandeur_change_mult = 0.02
+		}
+		poor = {
+			court_grandeur_baseline_add = 1
+			monthly_court_grandeur_change_mult = 0.02
+		}
+		average = {
+			court_grandeur_baseline_add = 1
+			monthly_court_grandeur_change_mult = 0.5
+			stress_loss_mult = 0.02
+		}
+		good = {
+			court_grandeur_baseline_add = 1
+			monthly_court_grandeur_change_mult = 0.05
+			stress_loss_mult = 0.05
+			legitimacy_gain_mult = 0.02
+		}
+		excellent = {
+			court_grandeur_baseline_add = 2
+			monthly_court_grandeur_change_mult = 0.1
+			stress_loss_mult = 0.05
+			legitimacy_gain_mult = 0.05
+		}
+	}
+
+	modifier = {
+		liege_opinion = 10
+		fertility = 0.10
+		monthly_diplomacy_lifestyle_xp_gain_mult = 0.1
+		monthly_intrigue_lifestyle_xp_gain_mult = 0.1
+		enemy_hostile_scheme_success_chance_max_add = -10
+	}
+
+	on_court_position_received = {
+		high_consort_gained_court_position_effect = yes
+	}
+	on_court_position_revoked = { 
+		grand_consort_revoked_court_position_effect = yes
+	}
+	on_court_position_invalidated = {
+		grand_consort_invalidated_court_position_effect = yes
+	}
+	on_court_position_vacated = {
+		court_position_vacated_event_effect = {
+			COURT_POSITION_TYPE = pure_consort_court_position
+		}
+	}
+	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
+	ai_position_score = {
+		value = 100
+		if = {
+			limit = {
+				scope:liege = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count > 5
+					}
+				}
+			}
+			add = 50
+		}
+		if = {
+			limit = {
+				scope:liege = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count > 7
+					}
+				}
+			}
+			add = 50
+		}
+		if = {
+			limit = {
+				scope:liege = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count > 9
+					}
+				}
+			}
+			add = 50
+		}
+		if = {
+			limit = {
+				scope:liege.highest_held_title_tier >= tier_empire
+			}
+			add = 50
+		}
+		if = {
+			limit = {
+				scope:liege.highest_held_title_tier > tier_empire
+			}
+			add = 50
+		}
+		add = court_position_debt_considerations_value
+	}
+	ai_candidate_score = {
+		value = 75
+		add = scope:base_value
+		add = court_position_candidate_score_base_value
+		add = court_position_candidate_aptitude_value
+		scope:liege = {
+			# There is no PS
+			if = {
+				limit = {
+					OR = {
+						NOT = {
+							exists = primary_spouse
+						}
+						primary_spouse ?= {
+							OR = {
+								is_imprisoned = yes
+								NOR = {
+									is_courtier_of = scope:liege
+									is_vassal_of = scope:liege
+								}
+							}
+						}
+					}
+				}
+				add = 10
+			}
+			# Big harems need help in management
+			if = {
+				limit = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count >= 6
+					}
+				}
+				add = {
+					value = 15
+					if = {
+						limit = {
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+								count >= 8
+							}
+						}
+						add = 10
+					}
+				}
+			}
+			# Noble birth
+			if = {
+				limit = {
+					scope:employee = {
+						is_lowborn = yes
+					}
+				}
+				add = -10
+			}
+			if = {
+				limit = {
+					scope:employee = { #We don't want to make a lowborn the PS
+						is_lowborn = yes
+						is_spouse_of = scope:liege
+					}
+				}
+				add = -10
+			}
+			# Powerful relatives
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							NOT = { is_child_of = scope:liege }
+							is_allied_to = scope:liege
+						}
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							is_vassal_of = scope:liege
+							NOT = { is_child_of = scope:liege }
+						}
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = scope:liege
+								is_councillor_of = scope:liege
+							}
+							NOT = { is_child_of = scope:liege }
+						}
+					}
+				}
+				add = 25
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							is_liege_or_above_of = scope:liege
+							NOT = { is_child_of = scope:liege }
+						}
+					}
+				}
+				add = 50
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							tier_difference = {
+								target = scope:liege
+								value >= -2
+							}
+							NOT = { is_child_of = scope:liege }
+						}
+					}
+				}
+				add = {
+					value = 5
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= -1
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 5
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= 0
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								any_close_family_member = {
+									tier_difference = {
+										target = scope:liege
+										value >= 1
+									}
+									NOT = { is_child_of = scope:liege }
+								}
+							}
+						}
+						add = 30
+					}
+				}
+			}
+			# Children
+			if = {
+				limit = {
+					any_child = {
+						is_child_of = scope:employee
+						is_bastard_child_trigger = no
+						NOT = {
+							has_trait = disinherited
+						}
+					}
+				}
+				every_child = {
+					limit = {
+						is_child_of = scope:employee
+						is_bastard_child_trigger = no
+						NOT = {
+							has_trait = disinherited
+						}
+					}
+					add = {
+						value = 5
+						if = {
+							limit = {
+								is_player_heir_of = scope:liege
+							}
+							add = 15
+						}
+						if = {
+							limit = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:liege }
+							}
+							add = 5
+						}
+					}
+				}
+			}
+			# Relations
+			if = {
+				limit = {
+					has_relation_soulmate = scope:employee
+				}
+				add = 30
+			}
+			if = {
+				limit = {
+					OR = {
+						has_relation_lover = scope:employee
+						has_relation_best_friend = scope:employee
+					}
+				}
+				add = 15
+			}
+			else_if = {
+				limit = {
+					has_relation_friend = scope:employee
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					has_relation_rival = scope:employee
+				}
+				add = -20
+			}
+			else_if = {
+				limit = {
+					has_relation_nemesis = scope:employee
+				}
+				add = -35
+			}
+			# Favor
+			if = {
+				limit = {
+					scope:employee = {
+						harem_politics_beloved_consort_trigger = yes
+					}
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						harem_politics_favored_consort_trigger = yes
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						has_character_modifier = favor_boost_modifier
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						harem_politics_unfavored_consort_trigger = yes
+					}
+				}
+				add = -10
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						harem_politics_forgotten_consort_trigger = yes
+					}
+				}
+				add = -10
+			}
+			# Opinion
+			add = {
+				value = "scope:liege.opinion(scope:employee)"
+				multiply = 0.15
+			}
+		}
+		if = { # To stop petitioned positions immediately being fired by the AI
+			limit = {
+				court_position_petition_ai_weight_trigger = { ROLE = pure_consort }
+			}
+			add = 1000
+		}
+	}
+}
