@@ -348,7 +348,7 @@ grand_consort_gained_court_position_effect = {
 						}
 					}
 				}
-				if = {
+				if = { # From HC to GC is a quasi-promotion
 					limit = {
 						OR = {
 							has_opinion_modifier = {
@@ -362,8 +362,8 @@ grand_consort_gained_court_position_effect = {
 						}
 					}
 					save_scope_value_as = {
-						name = hc_to_gc
-						value = yes
+						name = opinion
+						value = -5
 					}
 				}
 				consort_reinstatement_effect = {
@@ -959,6 +959,24 @@ high_consort_gained_court_position_effect = {
 						TARGET = scope:liege
 					}
 				}
+				if = { # From GC to HC is a quasi-demotion
+					limit = {
+						OR = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_hc
+								target = scope:liege
+							}
+							has_opinion_modifier = {
+								modifier = divorced_me_as_hc
+								target = scope:liege
+							}
+						}
+					}
+					save_scope_value_as = {
+						name = opinion
+						value = -15
+					}
+				}
 				consort_reinstatement_effect = {
 					REINSTATOR = scope:liege
 					REINSTATED = scope:employee
@@ -989,9 +1007,7 @@ high_consort_revoked_court_position_effect = {
 				scope:liege = {
 					every_courtier = {
 						limit = {
-							NOR = {
-								this = scope:employee
-							}
+							this != scope:employee
 							is_valid_harem_member_trigger = {
 								LIEGE = scope:liege
 							}
@@ -1001,7 +1017,7 @@ high_consort_revoked_court_position_effect = {
 							title = punished_consort_t
 							right_icon = scope:employee
 							left_icon = scope:liege
-							desc = demoted_grand_consort_interface_desc
+							desc = demoted_$TITLE$_consort_interface_desc
 
 							if = { #The primary spouse is relieved
 								limit = {
@@ -1033,6 +1049,14 @@ high_consort_revoked_court_position_effect = {
 										harem_politics_evil_consort_trigger = yes
 									}
 									is_consort_of = scope:liege
+									NOR = {
+										is_head_of_the_harem_trigger = {
+											LIEGE = scope:liege
+										}
+										is_high_consort_trigger = {
+											LIEGE = scope:liege
+										}
+									}
 								}
 								stress_impact = {
 									craven = minor_stress_impact_loss
