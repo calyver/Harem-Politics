@@ -2232,46 +2232,9 @@ spouse_demotion_effect = {
 					flag = block_favor_progress_effect_flag
 					days = 2
 				}
-				$ACTOR$ = {
-					if = {
-						limit = {
-							$RECIPIENT$ = {
-								has_court_position = grand_consort_court_position
-							}
-						}
-						revoke_court_position = {
-							recipient = $RECIPIENT$
-							court_position = grand_consort_court_position
-						}
-					}
-					else_if = {
-						limit = {
-							$RECIPIENT$ = {
-								has_court_position = pure_consort_court_position
-							}
-						}
-						revoke_court_position = {
-							recipient = $RECIPIENT$
-							court_position = pure_consort_court_position
-						}
-					}
-					else_if = {
-						limit = {
-							$RECIPIENT$ = {
-								has_court_position = virtuous_consort_court_position
-							}
-						}
-						revoke_court_position = {
-							recipient = $RECIPIENT$
-							court_position = virtuous_consort_court_position
-						}
-					}
-					else = {
-						revoke_court_position = {
-							recipient = $RECIPIENT$
-							court_position = worthy_consort_court_position
-						}
-					}
+				calyver_revoke_high_consort_court_position_effect = {
+					LIEGE = $ACTOR$
+					CONSORT = $RECIPIENT$
 				}
 			}
 			if = {
@@ -2903,11 +2866,9 @@ divorcee_effect = {
 					flag = block_favor_progress_effect_flag
 					days = 2
 				}
-				$DIVORCER$ = {
-					revoke_court_position = {
-						recipient = $DIVORCEE$
-						court_position = grand_consort_court_position
-					}
+				calyver_revoke_high_consort_court_position_effect = {
+					LIEGE = $DIVORCER$
+					CONSORT = $DIVORCEE$
 				}
 			}
 			clear_consort_opinions_effect = {
@@ -2933,35 +2894,9 @@ divorcee_effect = {
 					flag = block_favor_progress_effect_flag
 					days = 2
 				}
-				if = {
-					limit = {
-						has_court_position = pure_consort_court_position
-					}
-					$DIVORCER$ = {
-						revoke_court_position = {
-							recipient = $DIVORCEE$
-							court_position = pure_consort_court_position
-						}
-					}
-				}
-				else_if = {
-					limit = {
-						has_court_position = virtuous_consort_court_position
-					}
-					$DIVORCER$ = {
-						revoke_court_position = {
-							recipient = $DIVORCEE$
-							court_position = virtuous_consort_court_position
-						}
-					}
-				}
-				else = {
-					$DIVORCER$ = {
-						revoke_court_position = {
-							recipient = $DIVORCEE$
-							court_position = worthy_consort_court_position
-						}
-					}
+				calyver_revoke_high_consort_court_position_effect = {
+					LIEGE = $DIVORCER$
+					CONSORT = $DIVORCEE$
 				}
 			}
 			clear_consort_opinions_effect = {
@@ -4888,18 +4823,9 @@ calyver_dismiss_concubine_effect = {
 						}
 					}
 				}
-				if = {
-					limit = {
-						is_grand_consort_trigger = {
-							LIEGE = scope:actor
-						}
-					}
-					scope:actor = {
-						revoke_court_position = {
-							recipient = scope:recipient
-							court_position = grand_consort_court_position
-						}
-					}
+				calyver_revoke_high_consort_court_position_effect = {
+					LIEGE = scope:actor
+					CONSORT = scope:recipient
 				}
 				clear_consort_opinions_effect = {
 					TARGET = scope:actor
@@ -4910,35 +4836,9 @@ calyver_dismiss_concubine_effect = {
 				}
 			}
 			else = {
-				if = {
-					limit = {
-						has_court_position = pure_consort_court_position
-					}
-					scope:actor = {
-						revoke_court_position = {
-							recipient = scope:recipient
-							court_position = pure_consort_court_position
-						}
-					}
-				}
-				else_if = {
-					limit = {
-						has_court_position = virtuous_consort_court_position
-					}
-					scope:actor = {
-						revoke_court_position = {
-							recipient = scope:recipient
-							court_position = virtuous_consort_court_position
-						}
-					}
-				}
-				else = {
-					scope:actor = {
-						revoke_court_position = {
-							recipient = scope:recipient
-							court_position = worthy_consort_court_position
-						}
-					}
+				calyver_revoke_high_consort_court_position_effect = {
+					LIEGE = scope:actor
+					CONSORT = scope:recipient
 				}
 				clear_consort_opinions_effect = {
 					TARGET = scope:actor
@@ -6481,6 +6381,58 @@ calyver_house_relations_effect = {
 	}
 }
 
+calyver_revoke_high_consort_court_position_effect = {
+	# LIEGE is the character revoking the court position
+	# CONSORT is the former employee
+	$CONSORT$ = {
+		if = {
+			limit = {
+				court_owner ?= $LIEGE$
+			}
+			if = {
+				limit = {
+					has_court_position = grand_consort_court_position
+				}
+				$LIEGE$ = {
+					revoke_court_position = {
+						recipient = $CONSORT$
+						court_position = grand_consort_court_position
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					has_court_position = pure_consort_court_position
+				}
+				$LIEGE$ = {
+					revoke_court_position = {
+						recipient = $CONSORT$
+						court_position = pure_consort_court_position
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					has_court_position = virtuous_consort_court_position
+				}
+				$LIEGE$ = {
+					revoke_court_position = {
+						recipient = $CONSORT$
+						court_position = virtuous_consort_court_position
+					}
+				}
+			}
+			else = {
+				$LIEGE$ = {
+					revoke_court_position = {
+						recipient = $CONSORT$
+						court_position = worthy_consort_court_position
+					}
+				}
+			}
+		}
+	}
+}
 # Relationship effects #
 #Does not add opinion if either person is NOT AI
 calyver_worsen_relationship_effect = {
