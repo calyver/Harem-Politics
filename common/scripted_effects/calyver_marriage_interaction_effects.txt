@@ -1532,7 +1532,7 @@ spouse_management_effect = {
 				}
 			}
 		}
-		else_if = {#As GC
+		else_if = {#As GC/HC
 			limit = {
 				OR = {
 					has_opinion_modifier = {
@@ -1541,6 +1541,15 @@ spouse_management_effect = {
 					}
 					has_opinion_modifier = {
 						modifier = dismissed_me_as_gc
+						target = $PARTNER$
+					}
+
+					has_opinion_modifier = {
+						modifier = divorced_me_as_hc
+						target = $PARTNER$
+					}
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_hc
 						target = $PARTNER$
 					}
 				}
@@ -1562,6 +1571,7 @@ spouse_management_effect = {
 				}
 			}
 			else = {
+				# Victim is naturally angry for being demoted.
 				if = {
 					limit = {
 						has_opinion_modifier = {
@@ -1573,22 +1583,57 @@ spouse_management_effect = {
 						modifier = divorced_me_as_gc
 						target = $PARTNER$
 					}
+					add_opinion = {
+						target = $PARTNER$
+						modifier = demoted_me_as_gc
+					}
 				}
-				else = {
+				else_if = {
+					limit = {
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_gc
+							target = $PARTNER$
+						}
+					}
 					remove_opinion = {
 						modifier = dismissed_me_as_gc
 						target = $PARTNER$
+					}
+					add_opinion = {
+						target = $PARTNER$
+						modifier = demoted_me_as_gc
+					}
+				}
+				else_if = {
+					limit = {
+						has_opinion_modifier = {
+							modifier = divorced_me_as_hc
+							target = $PARTNER$
+						}
+					}
+					remove_opinion = {
+						modifier = divorced_me_as_hc
+						target = $PARTNER$
+					}
+					add_opinion = {
+						target = $PARTNER$
+						modifier = demoted_me_as_hc
+					}
+				}
+				else = {
+					remove_opinion = {
+						modifier = dismissed_me_as_hc
+						target = $PARTNER$
+					}
+					add_opinion = {
+						target = $PARTNER$
+						modifier = demoted_me_as_hc
 					}
 				}
 				add_character_modifier = {
 					modifier = demoted_spouse_modifier
 				}
 				calyver_favor_moderate_loss_effect = yes
-				# Victim is naturally angry for being demoted.
-				add_opinion = {
-					target = $PARTNER$
-					modifier = demoted_me_as_gc
-				}
 				if = {
 					limit = {
 						can_set_relation_rival_trigger = { CHARACTER = $PARTNER$ }
@@ -1697,9 +1742,15 @@ spouse_management_effect = {
 		}
 		else_if = { #As GC
 			limit = {
-				has_opinion_modifier = {
-					modifier = demoted_me_as_gc
-					target = $PARTNER$
+				OR = {
+					has_opinion_modifier = {
+						modifier = demoted_me_as_gc
+						target = $PARTNER$
+					}
+					has_opinion_modifier = {
+						modifier = demoted_me_as_hc
+						target = $PARTNER$
+					}
 				}
 			}
 			if = {
@@ -1864,19 +1915,8 @@ spouse_demotion_effect = {
 		else_if = { #GC#
 			limit = {
 				$RECIPIENT$ = {
-					OR = {
-						has_opinion_modifier = {
-							modifier = demoted_me_as_gc
-							target = $ACTOR$
-						}
-						has_opinion_modifier = {
-							modifier = divorced_me_as_gc
-							target = $ACTOR$
-						}
-						has_opinion_modifier = {
-							modifier = dismissed_me_as_gc
-							target = $ACTOR$
-						}
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
+						TARGET = $ACTOR$
 					}
 				}
 			}
@@ -2170,24 +2210,23 @@ spouse_demotion_effect = {
 		else_if = { #Taking a Grand Consort as concubine
 			limit = {
 				OR = {
-					has_opinion_modifier = {
-						modifier = demoted_me_as_gc
-						target = $ACTOR$
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
+						TARGET = $ACTOR$
 					}
-					has_opinion_modifier = {
-						modifier = divorced_me_as_gc
-						target = $ACTOR$
-					}
-					has_opinion_modifier = {
-						modifier = dismissed_me_as_gc
-						target = $ACTOR$
+					is_high_consort_trigger = {
+						LIEGE = $ACTOR$
 					}
 					has_court_position = grand_consort_court_position
 				}
 			}
 			if = {
 				limit = {
-					has_court_position = grand_consort_court_position
+					OR = {
+						has_court_position = grand_consort_court_position
+						is_high_consort_trigger = {
+							LIEGE = $ACTOR$
+						}
+					}
 				}
 				add_character_flag = {
 					flag = block_rival_progress_effect_flag
@@ -2198,9 +2237,44 @@ spouse_demotion_effect = {
 					days = 2
 				}
 				$ACTOR$ = {
-					revoke_court_position = {
-						recipient = $RECIPIENT$
-						court_position = grand_consort_court_position
+					if = {
+						limit = {
+							$RECIPIENT$ = {
+								has_court_position = grand_consort_court_position
+							}
+						}
+						revoke_court_position = {
+							recipient = $RECIPIENT$
+							court_position = grand_consort_court_position
+						}
+					}
+					else_if = {
+						limit = {
+							$RECIPIENT$ = {
+								has_court_position = pure_consort_court_position
+							}
+						}
+						revoke_court_position = {
+							recipient = $RECIPIENT$
+							court_position = pure_consort_court_position
+						}
+					}
+					else_if = {
+						limit = {
+							$RECIPIENT$ = {
+								has_court_position = virtuous_consort_court_position
+							}
+						}
+						revoke_court_position = {
+							recipient = $RECIPIENT$
+							court_position = virtuous_consort_court_position
+						}
+					}
+					else = {
+						revoke_court_position = {
+							recipient = $RECIPIENT$
+							court_position = worthy_consort_court_position
+						}
 					}
 				}
 			}
@@ -2215,6 +2289,46 @@ spouse_demotion_effect = {
 					modifier = divorced_me_as_gc
 					target = $ACTOR$
 				}
+				if = {
+					limit = {
+						NOT = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_gc
+								target = $ACTOR$
+							}
+						}
+					}
+					add_opinion = {
+						target = $ACTOR$
+						modifier = demoted_me_as_gc
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_opinion_modifier = {
+						modifier = divorced_me_as_hc
+						target = $ACTOR$
+					}
+				}
+				remove_opinion = {
+					modifier = divorced_me_as_hc
+					target = $ACTOR$
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_hc
+								target = $ACTOR$
+							}
+						}
+					}
+					add_opinion = {
+						target = $ACTOR$
+						modifier = demoted_me_as_hc
+					}
+				}
 			}
 			if = {
 				limit = {
@@ -2227,23 +2341,49 @@ spouse_demotion_effect = {
 					modifier = dismissed_me_as_gc
 					target = $ACTOR$
 				}
-			}
-			add_character_modifier = {
-				modifier = demoted_spouse_modifier
+				if = {
+					limit = {
+						NOT = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_gc
+								target = $ACTOR$
+							}
+						}
+					}
+					add_opinion = {
+						target = $ACTOR$
+						modifier = demoted_me_as_gc
+					}
+				}
 			}
 			if = {
 				limit = {
-					NOT = {
-						has_opinion_modifier = {
-							modifier = demoted_me_as_gc
-							target = $ACTOR$
-						}
+					has_opinion_modifier = {
+						modifier = dismissed_me_as_hc
+						target = $ACTOR$
 					}
 				}
-				add_opinion = {
+				remove_opinion = {
+					modifier = dismissed_me_as_hc
 					target = $ACTOR$
-					modifier = demoted_me_as_gc
 				}
+				if = {
+					limit = {
+						NOT = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_hc
+								target = $ACTOR$
+							}
+						}
+					}
+					add_opinion = {
+						target = $ACTOR$
+						modifier = demoted_me_as_hc
+					}
+				}
+			}
+			add_character_modifier = {
+				modifier = demoted_spouse_modifier
 			}
 			if = {
 				limit = {
@@ -2709,8 +2849,15 @@ divorcee_effect = {
 				is_grand_consort_trigger = {
 					LIEGE = $DIVORCER$
 				}
+				is_high_consort_trigger = {
+					LIEGE = $DIVORCER$
+				}
 				has_opinion_modifier = {
 					modifier = demoted_me_as_gc
+					target = $DIVORCER$
+				}
+				has_opinion_modifier = {
+					modifier = demoted_me_as_hc
 					target = $DIVORCER$
 				}
 			}
