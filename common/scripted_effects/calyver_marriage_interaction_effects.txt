@@ -2887,30 +2887,97 @@ divorcee_effect = {
 		}
 		if = {
 			limit = {
-				has_court_position = grand_consort_court_position
-				is_courtier_of = $DIVORCER$
-			}
-			add_character_flag = {
-				flag = block_rival_progress_effect_flag
-				days = 2
-			}
-			add_character_flag = {
-				flag = block_favor_progress_effect_flag
-				days = 2
-			}
-			$DIVORCER$ = {
-				revoke_court_position = {
-					recipient = $DIVORCEE$
-					court_position = grand_consort_court_position
+				OR = {
+					is_grand_consort_trigger = {
+						LIEGE = $DIVORCER$
+					}
+					has_opinion_modifier = {
+						modifier = demoted_me_as_gc
+						target = $DIVORCER$
+					}
 				}
 			}
+			if = {
+				limit = {
+					has_court_position = grand_consort_court_position
+					is_courtier_of = $DIVORCER$
+				}
+				add_character_flag = {
+					flag = block_rival_progress_effect_flag
+					days = 2
+				}
+				add_character_flag = {
+					flag = block_favor_progress_effect_flag
+					days = 2
+				}
+				$DIVORCER$ = {
+					revoke_court_position = {
+						recipient = $DIVORCEE$
+						court_position = grand_consort_court_position
+					}
+				}
+			}
+			clear_consort_opinions_effect = {
+				TARGET = $DIVORCER$
+			}
+			add_opinion = {
+				target = $DIVORCER$
+				modifier = divorced_me_as_gc
+			}
 		}
-		clear_consort_opinions_effect = {
-			TARGET = $DIVORCER$
-		}
-		add_opinion = {
-			target = $DIVORCER$
-			modifier = divorced_me_as_gc
+		else = {
+			if = {
+				limit = {
+					is_high_consort_trigger = {
+						LIEGE = $DIVORCER$
+					}
+				}
+				add_character_flag = {
+					flag = block_rival_progress_effect_flag
+					days = 2
+				}
+				add_character_flag = {
+					flag = block_favor_progress_effect_flag
+					days = 2
+				}
+				if = {
+					limit = {
+						has_court_position = pure_consort_court_position
+					}
+					$DIVORCER$ = {
+						revoke_court_position = {
+							recipient = $DIVORCEE$
+							court_position = pure_consort_court_position
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						has_court_position = virtuous_consort_court_position
+					}
+					$DIVORCER$ = {
+						revoke_court_position = {
+							recipient = $DIVORCEE$
+							court_position = virtuous_consort_court_position
+						}
+					}
+				}
+				else = {
+					$DIVORCER$ = {
+						revoke_court_position = {
+							recipient = $DIVORCEE$
+							court_position = worthy_consort_court_position
+						}
+					}
+				}
+			}
+			clear_consort_opinions_effect = {
+				TARGET = $DIVORCER$
+			}
+			add_opinion = {
+				target = $DIVORCER$
+				modifier = divorced_me_as_hc
+			}
 		}
 	}
 	else = { #Regular secondary spouse
@@ -4794,6 +4861,9 @@ calyver_dismiss_concubine_effect = {
 					is_grand_consort_trigger = {
 						LIEGE = scope:actor
 					}
+					is_high_consort_trigger = {
+						LIEGE = scope:actor
+					}
 					has_opinion_modifier = {
 						modifier = demoted_me_as_gc
 						target = scope:actor
@@ -4802,27 +4872,91 @@ calyver_dismiss_concubine_effect = {
 						modifier = divorced_me_as_gc
 						target = scope:actor
 					}
+					has_opinion_modifier = {
+						modifier = demoted_me_as_hc
+						target = scope:actor
+					}
+					has_opinion_modifier = {
+						modifier = divorced_me_as_hc
+						target = scope:actor
+					}
 				}
 			}
 			if = {
 				limit = {
-					is_grand_consort_trigger = {
-						LIEGE = scope:actor
+					OR = {
+						is_grand_consort_trigger = {
+							LIEGE = scope:actor
+						}
+						has_opinion_modifier = {
+							modifier = demoted_me_as_gc
+							target = scope:actor
+						}
+						has_opinion_modifier = {
+							modifier = divorced_me_as_gc
+							target = scope:actor
+						}
 					}
 				}
-				scope:actor = {
-					revoke_court_position = {
-						recipient = scope:recipient
-						court_position = grand_consort_court_position
+				if = {
+					limit = {
+						is_grand_consort_trigger = {
+							LIEGE = scope:actor
+						}
+					}
+					scope:actor = {
+						revoke_court_position = {
+							recipient = scope:recipient
+							court_position = grand_consort_court_position
+						}
 					}
 				}
+				clear_consort_opinions_effect = {
+					TARGET = scope:actor
+				}
+				add_opinion = {
+					target = scope:actor
+					modifier = dismissed_me_as_gc
+				}
 			}
-			clear_consort_opinions_effect = {
-				TARGET = scope:actor
-			}
-			add_opinion = {
-				target = scope:actor
-				modifier = dismissed_me_as_gc
+			else = {
+				if = {
+					limit = {
+						has_court_position = pure_consort_court_position
+					}
+					scope:actor = {
+						revoke_court_position = {
+							recipient = scope:recipient
+							court_position = pure_consort_court_position
+						}
+					}
+				}
+				else_if = {
+					limit = {
+						has_court_position = virtuous_consort_court_position
+					}
+					scope:actor = {
+						revoke_court_position = {
+							recipient = scope:recipient
+							court_position = virtuous_consort_court_position
+						}
+					}
+				}
+				else = {
+					scope:actor = {
+						revoke_court_position = {
+							recipient = scope:recipient
+							court_position = worthy_consort_court_position
+						}
+					}
+				}
+				clear_consort_opinions_effect = {
+					TARGET = scope:actor
+				}
+				add_opinion = {
+					target = scope:actor
+					modifier = dismissed_me_as_hc
+				}
 			}
 		}
 		else_if = {
