@@ -22255,6 +22255,12 @@ scripted_effect appoint_to_high_consort_effect = {
 						has_trait = poet
 					}
 				}
+				modifier = { #Traits
+					add = -1
+					scope:recipient = {
+						has_trait = shy
+					}
+				}
 				trigger_event = {
 					id = consort_events.1002
 					days = { 4 8 }
@@ -22595,8 +22601,18 @@ consort_events.1001 = {
 			CHARACTER = scope:recipient
 			PREGNANCY_CHANCE = pregnancy_chance
 		}
+		add_opinion = {
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
+		}
 		scope:recipient = {
 			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				modifier = romance_opinion
+				target = scope:actor
+				opinion = 5
+			}
 		}
 		ai_chance = {
 			base = 1
@@ -22604,14 +22620,14 @@ consort_events.1001 = {
 	}
 }
 
-## Consort Jia dances for the Emperor ##
+## Tea and poems ##
 consort_events.1002 = {
 	type = character_event
 	title = consort_events.1002.t
 	desc = consort_events.1002.desc
 	theme = love
 	override_background = {
-		reference = bedchamber
+		reference = study
 	}
 	
 	right_portrait = { 	
@@ -22619,9 +22635,8 @@ consort_events.1002 = {
 		animation = flirtation
 	}
 	left_portrait = { 	
-		character = scope:recipient
-		animation = flirtation_left
-		outfit_tags = { spouse_outfit }
+		character = root
+		animation = personality_honorable
 	}
 	
 	trigger = {
@@ -22636,9 +22651,6 @@ consort_events.1002 = {
 					modifier = reinstated_me_opinion
 					target = scope:actor
 				}
-				has_trait = shy
-				has_trait = chaste
-				has_trait = pregnant
 			}
 			trigger_if = {
 				limit = {
@@ -22654,7 +22666,6 @@ consort_events.1002 = {
 					has_relation_friend = scope:actor
 				}
 			}
-			age <= 40
 			is_high_consort_trigger = {
 				LIEGE = root
 			}
@@ -22667,6 +22678,132 @@ consort_events.1002 = {
 
 	option = {
 		name = consort_events.1002.a
+		random_list = {
+			1 = { # Just conversation
+				modifier = {
+					has_trait = chaste
+					add = 2
+				}
+				modifier = {
+					has_trait = shy
+					add = 1
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_trait = lustful
+						}
+					}
+					stress_impact = {
+						base = minor_stress_impact_loss
+					}
+				}
+				add_opinion = {
+					modifier = amused_opinion
+					target = scope:recipient
+					opinion = 5
+				}
+				scope:recipient = {
+					calyver_favor_minor_gain_effect = yes
+					add_opinion = {
+						modifier = amused_opinion
+						target = scope:actor
+						opinion = 5
+					}
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_good
+						title = consort_events.1002.t
+						right_icon = scope:recipient
+						show_as_tooltip = {
+							if = {
+								limit = {
+									NOT = {
+										has_trait = lustful
+									}
+								}
+								stress_impact = {
+									base = minor_stress_impact_loss
+								}
+							}
+							scope:recipient = {
+								calyver_favor_minor_gain_effect = yes
+								add_opinion = {
+									modifier = amused_opinion
+									target = scope:actor
+									opinion = 5
+								}
+							}
+						}
+					}
+				}
+			}
+			1 = { # Intimacy
+				modifier = {
+					has_trait = lustful
+					add = 2
+				}
+				had_sex_with_effect = {
+					CHARACTER = scope:recipient
+					PREGNANCY_CHANCE = pregnancy_chance
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_trait = chaste
+						}
+					}
+					stress_impact = {
+						base = minor_stress_impact_loss
+					}
+				}
+				add_opinion = {
+					modifier = romance_opinion
+					target = scope:recipient
+					opinion = 5
+				}
+				scope:recipient = {
+					calyver_favor_minor_gain_effect = yes
+					add_opinion = {
+						modifier = romance_opinion
+						target = scope:actor
+						opinion = 5
+					}
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_politics.0011.t
+						right_icon = scope:recipient
+						show_as_tooltip = {
+							had_sex_with_effect = {
+								CHARACTER = scope:recipient
+								PREGNANCY_CHANCE = pregnancy_chance
+							}
+							if = {
+								limit = {
+									NOT = {
+										has_trait = chaste
+									}
+								}
+								stress_impact = {
+									base = minor_stress_impact_loss
+								}
+							}
+							scope:recipient = {
+								calyver_favor_minor_gain_effect = yes
+								add_opinion = {
+									modifier = romance_opinion
+									target = scope:actor
+									opinion = 5
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		had_sex_with_effect = {
 			CHARACTER = scope:recipient
 			PREGNANCY_CHANCE = pregnancy_chance
