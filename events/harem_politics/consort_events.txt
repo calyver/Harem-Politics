@@ -27,15 +27,14 @@ scripted_trigger mei_daying_trigger = {
 		value <= 10
 	}
 
-	exists = court_owner
-	court_owner = {
-		any_consort = {
-			this = root
-		}
+	court_owner ?= {
+		is_consort_of = root
 	}
 	NOR = {
 		this = root
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		
 		has_trait = pregnant
 		has_trait = craven
@@ -72,8 +71,7 @@ scripted_trigger shen_trigger = {
 	harem_politics_favored_consort_trigger = no
 
 	is_concubine = yes
-	exists = court_owner
-	court_owner = {
+	court_owner ?= {
 		OR = {
 			any_consort = {
 				this = root
@@ -86,7 +84,9 @@ scripted_trigger shen_trigger = {
 
 	NOR = {
 		this = root
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		has_trait = ill
 		has_trait = wounded
 		has_trait = pregnant
@@ -137,6 +137,16 @@ scripted_trigger xia_changzai_trigger = {
 
 	hp_accepts_harems = yes
 
+	court_owner ?= {
+		OR = {
+			any_consort = {
+				this = root
+			}
+			any_parent = {
+				this = root
+			}
+		}
+	}
 	NOR = { 
 		this = root
 		this = $TARGET$
@@ -159,7 +169,9 @@ scripted_trigger xia_changzai_trigger = {
 		has_hook = root
 		has_strong_hook = root
 		
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		
 		has_trait = craven
 		has_trait = shy
@@ -171,17 +183,6 @@ scripted_trigger xia_changzai_trigger = {
 		value <= 10
 	}
 
-	exists = court_owner
-	court_owner = {
-		OR = {
-			any_consort = {
-				this = root
-			}
-			any_parent = {
-				this = root
-			}
-		}
-	}
 	
 	OR = {
 		AND = {
@@ -281,8 +282,7 @@ scripted_trigger ranting_consort_trigger = {
 
 	is_concubine = yes
 
-	exists = court_owner
-	court_owner = {
+	court_owner ?= {
 		any_consort = {
 			this = root
 		}
@@ -290,7 +290,9 @@ scripted_trigger ranting_consort_trigger = {
 	NOR = {
 		this = root
 		this = $TARGET$
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		has_trait = pregnant
 		has_trait = craven
 		has_trait = shy
@@ -330,27 +332,15 @@ scripted_trigger ranting_consort_trigger = {
 
 scripted_trigger superior_consort_trigger = {
 	is_physically_able_adult = yes
-	AND = {
-		OR = {
-			is_married = yes
-			has_court_position = grand_consort_court_position
+	OR = {
+		AND = {
+			exists = liege
+			is_spouse_of = root.liege
 		}
-		OR = {
-			AND = {
-				is_landed_or_landless_administrative = yes
-				any_liege_or_above = { 
-					any_consort = { 
-						this = root
-					}
-				}
-			}
-			AND = {
-				exists = court_owner
-				court_owner = {
-					any_consort = {
-						this = root
-					}
-				}
+		AND = {
+			exists = court_owner
+			is_high_consort_trigger = {
+				LIEGE = root.court_owner
 			}
 		}
 	}
@@ -22537,6 +22527,585 @@ consort_events.0040 = {
 		}
 	}
 }
+
+#############################
+## Elevate to High Consort ##
+#############################
+scripted_effect appoint_to_high_consort_effect = {
+	appoint_court_position = {
+		recipient = scope:recipient
+		court_position = $TITLE$_consort_court_position
+	}
+	# hidden_effect = {
+	# 	random_list = {
+	# 		# Consort Jia dances for the Emperor
+	# 		1 = {
+	# 			trigger = {
+	# 				scope:recipient = {
+	# 					NOR = {
+	# 						has_relation_rival = scope:actor
+	# 						has_relation_nemesis = scope:actor
+	# 						has_demoted_or_divorced_opinion_trigger = {
+	# 							TARGET = scope:actor
+	# 						}
+	# 						has_trait = shy
+	# 						has_trait = chaste
+	# 						has_trait = pregnant
+	# 					}
+	# 					trigger_if = {
+	# 						limit = {
+	# 							hp_accepts_harems = no
+	# 						}
+	# 						OR = {
+	# 							has_trait = ambitious
+	# 							has_trait = greedy
+	# 							has_trait = arrogant
+	# 							has_relation_lover = scope:actor
+	# 							has_relation_soulmate = scope:actor
+	# 							has_relation_best_friend = scope:actor
+	# 							has_relation_friend = scope:actor
+	# 						}
+	# 					}
+	# 				}
+	# 			}
+	# 			modifier = { # Diplomacy
+	# 				add = {
+	# 					value = scope:recipient.diplomacy
+	# 					multiply = 2
+	# 				}					
+	# 			}
+	# 			modifier = { #Traits
+	# 				add = 15
+	# 				scope:recipient = {
+	# 					has_trait = seducer
+	# 				}
+	# 			}
+	# 			trigger_event = {
+	# 				id = calyver_consort_events.1001
+	# 				days = { 4 8 }
+	# 			}
+	# 		}
+	# 		# Tea and poems
+	# 		1 = {
+	# 			trigger = {
+	# 				scope:recipient = {
+	# 					NOR = {
+	# 						has_relation_rival = scope:actor
+	# 						has_relation_nemesis = scope:actor
+	# 						has_demoted_or_divorced_opinion_trigger = {
+	# 							TARGET = scope:actor
+	# 						}
+	# 						has_trait = shy
+	# 						has_trait = chaste
+	# 						has_trait = pregnant
+	# 					}
+	# 					trigger_if = {
+	# 						limit = {
+	# 							hp_accepts_harems = no
+	# 						}
+	# 						OR = {
+	# 							has_trait = ambitious
+	# 							has_trait = greedy
+	# 							has_trait = arrogant
+	# 							has_relation_lover = scope:actor
+	# 							has_relation_soulmate = scope:actor
+	# 							has_relation_best_friend = scope:actor
+	# 							has_relation_friend = scope:actor
+	# 						}
+	# 					}
+	# 				}
+	# 			}
+	# 			modifier = { # Diplomacy
+	# 				add = {
+	# 					value = scope:recipient.diplomacy
+	# 					multiply = 2
+	# 				}					
+	# 			}
+	# 			modifier = { #Traits
+	# 				add = 15
+	# 				scope:recipient = {
+	# 					has_trait = seducer
+	# 				}
+	# 			}
+	# 			trigger_event = {
+	# 				id = calyver_consort_events.1002
+	# 				days = { 4 8 }
+	# 			}
+	# 		}
+	# 		# The Huaqing Pools
+	# 		1 = {
+	# 			trigger = {
+	# 				scope:recipient = {
+	# 					NOR = {
+	# 						has_relation_rival = scope:actor
+	# 						has_relation_nemesis = scope:actor
+	# 						has_demoted_or_divorced_opinion_trigger = {
+	# 							TARGET = scope:actor
+	# 						}
+	# 						has_trait = shy
+	# 						has_trait = chaste
+	# 						has_trait = pregnant
+	# 					}
+	# 					trigger_if = {
+	# 						limit = {
+	# 							hp_accepts_harems = no
+	# 						}
+	# 						OR = {
+	# 							has_trait = ambitious
+	# 							has_trait = greedy
+	# 							has_trait = arrogant
+	# 							has_relation_lover = scope:actor
+	# 							has_relation_soulmate = scope:actor
+	# 							has_relation_best_friend = scope:actor
+	# 							has_relation_friend = scope:actor
+	# 						}
+	# 					}
+	# 				}
+	# 			}
+	# 			modifier = { # Diplomacy
+	# 				add = {
+	# 					value = scope:recipient.diplomacy
+	# 					multiply = 2
+	# 				}					
+	# 			}
+	# 			modifier = { #Traits
+	# 				add = 15
+	# 				scope:recipient = {
+	# 					has_trait = seducer
+	# 				}
+	# 			}
+	# 			trigger_event = {
+	# 				id = calyver_consort_events.1003
+	# 				days = { 4 8 }
+	# 			}
+	# 		}
+	# 		# Nothing
+	# 		7 = {
+	# 		}
+	# 	}
+	# }
+}
+
+consort_events.1000 = {
+	type = character_event
+	title = consort_events.1000.t
+	desc = {
+		first_valid = {
+			triggered_desc = { # They are your closest companion
+				trigger = {
+					OR = {
+						has_relation_lover = scope:recipient
+						has_relation_soulmate = scope:recipient
+						has_relation_best_friend = scope:recipient
+						has_relation_friend = scope:recipient
+						scope:recipient = {
+							OR = {
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = beloved_consort_modifier
+								has_character_modifier = favor_boost_modifier
+							}
+						}
+					}
+				}
+				desc = consort_events.1000.lover.desc
+			}
+			triggered_desc = { # They are the primary heir's parent
+				trigger = {
+					scope:recipient = {
+						any_child = {
+							is_child_of = scope:actor
+							is_primary_child_of = scope:actor
+						}
+					}
+				}
+				desc = consort_events.1000.primary_heir.desc
+			}
+			triggered_desc = {
+				trigger = {
+					exists = root.house
+					scope:recipient.house ?= {
+						this != root.house
+						OR = {	
+							is_powerful_family = yes
+							is_dominant_family = yes
+							is_powerful_vassal_of = root
+						}
+						house_head.top_liege = root.house.house_head.top_liege
+					}
+				}
+				desc = consort_events.1000.powerful_family.desc
+			}
+			triggered_desc = { # Fallback
+				desc = consort_events.1000.fallback.desc
+			}
+		}
+		desc = consort_events.1000.end.desc
+	}
+	theme = realm
+	override_background = {
+		reference = garden
+	}
+	
+	right_portrait = { 	
+		character = scope:recipient
+		animation = personality_content
+	}
+	left_portrait = { 	
+		character = root
+		animation = personality_rational
+	}
+	
+	trigger = {
+		OR = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = grand_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = pure_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = virtuous_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = worthy_consort_court_position
+			}
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				scope:recipient = {
+					any_child = {
+						is_child_of = scope:actor
+						is_primary_child_of = scope:actor
+					}
+				}
+			}
+			primary_heir ?= {
+				save_scope_as = primary_heir
+			}
+		}
+	}
+
+	# Noble Consort
+	option = {
+		name = consort_events.1000.a
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = grand_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = grand
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Pure Consort
+	option = {
+		name = consort_events.1000.b
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = pure_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = pure
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Virtuous Consort
+	option = {
+		name = consort_events.1000.c
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = virtuous_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = virtuous
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Worthy Consort
+	option = {
+		name = consort_events.1000.d
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = worthy_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = worthy
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Changed my mind
+	option = {
+		name = consort_events.1000.e
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = -0.5
+			}
+		}
+	}
+
+}
+
+## Consort Jia dances for the Emperor ##
+# consort_events.1001 = {
+# 	type = character_event
+# 	title = consort_events.1001.t
+# 	desc = {
+# 		first_valid = {
+# 			triggered_desc = { # They are your closest companion
+# 				trigger = {
+# 					OR = {
+# 						has_relation_lover = scope:recipient
+# 						has_relation_soulmate = scope:recipient
+# 						has_relation_best_friend = scope:recipient
+# 						has_relation_friend = scope:recipient
+# 						scope:recipient = {
+# 							OR = {
+# 								has_character_modifier = favored_consort_modifier
+# 								has_character_modifier = beloved_consort_modifier
+# 								has_character_modifier = favor_boost_modifier
+# 							}
+# 						}
+# 					}
+# 				}
+# 				desc = consort_events.1001.lover.desc
+# 			}
+# 			triggered_desc = { # They are the primary heir's parent
+# 				trigger = {
+# 					scope:recipient = {
+# 						any_child = {
+# 							is_child_of = scope:actor
+# 							is_primary_child_of = scope:actor
+# 						}
+# 					}
+# 				}
+# 				desc = consort_events.1001.primary_heir.desc
+# 			}
+# 			triggered_desc = {
+# 				trigger = {
+# 					exists = root.house
+# 					scope:recipient.house ?= {
+# 						this != root.house
+# 						OR = {	
+# 							is_powerful_family = yes
+# 							is_dominant_family = yes
+# 							is_powerful_vassal_of = root
+# 						}
+# 						house_head.top_liege = root.house.house_head.top_liege
+# 					}
+# 				}
+# 				desc = consort_events.1001.powerful_family.desc
+# 			}
+# 			triggered_desc = { # Fallback
+# 				desc = consort_events.1001.fallback.desc
+# 			}
+# 		}
+# 		desc = consort_events.1001.end.desc
+# 	}
+# 	theme = realm
+# 	override_background = {
+# 		reference = garden
+# 	}
+	
+# 	right_portrait = { 	
+# 		character = scope:recipient
+# 		animation = personality_content
+# 	}
+# 	left_portrait = { 	
+# 		character = root
+# 		animation = personality_rational
+# 	}
+	
+# 	trigger = {
+# 		OR = {
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = grand_consort_court_position
+# 			}
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = pure_consort_court_position
+# 			}
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = virtuous_consort_court_position
+# 			}
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = worthy_consort_court_position
+# 			}
+# 		}
+# 		can_have_four_consorts_trigger = yes
+# 	}
+	
+# 	immediate = {
+# 		if = {
+# 			limit = {
+# 				scope:recipient = {
+# 					any_child = {
+# 						is_child_of = scope:actor
+# 						is_primary_child_of = scope:actor
+# 					}
+# 				}
+# 			}
+# 			primary_heir ?= {
+# 				save_scope_as = primary_heir
+# 			}
+# 		}
+# 	}
+
+# 	# Noble Consort
+# 	option = {
+# 		name = consort_events.0040.a
+# 		trigger = {
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = grand_consort_court_position
+# 			}
+# 		}
+# 		appoint_to_high_consort_effect = {
+# 			TITLE = grand
+# 		}
+# 		ai_chance = {
+# 			base = 20
+# 			opinion_modifier = {
+# 				WHO = root
+# 				opinion_target = scope:recipient
+# 				multiplier = 0.5
+# 			}
+# 		}
+# 	}
+
+# 	# Pure Consort
+# 	option = {
+# 		name = consort_events.0040.b
+# 		trigger = {
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = pure_consort_court_position
+# 			}
+# 		}
+# 		appoint_to_high_consort_effect = {
+# 			TITLE = pure
+# 		}
+# 		ai_chance = {
+# 			base = 20
+# 			opinion_modifier = {
+# 				WHO = root
+# 				opinion_target = scope:recipient
+# 				multiplier = 0.5
+# 			}
+# 		}
+# 	}
+
+# 	# Virtuous Consort
+# 	option = {
+# 		name = consort_events.0040.c
+# 		trigger = {
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = virtuous_consort_court_position
+# 			}
+# 		}
+# 		appoint_to_high_consort_effect = {
+# 			TITLE = virtuous
+# 		}
+# 		ai_chance = {
+# 			base = 20
+# 			opinion_modifier = {
+# 				WHO = root
+# 				opinion_target = scope:recipient
+# 				multiplier = 0.5
+# 			}
+# 		}
+# 	}
+
+# 	# Worthy Consort
+# 	option = {
+# 		name = consort_events.0040.d
+# 		trigger = {
+# 			can_appoint_char_to_court_position = {
+# 				CHAR = scope:recipient
+# 				COURT_POS = worthy_consort_court_position
+# 			}
+# 		}
+# 		appoint_to_high_consort_effect = {
+# 			TITLE = worthy
+# 		}
+# 		ai_chance = {
+# 			base = 20
+# 			opinion_modifier = {
+# 				WHO = root
+# 				opinion_target = scope:recipient
+# 				multiplier = 0.5
+# 			}
+# 		}
+# 	}
+
+# 	# Changed my mind
+# 	option = {
+# 		name = consort_events.0040.e
+# 		ai_chance = {
+# 			base = 20
+# 			opinion_modifier = {
+# 				WHO = root
+# 				opinion_target = scope:recipient
+# 				multiplier = -0.5
+# 			}
+# 		}
+# 	}
+# }
+
 ####################
 ##Bestowing a name##
 ####################
