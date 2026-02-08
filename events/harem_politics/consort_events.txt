@@ -27,15 +27,14 @@ scripted_trigger mei_daying_trigger = {
 		value <= 10
 	}
 
-	exists = court_owner
-	court_owner = {
-		any_consort = {
-			this = root
-		}
+	court_owner ?= {
+		is_consort_of = root
 	}
 	NOR = {
 		this = root
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		
 		has_trait = pregnant
 		has_trait = craven
@@ -72,8 +71,7 @@ scripted_trigger shen_trigger = {
 	harem_politics_favored_consort_trigger = no
 
 	is_concubine = yes
-	exists = court_owner
-	court_owner = {
+	court_owner ?= {
 		OR = {
 			any_consort = {
 				this = root
@@ -86,7 +84,9 @@ scripted_trigger shen_trigger = {
 
 	NOR = {
 		this = root
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		has_trait = ill
 		has_trait = wounded
 		has_trait = pregnant
@@ -137,6 +137,16 @@ scripted_trigger xia_changzai_trigger = {
 
 	hp_accepts_harems = yes
 
+	court_owner ?= {
+		OR = {
+			any_consort = {
+				this = root
+			}
+			any_parent = {
+				this = root
+			}
+		}
+	}
 	NOR = { 
 		this = root
 		this = $TARGET$
@@ -159,7 +169,9 @@ scripted_trigger xia_changzai_trigger = {
 		has_hook = root
 		has_strong_hook = root
 		
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		
 		has_trait = craven
 		has_trait = shy
@@ -171,17 +183,6 @@ scripted_trigger xia_changzai_trigger = {
 		value <= 10
 	}
 
-	exists = court_owner
-	court_owner = {
-		OR = {
-			any_consort = {
-				this = root
-			}
-			any_parent = {
-				this = root
-			}
-		}
-	}
 	
 	OR = {
 		AND = {
@@ -281,8 +282,7 @@ scripted_trigger ranting_consort_trigger = {
 
 	is_concubine = yes
 
-	exists = court_owner
-	court_owner = {
+	court_owner ?= {
 		any_consort = {
 			this = root
 		}
@@ -290,7 +290,9 @@ scripted_trigger ranting_consort_trigger = {
 	NOR = {
 		this = root
 		this = $TARGET$
-		has_court_position = grand_consort_court_position
+		is_high_consort_trigger = {
+			LIEGE = root.court_owner
+		}
 		has_trait = pregnant
 		has_trait = craven
 		has_trait = shy
@@ -330,27 +332,15 @@ scripted_trigger ranting_consort_trigger = {
 
 scripted_trigger superior_consort_trigger = {
 	is_physically_able_adult = yes
-	AND = {
-		OR = {
-			is_married = yes
-			has_court_position = grand_consort_court_position
+	OR = {
+		AND = {
+			exists = liege
+			is_spouse_of = root.liege
 		}
-		OR = {
-			AND = {
-				is_landed_or_landless_administrative = yes
-				any_liege_or_above = { 
-					any_consort = { 
-						this = root
-					}
-				}
-			}
-			AND = {
-				exists = court_owner
-				court_owner = {
-					any_consort = {
-						this = root
-					}
-				}
+		AND = {
+			exists = court_owner
+			is_high_consort_trigger = {
+				LIEGE = root.court_owner
 			}
 		}
 	}
@@ -13184,22 +13174,11 @@ consort_events.0016 = {
 					}
 				}
 				AND = { #A GC who shouldn't be demoted
-					has_court_position = grand_consort_court_position
-					OR = {
-						has_opinion_modifier = {
-							target = root
-							modifier = divorced_me_as_gc
-						}
-
-						has_opinion_modifier = {
-							target = root
-							modifier = demoted_me_as_gc
-						}
-
-						has_opinion_modifier = {
-							modifier = dismissed_me_as_gc
-							target = root
-						}
+					is_high_consort_trigger = {
+						LIEGE = root
+					}
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
+						TARGET = root
 					}
 				}
 				AND = { #A GC who shouldn't be demoted 
@@ -13232,61 +13211,40 @@ consort_events.0016 = {
 	immediate = {
 		if = { #The PS
 			limit = {
-				any_consort = {
-					exists = root.primary_spouse
-					this = root.primary_spouse
+				primary_spouse ?= {
 					has_demoted_or_divorced_opinion_trigger = {
+						TARGET = root
+					}
+				}
+			}
+			primary_spouse = {
+				save_scope_as = demoted_consort
+			}
+		}
+		else_if = { #The GC
+			limit = {
+				any_consort = {
+					is_high_consort_trigger = {
+						LIEGE = root
+					}
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
 						TARGET = root
 					}
 				}
 			}
 			random_consort = {
 				limit = {
-					this = root.primary_spouse
-				}
-				save_scope_as = previous_primary_spouse
-				consort_reinstatement_effect = {
-					REINSTATOR = root
-					REINSTATED = scope:previous_primary_spouse
-				}
-			}
-		}
-
-		if = { #The GC
-			limit = {
-				any_consort = {
-					has_court_position = grand_consort_court_position
-					OR = {
-						has_opinion_modifier = {
-							target = root
-							modifier = divorced_me_as_gc
-						}
-
-						has_opinion_modifier = {
-							target = root
-							modifier = demoted_me_as_gc
-						}
-
-						has_opinion_modifier = {
-							modifier = dismissed_me_as_gc
-							target = root
-						}
+					is_high_consort_trigger = {
+						LIEGE = root
+					}
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
+						TARGET = root
 					}
 				}
-			}
-			random_consort = {
-				limit = {
-					has_court_position = grand_consort_court_position
-				}
-				save_scope_as = previous_grand_consort
-				consort_reinstatement_effect = {
-					REINSTATOR = root
-					REINSTATED = scope:previous_grand_consort
-				}
+				save_scope_as = demoted_consort
 			}
 		}
-
-		if = { #The SS
+		else_if = { #The SS
 			limit = {
 				any_consort = {
 					is_spouse_of = root
@@ -13328,11 +13286,17 @@ consort_events.0016 = {
 						}
 					}
 				}
-				save_scope_as = previous_spouse
-				consort_reinstatement_effect = {
-					REINSTATOR = root
-					REINSTATED = scope:previous_spouse
-				}
+				save_scope_as = demoted_consort
+			}
+		}
+
+		if = {
+			limit = {
+				exists = scope:demoted_consort
+			}
+			consort_reinstatement_effect = {
+				REINSTATOR = root
+				REINSTATED = scope:previous_spouse
 			}
 		}
 	}
@@ -20242,384 +20206,6 @@ consort_events.0036 = {
 ##Summon to chambers##
 ######################
 
-scripted_effect had_sex_with_consort_effect = {
-	had_sex_with_effect = {
-		CHARACTER = scope:recipient
-		PREGNANCY_CHANCE = pregnancy_chance
-	}
-	random_list = {
-		10 = { # A very good night
-			modifier = {
-				scope:recipient = {
-					opinion = {
-						target = scope:actor
-						value >= 50
-					}
-				}
-				add = 50
-			}
-			opinion_modifier = {
-				who = scope:recipient
-				opinion_target = scope:actor
-				multiplier = 0.5
-			}
-			compatibility_modifier = {
-				who = scope:recipient
-				compatibility_target = scope:actor
-				min = -25
-				max = 25
-				multiplier = 0.5
-			}
-			opinion_modifier = {
-				who = scope:actor
-				opinion_target = scope:recipient
-				multiplier = 0.5
-			}
-			modifier = {
-				has_relation_soulmate = scope:recipient
-				add = 80
-			}
-			modifier = {
-				has_relation_lover = scope:recipient
-				add = 65
-			}
-			modifier = {
-				has_relation_best_friend = scope:recipient
-				add = 15
-			}
-			modifier = {
-				has_relation_friend = scope:recipient
-				add = 10
-			}
-			modifier = {
-				has_trait = lustful
-				add = 10
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = lustful
-				}
-				add = 10
-			}
-			modifier = {
-				has_trait = gregarious
-				add = 10
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = gregarious
-				}
-				add = 10
-			}
-			set_local_variable = {
-				name = fantastic_night_variable
-				value = yes
-			}
-			if = {
-				limit = { 
-					NOR = { 
-						has_relation_lover = scope:recipient
-						has_relation_soulmate = scope:recipient
-					}
-				}
-				progress_towards_lover_effect = {
-					CHARACTER = scope:recipient
-					REASON = lover_seduction_general
-					OPINION = 20
-				}
-			}
-			else_if = {
-				limit = {
-					scope:recipient = {
-						NOT = {
-							has_opinion_modifier = {
-								modifier = romance_opinion
-								target = scope:actor
-							}
-						}
-					}
-				}
-				add_opinion = {
-					target = scope:recipient
-					modifier = romance_opinion
-					opinion = 10
-				}
-				scope:recipient = {
-					add_opinion = {
-						target = scope:actor
-						modifier = romance_opinion
-						opinion = 10
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = {
-						has_trait = chaste
-					}
-				}
-				stress_impact = {
-					base = minor_stress_impact_loss
-				}
-			}
-			scope:recipient = {
-				calyver_favor_medium_gain_effect = yes
-			}
-		}
-		50 = { # A good night
-			opinion_modifier = {
-				who = scope:recipient
-				opinion_target = scope:actor
-				multiplier = 0.5
-			}
-			compatibility_modifier = {
-				who = scope:recipient
-				compatibility_target = scope:actor
-				min = -25
-				max = 25
-				multiplier = 0.5
-			}
-			opinion_modifier = {
-				who = scope:actor
-				opinion_target = scope:recipient
-				multiplier = 0.5
-			}
-			modifier = {
-				has_relation_soulmate = scope:recipient
-				add = 25
-			}
-			modifier = {
-				has_relation_lover = scope:recipient
-				add = 15
-			}
-			modifier = {
-				has_relation_best_friend = scope:recipient
-				add = 15
-			}
-			modifier = {
-				has_relation_friend = scope:recipient
-				add = 10
-			}
-			modifier = {
-				has_trait = lustful
-				add = 10
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = lustful
-				}
-				add = 10
-			}
-			modifier = {
-				has_trait = gregarious
-				add = 10
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = gregarious
-				}
-				add = 10
-			}
-			set_local_variable = {
-				name = good_night_variable
-				value = yes
-			}
-			if = {
-				limit = { 
-					NOR = { 
-						has_relation_potential_lover = scope:recipient
-						has_relation_lover = scope:recipient
-						has_relation_soulmate = scope:recipient
-					}
-				}
-				progress_towards_lover_effect = {
-					CHARACTER = scope:recipient
-					REASON = lover_seduction_general
-					OPINION = 10
-				}
-			}
-			else_if = {
-				limit = {
-					scope:recipient = {
-						NOT = {
-							has_opinion_modifier = {
-								modifier = romance_opinion
-								target = scope:actor
-							}
-						}
-					}
-				}
-				add_opinion = {
-					target = scope:recipient
-					modifier = romance_opinion
-					opinion = 5
-				}
-				scope:recipient = {
-					add_opinion = {
-						target = scope:actor
-						modifier = romance_opinion
-						opinion = 5
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = {
-						has_trait = chaste
-					}
-				}
-				stress_impact = {
-					base = minor_stress_impact_loss
-				}
-			}
-			scope:recipient = {
-				calyver_favor_moderate_gain_effect = yes
-			}
-		}
-		50 = { # A normal night
-			modifier = {
-				scope:recipient = {
-					opinion = {
-						target = scope:actor
-						value <= 20
-					}
-				}
-				add = 40
-			}
-			opinion_modifier = {
-				who = scope:recipient
-				opinion_target = scope:actor
-				multiplier = 0.5
-			}
-			compatibility_modifier = {
-				who = scope:recipient
-				compatibility_target = scope:actor
-				min = -25
-				max = 25
-				multiplier = 0.5
-			}
-			opinion_modifier = {
-				who = scope:actor
-				opinion_target = scope:recipient
-				multiplier = 0.5
-			}
-			modifier = {
-				has_relation_lover = scope:recipient
-				add = 65
-			}
-			modifier = {
-				has_relation_friend = scope:recipient
-				add = 10
-			}
-			set_local_variable = {
-				name = regular_night_variable
-				value = yes
-			}
-			scope:recipient = {
-				calyver_favor_minor_gain_effect = yes
-				if = {
-					limit = {
-						NOT = {
-							has_opinion_modifier = {
-								modifier = romance_opinion
-								target = scope:actor
-							}
-						}
-					}
-					add_opinion = {
-						target = scope:actor
-						modifier = romance_opinion
-						opinion = 5
-					}
-					scope:actor = {
-						add_opinion = {
-							target = scope:recipient
-							modifier = romance_opinion
-							opinion = 5
-						}
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = {
-						has_trait = chaste
-					}
-				}
-				stress_impact = {
-					base = minor_stress_impact_loss
-				}
-			}
-		}
-		20 = { # A boring night
-			modifier = {
-				scope:recipient = {
-					opinion = {
-						target = scope:actor
-						value <= 20
-					}
-				}
-				add = 50
-			}
-			opinion_modifier = {
-				who = scope:recipient
-				opinion_target = scope:actor
-				multiplier = -0.2
-			}
-			compatibility_modifier = {
-				who = scope:recipient
-				compatibility_target = scope:actor
-				min = -25
-				max = 25
-				multiplier = -0.5
-			}
-			opinion_modifier = {
-				who = scope:actor
-				opinion_target = scope:recipient
-				multiplier = -0.2
-			}
-			modifier = {
-				has_relation_rival = scope:recipient
-				add = 65
-			}
-			modifier = {
-				has_relation_nemesis = scope:recipient
-				add = 85
-			}
-			modifier = {
-				has_trait = chaste
-				add = 15
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = chaste
-				}
-				add = 15
-			}
-			modifier = {
-				has_trait = shy
-				add = 10
-			}
-			modifier = {
-				scope:recipient = {
-					has_trait = shy
-				}
-				add = 10
-			}
-			modifier = {
-				NOT = {
-					is_attracted_to_gender_of = scope:recipient
-				}
-				add = 20
-			}
-			set_local_variable = {
-				name = boring_night_variable
-				value = yes
-			}
-		}
-	}
-}
-
 scripted_effect remove_summoned_to_chambers_flag_effect = {
 	if = {
 		limit = {
@@ -20678,7 +20264,6 @@ consort_events.0037 = {
   			animation = disappointed
   		}
 		animation = flirtation
-		outfit_tags = { nightgown }
 	}
 	right_portrait = { 	
 		character = scope:recipient
@@ -20689,7 +20274,6 @@ consort_events.0037 = {
   			animation = shame
   		}
 		animation = flirtation
-		outfit_tags = { nightgown }
 	}
 	
 	trigger = {
@@ -20720,6 +20304,16 @@ consort_events.0037 = {
 	}
 	
 	immediate = {
+		add_character_flag = {
+			flag = is_naked
+			days = 30
+		}
+		scope:recipient = {
+			add_character_flag = {
+				flag = is_naked
+				days = 30
+			}
+		}
 		play_music_cue = "mx_cue_seduction"
 		add_summoned_to_chambers_flag_effect = yes
 		had_sex_with_consort_effect = yes
@@ -20750,7 +20344,18 @@ consort_events.0037 = {
 			}
 			text = consort_events.0037.boring.a
 		}
-		
+		if = {
+			limit = { has_character_flag = is_naked }
+			remove_character_flag = is_naked
+		}
+		scope:recipient = {
+			if = {
+				limit = {
+					has_character_flag = is_naked
+				}
+				remove_character_flag = is_naked
+			}
+		}
 		ai_chance = {
 			base = 1
 		}
@@ -22563,13 +22168,991 @@ consort_events.0040 = {
 		}
 	}
 }
+
+#############################
+## Elevate to High Consort ##
+#############################
+scripted_trigger appointed_high_consort_trigger = {
+	NOR = {
+		has_relation_rival = scope:actor
+		has_relation_nemesis = scope:actor
+		has_demoted_or_divorced_opinion_trigger = {
+			TARGET = scope:actor
+		}
+		has_opinion_modifier = {
+			modifier = reinstated_me_opinion
+			target = scope:actor
+		}
+	}
+	trigger_if = {
+		limit = {
+			hp_accepts_harems = no
+		}
+		OR = {
+			has_trait = ambitious
+			has_trait = greedy
+			has_trait = arrogant
+			has_relation_lover = scope:actor
+			has_relation_soulmate = scope:actor
+			has_relation_best_friend = scope:actor
+			has_relation_friend = scope:actor
+		}
+	}
+	is_high_consort_trigger = {
+		LIEGE = root
+	}
+}
+scripted_effect appoint_to_high_consort_effect = {
+	appoint_court_position = {
+		recipient = scope:recipient
+		court_position = $TITLE$_consort_court_position
+	}
+	hidden_effect = {
+		random_list = {
+			# Consort Jia dances for the Emperor
+			1 = {
+				trigger = {
+					scope:recipient = {
+						appointed_high_consort_trigger = yes
+						NOR = {
+							has_trait = shy
+							has_trait = chaste
+							has_trait = pregnant
+						}
+						age <= 40
+					}
+				}
+				modifier = { # Diplomacy
+					add = {
+						value = scope:recipient.diplomacy
+						multiply = 0.1
+					}					
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = seducer
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = lustful
+					}
+				}
+				modifier = { #Traits
+					add = -1
+					scope:recipient = {
+						has_trait = craven
+					}
+				}
+				trigger_event = {
+					id = consort_events.2001
+					days = { 4 8 }
+				}
+			}
+			# Tea and poems
+			1 = {
+				trigger = {
+					scope:recipient = {
+						appointed_high_consort_trigger = yes
+					}
+				}
+				modifier = { # Learning
+					add = {
+						value = scope:recipient.learning
+						multiply = 0.1
+					}					
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = lifestyle_poet
+					}
+				}
+				modifier = { #Traits
+					add = -1
+					scope:recipient = {
+						has_trait = shy
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = chaste
+					}
+				}
+				modifier = {
+					has_trait = chaste
+					add = 3
+				}
+				trigger_event = {
+					id = consort_events.2002
+					days = { 4 8 }
+				}
+			}
+			# The Huaqing Pools
+			1 = {
+				trigger = {
+					scope:recipient = {
+						appointed_high_consort_trigger = yes
+						NOR = {
+							has_trait = shy
+							has_trait = chaste
+							has_trait = pregnant
+						}
+					}
+				}
+				modifier = { #Traits
+					add = 2
+					scope:recipient = {
+						harem_politics_evil_consort_trigger = yes
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = seducer
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = lustful
+					}
+				}
+				modifier = { #Traits
+					add = -1
+					scope:recipient = {
+						has_trait = craven
+					}
+				}
+				trigger_event = {
+					id = consort_events.2003
+					days = { 4 8 }
+				}
+			}
+			# Noble Consort Hua shows her greed
+			1 = {
+				trigger = {
+					scope:recipient = {
+						appointed_high_consort_trigger = yes
+						NOR = {
+							has_trait = shy
+							has_trait = chaste
+							has_trait = pregnant
+							has_trait = humble
+						}
+						OR = {
+							has_trait = ambitious
+							has_trait = greedy
+							has_trait = arrogant
+						}
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						harem_politics_evil_consort_trigger = yes
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = greedy
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = ambitious
+					}
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = arrogant
+					}
+				}
+				trigger_event = {
+					id = consort_events.2004
+					days = { 4 8 }
+				}
+			}
+			# Nothing
+			7 = {
+				modifier = {
+					scope:recipient = {
+						has_trait = shy
+					}
+					add = 1
+				}
+				modifier = { #Traits
+					add = 1
+					scope:recipient = {
+						has_trait = craven
+					}
+				}
+				modifier = {
+					scope:recipient = {
+						has_trait = chaste
+					}
+					add = 2
+				}
+				modifier = {
+					scope:recipient = {
+						hp_accepts_harems = no
+						NOR = {
+							has_trait = ambitious
+							has_trait = greedy
+							has_trait = arrogant
+							has_relation_lover = scope:actor
+							has_relation_soulmate = scope:actor
+							has_relation_best_friend = scope:actor
+							has_relation_friend = scope:actor
+						}
+					}
+					add = 2
+				}
+				modifier = {
+					scope:recipient = {
+						has_opinion_modifier = {
+							modifier = forced_family_concubine_marriage_opinion
+							target = scope:actor
+						}
+					}
+					add = 7
+				}
+				has_trait = {
+					has_trait = chaste
+					add = 3
+				}
+			}
+		}
+	}
+}
+
+consort_events.2000 = {
+	type = character_event
+	title = consort_events.2000.t
+	desc = {
+		first_valid = {
+			triggered_desc = { # They are your closest companion
+				trigger = {
+					OR = {
+						has_relation_lover = scope:recipient
+						has_relation_soulmate = scope:recipient
+						has_relation_best_friend = scope:recipient
+						has_relation_friend = scope:recipient
+						scope:recipient = {
+							OR = {
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = beloved_consort_modifier
+								has_character_modifier = favor_boost_modifier
+							}
+						}
+					}
+				}
+				desc = consort_events.2000.lover.desc
+			}
+			triggered_desc = { # They are the primary heir's parent
+				trigger = {
+					scope:recipient = {
+						any_child = {
+							is_child_of = scope:actor
+							is_primary_heir_of = scope:actor
+						}
+					}
+				}
+				desc = consort_events.2000.primary_heir.desc
+			}
+			triggered_desc = {
+				trigger = {
+					exists = root.house
+					scope:recipient.house ?= {
+						this != root.house
+						OR = {	
+							is_powerful_family = yes
+							is_dominant_family = yes
+							any_house_member = {
+								is_powerful_vassal_of = root
+							}
+						}
+						house_head.top_liege = root.house.house_head.top_liege
+					}
+				}
+				desc = consort_events.2000.powerful_family.desc
+			}
+			triggered_desc = { # Fallback
+				desc = consort_events.2000.fallback.desc
+			}
+		}
+		desc = consort_events.2000.end.desc
+	}
+	theme = realm
+	override_background = {
+		reference = garden
+	}
+	
+	right_portrait = { 	
+		character = scope:recipient
+		animation = personality_content
+	}
+	left_portrait = { 	
+		character = root
+		animation = thinking
+	}
+	
+	trigger = {
+		OR = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = grand_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = pure_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = virtuous_consort_court_position
+			}
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = worthy_consort_court_position
+			}
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				scope:recipient = {
+					any_child = {
+						is_child_of = scope:actor
+						is_primary_heir_of = scope:actor
+					}
+				}
+			}
+			primary_heir ?= {
+				save_scope_as = primary_heir
+			}
+		}
+	}
+
+	# Noble Consort
+	option = {
+		name = consort_events.2000.a
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = grand_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = grand
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Pure Consort
+	option = {
+		name = consort_events.2000.b
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = pure_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = pure
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Virtuous Consort
+	option = {
+		name = consort_events.2000.c
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = virtuous_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = virtuous
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Worthy Consort
+	option = {
+		name = consort_events.2000.d
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = worthy_consort_court_position
+			}
+		}
+		appoint_to_high_consort_effect = {
+			TITLE = worthy
+		}
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.5
+			}
+		}
+	}
+
+	# Changed my mind
+	option = {
+		name = consort_events.2000.e
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = -0.5
+			}
+		}
+	}
+
+}
+
+## Consort Jia dances for the Emperor ##
+consort_events.2001 = {
+	type = character_event
+	title = consort_events.2001.t
+	desc = {
+		desc = consort_events.2001.start.desc
+		desc = consort_events.2001.end.desc
+	}
+	theme = love
+	override_background = {
+		reference = bedchamber
+	}
+	
+	right_portrait = { 	
+		character = root
+		animation = interested
+	}
+	left_portrait = { 	
+		character = scope:recipient
+		animation = flirtation_left
+	}
+	
+	trigger = {
+		scope:recipient = {
+			appointed_high_consort_trigger = yes
+			NOR = {
+				has_trait = shy
+				has_trait = chaste
+				has_trait = pregnant
+			}
+			age <= 40
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+		play_music_cue = "mx_cue_seduction"
+		stress_impact = {
+			base = minor_stress_impact_loss
+		}
+	}
+
+	option = {
+		name = consort_events.2001.a
+		had_sex_with_effect = {
+			CHARACTER = scope:recipient
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		add_opinion = {
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
+		}
+		scope:recipient = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				modifier = romance_opinion
+				target = scope:actor
+				opinion = 5
+			}
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+## Tea and poems ##
+consort_events.2002 = {
+	type = character_event
+	title = consort_events.2001.t
+	desc = {
+		desc = consort_events.2001.start.desc
+		desc = consort_events.2002.end.desc
+	}
+	theme = love
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = { 	
+		character = scope:recipient
+		animation = serving_tray
+	}
+	left_portrait = { 	
+		character = root
+		animation = reading
+	}
+	
+	trigger = {
+		scope:recipient = {
+			appointed_high_consort_trigger = yes
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+	}
+
+	option = {
+		name = consort_events.2002.a
+		random_list = {
+			1 = { # Just conversation
+				modifier = {
+					has_trait = chaste
+					add = 2
+				}
+				modifier = {
+					has_trait = shy
+					add = 1
+				}
+				modifier = {
+					NOT = { is_attracted_to_gender_of = scope:recipient }
+					add = 10
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_trait = lustful
+						}
+					}
+					stress_impact = {
+						base = minor_stress_impact_loss
+					}
+				}
+				add_opinion = {
+					modifier = amused_opinion
+					target = scope:recipient
+					opinion = 5
+				}
+				scope:recipient = {
+					add_opinion = {
+						modifier = amused_opinion
+						target = scope:actor
+						opinion = 5
+					}
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_good
+						title = ep2_wedding.3400.tt
+						right_icon = scope:recipient
+						show_as_tooltip = {
+							if = {
+								limit = {
+									NOT = {
+										has_trait = lustful
+									}
+								}
+								stress_impact = {
+									base = minor_stress_impact_loss
+								}
+							}
+							scope:recipient = {
+								calyver_favor_minor_gain_effect = yes
+								add_opinion = {
+									modifier = amused_opinion
+									target = scope:actor
+									opinion = 5
+								}
+							}
+						}
+					}
+				}
+			}
+			1 = { # Intimacy
+				modifier = {
+					has_trait = lustful
+					add = 2
+				}
+				had_sex_with_effect = {
+					CHARACTER = scope:recipient
+					PREGNANCY_CHANCE = pregnancy_chance
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_trait = chaste
+						}
+					}
+					stress_impact = {
+						base = minor_stress_impact_loss
+					}
+				}
+				add_opinion = {
+					modifier = romance_opinion
+					target = scope:recipient
+					opinion = 5
+				}
+				scope:recipient = {
+					add_opinion = {
+						modifier = romance_opinion
+						target = scope:actor
+						opinion = 5
+					}
+				}
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_politics.0011.t
+						right_icon = scope:recipient
+						show_as_tooltip = {
+							had_sex_with_effect = {
+								CHARACTER = scope:recipient
+								PREGNANCY_CHANCE = pregnancy_chance
+							}
+							if = {
+								limit = {
+									NOT = {
+										has_trait = chaste
+									}
+								}
+								stress_impact = {
+									base = minor_stress_impact_loss
+								}
+							}
+							scope:recipient = {
+								calyver_favor_minor_gain_effect = yes
+								add_opinion = {
+									modifier = romance_opinion
+									target = scope:actor
+									opinion = 5
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		scope:recipient = {
+			calyver_favor_minor_gain_effect = yes
+		}
+		if = {
+			limit = {
+				NOT = {
+					any_artifact = { has_variable = rites_of_zhou }
+				}
+			}
+			hidden_effect = {
+				save_scope_as = owner
+				set_artifact_rarity_masterwork = yes
+				create_artifact = {
+					name = rites_of_zhou_name
+					description = rites_of_zhou_description
+					type = journal
+					visuals = book
+					wealth = scope:wealth
+					quality = scope:quality
+					template = rites_of_zhou_template
+					modifier = rites_of_zhou_modifier
+					save_scope_as = rites_of_zhou_artifact
+					decaying = yes
+				}
+				scope:rites_of_zhou_artifact = {
+					set_variable = rites_of_zhou
+					add_artifact_history = {
+						actor = scope:recipient
+						recipient = root
+						type = given
+					}
+				}
+				send_interface_toast = {
+					title = artifact_gained
+					left_icon = scope:recipient
+					right_icon = scope:rites_of_zhou_artifact
+					show_as_tooltip = {
+						create_artifact = {
+							name = rites_of_zhou_name
+							description = rites_of_zhou_description
+							type = journal
+							visuals = book
+							wealth = scope:wealth
+							quality = scope:quality
+							template = rites_of_zhou_template
+							modifier = rites_of_zhou_modifier
+							save_scope_as = rites_of_zhou_artifact
+							decaying = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+## The Huaqing Pools ##
+consort_events.2003 = {
+	type = character_event
+	title = consort_events.2001.t
+	desc = {
+		desc = consort_events.2001.start.desc
+		desc = consort_events.2003.end.desc
+	}
+	theme = love
+	override_background = {
+		reference = bath_house
+	}
+	
+	right_portrait = { 	
+		character = scope:recipient
+		animation = flirtation_left
+	}
+	left_portrait = { 	
+		character = root
+		animation = happiness
+	}
+	
+	trigger = {
+		scope:recipient = {
+			appointed_high_consort_trigger = yes
+			NOR = {
+				has_trait = shy
+				has_trait = chaste
+				has_trait = pregnant
+			}
+
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+		play_music_cue = "mx_cue_seduction"
+		add_character_flag = {
+			flag = is_naked
+			days = 30
+		}
+		scope:recipient = {
+			add_character_flag = {
+				flag = is_naked
+				days = 30
+			}
+		}
+		stress_impact = {
+			base = minor_stress_impact_loss
+		}
+	}
+
+	option = {
+		name = consort_events.2003.a
+		had_sex_with_effect = {
+			CHARACTER = scope:recipient
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		add_opinion = {
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
+		}
+		scope:recipient = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				modifier = romance_opinion
+				target = scope:actor
+				opinion = 5
+			}
+		}
+		remove_character_flag = is_naked
+		scope:recipient = {
+			remove_character_flag = is_naked
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+## Noble Consort Hua shows her greed ##
+consort_events.2004 = {
+	type = character_event
+	title = consort_events.2001.t
+	desc = {
+		desc = consort_events.2001.start.desc
+		desc = consort_events.2004.end.desc
+	}
+	theme = love
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = { 	
+		character = scope:recipient
+		animation = ecstasy
+		outfit_tags = { nightgown }
+	}
+	right_portrait = { 	
+		character = root
+		animation = disapproval
+		outfit_tags = { nightgown }
+	}
+	
+	trigger = {
+		scope:recipient = {
+			appointed_high_consort_trigger = yes
+			NOR = {
+				has_trait = shy
+				has_trait = chaste
+				has_trait = pregnant
+				has_trait = humble
+			}
+			OR = {
+				has_trait = ambitious
+				has_trait = greedy
+				has_trait = arrogant
+			}
+		}
+		can_have_four_consorts_trigger = yes
+	}
+	
+	immediate = {
+		stress_impact = {
+			base = minor_stress_impact_loss
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:recipient
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		scope:recipient = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				modifier = romance_opinion
+				target = scope:actor
+				opinion = 5
+			}
+		}
+	}
+
+	# Approve this behavior
+	option = {
+		name = consort_events.2004.a
+		add_opinion = {
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
+		}
+		stress_impact = {
+			humble = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 20
+			ai_value_modifier = {
+				ai_greed = 0.2
+			}
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = 0.3
+			}
+			compatibility_modifier = {
+				compatibility_target = scope:recipient
+				multiplier = 0.5
+			}
+			modifier = {
+				has_trait = humble
+				add = -25
+			}
+		}
+	}
+
+	# Disapprove this behavior
+	option = {
+		name = consort_events.2004.b
+		add_opinion = {
+			modifier = disappointed_opinion
+			target = scope:recipient
+			opinion = -5
+		}
+		scope:recipient = {
+			calyver_favor_minor_loss_effect = yes
+		}
+		ai_chance = {
+			base = 20
+			ai_value_modifier = {
+				ai_greed = -0.25
+			}
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = -0.3
+			}
+			compatibility_modifier = {
+				compatibility_target = scope:recipient
+				multiplier = -0.5
+			}
+			modifier = {
+				has_trait = humble
+				add = 25
+			}
+			modifier = {
+				has_trait = generous
+				add = 15
+			}
+		}
+	}
+}
 ####################
 ##Bestowing a name##
 ####################
-# consort_events.1000 = {
+# consort_events.2000 = {
 # 	type = character_event
-# 	title = consort_events.1000.t
-# 	desc = consort_events.1000.desc
+# 	title = consort_events.2000.t
+# 	desc = consort_events.2000.desc
 # 	theme = family
 # 	override_background = {
 # 		reference = throne_room
@@ -22599,7 +23182,7 @@ consort_events.0040 = {
 # 	}
 	
 # 	option = {
-# 		name = consort_events.1000.a
+# 		name = consort_events.2000.a
 # 		scope:recipient = {
 # 			calyver_favor_micro_gain_effect = yes
 # 			if = {
