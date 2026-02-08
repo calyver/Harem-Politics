@@ -840,11 +840,45 @@ is_dishu_parent_trigger = {
 }
 should_be_di_child_trigger = {
 	is_bastard_child_trigger = no
+	house ?= {
+		any_house_member = {
+			this = $PARENT$
+		}
+	}
 	NOR = {
 		has_trait = di_child
 		has_trait = child_of_concubine
 		any_parent = {
-			is_concubine_of = $PARENT$
+			even_if_dead = yes
+			OR = {
+				is_concubine_of = $PARENT$
+				any_former_concubinist = {
+					this = $PARENT$
+				}
+			}
+		}
+		any_parent = { # We don't want to mess with succession of 2 rulers
+			NOT = { this = $PARENT$ }
+			is_landed_or_landless_administrative = yes
+		}
+	}
+	trigger_if = {
+		limit = {
+			any_parent = {
+				NOT = { this = $PARENT$ }
+				even_if_dead = yes
+				count > 0
+			}
+		}
+		any_parent = { # The parent was either divorced as PS, or is the PS
+			even_if_dead = yes
+			OR = {
+				has_opinion_modifier = {
+					target = $TARGET$
+					modifier = divorced_me_as_ps
+				}
+				$PARENT$.primary_spouse ?= this
+			}
 		}
 	}
 }
