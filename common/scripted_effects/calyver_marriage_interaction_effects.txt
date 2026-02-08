@@ -1834,7 +1834,9 @@ spouse_demotion_effect = {
 		else_if = { #GC#
 			limit = {
 				$RECIPIENT$ = {
-					is_grand_consort_trigger = yes
+					is_grand_consort_trigger = {
+						LIEGE = $ACTOR$
+					}
 				}
 			}
 			# If we're a clan this interaction affects unity
@@ -1982,7 +1984,9 @@ spouse_demotion_effect = {
 										$RECIPIENT$ = {
 											OR = {
 												is_married = yes
-												is_grand_consort_trigger = yes
+												is_grand_consort_trigger = {
+													LIEGE = $ACTOR$
+												}
 											}
 										}
 									}
@@ -1991,7 +1995,9 @@ spouse_demotion_effect = {
 										$RECIPIENT$ = {
 											OR = {
 												this = $ACTOR$.primary_spouse
-												is_grand_consort_trigger = yes
+												is_grand_consort_trigger = {
+													LIEGE = $ACTOR$
+												}
 											}
 										}
 									}
@@ -2700,7 +2706,9 @@ divorcee_effect = {
 	else_if = { #Grand Consort
 		limit = {
 			OR = {
-				is_grand_consort_trigger = yes
+				is_grand_consort_trigger = {
+					LIEGE = $DIVORCER$
+				}
 				has_opinion_modifier = {
 					modifier = demoted_me_as_gc
 					target = $DIVORCER$
@@ -2880,7 +2888,9 @@ divorcee_effect = {
 									$DIVORCER$ = {
 										OR = {
 											this = $DIVORCEE$.primary_spouse
-											is_grand_consort_trigger = yes
+											is_grand_consort_trigger = {
+												LIEGE = $DIVORCEE$
+											}
 										}
 									}
 								}
@@ -3003,7 +3013,9 @@ divorcer_effect = {
 									$DIVORCEE$ = {
 										OR = {
 											this = $DIVORCER$.primary_spouse
-											is_grand_consort_trigger = yes
+											is_grand_consort_trigger = {
+												LIEGE = $DIVORCER$
+											}
 										}
 									}
 								}
@@ -4548,8 +4560,18 @@ consort_reinstatement_effect = {
 	}
 
 	calyver_favor_moderate_gain_effect = yes
+	if = {
+		limit = {
+			NOT = { exists = scope:opinion }
+		}
+		save_scope_value_as = {
+			name = opinion
+			value = -10
+		}
+	}
 	add_opinion = {
 		modifier = reinstated_me_opinion
+		opinion = scope:opinion
 		target = $REINSTATOR$
 	}
 	if = {
@@ -4622,7 +4644,9 @@ calyver_dismiss_concubine_effect = {
 		else_if = {
 			limit = {
 				OR = {
-					is_grand_consort_trigger = yes
+					is_grand_consort_trigger = {
+						LIEGE = scope:actor
+					}
 					has_opinion_modifier = {
 						modifier = demoted_me_as_gc
 						target = scope:actor
@@ -4635,7 +4659,9 @@ calyver_dismiss_concubine_effect = {
 			}
 			if = {
 				limit = {
-					is_grand_consort_trigger = yes
+					is_grand_consort_trigger = {
+						LIEGE = scope:actor
+					}
 				}
 				scope:actor = {
 					revoke_court_position = {
@@ -4837,6 +4863,7 @@ clear_demoted_consort_modifiers_effect = {
 }
 
 clear_consort_opinions_effect = {
+	# PS
 	if = {
 		limit = {
 			has_opinion_modifier = {
@@ -4874,6 +4901,7 @@ clear_consort_opinions_effect = {
 		}
 	}
 
+	# GC
 	if = {
 		limit = {
 			has_opinion_modifier = {
@@ -4911,6 +4939,45 @@ clear_consort_opinions_effect = {
 		}
 	}
 
+	# HC
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = divorced_me_as_hc
+				target = $TARGET$
+			}
+		}
+		remove_opinion = {
+			modifier = divorced_me_as_hc
+			target = $TARGET$
+		}
+	}
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = demoted_me_as_hc
+				target = $TARGET$
+			}
+		}
+		remove_opinion = {
+			modifier = demoted_me_as_hc
+			target = $TARGET$
+		}
+	}
+	if = {
+		limit = {
+			has_opinion_modifier = {
+				modifier = dismissed_me_as_hc
+				target = $TARGET$
+			}
+		}
+		remove_opinion = {
+			modifier = dismissed_me_as_hc
+			target = $TARGET$
+		}
+	}
+
+	# SS
 	if = {
 		limit = {
 			has_opinion_modifier = {
