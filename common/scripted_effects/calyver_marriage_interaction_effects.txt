@@ -6209,19 +6209,70 @@ child_promotion_effect = {
 				}
 				# First remove any bastard traits
 				child_trait_removal_effect = yes
+				# Can only happen if you're a sovereign or if you don't have Cosmic Order
 				if = {
 					limit = {
-						has_trait = child_of_concubine_female
+						trigger_if = {
+							limit = {
+								$PARENT_1$.culture = { has_cultural_parameter = dishu_system }
+							}
+							$PARENT_1$ = { can_have_imperial_consorts_trigger = yes }
+						}
+						trigger_else_if = {
+							limit = {
+								$PARENT_2$.culture = { has_cultural_parameter = dishu_system }
+							}
+							$PARENT_2$ = { can_have_imperial_consorts_trigger = yes }
+						}
+						trigger_else = {
+							NOR = {
+								$PARENT_1$.culture = { has_cultural_parameter = dishu_system }
+								$PARENT_2$.culture = { has_cultural_parameter = dishu_system }
+							}
+						}
 					}
-					remove_trait = child_of_concubine_female
-				}
-				else_if = {
-					limit = {
-						has_trait = child_of_concubine_male
+					if = {
+						limit = {
+							has_trait = child_of_concubine_female
+						}
+						remove_trait = child_of_concubine_female
 					}
-					remove_trait = child_of_concubine_male
+					if = {
+						limit = {
+							has_trait = child_of_concubine_male
+						}
+						remove_trait = child_of_concubine_male
+					}
 				}
 			}
+		}
+		imperial_child_promotion_effect = {
+			PARENT_1 = $PARENT_1$
+		}
+	}
+}
+
+imperial_child_promotion_effect = {
+	if = {
+		limit = {
+			any_child = {
+				is_child_of = $PARENT_1$
+				NOT = { has_trait = di_child }
+			}
+			OR = {
+				AND = {
+					can_have_imperial_consorts_trigger = yes
+					is_dishu_parent_trigger = yes
+				}
+				$PARENT_1$ = {
+					can_have_imperial_consorts_trigger = yes
+					is_dishu_parent_trigger = yes
+				}
+			}
+		}
+		assign_di_child_trait_to_all_children_effect = yes
+		$PARENT_1$ = {
+			assign_di_child_trait_to_all_children_effect = yes
 		}
 	}
 }
