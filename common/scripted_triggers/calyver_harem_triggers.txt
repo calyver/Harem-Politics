@@ -849,13 +849,16 @@ should_be_di_child_trigger = {
 	NOR = {
 		has_trait = di_child
 		has_trait = child_of_concubine
+		any_parent = {
+			NOT = { this = $PARENT$ }
+			is_landed_or_landless_administrative = yes
+		}
 	}
 	trigger_if = {
 		limit = {
 			any_parent = {
 				NOT = { this = $PARENT$ }
 				even_if_dead = yes
-				NOT = { is_landed_or_landless_administrative = yes }
 				count > 0
 			}
 		}
@@ -863,16 +866,26 @@ should_be_di_child_trigger = {
 			NOT = { this = $PARENT$ }
 			even_if_dead = yes
 			OR = {
+				$PARENT$.primary_spouse ?= this
 				has_opinion_modifier = {
 					target = $PARENT$
 					modifier = divorced_me_as_ps
 				}
-				$PARENT$.primary_spouse ?= this
 				AND = {
 					$PARENT$ = { hp_accepts_polygamy = no }
 					any_former_spouse = {
 						this = $PARENT$
 					}
+				}
+			}
+			NOR = {
+				has_opinion_modifier = {
+					target = $PARENT$
+					modifier = dismissed_me_as_ps
+				}
+				has_opinion_modifier = {
+					target = $PARENT$
+					modifier = demoted_me_as_ps
 				}
 			}
 		}
