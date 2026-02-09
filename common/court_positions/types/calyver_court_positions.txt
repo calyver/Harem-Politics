@@ -145,7 +145,7 @@ keeper_of_the_harem_court_position = {
 				has_no_particular_noble_roots_trigger = yes
 			}
 			add = {
-				value = 40
+				value = 30
 				desc = has_no_particular_noble_roots_trigger
 			}
 		}
@@ -421,10 +421,7 @@ grand_consort_court_position = {
 		value = 390
 		if = {
 			limit = {
-				primary_title = title:h_china
-				culture = {
-					has_cultural_pillar = heritage_chinese
-				}
+				can_have_four_consorts_trigger = yes
 			}
 			add = 630
 		}
@@ -551,6 +548,12 @@ grand_consort_court_position = {
 			}
 			add = { 
 				value = 40
+				if = {
+					limit = {
+						employer = { can_have_four_consorts_trigger = yes }
+					}
+					add = 10
+				}
 				desc = grand_consort_prominent_family_description
 			}
 		}
@@ -561,10 +564,10 @@ grand_consort_court_position = {
 					exists = house
 				}
 				house ?= {
-					NOT = { this = root.employer.house }
+					this != root.employer.house
 					is_dominant_family = yes
 					any_house_member = {
-						top_liege ?= root.employer
+						top_liege ?= root.employer.top_liege
 						government_allows = administrative
 					}
 
@@ -579,6 +582,12 @@ grand_consort_court_position = {
 						}
 					}
 					add = 10
+				}
+				if = {
+					limit = {
+						employer = { can_have_four_consorts_trigger = yes }
+					}
+					add = 5
 				}
 				desc = grand_consort_prominent_family_description
 			}
@@ -619,6 +628,12 @@ grand_consort_court_position = {
 						}
 					}
 					add = 10
+				}
+				if = {
+					limit = {
+						employer = { can_have_four_consorts_trigger = yes }
+					}
+					add = 5
 				}
 				desc = grand_consort_prominent_family_description
 			}
@@ -713,6 +728,12 @@ grand_consort_court_position = {
 			}
 			add = { 
 				value = -10
+				if = {
+					limit = {
+						employer = { can_have_four_consorts_trigger = yes }
+					}
+					add = -5
+				}
 				desc = grand_consort_lowborn_description
 			}
 		}
@@ -725,61 +746,20 @@ grand_consort_court_position = {
 					count >= 1
 				}
 			}
-			add = { 
-				value = 5
-				if = {
+			add = {
+				every_child = {
 					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 2
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 3
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 4
-						}
-					}
-					add = 5
-				}
-				# The right gender
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
-							count >= 1
-						}
+						is_child_of = employer
 					}
 					add = 2
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
+					if = {
+						limit = {
 							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
-							count >= 2
 						}
+						add = 2
 					}
-					add = 2
 				}
+				max = 16
 				desc = grand_consort_fertile_description
 			}
 		}
@@ -795,6 +775,12 @@ grand_consort_court_position = {
 			}
 			add = {
 				value = 10
+				if = {
+					limit = {
+						employer = { can_have_four_consorts_trigger = yes }
+					}
+					add = 5
+				}
 				desc = grand_consort_primary_heir_description
 			}
 		}
@@ -883,101 +869,20 @@ grand_consort_court_position = {
 			}
 		}
 
-		if = { #Diplomacy
-			limit = {
-				diplomacy >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						diplomacy >= high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						diplomacy >= very_high_skill_rating
-					}
-					add = 10
-				}
-				desc = court_position_skill_diplomacy
-			}
+		add = { #Diplomacy
+			value = diplomacy
+			max = 50
+			desc = court_position_skill_diplomacy
 		}
-
-		if = { #Stewardship
-			limit = {
-				stewardship >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						stewardship >= high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						stewardship >= very_high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						stewardship >= extremely_high_skill_rating
-					}
-					add = 5
-				}
-				desc = court_position_skill_stewardship
-			}
+		add = { #Learning
+			value = learning
+			max = 50
+			desc = court_position_skill_learning
 		}
-
-		if = { #Learning
-			limit = {
-				learning >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						learning >= high_skill_rating
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						learning >= very_high_skill_rating
-					}
-					add = 5
-				}
-				desc = court_position_skill_learning
-			}
-		}
-
-		if = { #Bad Diplomacy
-			limit = {
-				diplomacy < mediocre_skill_rating
-			}
-			add = { 
-				value = -5
-				desc = court_position_skill_diplomacy
-			}
-		}
-		if = { #Bad Stewardship
-			limit = {
-				stewardship < mediocre_skill_rating
-			}
-			add = { 
-				value = -5
-				if = {
-					limit = {
-						stewardship < low_skill_rating
-					}
-					add = -5
-				}
-				desc = court_position_skill_stewardship
-			}
+		add = { #Stewardship
+			value = stewardship
+			max = 50
+			desc = court_position_skill_stewardship
 		}
 		
 		if = {
@@ -1012,7 +917,7 @@ grand_consort_court_position = {
 				has_trait = wrathful
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_wrathful_trait
 			}
 		}
@@ -1021,7 +926,7 @@ grand_consort_court_position = {
 				has_trait = callous
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_callous_trait
 			}
 		}
@@ -1030,7 +935,7 @@ grand_consort_court_position = {
 				has_trait = sadistic
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_sadistic_trait
 			}
 		}
@@ -1039,7 +944,7 @@ grand_consort_court_position = {
 				has_trait = vengeful
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_vengeful_trait
 			}
 		}
@@ -1057,7 +962,7 @@ grand_consort_court_position = {
 				has_trait = lazy
 			}
 			add = { 
-				value = -15
+				value = -20
 				desc = court_position_lazy_trait
 			}
 		}
@@ -1066,7 +971,7 @@ grand_consort_court_position = {
 				has_trait = greedy
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_greedy_trait
 			}
 		}
@@ -1093,7 +998,7 @@ grand_consort_court_position = {
 				has_trait = ambitious
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_ambitious_trait
 			}
 		}
@@ -1129,7 +1034,7 @@ grand_consort_court_position = {
 				has_trait = shy
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_shy_trait
 			}
 		}
@@ -1147,7 +1052,7 @@ grand_consort_court_position = {
 				has_trait = craven
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_craven_trait
 			}
 		}
@@ -1156,7 +1061,7 @@ grand_consort_court_position = {
 				has_trait = paranoid
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_paranoid_trait
 			}
 		}
@@ -1174,7 +1079,7 @@ grand_consort_court_position = {
 				has_trait = deceitful
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_deceitful_trait
 			}
 		}
@@ -1228,7 +1133,7 @@ grand_consort_court_position = {
 				has_trait = fickle
 			}
 			add = {
-				value = -5
+				value = -10
 				desc = court_position_fickle_trait
 			}
 		}
@@ -1256,7 +1161,7 @@ grand_consort_court_position = {
 				has_trait = reclusive
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_reclusive_trait
 			}
 		}
@@ -1337,13 +1242,8 @@ grand_consort_court_position = {
 				num_virtuous_traits >= 1
 			}
 			add = {
-				value = 10
-				if = {
-					limit = {
-						num_virtuous_traits >= 2
-					}
-					add = 10
-				}
+				add = root.num_virtuous_traits
+				multiply = 5
 				desc = court_position_virtuous_consort
 			}
 		}
@@ -1354,13 +1254,8 @@ grand_consort_court_position = {
 				num_sinful_traits >= 1
 			}
 			add = {
-				value = -10
-				if = {
-					limit = {
-						num_sinful_traits >= 2
-					}
-					add = -10
-				}
+				add = root.num_sinful_traits
+				multiply = -5
 				desc = court_position_sinful_consort
 			}
 		}
@@ -1954,18 +1849,7 @@ grand_consort_court_position = {
 # The Four Consorts #
 # Pure Consort #
 pure_consort_court_position = {
-	sort_order = {
-		value = 388
-		if = {
-			limit = {
-				primary_title = title:h_china
-				culture = {
-					has_cultural_pillar = heritage_chinese
-				}
-			}
-			add = 630
-		}
-	}
+	sort_order = 1018
 	max_available_positions = 1
 	minimum_rank = empire # Should only be available for kings and emperors
 	skill = diplomacy
@@ -2025,10 +1909,10 @@ pure_consort_court_position = {
 					exists = house
 				}
 				house ?= {
-					NOT = { this = root.employer.house }
+					this != root.employer.house
 					is_dominant_family = yes
 					any_house_member = {
-						top_liege ?= root.employer
+						top_liege ?= root.employer.top_liege
 						government_allows = administrative
 					}
 
@@ -2189,61 +2073,20 @@ pure_consort_court_position = {
 					count >= 1
 				}
 			}
-			add = { 
-				value = 5
-				if = {
+			add = {
+				every_child = {
 					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 2
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 3
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							count >= 4
-						}
-					}
-					add = 5
-				}
-				# The right gender
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
-							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
-							count >= 1
-						}
+						is_child_of = employer
 					}
 					add = 2
-				}
-				if = {
-					limit = {
-						any_child = {
-							is_child_of = employer
-							is_alive = yes
+					if = {
+						limit = {
 							character_gender_can_inherit_from_trigger = { CHARACTER = employer }
-							count >= 2
 						}
+						add = 2
 					}
-					add = 2
 				}
+				max = 16
 				desc = grand_consort_fertile_description
 			}
 		}
@@ -2347,101 +2190,20 @@ pure_consort_court_position = {
 			}
 		}
 
-		if = { #Diplomacy
-			limit = {
-				diplomacy >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						diplomacy >= high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						diplomacy >= very_high_skill_rating
-					}
-					add = 10
-				}
-				desc = court_position_skill_diplomacy
-			}
+		add = { #Diplomacy
+			value = diplomacy
+			max = 50
+			desc = court_position_skill_diplomacy
 		}
-
-		if = { #Stewardship
-			limit = {
-				stewardship >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						stewardship >= high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						stewardship >= very_high_skill_rating
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						stewardship >= extremely_high_skill_rating
-					}
-					add = 5
-				}
-				desc = court_position_skill_stewardship
-			}
+		add = { #Learning
+			value = learning
+			max = 50
+			desc = court_position_skill_learning
 		}
-
-		if = { #Learning
-			limit = {
-				learning >= decent_skill_rating
-			}
-			add = { 
-				value = 5
-				if = {
-					limit = {
-						learning >= high_skill_rating
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						learning >= very_high_skill_rating
-					}
-					add = 5
-				}
-				desc = court_position_skill_learning
-			}
-		}
-
-		if = { #Bad Diplomacy
-			limit = {
-				diplomacy < mediocre_skill_rating
-			}
-			add = { 
-				value = -5
-				desc = court_position_skill_diplomacy
-			}
-		}
-		if = { #Bad Stewardship
-			limit = {
-				stewardship < mediocre_skill_rating
-			}
-			add = { 
-				value = -5
-				if = {
-					limit = {
-						stewardship < low_skill_rating
-					}
-					add = -5
-				}
-				desc = court_position_skill_stewardship
-			}
+		add = { #Stewardship
+			value = stewardship
+			max = 50
+			desc = court_position_skill_stewardship
 		}
 		
 		if = {
@@ -2449,7 +2211,7 @@ pure_consort_court_position = {
 				has_trait = patient
 			}
 			add = { 
-				value = 10
+				value = 15
 				desc = court_position_patient_trait
 			}
 		}
@@ -2458,7 +2220,7 @@ pure_consort_court_position = {
 				has_trait = humble
 			}
 			add = { 
-				value = 5
+				value = 10
 				desc = court_position_humble_trait
 			}
 		}
@@ -2467,7 +2229,7 @@ pure_consort_court_position = {
 				has_trait = calm
 			}
 			add = { 
-				value = 10
+				value = 15
 				desc = court_position_calm_trait
 			}
 		}
@@ -2476,7 +2238,7 @@ pure_consort_court_position = {
 				has_trait = wrathful
 			}
 			add = { 
-				value = -10
+				value = -20
 				desc = court_position_wrathful_trait
 			}
 		}
@@ -2485,7 +2247,7 @@ pure_consort_court_position = {
 				has_trait = callous
 			}
 			add = { 
-				value = -10
+				value = -20
 				desc = court_position_callous_trait
 			}
 		}
@@ -2494,7 +2256,7 @@ pure_consort_court_position = {
 				has_trait = sadistic
 			}
 			add = { 
-				value = -10
+				value = -20
 				desc = court_position_sadistic_trait
 			}
 		}
@@ -2503,7 +2265,7 @@ pure_consort_court_position = {
 				has_trait = vengeful
 			}
 			add = { 
-				value = -10
+				value = -20
 				desc = court_position_vengeful_trait
 			}
 		}
@@ -2521,7 +2283,7 @@ pure_consort_court_position = {
 				has_trait = lazy
 			}
 			add = { 
-				value = -15
+				value = -20
 				desc = court_position_lazy_trait
 			}
 		}
@@ -2530,7 +2292,7 @@ pure_consort_court_position = {
 				has_trait = greedy
 			}
 			add = {
-				value = -10
+				value = -20
 				desc = court_position_greedy_trait
 			}
 		}
@@ -2539,7 +2301,7 @@ pure_consort_court_position = {
 				has_trait = generous
 			}
 			add = {
-				value = 10
+				value = 15
 				desc = court_position_generous_trait
 			}
 		}
@@ -2548,7 +2310,7 @@ pure_consort_court_position = {
 				has_trait = arrogant
 			}
 			add = {
-				value = -5
+				value = -10
 				desc = court_position_arrogant_trait
 			}
 		}
@@ -2557,7 +2319,7 @@ pure_consort_court_position = {
 				has_trait = ambitious
 			}
 			add = {
-				value = -10
+				value = -20
 				desc = court_position_ambitious_trait
 			}
 		}
@@ -2566,7 +2328,7 @@ pure_consort_court_position = {
 				has_trait = content
 			}
 			add = {
-				value = 10
+				value = 15
 				desc = court_position_content_trait
 			}
 		}
@@ -2575,7 +2337,7 @@ pure_consort_court_position = {
 				has_trait = forgiving
 			}
 			add = {
-				value = 10
+				value = 20
 				desc = court_position_forgiving_trait
 			}
 		}
@@ -2584,7 +2346,7 @@ pure_consort_court_position = {
 				has_trait = compassionate
 			}
 			add = {
-				value = 10
+				value = 20
 				desc = court_position_compassionate_trait
 			}
 		}
@@ -2593,7 +2355,7 @@ pure_consort_court_position = {
 				has_trait = shy
 			}
 			add = { 
-				value = -10
+				value = -15
 				desc = court_position_shy_trait
 			}
 		}
@@ -2602,7 +2364,7 @@ pure_consort_court_position = {
 				has_trait = gregarious
 			}
 			add = { 
-				value = 10
+				value = 15
 				desc = court_position_gregarious_trait
 			}
 		}
@@ -2611,7 +2373,7 @@ pure_consort_court_position = {
 				has_trait = craven
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_craven_trait
 			}
 		}
@@ -2620,7 +2382,7 @@ pure_consort_court_position = {
 				has_trait = paranoid
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_paranoid_trait
 			}
 		}
@@ -2629,7 +2391,7 @@ pure_consort_court_position = {
 				has_trait = honest
 			}
 			add = {
-				value = 10
+				value = 15
 				desc = court_position_honest_trait
 			}
 		}
@@ -2638,7 +2400,7 @@ pure_consort_court_position = {
 				has_trait = deceitful
 			}
 			add = {
-				value = -10
+				value = -20
 				desc = court_position_deceitful_trait
 			}
 		}
@@ -2647,7 +2409,7 @@ pure_consort_court_position = {
 				has_trait = just
 			}
 			add = {
-				value = 15
+				value = 20
 				desc = court_position_just_trait
 			}
 		}
@@ -2656,7 +2418,7 @@ pure_consort_court_position = {
 				has_trait = arbitrary
 			}
 			add = {
-				value = -15
+				value = -20
 				desc = court_position_arbitrary_trait
 			}
 		}
@@ -2665,7 +2427,7 @@ pure_consort_court_position = {
 				has_trait = impatient
 			}
 			add = {
-				value = -10
+				value = -20
 				desc = court_position_impatient_trait
 			}
 		}
@@ -2674,7 +2436,7 @@ pure_consort_court_position = {
 				has_trait = temperate
 			}
 			add = {
-				value = 10
+				value = 15
 				desc = court_position_temperate_trait
 			}
 		}
@@ -2692,7 +2454,7 @@ pure_consort_court_position = {
 				has_trait = fickle
 			}
 			add = {
-				value = -5
+				value = -10
 				desc = court_position_fickle_trait
 			}
 		}
@@ -2720,7 +2482,7 @@ pure_consort_court_position = {
 				has_trait = reclusive
 			}
 			add = {
-				value = -10
+				value = -15
 				desc = court_position_reclusive_trait
 			}
 		}
@@ -2801,13 +2563,8 @@ pure_consort_court_position = {
 				num_virtuous_traits >= 1
 			}
 			add = {
-				value = 10
-				if = {
-					limit = {
-						num_virtuous_traits >= 2
-					}
-					add = 10
-				}
+				add = root.num_virtuous_traits
+				multiply = 5
 				desc = court_position_virtuous_consort
 			}
 		}
@@ -2818,13 +2575,8 @@ pure_consort_court_position = {
 				num_sinful_traits >= 1
 			}
 			add = {
-				value = -10
-				if = {
-					limit = {
-						num_sinful_traits >= 2
-					}
-					add = -10
-				}
+				add = root.num_sinful_traits
+				multiply = -5
 				desc = court_position_sinful_consort
 			}
 		}
@@ -3375,18 +3127,7 @@ pure_consort_court_position = {
 
 # Virtuous Consort #
 virtuous_consort_court_position = {
-	sort_order = {
-		value = 386
-		if = {
-			limit = {
-				primary_title = title:h_china
-				culture = {
-					has_cultural_pillar = heritage_chinese
-				}
-			}
-			add = 630
-		}
-	}
+	sort_order = 1016
 	max_available_positions = 1
 	minimum_rank = empire # Should only be available for kings and emperors
 	skill = diplomacy
@@ -4796,18 +4537,7 @@ virtuous_consort_court_position = {
 
 # Worthy Consort #
 worthy_consort_court_position = {
-	sort_order = {
-		value = 384
-		if = {
-			limit = {
-				primary_title = title:h_china
-				culture = {
-					has_cultural_pillar = heritage_chinese
-				}
-			}
-			add = 630
-		}
-	}
+	sort_order = 1014
 	max_available_positions = 1
 	minimum_rank = empire # Should only be available for kings and emperors
 	skill = diplomacy
