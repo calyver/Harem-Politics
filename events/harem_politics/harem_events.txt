@@ -3029,3 +3029,535 @@ harem_events.0010 = {
         }
     }
 }
+
+########################
+## Worship Ancestors ##
+#######################
+scripted_trigger is_primary_sibling_trigger = {
+	NOT = {
+		has_trait = child_of_concubine
+	}
+	is_bastard_child_trigger = no
+	is_courtier_of = root
+	house ?= root.house
+	sex_same_as = root
+	is_available_adult = yes
+}
+harem_events.1000 = {
+	hidden = yes
+	
+	trigger = {
+		is_available_adult = yes
+		is_landed_or_landless_administrative = yes
+	}
+	
+	immediate = {
+		# Do we have a primary sibling under the Dishu System?
+		if = { # Do we have an eligible primary sibling
+			limit = {
+				culture = {
+					has_cultural_parameter = dishu_system
+				}
+				can_have_imperial_consorts_trigger = no
+				has_trait = child_of_concubine
+				any_sibling = {
+					is_primary_sibling_trigger = yes
+				}
+			}
+			# Then they will reclaim their place
+			trigger_event = harem_events.1001
+		}
+	}
+}
+harem_events.1001 = {
+	type = character_event
+	title = harem_events.1001.t
+	desc = harem_events.1001.desc
+	theme = family
+	override_background = {
+		reference = temple
+	}
+	
+	left_portrait = { 	
+		character = root
+		animation = thinking
+	}
+	right_portrait = {
+		character = scope:sibling
+		triggered_animation = {
+			trigger = {
+				scope:sibling = {
+					ai_boldness > 24
+				}
+			}
+			animation = personality_bold
+		}
+		triggered_animation = {
+			trigger = {
+				scope:sibling = {
+					ai_boldness < -24
+				}
+			}
+			animation = personality_coward
+		}
+		triggered_animation = {
+			trigger = { always = yes }
+			animation = personality_honorable
+		}
+	}
+	
+	trigger = {
+	}
+	
+	immediate = {
+		ordered_sibling = {
+			limit = {
+				is_primary_sibling_trigger = yes
+			}
+			order_by = age
+			save_scope_as = sibling
+		}
+	}
+	
+	option = { # Concede to your primary sibling
+        name = harem_politics.1001.a
+		scope:sibling = {
+			save_scope_as = lineage_heir
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 15
+			}
+		}
+		
+		stress_impact = {
+			arrogant = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 50
+            ai_value_modifier = {
+   				ai_zeal = 0.25
+				ai_boldness = -0.25
+   			}
+			
+			opinion_modifier = { #Opinion
+				opinion_target = scope:sibling
+				multiplier = 0.5
+			}
+			
+			modifier = { #Stress management
+				has_trait = arrogant
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = humble
+				add = 15
+			}
+			modifier = { #Stress management
+				has_trait = zealous
+				add = 15
+			}
+        }
+    }
+	
+	option = { # You will lead the ceremony
+        name = harem_politics.1001.b
+		save_scope_as = lineage_heir
+		if = {
+			limit = {
+				scope:sibling = {
+					OR = {
+						has_trait = zealous
+						has_trait = arrogant
+					}
+					NOR = {
+						has_relation_friend = root
+						has_relation_lover = root
+
+						has_relation_best_friend = root
+						has_relation_soulmate = root
+					}
+				}
+			}
+			add_opinion = {
+				add_opinion = {
+					modifier = upset_opinion
+					target = root
+					opinion = -15
+				}
+			}
+		}
+		stress_impact = {
+			humble = minor_stress_impact_gain
+			zealous = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 50
+            ai_value_modifier = {
+   				ai_zeal = -0.25
+				ai_boldness = 0.15
+   			}
+			
+			opinion_modifier = { #Opinion
+				opinion_target = scope:sibling
+				multiplier = -0.5
+			}
+			
+			modifier = { #Stress management
+				has_trait = arrogant
+				add = 15
+			}
+			modifier = { #Stress management
+				has_trait = humble
+				add = -25
+			}
+			modifier = { #Stress management
+				has_trait = zealous
+				add = -25
+			}
+        }
+    }
+	after = {
+		scope:lineage_heir = {
+			trigger_event = { 
+				id = harem_events.1002
+				days = { 7 10 }
+			}
+		}
+	}
+}
+
+scripted_effect worship_ancestors_result_effect = {
+	random_list = {
+		2 = { # Success
+			modifier = {
+				OR = {
+					NOT = {
+						exists = scope:sibling
+					}
+					scope:lineage_heir = {
+						NOT = { has_trait = child_of_concubine }
+					}
+				}
+				add = 1
+			}
+			modifier = {
+				exists = scope:big_offering_decision
+				add = 1
+			}
+			modifier = {
+				has_trait = di_child
+				add = 1
+			}
+			modifier = {
+				learning >= high_skill_rating
+				add = 1
+			}
+			# Effect
+			send_interface_toast = {
+				type = event_generic_good
+				title = harem_politics.1002.success
+				right_icon = scope:lineage_heir
+				if = { # Fertility for the primary spouse
+					limit = {
+						exists = local_var:ps_fertility_request_variable
+						exists = primary_spouse
+					}
+					primary_spouse = {
+						add_character_modifier = {
+							modifier = very_successful_fertility_treatment
+							years = 3
+						}
+						if = {
+							limit = {
+								NOR = {
+									has_relation_rival = scope:lineage_heir
+									has_relation_nemesis = scope:lineage_heir
+									has_relation_grudge = scope:lineage_heir
+									has_opinion_modifier = {
+										modifier = forced_me_concubine_marriage_opinion
+										target = scope:lineage_heir
+									}
+								}
+							}
+							add_opinion = {
+								modifier = grateful_opinion
+								opinion = 15
+								target = scope:lineage_heir
+							}
+						}
+					}
+				}
+				else_if = { # Fertility for the other consorts
+					limit = {
+						exists = local_var:fertility_request_variable
+					}
+					add_character_modifier = {
+						modifier = very_successful_fertility_treatment
+						years = 3
+					}
+				}
+				else_if = { # Health
+					limit = {
+						exists = local_var:health_request_variable
+					}
+					add_character_modifier = {
+						modifier = invigorated_modifier
+						years = 3
+					}
+				}
+				else_if = { # Exam help
+					limit = {
+						exists = local_var:exam_help_variable
+					}
+					add_character_modifier = {
+						modifier = tgp_local_exam_initial_success
+						years = 3
+					}
+				}
+				else_if = { # Legitimacy
+					limit = {
+						exists = local_var:legitimacy_help_variable
+					}
+					add_character_modifier = {
+						modifier = legitimacy_ancestors_big_blessing_modifier
+						years = 3
+					}
+				}
+				else_if = { # War help
+					limit = {
+						exists = local_var:war_help_variable
+					}
+					add_character_modifier = {
+						modifier = war_ancestors_big_blessing_modifier
+						years = 3
+					}
+				}
+				else = {
+					add_piety = medium_piety_gain
+				}
+				custom_tooltip = worship_ancestors_big_house_reward_tt
+				hidden_effect = {
+					every_courtier = {
+						limit = {
+							house ?= scope:lineage_heir.house
+						}
+						add_piety = medium_piety_gain
+					}
+				}
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = {
+						this != scope:lineage_heir
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_politics.1002.success
+						right_icon = scope:lineage_heir
+						show_as_tooltip = {
+							add_piety = medium_piety_gain
+						}
+					}
+				}
+			}
+		}
+		2 = { # Moderate success
+			modifier = {
+				OR = {
+					NOT = {
+						exists = scope:sibling
+					}
+					scope:lineage_heir = {
+						NOT = { has_trait = child_of_concubine }
+					}
+				}
+				add = 1
+			}
+			modifier = {
+				exists = scope:big_offering_decision
+				add = 1
+			}
+			# Effect
+		}
+		2 = { # Failure
+			modifier = {
+				scope:sibling ?= {
+					this != scope:lineage_heir
+				}
+				add = 1
+			}
+			modifier = {
+				exists = scope:big_offering_decision
+				add = 1
+			}
+			# Effect
+		}
+	}
+}
+
+harem_events.1002 = {
+	type = character_event
+	title = harem_events.1002.t
+	desc = harem_events.1002.desc
+	theme = family
+	override_background = {
+		reference = temple
+	}
+	
+	left_portrait = { 	
+		character = scope:lineage_heir
+		animation = prayer
+	}
+	right_portrait = {
+		trigger = {
+			exists = scope:ancestor
+		}
+		character = scope:ancestor
+		animation = dead
+	}
+	
+	trigger = {
+		this = scope:lineage_heir
+	}
+	
+	immediate = {
+		# The result
+		random_effect = {
+
+		}
+	}
+	
+	option = { # Ask for fertility for your primary_spouse
+		trigger = {
+			culture = { has_cultural_parameter = dishu_system }
+			primary_spouse ?= {
+				is_visibly_fertile = yes
+				NOT = {
+					any_child = {
+						is_bastard_child_trigger = no
+						NOT = {
+							has_trait = child_of_concubine
+						}
+						is_child_of = scope:lineage_heir
+						sex_same_as = scope:lineage_heir
+					}
+				}
+			}
+		}
+        name = harem_politics.1002.a
+		set_local_variable = {
+			name = ps_fertility_request_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 50
+        }
+    }
+
+	option = { # Ask for fertility in general
+		trigger = {
+			any_consort = {
+				is_visibly_fertile = yes
+				count > 0
+			}
+			NOT = {
+				any_child = {
+					is_bastard_child_trigger = no
+					NOT = {
+						has_trait = child_of_concubine
+					}
+					sex_same_as = scope:lineage_heir
+				}
+			}
+		}
+        name = harem_politics.1002.b
+		set_local_variable = {
+			name = fertility_request_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 75
+        }
+    }
+	
+	option = { # Ask for good health
+		trigger = {
+			health <= poor_health
+		}
+        name = harem_politics.1002.c
+		set_local_variable = {
+			name = health_request_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 100
+        }
+    }
+
+	option = { # Ask for exam help
+		trigger = {
+			has_tgp_dlc_trigger = yes
+			government_allows = merit
+			NOR = {
+				top_liege = root 
+				has_character_modifier = tgp_local_exam_initial_success
+			}
+		}
+        name = harem_politics.1002.d
+		set_local_variable = {
+			name = exam_help_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 50
+        }
+    }
+	option = { # Legitimacy
+		trigger = {
+			is_valid_for_legitimacy_change = yes
+		}
+        name = harem_politics.1002.e
+		set_local_variable = {
+			name = legitimacy_help_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 50
+        }
+    }
+	option = { # Help in war
+		trigger = {
+			is_at_war = yes
+		}
+        name = harem_politics.1002.f
+		set_local_variable = {
+			name = war_help_variable
+			value = yes
+		}
+		
+        ai_chance = {
+            base = 150
+        }
+    }
+	option = { # No need for help
+        name = harem_politics.1002.g
+		add_piety = miniscule_piety_gain
+        ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_zeal = 0.2
+				ai_greed = -0.2
+			}
+        }
+    }
+	after = {
+		worship_ancestors_result_effect = yes
+	}
+}

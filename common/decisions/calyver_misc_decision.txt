@@ -25,50 +25,33 @@ worship_ancestors_decision = {
 				}
 			}
 		}
+		is_landed_or_landless_administrative = yes
 	}
 	
 	is_valid = {
-		is_house_head = yes
-		NOR = {
-			has_trait = bastard
-			has_trait = wild_oat
-			has_trait = bastard_founder
-		}
-		trigger_if = {
-			limit = {
-				has_trait = child_of_concubine
-				culture = { has_cultural_parameter = dishu_system }
-			}
-			NOT = {
-				any_sibling = {
-					has_trait = di_child
-					OR = {
-						AND = {
-							is_female = yes
-							root = {
-								OR = {
-									has_realm_law = female_only_law
-									has_realm_law = female_preference_law
-								}
-							}
-						}
-						AND = {
-							is_female = no
-							root = {
-								NOR = {
-									has_realm_law = female_only_law
-									has_realm_law = female_preference_law
-								}
-							}
-						}
-						root = { has_realm_law = equal_law }
-					}
-				}
-			}
-		}
+		# The ancestors don't like illegititimate descendants
+		is_bastard_child_trigger = no
+		is_faith_dominant_gender = yes
 	}
 
 	is_valid_showing_failures_only = {
+		is_available_adult = yes
+		# custom_tooltip = {
+		# 	text = primary_siblings_tooltip
+		# 	NAND = {
+		# 		can_have_imperial_consorts_trigger = no
+		# 		has_trait = child_of_concubine
+		# 		any_sibling = {
+		# 			NOT = {
+		# 				has_trait = child_of_concubine
+		# 			}
+		# 			is_bastard_child_trigger = no
+		# 			is_courtier_of = root
+		# 			house ?= root.house
+		# 			sex_same_as = root
+		# 		}
+		# 	}
+		# }
 	}
 	
 	widget = {
@@ -87,486 +70,52 @@ worship_ancestors_decision = {
 			}
 			current_description = big_offering_decision_desc
 			localization = big_offering_decision
-			icon = "gfx/interface/icons/court_position_types/court_physician_court_position.dds"
+			icon = "gfx/interface/icons/message_feed/money.dds"
+			ai_chance = { value = 60 }
+		}
+		item = { # Small offering
+			value = small_offering_decision
+			is_shown = {
+				always = yes
+			}
+			is_valid = {
+				gold >= minor_gold_value
+			}
+			current_description = small_offering_decision_desc
+			localization = small_offering_decision
+			icon = "gfx/interface/icons/message_feed/money.dds"
 			ai_chance = { value = 100 }
-		} 
-		item = { #Caravan Master
-			value = hire_travel_leader_decision
-			is_shown = {
-				exists = primary_title 
-				primary_title.tier >= tier_county
-				is_landless_adventurer = no
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = travel_leader_court_position
-					custom_tooltip = {
-						text = recruit_travel_leader_cooldown_tt
-						has_character_flag = recruit_travel_leader_cooldown
-					}
-				}
-			}
-			current_description = hire_travel_leader_decision_desc
-			localization = hire_travel_leader_decision
-			icon = "gfx/interface/icons/court_position_types/travel_leader_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							is_landed_or_landless_administrative = yes
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Wet Nurse 
-			value = find_wet_nurse_decision
-			is_shown = {
-				is_landed_or_landless_administrative = yes
-				has_bp2_dlc_trigger = yes
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = wet_nurse_court_position
-					custom_tooltip = {
-						text = recruit_wet_nurse_cooldown_tt
-						has_character_flag = recruit_wet_nurse_cooldown
-					}
-				}
-			}
-			current_description = find_wet_nurse_decision_desc
-			localization = find_wet_nurse_decision
-			icon = "gfx/interface/icons/court_position_types/wet_nurse_court_position.dds"
-			ai_chance = {
-				value = 10
-				if = {
-					limit = {
-						any_child = { #more willing if mother of your children is dead, too old or not healthy
-							mother ?= {
-								OR = {
-									is_alive = no
-									age > 45
-									health < 3
-								}
-							}
-						}
-					}
-					add = 100
-				}
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							NOT = {
-								employs_court_position = wet_nurse_court_position
-							}
-							any_child = {
-								age < 5
-							}
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Charioteer
-			value = hire_charioteer_decision
-			is_shown = {
-				has_ep3_dlc_trigger = yes
-				is_landless_adventurer = no
-				culture = {
-					has_cultural_parameter = hosts_chariot_races
-				}
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = charioteer_court_position
-					custom_tooltip = {
-						text = recruit_charioteer_cooldown_tt
-						has_character_flag = recruit_charioteer_cooldown
-					}
-				}
-			}
-			current_description = hire_charioteer_decision_desc
-			localization = hire_charioteer_decision
-			icon = "gfx/interface/icons/court_position_types/charioteer_court_position.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { # Bookmaker
-			value = hire_bookmaker_decision
-			is_shown = {
-				has_ep3_dlc_trigger = yes
-				is_landless_adventurer = no
-				culture = {
-					has_cultural_parameter = hosts_chariot_races
-				}
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = bookmaker_court_position
-					custom_tooltip = {
-						text = recruit_bookmaker_cooldown_tt
-						has_character_flag = recruit_bookmaker_cooldown
-					}
-				}
-			}
-			current_description = hire_bookmaker_decision_desc
-			localization = hire_bookmaker_decision
-			icon = "gfx/interface/icons/court_position_types/bookmaker_court_position.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { # Eunuch
-			value = hire_eunuch_decision
-			is_shown = {
-				has_ep3_dlc_trigger = yes
-				is_landless_adventurer = no
-				culture = {
-					has_cultural_parameter = can_appoint_chief_eunuch
-				}
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = chief_eunuch_court_position
-					custom_tooltip = {
-						text = recruit_chief_eunuch_cooldown_tt
-						has_character_flag = recruit_eunuch_cooldown
-					}
-				}
-			}
-			current_description = hire_eunuch_decision_desc
-			localization = hire_eunuch_decision
-			icon = "gfx/interface/icons/court_position_types/chief_eunuch_court_position.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { # Gardener
-			value = recruit_gardener_decision
-			is_shown = {
-				culture = {
-					has_cultural_parameter = can_recruit_gardeners
-				}
-				is_landless_adventurer = no
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = court_gardener_court_position
-					custom_tooltip = {
-						text = recruit_court_gardener_cooldown_tt
-						has_character_flag = recruit_court_gardener_cooldown
-					}
-				}
-			}
-			current_description = recruit_gardener_decision_desc
-			localization = recruit_gardener_decision
-			icon = "gfx/interface/icons/court_position_types/court_gardener_court_position.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { # Linguist (Self)
-			value = invite_a_linguist_self
-			is_shown = {
-				# Standard filter checks.
-				is_playable_character = yes
-				has_royal_court = yes
-				has_dlc_feature = royal_court
-				# Language checks.
-				NOT = { has_court_language_of_culture = root.culture } # No need for linguist
-				any_culture_global = { # Need somewhere to recruit linguist from
-					exists = culture_head
-					root.liege = { has_court_language_of_culture = prev }
-				}
-			}
-			is_valid = {
-				age >= 6
-				is_alive = yes
-				NOT = { exists = involved_activity }
-				is_imprisoned = no
-				NOT = { knows_court_language_of = root }
-				custom_tooltip = {
-					text = scheming_already
-					NOT = { # Is not currently learning a language and doesn't know court language
-						any_scheme = { type = learn_language }	
-					}
-				}
-				custom_tooltip = {
-					text = linguist_already_present
-					NOT = {
-						any_courtier = { # You don't already have a linguist at court
-							has_character_flag = court_linguist_flag
-							knows_court_language_of = root
-						}
-					}
-				}
-				NOT = {
-					custom_tooltip = {
-						text = recruit_linguist_self_cooldown_tt
-						has_character_flag = recruit_linguist_self_cooldown
-					}
-				}
-			}
-			current_description = invite_a_linguist_desc
-			localization = invite_a_linguist_self
-			icon = "gfx/interface/icons/scheme_types/icon_scheme_learn_language.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { # Linguist (Liege)
-			value = invite_a_linguist_liege
-			is_shown = {
-				# Standard filter checks.
-				is_landed_or_landless_administrative = yes
-				# Liege checks.
-				top_liege != this
-				liege = { has_royal_court = yes has_dlc_feature = royal_court }
-				# Language checks.
-				trigger_if = {
-					limit = { has_royal_court = yes }
-					NOT = { has_same_court_language = liege } # Can use other decision in this case
-				}
-				NOR = {
-					liege = { has_court_language_of_culture = root.culture } # No need to learn your own culture's language
-					AND = {
-						knows_language_of_culture = root.liege.culture 
-						trigger_if = {
-							limit = {
-								any_child = { }
-							}
-							any_child = {
-								count > 0
-								knows_language_of_culture = root.liege.culture 
-							}
-						}
-					}
-				}
-				any_culture_global = { # Need somewhere to recruit linguist from
-					exists = culture_head
-					root.liege = { has_court_language_of_culture = prev }
-				}
-			}
-			is_valid = {
-				age >= 6
-				is_alive = yes
-				NOT = { exists = involved_activity }
-				is_imprisoned = no
-				custom_tooltip = {
-					text = scheming_already
-					NOT = { # Is not currently learning a language and doesn't know court language
-						any_scheme = { type = learn_language }
-					}
-				}
-				custom_tooltip = {
-					text = linguist_already_present
-					NOT = {
-						any_courtier = { # You don't already have a linguist at court
-							has_character_flag = court_linguist_flag
-							knows_court_language_of = root.liege
-						}
-					}
-				}
-				NOT = {
-					custom_tooltip = {
-						text = recruit_linguist_liege_cooldown_tt
-						has_character_flag = recruit_linguist_liege_cooldown
-					}
-				}
-			}
-			current_description = invite_a_linguist_desc
-			localization = invite_a_linguist_liege
-			icon = "gfx/interface/icons/scheme_types/icon_scheme_learn_language.dds"
-			ai_chance = { value = 100 }
-		}
-		item = { #Stargazer
-			value = invite_a_stargazer_decision
-			is_shown = {
-				government_has_flag = government_is_nomadic
-				exists = primary_title 
-				primary_title.tier >= tier_county
-				is_landless_adventurer = no
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = court_astrologer_court_position
-					custom_tooltip = {
-						text = recruit_court_astrologer_cooldown_tt
-						has_character_flag = recruit_court_astrologer_cooldown
-					}
-				}
-				exists = capital_province
-			}
-			current_description = invite_a_stargazer_decision_desc
-			localization = invite_a_stargazer_decision
-			icon = "gfx/interface/icons/court_position_types/court_astrologer_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Siege Engineer
-			value = invite_a_siege_engineer_decision
-			is_shown = {
-				government_has_flag = government_is_nomadic
-				exists = primary_title 
-				primary_title.tier >= tier_county
-				is_landless_adventurer = no
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = siege_engineer_court_position
-					custom_tooltip = {
-						text = recruit_siege_engineer_cooldown_tt
-						has_character_flag = recruit_siege_engineer_cooldown
-					}
-				}
-				exists = capital_province
-			}
-			current_description = invite_a_siege_engineer_decision_desc
-			localization = invite_a_siege_engineer_decision
-			icon = "gfx/interface/icons/court_position_types/siege_engineer_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Foreign Emissary
-			value = invite_a_foreign_emissary_decision
-			is_shown = {
-				government_has_flag = government_is_nomadic
-				exists = primary_title 
-				primary_title.tier >= tier_county
-				is_landless_adventurer = no
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = foreign_emissary_court_position
-					custom_tooltip = {
-						text = recruit_foreign_emissary_cooldown_tt
-						has_character_flag = recruit_foreign_emissary_cooldown
-					}
-				}
-				exists = capital_province
-			}
-			current_description = invite_a_foreign_emissary_decision_desc
-			localization = invite_a_foreign_emissary_decision
-			icon = "gfx/interface/icons/court_position_types/foreign_emissary_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Court Brahmin
-			value = invite_a_court_brahmin_decision
-			is_shown = {
-				government_has_flag = government_is_mandala
-				exists = primary_title 
-				primary_title.tier >= tier_county
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = court_brahmin_court_position
-					custom_tooltip = {
-						text = recruit_court_brahmin_cooldown_tt
-						has_character_flag = recruit_court_brahmin_cooldown
-					}
-				}
-				exists = capital_province
-			}
-			current_description = invite_a_court_brahmin_decision_desc
-			localization = invite_a_court_brahmin_decision
-			icon = "gfx/interface/icons/court_position_types/court_brahmin_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
-		}
-		item = { # Khlon Glan
-			value = invite_a_khlon_glan_decision
-			is_shown = {
-				government_has_flag = government_is_mandala
-				exists = primary_title 
-				primary_title.tier >= tier_county
-			}
-			is_valid = {
-				NOR = {
-					employs_court_position = khlon_glan_court_position
-					custom_tooltip = {
-						text = recruit_khlon_glan_cooldown_tt
-						has_character_flag = recruit_khlon_glan_cooldown
-					}
-				}
-				exists = capital_province
-			}
-			current_description = invite_a_khlon_glan_decision_desc
-			localization = invite_a_khlon_glan_decision
-			icon = "gfx/interface/icons/court_position_types/khlon_glan_court_position.dds"
-			ai_chance = {
-				value = 100
-				if = {
-					limit = {
-						NOR = {
-							highest_held_title_tier > tier_barony
-							gold > low_skill_court_physician_cost
-							is_at_war = no
-						}
-					}
-					multiply = 0
-				}
-			}
 		}
 	}
 
 	effect = {
-		if = {
+		save_scope_as = ruler_scope
+		if = { # Do we have an eligible primary sibling
 			limit = {
-				scope:command_to_attend = yes
+				can_have_imperial_consorts_trigger = no
+				has_trait = child_of_concubine
+				any_sibling = {
+					NOT = {
+						has_trait = child_of_concubine
+					}
+					is_bastard_child_trigger = no
+					is_courtier_of = root
+					house ?= root.house
+					sex_same_as = root
+					is_available_adult = yes
+				}
 			}
-			custom_tooltip = {
-				text = command_to_attend_effect_desc
-				add_character_flag = command_to_attend_flag
+			trigger_event = {
+				id = harem_events.1000
+				days = { 7 10 }
 			}
 		}
 		else = {
-			custom_tooltip = {
-				text = command_to_stop_attending_effect_desc
-				remove_character_flag = command_to_attend_flag
-			}
+
+		}
+		trigger_event = {
+			id = harem_events.1000
+			days = { 7 10 }
 		}
 	}
 	
