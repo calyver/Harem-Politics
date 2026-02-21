@@ -3067,6 +3067,10 @@ harem_events.1000 = {
 			# Then they will reclaim their place
 			trigger_event = harem_events.1001
 		}
+		else = {
+			save_scope_as = lineage_heir
+			trigger_event = harem_events.1002
+		}
 	}
 }
 harem_events.1001 = {
@@ -3163,9 +3167,9 @@ harem_events.1001 = {
 	option = { # You will lead the ceremony
         name = harem_politics.1001.b
 		save_scope_as = lineage_heir
-		if = {
-			limit = {
-				scope:sibling = {
+		scope:sibling = {
+			if = {
+				limit = {
 					OR = {
 						has_trait = zealous
 						has_trait = arrogant
@@ -3178,8 +3182,6 @@ harem_events.1001 = {
 						has_relation_soulmate = root
 					}
 				}
-			}
-			add_opinion = {
 				add_opinion = {
 					modifier = upset_opinion
 					target = root
@@ -3226,7 +3228,10 @@ harem_events.1001 = {
 		}
 	}
 }
-
+scripted_trigger is_valid_ancestor_trigger = {
+	is_alive = no
+	is_bastard_child_trigger = no
+}
 scripted_effect worship_ancestors_result_effect = {
 	random_list = {
 		2 = { # Success
@@ -3302,7 +3307,7 @@ scripted_effect worship_ancestors_result_effect = {
 						exists = local_var:health_request_variable
 					}
 					add_character_modifier = {
-						modifier = invigorated_modifier
+						modifier = health_ancestors_big_blessing_modifier
 						years = 3
 					}
 				}
@@ -3380,6 +3385,114 @@ scripted_effect worship_ancestors_result_effect = {
 				add = 1
 			}
 			# Effect
+			send_interface_toast = {
+				type = event_generic_good
+				title = harem_politics.1002.medium_success
+				right_icon = scope:lineage_heir
+				if = { # Fertility for the primary spouse
+					limit = {
+						exists = local_var:ps_fertility_request_variable
+						exists = primary_spouse
+					}
+					primary_spouse = {
+						add_character_modifier = {
+							modifier = successful_fertility_treatment
+							years = 3
+						}
+						if = {
+							limit = {
+								NOR = {
+									has_relation_rival = scope:lineage_heir
+									has_relation_nemesis = scope:lineage_heir
+									has_relation_grudge = scope:lineage_heir
+									has_opinion_modifier = {
+										modifier = forced_me_concubine_marriage_opinion
+										target = scope:lineage_heir
+									}
+								}
+							}
+							add_opinion = {
+								modifier = grateful_opinion
+								opinion = 10
+								target = scope:lineage_heir
+							}
+						}
+					}
+				}
+				else_if = { # Fertility for the other consorts
+					limit = {
+						exists = local_var:fertility_request_variable
+					}
+					add_character_modifier = {
+						modifier = successful_fertility_treatment
+						years = 3
+					}
+				}
+				else_if = { # Health
+					limit = {
+						exists = local_var:health_request_variable
+					}
+					add_character_modifier = {
+						modifier = health_ancestors_moderate_blessing_modifier
+						years = 3
+					}
+				}
+				else_if = { # Exam help
+					limit = {
+						exists = local_var:exam_help_variable
+					}
+					add_character_modifier = {
+						modifier = tgp_local_exam_initial_success
+						years = 1
+					}
+				}
+				else_if = { # Legitimacy
+					limit = {
+						exists = local_var:legitimacy_help_variable
+					}
+					add_character_modifier = {
+						modifier = legitimacy_ancestors_moderate_blessing_modifier
+						years = 3
+					}
+				}
+				else_if = { # War help
+					limit = {
+						exists = local_var:war_help_variable
+					}
+					add_character_modifier = {
+						modifier = war_ancestors_moderate_blessing_modifier
+						years = 3
+					}
+				}
+				else = {
+					add_piety = minor_piety_gain
+				}
+				custom_tooltip = worship_ancestors_medium_house_reward_tt
+				hidden_effect = {
+					every_courtier = {
+						limit = {
+							house ?= scope:lineage_heir.house
+						}
+						add_piety = minor_piety_gain
+					}
+				}
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = {
+						this != scope:lineage_heir
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_politics.1002.medium_success
+						right_icon = scope:lineage_heir
+						show_as_tooltip = {
+							add_piety = minor_piety_gain
+						}
+					}
+				}
+			}
 		}
 		2 = { # Failure
 			modifier = {
@@ -3389,6 +3502,25 @@ scripted_effect worship_ancestors_result_effect = {
 				add = 2
 			}
 			# Effect
+			send_interface_toast = {
+				type = event_generic_bad
+				title = harem_politics.1002.failure
+				right_icon = scope:lineage_heir
+				add_piety = miniscule_piety_gain
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = {
+						this != scope:lineage_heir
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_politics.1002.failure
+						right_icon = scope:lineage_heir
+					}
+				}
+			}
 		}
 	}
 }
@@ -3419,9 +3551,87 @@ harem_events.1002 = {
 	}
 	
 	immediate = {
-		# The result
-		random_effect = {
-
+		if = {
+			limit = {
+				any_grandparent = {
+					is_valid_ancestor_trigger = yes
+				}
+			}
+			every_grandparent = {
+				limit = {
+					is_valid_ancestor_trigger = yes
+				}
+				add_to_temporary_list = dead_ancestors_list
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = dead_ancestors_list
+					count = 0
+				}
+				any_parent = {
+					is_valid_ancestor_trigger = yes
+				}
+			}
+			every_parent = {
+				limit = {
+					is_valid_ancestor_trigger = yes
+				}
+				add_to_temporary_list = dead_ancestors_list
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = dead_ancestors_list
+					count > 0
+				}
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = dead_ancestors_list
+						count = 1
+					}
+				}
+				random_in_list = {
+					list = dead_ancestors_list
+					save_scope_as = ancestor
+				}
+			}
+			else = {
+				ordered_in_list = {
+					list = dead_ancestors_list
+					order_by = {
+						add = age
+						if = {
+							limit = {
+								scope:lineage_heir = {
+									any_held_title = { 
+										is_noble_family_title = yes
+										previous_holder ?= this
+									}
+								}
+							}
+							add = 100
+						}
+						if = {
+							limit = {
+								house ?= scope:lineage_heir.house
+							}
+							add = 70
+						}
+						if = {
+							limit = {
+								same_sex_as = scope:lineage_heir
+							}
+							add = 50
+						}
+					}
+					save_scope_as = ancestor
+				}
+			}
 		}
 	}
 	
