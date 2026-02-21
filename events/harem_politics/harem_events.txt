@@ -3076,7 +3076,35 @@ harem_events.1000 = {
 harem_events.1001 = {
 	type = character_event
 	title = harem_events.1001.t
-	desc = harem_events.1001.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:sibling = {
+						OR = {
+							has_trait = zealous
+							has_trait = arrogant
+							has_trait = ambitious
+							has_trait = bold
+						}
+						NOR = {
+							has_relation_friend = root
+							has_relation_lover = root
+							has_relation_best_friend = root
+							has_relation_soulmate = root
+							has_trait = shy
+							has_trait = craven
+						}
+					}
+				}
+				desc = harem_events.1001.bold.desc
+			}
+			triggered_desc = {
+				desc = harem_events.1001.generic.desc
+			}
+		}
+		harem_events.1001.desc 
+	}
 	theme = family
 	override_background = {
 		reference = temple
@@ -3140,13 +3168,13 @@ harem_events.1001 = {
         ai_chance = {
             base = 50
             ai_value_modifier = {
-   				ai_zeal = 0.25
+   				ai_zeal = 0.5
 				ai_boldness = -0.25
    			}
 			
 			opinion_modifier = { #Opinion
 				opinion_target = scope:sibling
-				multiplier = 0.5
+				multiplier = 0.25
 			}
 			
 			modifier = { #Stress management
@@ -3166,6 +3194,7 @@ harem_events.1001 = {
 	
 	option = { # You will lead the ceremony
         name = harem_politics.1001.b
+		custom_tooltip = harem_politics.1001.b.tt
 		save_scope_as = lineage_heir
 		scope:sibling = {
 			if = {
@@ -3196,13 +3225,13 @@ harem_events.1001 = {
         ai_chance = {
             base = 50
             ai_value_modifier = {
-   				ai_zeal = -0.25
-				ai_boldness = 0.15
+   				ai_zeal = -0.5
+				ai_boldness = 0.25
    			}
 			
 			opinion_modifier = { #Opinion
 				opinion_target = scope:sibling
-				multiplier = -0.5
+				multiplier = -0.25
 			}
 			
 			modifier = { #Stress management
@@ -3494,17 +3523,17 @@ scripted_effect worship_ancestors_result_effect = {
 				}
 			}
 		}
-		2 = { # Failure
+		2 = { # They ignored you
 			modifier = {
 				scope:sibling ?= {
 					this != scope:lineage_heir
 				}
-				add = 2
+				add = 1
 			}
 			# Effect
 			send_interface_toast = {
-				type = event_generic_bad
-				title = harem_politics.1002.failure
+				type = event_generic_neutral
+				title = harem_politics.1002.ignored
 				right_icon = scope:lineage_heir
 				add_piety = miniscule_piety_gain
 			}
@@ -3515,7 +3544,35 @@ scripted_effect worship_ancestors_result_effect = {
 						is_ai = no
 					}
 					send_interface_toast = {
-						type = event_generic_good
+						type = event_generic_neutral
+						title = harem_politics.1002.ignored
+						right_icon = scope:lineage_heir
+					}
+				}
+			}
+		}
+		1 = { # Failure
+			modifier = {
+				scope:sibling ?= {
+					this != scope:lineage_heir
+				}
+				add = 3
+			}
+			# Effect
+			send_interface_toast = {
+				type = event_generic_bad
+				title = harem_politics.1002.failure
+				right_icon = scope:lineage_heir
+				add_piety = minor_piety_loss
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = {
+						this != scope:lineage_heir
+						is_ai = no
+					}
+					send_interface_toast = {
+						type = event_generic_bad
 						title = harem_politics.1002.failure
 						right_icon = scope:lineage_heir
 					}
