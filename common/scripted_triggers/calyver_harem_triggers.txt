@@ -63,9 +63,21 @@ is_valid_harem_member_trigger = {
 				is_consort_of = $LIEGE$
 			}
 		}
-		$LIEGE$.religion = religion:islam_religion
-		is_valid_muslim_harem_relative_trigger = {
-			LIEGE = $LIEGE$
+		trigger_if = {
+			limit = {
+				$LIEGE$.religion = religion:islam_religion
+			}
+			is_valid_muslim_harem_relative_trigger = {
+				LIEGE = $LIEGE$
+			}
+		}
+		trigger_else = {
+			$LIEGE$ = {
+				hp_has_seniority_based_harem_relatives_trigger = yes
+			}
+			is_valid_seniority_harem_relative_trigger = {
+				LIEGE = $LIEGE$
+			}
 		}
 	}
 	trigger_else = {
@@ -131,6 +143,67 @@ is_valid_muslim_harem_relative_trigger = {
 		}
 		# Siblings
 		is_sibling_of = $LIEGE$
+	}
+	# Check their gender based on religious doctrines
+	trigger_if = {
+		limit = {
+			$LIEGE$.faith = {
+				NOT = { has_doctrine = doctrine_gender_equal }
+			}
+		}
+		trigger_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_male_dominated
+				}
+			}
+			is_male = no
+		}
+		trigger_else_if = {
+			limit = {
+				$LIEGE$.faith = {
+					has_doctrine = doctrine_gender_female_dominated
+				}
+			}
+			is_male = yes
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+}
+is_valid_seniority_harem_relative_trigger = {
+	# Not married
+	is_married = no
+	# Check the legitimacy of the family line
+	OR = {
+		# Grandparents
+		AND = {
+			is_grandparent_of = $LIEGE$
+			trigger_if = {
+				limit = {
+					$LIEGE$.faith = {
+						NOT = { has_doctrine = doctrine_gender_equal }
+					}
+				}
+				any_child = {
+					is_parent_of = $LIEGE$
+					trigger_if = {
+						limit = {
+							$LIEGE$.faith = {
+								has_doctrine = doctrine_gender_male_dominated
+							}
+						}
+						is_male = yes
+					}
+					trigger_else = {
+						is_male = no
+					}
+				}
+			}
+		}
+		# The mother/father
+		is_parent_of = $LIEGE$
 	}
 	# Check their gender based on religious doctrines
 	trigger_if = {
@@ -280,6 +353,7 @@ is_head_of_the_harem_trigger = {
 		}
 	}
 	# Single hierarchy - only one condition should be true
+	# Muslim hierarchy - elder relatives rank higher
 	trigger_if = { #Liege's mother is always the head of the harem
 		limit = {
 			$LIEGE$ = {
@@ -344,7 +418,40 @@ is_head_of_the_harem_trigger = {
 		age > $LIEGE$.age
 		is_sibling_of = $LIEGE$
 	}
-
+	# Seniority hierarchy - only direct ancestors rank higher
+	trigger_else_if = { #Grandparents
+		limit = {
+			$LIEGE$ = {
+				hp_has_seniority_based_harem_relatives_trigger = yes
+				can_have_imperial_consorts_trigger = no
+				any_courtier = {
+					is_grandparent_of = $LIEGE$
+					is_valid_harem_member_trigger = {
+						LIEGE = $LIEGE$
+					}
+					NOT = { is_consort_of = $LIEGE$ }
+				}
+			}
+		}
+		is_grandparent_of = $LIEGE$
+	}
+	trigger_else_if = { #Liege's mother is always the head of the harem
+		limit = {
+			$LIEGE$ = {
+				hp_has_seniority_based_harem_relatives_trigger = yes
+				can_have_imperial_consorts_trigger = no
+				any_parent = {
+					is_courtier_of = $LIEGE$
+					is_valid_harem_member_trigger = {
+						LIEGE = $LIEGE$
+					}
+					NOT = { is_consort_of = $LIEGE$ }
+				}
+			}
+		}
+		is_parent_of = $LIEGE$
+	}
+	# Consorts
 	trigger_else_if = { #The primary spouse
 		limit = {
 			$LIEGE$.primary_spouse ?= {
@@ -361,6 +468,16 @@ is_head_of_the_harem_trigger = {
 		}
 		has_court_position = grand_consort_court_position
 	}
+	trigger_else_if = { #High Consorts
+		limit = {
+			$LIEGE$ = {
+				employs_high_consort_court_position_trigger = yes
+			}
+		}
+		is_high_consort_trigger = {
+			LIEGE = $LIEGE$
+		}
+	}
 	trigger_else_if = { #Just any spouse
 		limit = {
 			$LIEGE$ = {
@@ -371,7 +488,8 @@ is_head_of_the_harem_trigger = {
 		}
 		is_spouse_of = $LIEGE$
 	}
-	trigger_else = { #Younger sisters
+	# Muslim hierarchy - younger relatives rank as fallback
+	trigger_else_if = { #Younger sisters
 		limit = {
 			$LIEGE$ = {
 				religion = religion:islam_religion
@@ -385,6 +503,35 @@ is_head_of_the_harem_trigger = {
 			}
 		}
 		is_sibling_of = $LIEGE$
+	}
+	# Seniority hierarchy - the Empress Dowager ranks higher as fallback for imperial harems
+	trigger_else_if = { #Grandparents
+		limit = {
+			$LIEGE$ = {
+				hp_has_seniority_based_harem_relatives_trigger = yes
+				any_courtier = {
+					is_grandparent_of = $LIEGE$
+					is_valid_harem_member_trigger = {
+						LIEGE = $LIEGE$
+					}
+					NOT = { is_consort_of = $LIEGE$ }
+				}
+			}
+		}
+		is_grandparent_of = $LIEGE$
+	}
+	trigger_else = { #Liege's mother is always the head of the harem
+		$LIEGE$ = {
+			hp_has_seniority_based_harem_relatives_trigger = yes
+			any_parent = {
+				is_courtier_of = $LIEGE$
+				is_valid_harem_member_trigger = {
+					LIEGE = $LIEGE$
+				}
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+		}
+		is_parent_of = $LIEGE$
 	}
 }
 is_grand_consort_trigger = {
@@ -751,6 +898,30 @@ high_consort_male_trigger = {
 	}
 	trigger_else = {
 		is_female = yes
+	}
+}
+hp_has_seniority_based_harem_relatives_trigger = {
+    OR = {
+        culture = {
+            OR = {
+                has_cultural_parameter = dishu_system
+                has_cultural_tradition = tradition_mystical_ancestors
+            }
+        }
+        faith = {
+            OR = {
+                has_doctrine_parameter = parents_get_hooks_on_children
+                has_doctrine = tenet_ancestor_worship
+            }
+        }
+    }
+}
+employs_high_consort_court_position_trigger = {
+	OR = {
+		employs_court_position = grand_consort_court_position
+		employs_court_position = pure_consort_court_position
+		employs_court_position = virtuous_consort_court_position
+		employs_court_position = worthy_consort_court_position
 	}
 }
 # Harem loc triggers #
