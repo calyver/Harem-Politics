@@ -4348,6 +4348,7 @@ harem_events.2000 = {
 #####################
 ## Visit Matriarch ##
 #####################
+# Base trigger
 scripted_trigger is_valid_matriarch_relative_trigger = {
 	trigger_if = {
 		limit = {
@@ -4360,13 +4361,19 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 	}
 	top_liege ?= scope:matriarch.top_liege
 	is_available_healthy_ai_adult = yes
-	any_held_title = { count = 0 }
 	NOR = {
 		has_character_modifier = recently_tortured
 		any_consort = {
 			this = root
 		}
 		is_child_of = root
+	}
+	any_held_title = { count = 0 }
+}
+# Requesting a title for a relative
+scripted_trigger is_valid_matriarch_relative_for_title_grant_trigger = {
+	is_valid_matriarch_relative_trigger = yes
+	NOR = {
 		any_heir_title = {} # Not heir to anything
 	}
 	trigger_if = {
@@ -4398,13 +4405,80 @@ scripted_trigger is_valid_for_title_request_trigger = {
 	}
 	scope:matriarch = {
 		any_close_family_member = {
-			is_valid_matriarch_relative_trigger = yes
+			is_valid_matriarch_relative_for_title_grant_trigger = yes
 		}
 	}
 }
-
+# Requesting a court position for a relative
+scripted_trigger is_valid_matriarch_relative_for_court_position_grant_trigger = {
+	is_valid_matriarch_relative_trigger = yes
+	has_any_court_position = no
+}
 scripted_trigger is_valid_for_court_position_request_trigger = {
-	
+	scope:matriarch = {
+		any_close_family_member = {
+			is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+			save_temporary_scope_as = relative
+		}
+	}
+	character_can_be_employed_in_a_court_position_trigger = {
+		CHARACTER = scope:relative
+	}
+}
+# Requesting a council position for a relative
+scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger = {
+	is_valid_matriarch_relative_trigger = yes
+	is_councillor = no
+	OR = {
+		AND = {
+			can_be_chancellor_trigger = { COURT_OWNER = root }
+			root.cp:councillor_chancellor ?= {
+				NOT = {
+					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+				}
+			}
+		}
+		AND = {
+			can_be_steward_trigger = { COURT_OWNER = root }
+			root.cp:councillor_steward ?= {
+				NOT = {
+					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+				}
+			}
+		}
+		AND = {
+			can_be_marshal_trigger = { COURT_OWNER = root }
+			root.cp:councillor_marshal ?= {
+				NOT = {
+					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+				}
+			}
+		}
+		AND = {
+			can_be_spymaster_trigger = { COURT_OWNER = root }
+			root.cp:councillor_spymaster ?= {
+				NOT = {
+					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+				}
+			}
+		}
+		AND = {
+			can_be_court_chaplain_trigger = { COURT_OWNER = root }
+			root.faith = { has_doctrine = doctrine_clerical_succession_temporal_appointment }
+			root.cp:councillor_court_chaplain ?= {
+				NOT = {
+					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+				}
+			}
+		}
+	}
+}
+scripted_trigger is_valid_for_council_position_request_trigger = {
+	scope:matriarch = {
+		any_close_family_member = {
+			is_valid_matriarch_relative_for_council_position_grant_trigger = yes
+		}
+	}
 }
 harem_events.2100 = {
 	hidden = yes
@@ -4489,20 +4563,35 @@ harem_events.2100 = {
 			random_list = {
 				20 = { # They give you a blessing
 					opinion_modifier = {
-						opinion_target = $CONSORT$
-						multiplier = 0.5
+						who = scope:matriarch
+						opinion_target = root
+						multiplier = 0.25
 					}
 					modifier = {
 						scope:matriarch = {
 							has_trait = content
 						}
-						add = 3
+						add = 5
 					}
 					modifier = {
 						scope:matriarch = {
 							has_trait = humble
 						}
-						add = 3
+						add = 5
+					}
+					modifier = {
+						OR = {
+							has_relation_friend = scope:matriarch
+							has_relation_lover = scope:matriarch
+						}
+						add = 5
+					}
+					modifier = {
+						OR = {
+							has_relation_best_friend = scope:matriarch
+							has_relation_soulmate = scope:matriarch
+						}
+						add = 10
 					}
 				}
 				20 = { # They tell you to favor a consort
@@ -4523,7 +4612,7 @@ harem_events.2100 = {
 							house ?= scope:matriarch.house
 							harem_politics_favored_consort_trigger = no
 						}
-						add = 6
+						add = 10
 					}
 					modifier = {
 						any_consort = {
@@ -4533,7 +4622,7 @@ harem_events.2100 = {
 							}
 							harem_politics_favored_consort_trigger = no
 						}
-						add = 3
+						add = 5
 					}
 					modifier = {
 						any_consort = {
@@ -4543,7 +4632,7 @@ harem_events.2100 = {
 							}
 							harem_politics_favored_consort_trigger = no
 						}
-						add = 2
+						add = 10
 					}
 				}
 				20 = { # They complain of you favoring a consort
@@ -4571,7 +4660,7 @@ harem_events.2100 = {
 							}
 							has_relation_rival = scope:matriarch
 						}
-						add = 3
+						add = 10
 					}
 					modifier = {
 						any_consort = {
@@ -4585,7 +4674,7 @@ harem_events.2100 = {
 							}
 							has_relation_nemesis = scope:matriarch
 						}
-						add = 6
+						add = 20
 					}
 				}
 				15 = { # They ask you to grant a title to a relative
@@ -4624,16 +4713,90 @@ harem_events.2100 = {
 					}
 
 				}
-				20 = { # They ask you to grant a court position to a relative
+				15 = { # They ask you to grant a court position to a relative
 					trigger = {
 						is_valid_for_court_position_request_trigger = yes
 					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = ambitious
+						}
+						add = 10
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = arrogant
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = greedy
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = humble
+						}
+						add = -5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = content
+						}
+						add = -5
+					}
 				}
-				20 = { # They ask you to grant a council position to a relative
-
+				15 = { # They ask you to grant a council position to a relative
+					trigger = {
+						is_valid_for_council_position_request_trigger = yes
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = ambitious
+						}
+						add = 10
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = arrogant
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = greedy
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = humble
+						}
+						add = -5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = content
+						}
+						add = -5
+					}
 				}
-				20 = { # They outright reject you
-
+				15 = { # They outright reject you
+					opinion_modifier = {
+						who = scope:matriarch
+						opinion_target = root
+						multiplier = -0.25
+					}
+					modifier = {
+						has_relation_rival = scope:matriarch
+						add = 10
+					}
+					modifier = {
+						has_relation_nemesis = scope:matriarch
+						add = 20
+					}
 				}
 			}
 		}
