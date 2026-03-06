@@ -3828,7 +3828,7 @@ harem_events.1002 = {
 	}
 }
 
-################################
+###############################
 ## Silkworm Goddess Ceremony ##
 ###############################
 harem_events.2000 = {
@@ -4185,6 +4185,460 @@ harem_events.2000 = {
 					value = yes
 				}
 			}
+		}
+	}
+	
+	option = {
+        name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							exists = local_var:bad_ceremony
+						}
+						desc = harem_events.2000.bad_ceremony.a
+					}
+					triggered_desc = {
+						desc = harem_events.2000.generic.b
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = local_var:successful_ceremony
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = { is_valid_for_legitimacy_change = yes }
+					add_legitimacy = minor_legitimacy_gain
+				}
+				add_opinion = {
+					modifier = pleased_opinion
+					target = scope:ritual_leader
+					opinion = 10
+				}
+				add_character_modifier = {
+					modifier = big_silk_worship_modifier
+					years = 1
+				}
+				every_councillor = {
+					custom = every_councillor
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = 5
+					}
+				}
+				every_powerful_vassal = {
+					custom = every_powerful_vassal_tt
+					limit = {
+						NOT = { is_councillor_of = scope:ruler_scope }
+					}
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = 5
+					}
+				}
+				every_courtier = {
+					custom = EVERY_COURTIER_EFFECT
+					limit = {
+						NOR = {
+							is_close_or_extended_family_of = scope:ritual_leader
+							this = scope:ritual_leader
+							has_relation_rival = scope:ritual_leader
+							has_relation_nemesis = scope:ritual_leader
+						}
+					}
+					add_opinion = {
+						target = scope:ritual_leader
+						modifier = respect_opinion
+						opinion = 10
+					}
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_moderate_gain_effect = yes
+				add_piety = medium_piety_gain
+			}
+		}
+		else_if = {
+			limit = {
+				exists = local_var:normal_ceremony
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = { is_valid_for_legitimacy_change = yes }
+					add_legitimacy = miniscule_legitimacy_gain
+				}
+				add_opinion = {
+					modifier = pleased_opinion
+					target = scope:ritual_leader
+					opinion = 5
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_minor_gain_effect = yes
+			}
+		}
+		else = {
+			scope:ruler_scope = {
+				add_opinion = {
+					modifier = disappointed_opinion
+					target = scope:ritual_leader
+					opinion = -10
+				}
+				every_councillor = {
+					custom = every_councillor
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = -5
+					}
+				}
+				every_powerful_vassal = {
+					custom = every_powerful_vassal_tt
+					limit = {
+						NOT = { is_councillor_of = scope:ruler_scope }
+					}
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = -5
+					}
+				}
+				every_courtier = {
+					custom = EVERY_COURTIER_EFFECT
+					limit = {
+						NOR = {
+							is_close_or_extended_family_of = scope:ritual_leader
+							this = scope:ritual_leader
+							has_relation_friend = scope:ritual_leader
+							has_relation_best_friend = scope:ritual_leader
+							has_relation_lover = scope:ritual_leader
+							has_relation_soulmate = scope:ritual_leader
+						}
+					}
+					add_opinion = {
+						target = scope:ritual_leader
+						modifier = disappointed_opinion
+						opinion = -10
+					}
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_minor_loss_effect = yes
+				add_piety = medium_piety_loss
+				if = {
+					limit = {
+						religion_is_east_asian_trigger = yes
+					}
+					stress_impact = {
+						zealous = minor_stress_impact_gain
+					}
+				}
+			}
+		}
+        ai_chance = {
+            base = 1
+        }
+    }
+}
+#####################
+## Visit Matriarch ##
+#####################
+scripted_trigger is_valid_matriarch_relative_trigger = {
+	trigger_if = {
+		limit = {
+			exists = scope:matriarch.house
+		}
+		house ?= {
+			this = scope:matriarch.house
+			this != root.house
+		}
+	}
+	top_liege ?= scope:matriarch.top_liege
+	is_available_healthy_ai_adult = yes
+	any_held_title = { count = 0 }
+	NOR = {
+		has_character_modifier = recently_tortured
+		any_consort = {
+			this = root
+		}
+		is_child_of = root
+		any_heir_title = {} # Not heir to anything
+	}
+	trigger_if = {
+		limit = { is_female = yes }
+		ROOT = { faith_dominant_gender_female_or_equal = yes }
+	}
+	trigger_else = { faith_dominant_gender_male_or_equal = yes }
+}
+scripted_trigger is_valid_for_title_request_trigger = {
+	OR = {
+		any_held_title = {
+			tier = tier_barony
+			is_capital_barony = no
+			is_leased_out = no
+			NOR = { 
+				THIS = ROOT.capital_barony 
+				title_province = { 
+					OR = {
+						has_holding_type = city_holding 
+						has_holding_type = church_holding
+					}
+				}
+			}
+		}
+		any_held_title = {
+			count >= 4
+			tier = tier_county
+		}
+	}
+	scope:matriarch = {
+		any_close_family_member = {
+			is_valid_matriarch_relative_trigger = yes
+		}
+	}
+}
+
+scripted_trigger is_valid_for_court_position_request_trigger = {
+	
+}
+harem_events.2100 = {
+	hidden = yes
+	
+	trigger = {
+		scope:ruler_scope = {
+			is_available_healthy_adult = yes
+			can_have_four_consorts_trigger = yes
+			OR = {
+				primary_spouse ?= scope:ritual_leader
+				mother ?= scope:ritual_leader
+			}
+			this = root
+		}
+		scope:ritual_leader = {
+			is_courtier_of = scope:ruler_scope
+			is_available_healthy_adult = yes
+		}
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				NOR = {
+					has_character_modifier = isolating_modifier
+				}
+				is_available = yes
+			}
+			# Muslim: mother first, then grandmother
+			if = {
+				limit = {
+					religion = religion:islam_religion
+					any_parent = {
+						is_valid_harem_member_trigger = { LIEGE = root }
+					}
+				}
+				random_parent = {
+					limit = {
+						is_valid_harem_member_trigger = { LIEGE = root }
+					}
+					save_scope_as = matriarch
+				}
+			}
+			else_if = {
+				limit = {
+					any_ancestor = {
+						is_valid_harem_member_trigger = {
+							LIEGE = root
+						}
+						is_grandparent_of = root
+					}
+				}
+				random_ancestor = {
+					limit = {
+						is_valid_harem_member_trigger = {
+							LIEGE = root
+						}
+						is_grandparent_of = root
+					}
+					save_scope_as = matriarch
+				}
+			}
+			else_if = {
+				limit = {
+					religion = religion:islam_religion
+					any_parent = {
+						is_valid_harem_member_trigger = { LIEGE = root }
+					}
+				}
+				random_parent = {
+					limit = {
+						is_valid_harem_member_trigger = { LIEGE = root }
+					}
+					save_scope_as = matriarch
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:matriarch
+			}
+			random_list = {
+				20 = { # They give you a blessing
+					opinion_modifier = {
+						opinion_target = $CONSORT$
+						multiplier = 0.5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = content
+						}
+						add = 3
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = humble
+						}
+						add = 3
+					}
+				}
+				20 = { # They tell you to favor a consort
+					trigger = {
+						any_consort = {
+							OR = {
+								house ?= scope:matriarch.house
+								has_relation_friend = scope:matriarch
+								has_relation_best_friend = scope:matriarch
+								has_relation_lover = scope:matriarch
+								has_relation_soulmate = scope:matriarch
+							}
+							harem_politics_favored_consort_trigger = no
+						}
+					}
+					modifier = {
+						any_consort = {
+							house ?= scope:matriarch.house
+							harem_politics_favored_consort_trigger = no
+						}
+						add = 6
+					}
+					modifier = {
+						any_consort = {
+							OR = {
+								has_relation_friend = scope:matriarch
+								has_relation_lover = scope:matriarch
+							}
+							harem_politics_favored_consort_trigger = no
+						}
+						add = 3
+					}
+					modifier = {
+						any_consort = {
+							OR = {
+								has_relation_best_friend = scope:matriarch
+								has_relation_soulmate = scope:matriarch
+							}
+							harem_politics_favored_consort_trigger = no
+						}
+						add = 2
+					}
+				}
+				20 = { # They complain of you favoring a consort
+					trigger = {
+						any_consort = {
+							harem_politics_beloved_consort_trigger = yes
+							NOR = {
+								house ?= scope:matriarch.house
+								has_relation_friend = scope:matriarch
+								has_relation_best_friend = scope:matriarch
+								has_relation_lover = scope:matriarch
+								has_relation_soulmate = scope:matriarch
+							}
+						}
+					}
+					modifier = {
+						any_consort = {
+							harem_politics_beloved_consort_trigger = yes
+							NOR = {
+								house ?= scope:matriarch.house
+								has_relation_friend = scope:matriarch
+								has_relation_best_friend = scope:matriarch
+								has_relation_lover = scope:matriarch
+								has_relation_soulmate = scope:matriarch
+							}
+							has_relation_rival = scope:matriarch
+						}
+						add = 3
+					}
+					modifier = {
+						any_consort = {
+							harem_politics_beloved_consort_trigger = yes
+							NOR = {
+								house ?= scope:matriarch.house
+								has_relation_friend = scope:matriarch
+								has_relation_best_friend = scope:matriarch
+								has_relation_lover = scope:matriarch
+								has_relation_soulmate = scope:matriarch
+							}
+							has_relation_nemesis = scope:matriarch
+						}
+						add = 6
+					}
+				}
+				15 = { # They ask you to grant a title to a relative
+					trigger = {
+						is_valid_for_title_request_trigger = yes
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = ambitious
+						}
+						add = 10
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = arrogant
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = greedy
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = humble
+						}
+						add = -5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = content
+						}
+						add = -5
+					}
+
+				}
+				20 = { # They ask you to grant a court position to a relative
+					trigger = {
+						is_valid_for_court_position_request_trigger = yes
+					}
+				}
+				20 = { # They ask you to grant a council position to a relative
+
+				}
+				20 = { # They outright reject you
+
+				}
+			}
+		}
+		else = {
+			# Send error message
 		}
 	}
 	
