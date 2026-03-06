@@ -4860,3 +4860,291 @@ harem_events.2100 = {
 		}
 	}
 }
+# They give you a blessing
+harem_events.2101 = {
+	type = character_event
+	title = harem_events.2101.t
+	desc = harem_events.2101.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = personality_honorable
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = personality_content
+	}
+	
+	trigger = {
+	}
+	
+	immediate = {
+		random = {
+			chance = {
+				value = 5
+				# Proper education
+				if = {
+					limit = {
+						scope:matriarch = {
+							OR = {
+								has_education_rank_3_trigger = yes
+								has_education_rank_4_trigger = yes
+								has_education_rank_5_trigger = yes
+							}
+						}
+					}
+					add = 10
+				}
+				#personality fits
+				if = {
+					limit = {
+						OR = {
+							AND = {
+								scope:matriarch = {
+									has_education_diplomacy_trigger = yes
+								}
+								has_education_diplomacy_trigger = yes
+							}
+							AND = {
+								scope:matriarch = {
+									has_education_martial_trigger = yes
+								}
+								has_education_martial_trigger = yes
+							}
+							AND = {
+								scope:matriarch = {
+									has_education_learning_trigger = yes
+								}
+								has_education_learning_trigger = yes
+							}
+							AND = {
+								scope:matriarch = {
+									has_education_stewardship_trigger = yes
+								}
+								has_education_stewardship_trigger = yes
+							}
+							AND = {
+								scope:matriarch = {
+									has_education_intrigue_trigger = yes
+								}
+								has_education_intrigue_trigger = yes
+							}
+						}
+					}
+					add = 5
+				}
+			}
+			if = {
+				limit = {
+					scope:matriarch = {
+						has_education_diplomacy_trigger = yes
+					}
+				}
+				add_character_modifier = {
+					modifier = ancestor_blessing_modifier_diplomacy
+					years = 2
+				}
+			}
+			else_if = {
+				limit = {
+					scope:matriarch = {
+						has_education_martial_trigger = yes
+					}
+				}
+				add_character_modifier = {
+					modifier = ancestor_blessing_modifier_martial
+					years = 2
+				}
+			}
+			else_if = {
+				limit = {
+					scope:matriarch = {
+						has_education_learning_trigger = yes
+					}
+				}
+				add_character_modifier = {
+					modifier = ancestor_blessing_modifier_learning
+					years = 2
+				}
+			}
+			else_if = {
+				limit = {
+					scope:matriarch = {
+						has_education_stewardship_trigger = yes
+					}
+				}
+				add_character_modifier = {
+					modifier = ancestor_blessing_modifier_stewardship
+					years = 2
+				}
+			}
+			else = {
+				add_character_modifier = {
+					modifier = ancestor_blessing_modifier_intrigue
+					years = 2
+				}
+			}
+		}
+	}
+	
+	option = {
+        name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = {
+							exists = local_var:bad_ceremony
+						}
+						desc = harem_events.2000.bad_ceremony.a
+					}
+					triggered_desc = {
+						desc = harem_events.2000.generic.b
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = local_var:successful_ceremony
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = { is_valid_for_legitimacy_change = yes }
+					add_legitimacy = minor_legitimacy_gain
+				}
+				add_opinion = {
+					modifier = pleased_opinion
+					target = scope:ritual_leader
+					opinion = 10
+				}
+				add_character_modifier = {
+					modifier = big_silk_worship_modifier
+					years = 1
+				}
+				every_councillor = {
+					custom = every_councillor
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = 5
+					}
+				}
+				every_powerful_vassal = {
+					custom = every_powerful_vassal_tt
+					limit = {
+						NOT = { is_councillor_of = scope:ruler_scope }
+					}
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = 5
+					}
+				}
+				every_courtier = {
+					custom = EVERY_COURTIER_EFFECT
+					limit = {
+						NOR = {
+							is_close_or_extended_family_of = scope:ritual_leader
+							this = scope:ritual_leader
+							has_relation_rival = scope:ritual_leader
+							has_relation_nemesis = scope:ritual_leader
+						}
+					}
+					add_opinion = {
+						target = scope:ritual_leader
+						modifier = respect_opinion
+						opinion = 10
+					}
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_moderate_gain_effect = yes
+				add_piety = medium_piety_gain
+			}
+		}
+		else_if = {
+			limit = {
+				exists = local_var:normal_ceremony
+			}
+			scope:ruler_scope = {
+				if = {
+					limit = { is_valid_for_legitimacy_change = yes }
+					add_legitimacy = miniscule_legitimacy_gain
+				}
+				add_opinion = {
+					modifier = pleased_opinion
+					target = scope:ritual_leader
+					opinion = 5
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_minor_gain_effect = yes
+			}
+		}
+		else = {
+			scope:ruler_scope = {
+				add_opinion = {
+					modifier = disappointed_opinion
+					target = scope:ritual_leader
+					opinion = -10
+				}
+				every_councillor = {
+					custom = every_councillor
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = -5
+					}
+				}
+				every_powerful_vassal = {
+					custom = every_powerful_vassal_tt
+					limit = {
+						NOT = { is_councillor_of = scope:ruler_scope }
+					}
+					add_opinion = {
+						target = scope:ruler_scope
+						modifier = respect_opinion
+						opinion = -5
+					}
+				}
+				every_courtier = {
+					custom = EVERY_COURTIER_EFFECT
+					limit = {
+						NOR = {
+							is_close_or_extended_family_of = scope:ritual_leader
+							this = scope:ritual_leader
+							has_relation_friend = scope:ritual_leader
+							has_relation_best_friend = scope:ritual_leader
+							has_relation_lover = scope:ritual_leader
+							has_relation_soulmate = scope:ritual_leader
+						}
+					}
+					add_opinion = {
+						target = scope:ritual_leader
+						modifier = disappointed_opinion
+						opinion = -10
+					}
+				}
+			}
+			scope:ritual_leader = {
+				calyver_favor_minor_loss_effect = yes
+				add_piety = medium_piety_loss
+				if = {
+					limit = {
+						religion_is_east_asian_trigger = yes
+					}
+					stress_impact = {
+						zealous = minor_stress_impact_gain
+					}
+				}
+			}
+		}
+        ai_chance = {
+            base = 1
+        }
+    }
+}
