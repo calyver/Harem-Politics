@@ -4362,9 +4362,7 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 	is_available_healthy_ai_adult = yes
 	NOR = {
 		has_character_modifier = recently_tortured
-		any_consort = {
-			this = root
-		}
+		is_consort_of = root
 		is_child_of = root
 	}
 	any_held_title = { count = 0 }
@@ -5892,16 +5890,14 @@ harem_events.2104 = {
 			}
         }
     }
-	option = { # Make them a noble family title
-        name = harem_politics.2104.a
+	option = { # Make them a noble family head
+        name = harem_politics.2104.b
 		trigger = {
 			government_allows = noble_families
 			is_independent_ruler = yes
 			scope:matriarch.house.house_head ?= scope:consort_relative
 		}
-		show_as_unavailable = {
-			gold < massive_gold_value
-		}
+		show_as_unavailable = { NOT = { gold >= massive_gold_value } }
 		remove_short_term_gold = massive_gold_value
 		hidden_effect = {
 			add_courtier = scope:consort_relative
@@ -5939,7 +5935,7 @@ harem_events.2104 = {
 			}
         }
 		stress_impact = {
-			greedy = medium_stress_impact_gain # But, titles
+			greedy = medium_stress_impact_gain
 			generous = minor_stress_impact_loss
 		}
         ai_chance = {
@@ -5963,9 +5959,10 @@ harem_events.2104 = {
 				add = 25
 				has_trait = generous
 			}
-			modifier = {	#Weight down for stress.
-				add = -25
+			modifier = {
+				add = 10
 				has_trait = arrogant
+				has_no_particular_noble_roots_trigger = yes
 			}
 			modifier = { # To clean the family lineage
 				scope:matriarch = {
@@ -5976,74 +5973,173 @@ harem_events.2104 = {
 			}
         }
     }
-	# Favor the consort for the night
-	option = {
-        name = harem_events.2104.b
-		add_piety = minor_piety_gain
-		scope:consort = {
-			calyver_favor_minor_loss_effect = yes
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -5
-			}
-			hidden_effect = {
-				add_opinion = {
-					target = scope:matriarch
-					modifier = hatred_spouse_opinion
-					opinion = -10
-				}
-			}
+	option = { # Compromise - give them gold
+        name = harem_politics.0031.b
+		trigger = {
+			gold >= medium_gold_value
 		}
+		show_as_unavailable = { NOT = { gold >= medium_gold_value } }
+		save_scope_value_as = {
+			name = gold_to_pay
+			value = medium_gold_value
+		}
+		pay_short_term_gold = {
+			target = scope:consort_relative
+			gold = scope:gold_to_pay
+		}
+		add_piety = minor_piety_gain
 		scope:matriarch = {
-			add_opinion = {
+        	add_opinion = {
 				target = root
 				modifier = pleased_opinion
-				opinion = 5
+				opinion = 10
+			}
+        }
+		scope:consort_relative = {
+			add_opinion = {
+				target = scope:meddling_relative
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
 			}
 		}
-		ai_chance = {
-            base = 30
-			ai_value_modifier = {
-				ai_honor = 0.15
-			}
-			opinion_modifier = {
-				who = root
-				opinion_target = scope:matriarch
-				multiplier = 0.20
-			}
+        stress_impact = {
+			greedy = medium_stress_impact_gain # But, titles
+			generous = minor_stress_impact_loss
+		}
+        ai_chance = {
+            base = 100
+            ai_value_modifier = {
+   				ai_rationality = 0.75
+   				ai_greed = -0.5
+   			}
 			modifier = {
-				trait_compatibility = {
-					target = scope:consort
-					value <= neutral_trait_compatibility
+				gold <= medium_gold_value
+				add = -15
+			}
+            modifier = { # Weight up for family members.
+            	add = 15
+            	scope:consort_relative = { is_close_or_extended_family_of = ROOT }
+            }
+			modifier = { # Weight up for opinion.
+            	add = 10
+            	opinion = {
+            		target = scope:meddling_relative
+            		value >= low_positive_opinion
+            	}
+            }
+            modifier = { # Weight up for opinion.
+            	add = 10
+            	opinion = {
+            		target = scope:meddling_relative
+            		value >= 50
+            	}
+            }
+			modifier = { # Weight up for opinion.
+            	add = 5
+            	opinion = {
+            		target = scope:consort_relative
+            		value >= 50
+            	}
+            }
+			modifier = { #Fertile consort
+				scope:meddling_relative = {
+					any_child = {
+						is_child_of = root
+						count >= 3
+					}
 				}
 				add = 5
 			}
-			modifier = {
-				OR = {
-					has_relation_friend = scope:consort
-					has_relation_lover = scope:consort
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					any_close_or_extended_family_member = {
+						OR = {
+							this = root.primary_spouse
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							is_parent_of = root
+							is_liege_or_above_of = root
+						}
+					}
 				}
-				add = -5
+				add = 5
 			}
-			modifier = {
-				OR = {
-					has_relation_best_friend = scope:consort
-					has_relation_soulmate = scope:consort
+			modifier = { #Influential consort
+				exists = root.primary_spouse
+				scope:meddling_relative = {
+					this = root.primary_spouse
 				}
-				add = -10
+				add = 15
 			}
-			modifier = {
-				scope:consort = {
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					has_court_position = grand_consort_court_position
+				}
+				add = 10
+			}
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					is_married = yes
+					NOR = {
+						this = root.primary_spouse
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add = 5
+			}
+
+            modifier = {	#Weight down for stress.
+				add = -15
+				has_trait = greedy
+			}
+			modifier = {	#Weight down for stress.
+				add = 20
+				has_trait = generous
+			}
+			modifier = {	#Weight down for stress.
+				add = -15
+				has_trait = arrogant
+			}
+			
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					has_character_modifier = favored_consort_modifier
+				}
+				add = 5
+			}
+			modifier = { #Influential consort
+				scope:meddling_relative = {
 					has_character_modifier = beloved_consort_modifier
 				}
-				add = -5
+				add = 10
 			}
-			modifier = {
-				scope:consort = {
+			modifier = { #Influential consort
+				scope:meddling_relative = {
 					has_character_modifier = favor_boost_modifier
 				}
-				add = -5
+				add = 5
+			}
+			
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					any_child = {
+						this = root
+					}
+				}
+				add = 15
+			}
+			modifier = { #Influential consort
+				scope:meddling_relative = {
+					any_child = {
+						this = root.primary_heir
+					}
+				}
+				add = 15
 			}
         }
     }
