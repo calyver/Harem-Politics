@@ -5708,14 +5708,14 @@ harem_events.2104 = {
 	
 	right_portrait = {
 		character = root
-		animation = shame
+		animation = personality_rational
 	}
 	left_portrait = {
 		character = scope:matriarch
-		animation = disapproval
+		animation = worry
 	}
 	lower_center_portrait = {
-		character = scope:relative
+		character = scope:consort_relative
 	}
 	
 	trigger = {
@@ -5726,149 +5726,87 @@ harem_events.2104 = {
 	}
 	
 	immediate = {
-		random_consort = {
-			limit = {
-				is_valid_consort_for_stop_favor_request_trigger = yes
+		scope:matriarch = {
+			if = {
+				limit = {
+					exists = house
+					any_house_member = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+				}
+				every_house_member = {
+					limit = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+					add_to_temporary_list = relative_list
+				}
 			}
+			else = {
+				every_close_family_member = {
+					limit = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+					add_to_temporary_list = relative_list
+				}
+			}
+		}
+		random_in_list = {
+			list = relative_list
 			weight = {
 				base = 10
 				modifier = {
-					harem_politics_beloved_consort_trigger = yes
-					add = 10
+					is_close_family_of = scope:matriarch
+					add = 20
 				}
 				modifier = {
-					has_relation_rival = scope:matriarch
-					add = 5
-				}
-				modifier = {
-					has_relation_nemesis = scope:matriarch
-					add = 10
-				}
-				modifier = {
-					any_relation = {
-						type = rival
-						this != scope:matriarch
-						OR = {
-							house ?= {
-								any_house_member = {
-									this = scope:matriarch
-								}
-							}
-							has_relation_friend = scope:matriarch
-							has_relation_best_friend = scope:matriarch
-							has_relation_lover = scope:matriarch
-							has_relation_soulmate = scope:matriarch
+					house ?= {
+						any_house_member = {
+							this = scope:matriarch
 						}
 					}
 					add = 10
 				}
 				modifier = {
-					any_relation = {
-						type = nemesis
-						this != scope:matriarch
-						OR = {
-							house ?= {
-								any_house_member = {
-									this = scope:matriarch
-								}
-							}
-							has_relation_friend = scope:matriarch
-							has_relation_best_friend = scope:matriarch
-							has_relation_lover = scope:matriarch
-							has_relation_soulmate = scope:matriarch
+					add = sum_of_all_skills_value
+				}
+				modifier = {
+					add = {
+						value = "reverse_opinion(scope:matriarch)"
+						multiply = 0.2
+					}
+				}
+				modifier = {
+					is_married = yes
+					OR = {
+						AND = {
+							is_female = yes
+							matrilinear_marriage = yes
+						}
+						AND = {
+							is_male = yes
+							patrilinear_marriage = yes
 						}
 					}
 					add = 20
 				}
+				modifier = {
+					any_child = {
+						house >= {
+							any_house_member = {
+								this = scope:matriarch
+							}
+						}
+						count > 0
+					}
+					add = 10
+				}
 			}
-			save_scope_as = consort 
+			save_scope_as = consort_relative
 		}
+		hp_select_random_title_effect = yes
 	}
 	
-	# Stop seeing the consort immediately
-	option = {
-        name = harem_events.2104.a
-		add_piety = medium_piety_gain
-		scope:consort = {
-			calyver_favor_moderate_loss_effect = yes
-			if = {
-				limit = {
-					has_character_modifier = favor_boost_modifier
-				}
-				calyver_stop_favor_boost_event_effect = {
-					HAREM_LIEGE = root
-					CONSORT = scope:consort
-				}
-			}
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -10
-			}
-			hidden_effect = {
-				add_opinion = {
-					target = scope:matriarch
-					modifier = hatred_spouse_opinion
-					opinion = -20
-				}
-			}
-		}
-		scope:matriarch = {
-			add_opinion = {
-				target = root
-				modifier = pleased_opinion
-				opinion = 10
-			}
-		}
-        ai_chance = {
-            base = 20
-			ai_value_modifier = {
-				ai_honor = 0.15
-			}
-			opinion_modifier = {
-				who = root
-				opinion_target = scope:matriarch
-				multiplier = 0.20
-			}
-			modifier = {
-				trait_compatibility = {
-					target = scope:consort
-					value <= medium_negative_trait_compatibility
-				}
-				add = 20
-			}
-			modifier = {
-				has_trait = trusting
-				add = 15
-			}
-			modifier = {
-				OR = {
-					has_relation_friend = scope:consort
-					has_relation_lover = scope:consort
-				}
-				add = -10
-			}
-			modifier = {
-				OR = {
-					has_relation_best_friend = scope:consort
-					has_relation_soulmate = scope:consort
-				}
-				add = -20
-			}
-			modifier = {
-				scope:consort = {
-					has_character_modifier = beloved_consort_modifier
-				}
-				add = -10
-			}
-			modifier = {
-				scope:consort = {
-					has_character_modifier = favor_boost_modifier
-				}
-				add = -5
-			}
-        }
-    }
+	
 	# Favor the consort for the night
 	option = {
         name = harem_events.2104.b

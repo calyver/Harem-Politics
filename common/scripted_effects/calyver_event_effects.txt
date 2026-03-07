@@ -585,6 +585,7 @@ hp_character_creation_effect = {
 }
 
 # Events #
+# Have sex with a consort
 had_sex_with_consort_effect = {
 	had_sex_with_effect = {
 		CHARACTER = scope:recipient
@@ -958,6 +959,133 @@ had_sex_with_consort_effect = {
 			set_local_variable = {
 				name = boring_night_variable
 				value = yes
+			}
+		}
+	}
+}
+
+# Select a random title
+hp_select_random_title_effect = {
+	if = { # Find a valid barony to give away
+		limit = {
+			any_held_title = {
+				tier = tier_barony
+				is_capital_barony = no
+				is_leased_out = no
+				NOR = { 
+					THIS = ROOT.capital_barony 
+					title_province = { 
+						OR = {
+							has_holding_type = city_holding 
+							has_holding_type = church_holding
+						}
+					}
+				}
+			}
+		}
+		ordered_held_title = {
+			limit = {
+				tier = tier_barony
+				is_capital_barony = no
+				is_leased_out = no
+				NOR = { 
+					THIS = ROOT.capital_barony 
+					title_province = { 
+						OR = {
+							has_holding_type = city_holding 
+							has_holding_type = church_holding
+						}
+					}
+				}
+			}
+			order_by = {
+				value = 0
+				subtract = title_province.combined_building_level
+			}
+			save_scope_as = worst_title
+		}
+	}
+	else = { # Find a valid county to give away
+		ordered_held_title = {
+			limit = {
+				tier = tier_county
+				NOT = { THIS = ROOT.capital_county }
+			}
+			order_by = {
+				value = 0
+				subtract = development_level
+			}
+			save_scope_as = worst_title
+		}
+	}
+}
+hp_grant_worst_title_effect = {
+	send_interface_toast = {
+		left_icon = scope:consort_relative
+		title = harem_politics.0008.a.tt
+		ROOT = {
+			create_title_and_vassal_change = {
+				type = granted
+				save_scope_as = change
+				add_claim_on_loss = no
+			}
+			scope:worst_title = {
+				change_title_holder = {
+					holder = scope:consort_relative
+					change = scope:change
+				}
+			}
+			resolve_title_and_vassal_change = scope:change
+			scope:consort_relative = {
+				if = {
+					limit = { scope:worst_title.tier = tier_barony }
+					add_opinion = {
+						target = ROOT
+						modifier = received_title_barony
+					}
+				}
+				else = {
+					add_opinion = {
+						target = ROOT
+						modifier = received_title_county
+					}
+				}
+				if = {
+					limit = {
+						NOT = {
+							is_allied_to = root
+						}
+					}
+					if = {
+						limit = {
+							is_close_family_of = scope:meddling_relative
+						}
+						create_alliance = {
+							target = root
+							allied_through_owner = root
+							allied_through_target = scope:meddling_relative
+						}
+					}
+					else = {
+						add_truce_both_ways = {
+							character = root
+							years = 4
+							name = TRUCE_HAREM
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					can_add_hook = {
+						target = scope:consort_relative
+						type = indebted_hook
+					}
+				}
+				add_hook = {
+					target = scope:consort_relative
+					type = indebted_hook
+				}
 			}
 		}
 	}
