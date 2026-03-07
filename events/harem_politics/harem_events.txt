@@ -4391,6 +4391,32 @@ scripted_trigger is_valid_for_consort_favor_request_trigger = {
 		is_valid_consort_for_favor_request_trigger = yes
 	}
 }
+# They ask you to stop favoring a consort
+scripted_trigger is_valid_consort_for_stop_favor_request_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	harem_politics_favored_consort_trigger = yes
+	NOR = {
+		house ?= {
+			any_house_member = {
+				this = scope:matriarch
+			}
+		}
+		has_relation_friend = scope:matriarch
+		has_relation_best_friend = scope:matriarch
+		has_relation_lover = scope:matriarch
+		has_relation_soulmate = scope:matriarch
+	}
+}
+scripted_trigger is_valid_for_consort_stop_favor_request_trigger = {
+	any_consort = {
+		is_valid_consort_for_stop_favor_request_trigger = yes
+	}
+	any_consort = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		is_imprisoned = no
+		count >= 3
+	}
+}
 # Requesting a title for a relative
 scripted_trigger is_valid_matriarch_relative_for_title_grant_trigger = {
 	is_valid_matriarch_relative_trigger = yes
@@ -4711,22 +4737,7 @@ harem_events.2100 = {
 				}
 				20 = { # They complain of you favoring a consort
 					trigger = {
-						hp_accepts_harems = yes
-						any_consort = {
-							harem_politics_beloved_consort_trigger = yes
-							NOR = {
-								house ?= scope:matriarch.house
-								has_relation_friend = scope:matriarch
-								has_relation_best_friend = scope:matriarch
-								has_relation_lover = scope:matriarch
-								has_relation_soulmate = scope:matriarch
-							}
-						}
-						any_consort = {
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-							is_imprisoned = no
-							count >= 3
-						}
+						is_valid_for_consort_stop_favor_request_trigger = yes
 					}
 					modifier = {
 						any_consort = {
@@ -5238,7 +5249,7 @@ harem_events.2102 = {
 			}
         }
     }
-	# Just not, and do nothing
+	# Just nod, and do nothing
 	option = {
         name = harem_events.2102.c
 		add_piety = minor_piety_loss
@@ -5302,6 +5313,318 @@ harem_events.2102 = {
 	after = {
 		add_character_flag = {
 			flag = matriarch_requested_favor_flag
+			years = 4
+		}
+	}
+}
+# They ask you to stop favoring a consort
+harem_events.2103 = {
+	type = character_event
+	title = harem_events.2103.t
+	desc = harem_events.2103.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = shame
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = disapproval
+	}
+	lower_center_portrait = {
+		character = scope:consort
+	}
+	
+	trigger = {
+		is_valid_for_consort_stop_favor_request_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_matriarch_fallback_effect = yes
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				is_valid_consort_for_stop_favor_request_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 10
+				}
+				modifier = {
+					has_relation_rival = scope:matriarch
+					add = 5
+				}
+				modifier = {
+					has_relation_nemesis = scope:matriarch
+					add = 10
+				}
+				modifier = {
+					any_relation = {
+						type = rival
+						this != scope:matriarch
+						OR = {
+							house ?= {
+								any_house_member = {
+									this = scope:matriarch
+								}
+							}
+							has_relation_friend = scope:matriarch
+							has_relation_best_friend = scope:matriarch
+							has_relation_lover = scope:matriarch
+							has_relation_soulmate = scope:matriarch
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					any_relation = {
+						type = nemesis
+						this != scope:matriarch
+						OR = {
+							house ?= {
+								any_house_member = {
+									this = scope:matriarch
+								}
+							}
+							has_relation_friend = scope:matriarch
+							has_relation_best_friend = scope:matriarch
+							has_relation_lover = scope:matriarch
+							has_relation_soulmate = scope:matriarch
+						}
+					}
+					add = 20
+				}
+			}
+			save_scope_as = consort 
+		}
+	}
+	
+	# Stop seeing the consort immediately
+	option = {
+        name = harem_events.2103.a
+		add_piety = medium_piety_gain
+		scope:consort = {
+			calyver_favor_moderate_loss_effect = yes
+			if = {
+				limit = {
+					has_character_modifier = favor_boost_modifier
+				}
+				calyver_stop_favor_boost_event_effect = {
+					HAREM_LIEGE = root
+					CONSORT = scope:consort
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -10
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:matriarch
+					modifier = hatred_spouse_opinion
+					opinion = -20
+				}
+			}
+		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+		}
+        ai_chance = {
+            base = 20
+			ai_value_modifier = {
+				ai_honor = 0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.20
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:consort
+					value <= medium_negative_trait_compatibility
+				}
+				add = 20
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+			modifier = {
+				OR = {
+					has_relation_friend = scope:consort
+					has_relation_lover = scope:consort
+				}
+				add = -10
+			}
+			modifier = {
+				OR = {
+					has_relation_best_friend = scope:consort
+					has_relation_soulmate = scope:consort
+				}
+				add = -20
+			}
+			modifier = {
+				scope:consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -10
+			}
+			modifier = {
+				scope:consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = -5
+			}
+        }
+    }
+	# Favor the consort for the night
+	option = {
+        name = harem_events.2103.b
+		add_piety = minor_piety_gain
+		scope:consort = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:matriarch
+					modifier = hatred_spouse_opinion
+					opinion = -10
+				}
+			}
+		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 5
+			}
+		}
+		ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = 0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.20
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:consort
+					value <= neutral_trait_compatibility
+				}
+				add = 5
+			}
+			modifier = {
+				OR = {
+					has_relation_friend = scope:consort
+					has_relation_lover = scope:consort
+				}
+				add = -5
+			}
+			modifier = {
+				OR = {
+					has_relation_best_friend = scope:consort
+					has_relation_soulmate = scope:consort
+				}
+				add = -10
+			}
+			modifier = {
+				scope:consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+				add = -5
+			}
+			modifier = {
+				scope:consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+				add = -5
+			}
+        }
+    }
+	# Just nod, and do nothing
+	option = {
+        name = harem_events.2103.c
+		add_piety = minor_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+		}
+		ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = -0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort
+				multiplier = -0.10
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 10
+			}
+        }
+    }
+	# Don't get involved in my harem!
+	option = {
+        name = harem_events.2103.d
+		add_piety = medium_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+		scope:consort = {
+			calyver_favor_moderate_loss_effect = yes
+		}
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+		}
+		ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = -0.20
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = -0.25
+			}
+			modifier = {
+				has_trait = callous
+				add = 10
+			}
+        }
+    }
+	after = {
+		add_character_flag = {
+			flag = matriarch_requested_stop_favor_flag
 			years = 4
 		}
 	}
