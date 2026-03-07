@@ -4370,6 +4370,22 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 	}
 	any_held_title = { count = 0 }
 }
+# They ask you to favor a consort
+scripted_trigger is_valid_consort_for_favor_request_trigger = {
+	OR = {
+		house ?= scope:matriarch.house
+		has_relation_friend = scope:matriarch
+		has_relation_best_friend = scope:matriarch
+		has_relation_lover = scope:matriarch
+		has_relation_soulmate = scope:matriarch
+	}
+	harem_politics_favored_consort_trigger = no
+}
+scripted_trigger is_valid_matriarch_relative_for_consort_favor_request_trigger = {
+	any_consort = {
+		is_valid_consort_for_favor_request_trigger = yes
+	}
+}
 # Requesting a title for a relative
 scripted_trigger is_valid_matriarch_relative_for_title_grant_trigger = {
 	is_valid_matriarch_relative_trigger = yes
@@ -4501,6 +4517,8 @@ scripted_trigger is_valid_for_consort_offer_trigger = {
 		allowed_more_concubines = yes
 	}
 }
+scripted_effect on_trigger_fail_pay_respects_fallback_effect = {
+}
 harem_events.2100 = {
 	hidden = yes
 	
@@ -4600,19 +4618,11 @@ harem_events.2100 = {
 						}
 						add = 10
 					}
+					trigger_event = harem_events.2101
 				}
-				20 = { # They tell you to favor a consort
+				20 = { # They ask you to favor a consort
 					trigger = {
-						any_consort = {
-							OR = {
-								house ?= scope:matriarch.house
-								has_relation_friend = scope:matriarch
-								has_relation_best_friend = scope:matriarch
-								has_relation_lover = scope:matriarch
-								has_relation_soulmate = scope:matriarch
-							}
-							harem_politics_favored_consort_trigger = no
-						}
+						is_valid_matriarch_relative_for_consort_favor_request_trigger = yes
 					}
 					modifier = {
 						any_consort = {
@@ -4641,6 +4651,11 @@ harem_events.2100 = {
 						}
 						add = 10
 					}
+					modifier = {
+						has_character_flag = matriarch_requested_favor_flag
+						add = -10
+					}
+					trigger_event = harem_events.2102
 				}
 				20 = { # They complain of you favoring a consort
 					trigger = {
@@ -4989,162 +5004,248 @@ harem_events.2101 = {
 				}
 			}
 		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 5
+			}
+			add_character_modifier = {
+				modifier = filial_care_modifier
+				years = 2
+			}
+		}
 	}
 	
 	option = {
-        name = {
-			text = {
-				first_valid = {
-					triggered_desc = {
-						trigger = {
-							exists = local_var:bad_ceremony
-						}
-						desc = harem_events.2000.bad_ceremony.a
-					}
-					triggered_desc = {
-						desc = harem_events.2000.generic.b
-					}
-				}
-			}
-		}
-		if = {
-			limit = {
-				exists = local_var:successful_ceremony
-			}
-			scope:ruler_scope = {
-				if = {
-					limit = { is_valid_for_legitimacy_change = yes }
-					add_legitimacy = minor_legitimacy_gain
-				}
-				add_opinion = {
-					modifier = pleased_opinion
-					target = scope:ritual_leader
-					opinion = 10
-				}
-				add_character_modifier = {
-					modifier = big_silk_worship_modifier
-					years = 1
-				}
-				every_councillor = {
-					custom = every_councillor
-					add_opinion = {
-						target = scope:ruler_scope
-						modifier = respect_opinion
-						opinion = 5
-					}
-				}
-				every_powerful_vassal = {
-					custom = every_powerful_vassal_tt
-					limit = {
-						NOT = { is_councillor_of = scope:ruler_scope }
-					}
-					add_opinion = {
-						target = scope:ruler_scope
-						modifier = respect_opinion
-						opinion = 5
-					}
-				}
-				every_courtier = {
-					custom = EVERY_COURTIER_EFFECT
-					limit = {
-						NOR = {
-							is_close_or_extended_family_of = scope:ritual_leader
-							this = scope:ritual_leader
-							has_relation_rival = scope:ritual_leader
-							has_relation_nemesis = scope:ritual_leader
-						}
-					}
-					add_opinion = {
-						target = scope:ritual_leader
-						modifier = respect_opinion
-						opinion = 10
-					}
-				}
-			}
-			scope:ritual_leader = {
-				calyver_favor_moderate_gain_effect = yes
-				add_piety = medium_piety_gain
-			}
-		}
-		else_if = {
-			limit = {
-				exists = local_var:normal_ceremony
-			}
-			scope:ruler_scope = {
-				if = {
-					limit = { is_valid_for_legitimacy_change = yes }
-					add_legitimacy = miniscule_legitimacy_gain
-				}
-				add_opinion = {
-					modifier = pleased_opinion
-					target = scope:ritual_leader
-					opinion = 5
-				}
-			}
-			scope:ritual_leader = {
-				calyver_favor_minor_gain_effect = yes
-			}
-		}
-		else = {
-			scope:ruler_scope = {
-				add_opinion = {
-					modifier = disappointed_opinion
-					target = scope:ritual_leader
-					opinion = -10
-				}
-				every_councillor = {
-					custom = every_councillor
-					add_opinion = {
-						target = scope:ruler_scope
-						modifier = respect_opinion
-						opinion = -5
-					}
-				}
-				every_powerful_vassal = {
-					custom = every_powerful_vassal_tt
-					limit = {
-						NOT = { is_councillor_of = scope:ruler_scope }
-					}
-					add_opinion = {
-						target = scope:ruler_scope
-						modifier = respect_opinion
-						opinion = -5
-					}
-				}
-				every_courtier = {
-					custom = EVERY_COURTIER_EFFECT
-					limit = {
-						NOR = {
-							is_close_or_extended_family_of = scope:ritual_leader
-							this = scope:ritual_leader
-							has_relation_friend = scope:ritual_leader
-							has_relation_best_friend = scope:ritual_leader
-							has_relation_lover = scope:ritual_leader
-							has_relation_soulmate = scope:ritual_leader
-						}
-					}
-					add_opinion = {
-						target = scope:ritual_leader
-						modifier = disappointed_opinion
-						opinion = -10
-					}
-				}
-			}
-			scope:ritual_leader = {
-				calyver_favor_minor_loss_effect = yes
-				add_piety = medium_piety_loss
-				if = {
-					limit = {
-						religion_is_east_asian_trigger = yes
-					}
-					stress_impact = {
-						zealous = minor_stress_impact_gain
-					}
-				}
-			}
+        name = harem_events.2101.a
+		add_piety = minor_piety_gain
+		add_opinion = {
+			target = scope:matriarch
+			modifier = pleased_opinion
+			opinion = 10
 		}
         ai_chance = {
             base = 1
         }
     }
+}
+# They ask you to favor a consort
+harem_events.2102 = {
+	type = character_event
+	title = harem_events.2102.t
+	desc = harem_events.2102.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = personality_honorable
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = worry
+	}
+	lower_center_portrait = {
+		character = scope:consort
+	}
+	
+	trigger = {
+		is_valid_matriarch_relative_for_consort_favor_request_trigger = yes
+	}
+	on_trigger_fail = {
+		random
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				is_valid_consort_for_favor_request_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					house ?= {
+						any_house_member = {
+							this = scope:matriarch
+						}
+					}
+					add = 20
+				}
+				modifier = {
+					has_character_modifier = unfavored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = forgotten_consort_modifier
+					add = 20
+				}
+			}
+			save_scope_as = consort 
+		}
+	}
+	
+	# Favor the consort greately
+	option = {
+        name = harem_events.2102.a
+		add_piety = medium_piety_gain
+		scope:consort = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 10
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:matriarch
+					modifier = thankful_opinion
+					opinion = 15
+				}
+			}
+		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+		}
+        ai_chance = {
+            base = 20
+			ai_value_modifier = {
+				ai_honor = 0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.15
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:adultery_target_check
+					value >= medium_positive_trait_compatibility
+				}
+				add = 20
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+        }
+    }
+	# Favor the consort for the night
+	option = {
+        name = harem_events.2102.b
+		add_piety = minor_piety_gain
+		scope:consort = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 5
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:matriarch
+					modifier = thankful_opinion
+					opinion = 10
+				}
+			}
+		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 5
+			}
+		}
+		ai_chance = {
+            base = 30
+			ai_value_modifier = {
+				ai_honor = 0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort
+				multiplier = 0.15
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:adultery_target_check
+					value >= low_positive_trait_compatibility
+				}
+				add = 10
+			}
+        }
+    }
+	# Just not, and do nothing
+	option = {
+        name = harem_events.2102.c
+		add_piety = minor_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+		}
+		ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = -0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort
+				multiplier = -0.10
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 10
+			}
+        }
+    }
+	# Don't get involved in my harem!
+	option = {
+        name = harem_events.2102.d
+		add_piety = medium_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+		scope:consort = {
+			calyver_favor_moderate_loss_effect = yes
+		}
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+		}
+		ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = -0.20
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = -0.25
+			}
+			modifier = {
+				has_trait = callous
+				add = 10
+			}
+        }
+    }
+	after = {
+		add_character_flag = {
+			flag = matriarch_requested_favor_flag
+			years = 4
+		}
+	}
 }
