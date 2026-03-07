@@ -4352,11 +4352,10 @@ harem_events.2000 = {
 scripted_trigger is_valid_matriarch_relative_trigger = {
 	trigger_if = {
 		limit = {
-			exists = scope:matriarch.house
+			exists = house
 		}
-		house ?= {
-			this = scope:matriarch.house
-			this != root.house
+		any_house_member = {
+			this = scope:matriarch
 		}
 	}
 	top_liege ?= scope:matriarch.top_liege
@@ -4372,8 +4371,14 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 }
 # They ask you to favor a consort
 scripted_trigger is_valid_consort_for_favor_request_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_ai_adult = yes
 	OR = {
-		house ?= scope:matriarch.house
+		house ?= {
+			any_house_member = {
+				this = scope:matriarch
+			}
+		}
 		has_relation_friend = scope:matriarch
 		has_relation_best_friend = scope:matriarch
 		has_relation_lover = scope:matriarch
@@ -4420,8 +4425,18 @@ scripted_trigger is_valid_for_title_request_trigger = {
 		}
 	}
 	scope:matriarch = {
-		any_close_family_member = {
-			is_valid_matriarch_relative_for_title_grant_trigger = yes
+		trigger_if = {
+			limit = {
+				exists = house
+			}
+			any_house_member = {
+				is_valid_matriarch_relative_for_title_grant_trigger = yes
+			}
+		}
+		trigger_else = {
+			any_close_family_member = {
+				is_valid_matriarch_relative_for_title_grant_trigger = yes
+			}
 		}
 	}
 }
@@ -4432,9 +4447,20 @@ scripted_trigger is_valid_matriarch_relative_for_court_position_grant_trigger = 
 }
 scripted_trigger is_valid_for_court_position_request_trigger = {
 	scope:matriarch = {
-		any_close_family_member = {
-			is_valid_matriarch_relative_for_court_position_grant_trigger = yes
-			save_temporary_scope_as = relative
+		trigger_if = {
+			limit = {
+				exists = house
+			}
+			any_house_member = {
+				is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+				save_temporary_scope_as = relative
+			}
+		}
+		trigger_else = {
+			any_close_family_member = {
+				is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+				save_temporary_scope_as = relative
+			}
 		}
 	}
 	character_can_be_employed_in_a_court_position_trigger = {
@@ -4491,8 +4517,18 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 }
 scripted_trigger is_valid_for_council_position_request_trigger = {
 	scope:matriarch = {
-		any_close_family_member = {
-			is_valid_matriarch_relative_for_council_position_grant_trigger = yes
+		trigger_if = {
+			limit = {
+				exists = house
+			}
+			any_house_member = {
+				is_valid_matriarch_relative_for_council_position_grant_trigger = yes
+			}
+		}
+		trigger_else = {
+			any_close_family_member = {
+				is_valid_matriarch_relative_for_council_position_grant_trigger = yes
+			}
 		}
 	}
 }
@@ -4507,9 +4543,19 @@ scripted_trigger is_valid_matriarch_relative_for_consort_offer_trigger = {
 	allowed_more_spouses = yes
 }
 scripted_trigger is_valid_for_consort_offer_trigger = {
-	scope:matriarch.house ?= {
-		any_house_member = {
-			is_valid_matriarch_relative_for_consort_offer_trigger = yes
+	scope:matriarch = {
+		trigger_if = {
+			limit = {
+				exists = house
+			}
+			any_house_member = {
+				is_valid_matriarch_relative_for_consort_offer_trigger = yes
+			}
+		}
+		trigger_else = {
+			any_close_family_member = {
+				is_valid_matriarch_relative_for_consort_offer_trigger = yes
+			}
 		}
 	}
 	OR = {
@@ -4518,6 +4564,12 @@ scripted_trigger is_valid_for_consort_offer_trigger = {
 	}
 }
 scripted_effect on_trigger_fail_pay_respects_fallback_effect = {
+	send_interface_toast = {
+		type = event_generic_neutral
+		title = harem_events.2100.fallback
+		right_icon = root
+		custom_tooltip = harem_events.2100.fallback_desc
+	}
 }
 harem_events.2100 = {
 	hidden = yes
@@ -4872,6 +4924,7 @@ harem_events.2100 = {
 		}
 		else = {
 			# Send error message
+			on_trigger_fail_pay_respects_fallback_effect = yes
 		}
 	}
 }
@@ -4895,6 +4948,7 @@ harem_events.2101 = {
 	}
 	
 	trigger = {
+		exists = scope:matriarch
 	}
 	
 	immediate = {
@@ -5056,7 +5110,7 @@ harem_events.2102 = {
 		is_valid_matriarch_relative_for_consort_favor_request_trigger = yes
 	}
 	on_trigger_fail = {
-		random
+		on_trigger_fail_pay_respects_fallback_effect = yes
 	}
 	
 	immediate = {
