@@ -5774,7 +5774,10 @@ harem_events.2104 = {
 					add = 10
 				}
 				modifier = {
-					add = sum_of_all_skills_value
+					add = {
+						value = sum_of_all_skills_value
+						divide = 5
+					}
 				}
 				modifier = {
 					house.house_head ?= this
@@ -6126,7 +6129,7 @@ harem_events.2105 = {
 	}
 	
 	trigger = {
-		is_valid_for_title_request_trigger = yes
+		is_valid_for_court_position_request_trigger = yes
 	}
 	on_trigger_fail = {
 		on_trigger_fail_visit_matriarch_fallback_effect = yes
@@ -6138,12 +6141,24 @@ harem_events.2105 = {
 				limit = {
 					exists = house
 					any_house_member = {
-						is_valid_matriarch_relative_for_title_grant_trigger = yes
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+					}
+					root = {
+						character_can_be_employed_in_a_court_position_trigger = {
+							CHARACTER = scope:relative
+						}
 					}
 				}
 				every_house_member = {
 					limit = {
-						is_valid_matriarch_relative_for_title_grant_trigger = yes
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+						root = {
+							character_can_be_employed_in_a_court_position_trigger = {
+								CHARACTER = scope:relative
+							}
+						}
 					}
 					add_to_temporary_list = relative_list
 				}
@@ -6151,7 +6166,13 @@ harem_events.2105 = {
 			else = {
 				every_close_family_member = {
 					limit = {
-						is_valid_matriarch_relative_for_title_grant_trigger = yes
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+						root = {
+							character_can_be_employed_in_a_court_position_trigger = {
+								CHARACTER = scope:relative
+							}
+						}
 					}
 					add_to_temporary_list = relative_list
 				}
@@ -6174,7 +6195,10 @@ harem_events.2105 = {
 					add = 10
 				}
 				modifier = {
-					add = sum_of_all_skills_value
+					add = {
+						value = sum_of_all_skills_value
+						divide = 5
+					}
 				}
 				modifier = {
 					house.house_head ?= this
@@ -6186,35 +6210,13 @@ harem_events.2105 = {
 						multiply = 0.2
 					}
 				}
-				modifier = {
-					is_married = yes
-					OR = {
-						AND = {
-							is_female = yes
-							matrilinear_marriage = yes
-						}
-						AND = {
-							is_male = yes
-							patrilinear_marriage = yes
-						}
-					}
-					add = 20
-				}
-				modifier = {
-					any_child = {
-						house >= {
-							any_house_member = {
-								this = scope:matriarch
-							}
-						}
-						count > 0
-					}
-					add = 10
-				}
 			}
 			save_scope_as = consort_relative
 		}
-		hp_select_random_title_effect = yes
+		# Selecting a court position
+		mark_court_position_for_employment_effect = {
+			CHARACTER = scope:consort_relative
+		}
 	}
 
 	option = { #Give title away
