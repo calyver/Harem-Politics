@@ -4852,6 +4852,11 @@ harem_events.2100 = {
 						}
 						add = -5
 					}
+					modifier = {
+						has_character_flag = matriarch_requested_court_position_flag
+						add = -10
+					}
+					trigger_event = harem_events.2105
 				}
 				15 = { # They ask you to grant a council position to a relative
 					trigger = {
@@ -5811,7 +5816,7 @@ harem_events.2104 = {
 		}
 		hp_select_random_title_effect = yes
 	}
-	
+
 	option = { #Give title away
         name = harem_politics.0008.a
 		add_piety = medium_piety_gain
@@ -6094,6 +6099,406 @@ harem_events.2104 = {
 	after = {
 		add_character_flag = {
 			flag = matriarch_requested_title_flag
+			years = 4
+		}
+	}
+}
+# They ask you to grant a court position to a relative
+harem_events.2105 = {
+	type = character_event
+	title = harem_events.2105.t
+	desc = harem_events.2105.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = personality_honorable
+	}
+	lower_center_portrait = {
+		character = scope:consort_relative
+	}
+	
+	trigger = {
+		is_valid_for_title_request_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_matriarch_fallback_effect = yes
+	}
+	
+	immediate = {
+		scope:matriarch = {
+			if = {
+				limit = {
+					exists = house
+					any_house_member = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+				}
+				every_house_member = {
+					limit = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+					add_to_temporary_list = relative_list
+				}
+			}
+			else = {
+				every_close_family_member = {
+					limit = {
+						is_valid_matriarch_relative_for_title_grant_trigger = yes
+					}
+					add_to_temporary_list = relative_list
+				}
+			}
+		}
+		random_in_list = {
+			list = relative_list
+			weight = {
+				base = 10
+				modifier = {
+					is_close_family_of = scope:matriarch
+					add = 20
+				}
+				modifier = {
+					house ?= {
+						any_house_member = {
+							this = scope:matriarch
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					add = sum_of_all_skills_value
+				}
+				modifier = {
+					house.house_head ?= this
+					add = 20
+				}
+				modifier = {
+					add = {
+						value = "reverse_opinion(scope:matriarch)"
+						multiply = 0.2
+					}
+				}
+				modifier = {
+					is_married = yes
+					OR = {
+						AND = {
+							is_female = yes
+							matrilinear_marriage = yes
+						}
+						AND = {
+							is_male = yes
+							patrilinear_marriage = yes
+						}
+					}
+					add = 20
+				}
+				modifier = {
+					any_child = {
+						house >= {
+							any_house_member = {
+								this = scope:matriarch
+							}
+						}
+						count > 0
+					}
+					add = 10
+				}
+			}
+			save_scope_as = consort_relative
+		}
+		hp_select_random_title_effect = yes
+	}
+
+	option = { #Give title away
+        name = harem_politics.0008.a
+		add_piety = medium_piety_gain
+		scope:matriarch = {
+        	add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 20
+			}
+        }
+		hp_grant_worst_title_effect = {
+			CONSORT = scope:matriarch
+		}
+		if = { #Stress gains unless you are over your domain limit
+			limit = {
+				domain_size <= domain_limit
+			}
+			stress_impact = {
+				greedy = medium_stress_impact_gain # But, titles
+				diligent = medium_stress_impact_gain # But, I like managing stuff
+				arrogant = medium_stress_impact_gain # But, my titles
+			}
+		}
+		stress_impact = {
+			lazy = minor_stress_impact_loss
+			generous = minor_stress_impact_loss
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+   				ai_honor = 0.2
+   				ai_greed = -1
+   			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
+			modifier = {
+				add = {
+					value = scope:consort_relative.sum_of_all_skills_value
+					divide = 5
+				}
+			}
+
+            modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = greedy
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = diligent
+			}
+			modifier = {	#Weight down for stress.
+				add = 15
+				has_trait = humble
+			}
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = lazy
+			}
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = generous
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = arrogant
+			}
+			modifier = { # To clean the family lineage
+				scope:matriarch = {
+					has_no_particular_noble_roots_trigger = yes
+					is_close_family_of = scope:consort_relative
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort_relative = {
+					is_lowborn = yes
+				}
+				add = -25
+			}
+			modifier = {
+				domain_size > domain_limit
+				add = 15
+			}
+        }
+    }
+	option = { # Make them a noble family head
+        name = harem_politics.2104.b
+		trigger = {
+			government_allows = noble_families
+			is_independent_ruler = yes
+			scope:matriarch.house.house_head ?= scope:consort_relative
+		}
+		show_as_unavailable = { NOT = { gold >= massive_gold_value } }
+		remove_short_term_gold = massive_gold_value
+		hidden_effect = {
+			add_courtier = scope:consort_relative
+			return_to_court = yes
+		}
+		scope:consort_relative = {
+			create_noble_family_effect = { GOVERNMENT_GIVER = root }
+			create_title_and_vassal_change = {
+				type = swear_fealty
+				add_claim_on_loss = no
+				save_scope_as = title_change
+			}
+			change_liege = {
+				liege = root
+				change = scope:title_change
+			}
+			resolve_title_and_vassal_change = scope:title_change
+			hidden_effect = {
+				domicile ?= {
+					if = {
+						limit = {
+							NOT = { domicile_location = root.capital_province }
+						}
+						move_domicile = root.capital_province
+					}
+				}
+			}
+		}
+		add_piety = minor_piety_gain
+		scope:matriarch = {
+        	add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+        }
+		stress_impact = {
+			greedy = medium_stress_impact_gain
+			generous = minor_stress_impact_loss
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+   				ai_honor = 0.1
+   				ai_greed = -0.75
+   			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
+
+            modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = greedy
+			}
+
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = generous
+			}
+			modifier = {
+				add = 10
+				has_trait = arrogant
+				has_no_particular_noble_roots_trigger = yes
+			}
+			modifier = { # To clean the family lineage
+				scope:matriarch = {
+					has_no_particular_noble_roots_trigger = yes
+					is_close_family_of = scope:consort_relative
+				}
+				add = 15
+			}
+        }
+    }
+	option = { # Compromise - give them gold
+        name = harem_politics.0031.b
+		trigger = {
+			gold >= medium_gold_value
+		}
+		show_as_unavailable = { NOT = { gold >= medium_gold_value } }
+		save_scope_value_as = {
+			name = gold_to_pay
+			value = medium_gold_value
+		}
+		pay_short_term_gold = {
+			target = scope:consort_relative
+			gold = scope:gold_to_pay
+		}
+		add_piety = minor_piety_gain
+		scope:matriarch = {
+        	add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+        }
+		scope:consort_relative = {
+			add_opinion = {
+				target = scope:matriarch
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
+		}
+        stress_impact = {
+			greedy = medium_stress_impact_gain
+			generous = minor_stress_impact_loss
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_greed = -0.5
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
+			modifier = {
+				gold <= medium_gold_value
+				add = -20
+			}
+			modifier = { # It's better than giving them titles
+				gold >= major_gold_value
+				add = 15
+			}
+
+            modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = greedy
+			}
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = generous
+			}
+			modifier = { #Influential consort
+				domain_size <= domain_limit
+				add = 10
+			}
+        }
+    }
+	# Don't talk about government matters
+	option = {
+        name = harem_events.2105.d
+		add_piety = medium_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+		stress_impact = {
+			generous = minor_stress_impact_gain
+		}
+		ai_chance = {
+            base = 15
+			ai_value_modifier = {
+				ai_compassion = -0.5
+				ai_honor = -0.5
+				ai_greed = 0.5
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = -0.5
+			}
+			modifier = {
+				has_trait = generous
+				add = -25
+			}
+			modifier = {
+				has_trait = greedy
+				add = 25
+			}
+        }
+    }
+	after = {
+		add_character_flag = {
+			flag = matriarch_requested_court_position_flag
 			years = 4
 		}
 	}
