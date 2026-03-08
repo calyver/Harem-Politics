@@ -5918,8 +5918,17 @@ harem_events.2104 = {
 		show_as_unavailable = { NOT = { gold >= massive_gold_value } }
 		remove_short_term_gold = massive_gold_value
 		hidden_effect = {
-			add_courtier = scope:consort_relative
-			return_to_court = yes
+			scope:consort_relative = {
+				if = {
+					limit = {
+						NOT = { is_courtier_of = root }
+					}
+					root = {
+						add_courtier = scope:consort_relative
+					}
+					return_to_court = yes
+				}
+			}
 		}
 		scope:consort_relative = {
 			create_noble_family_effect = { GOVERNMENT_GIVER = root }
@@ -6213,10 +6222,6 @@ harem_events.2105 = {
 			}
 			save_scope_as = consort_relative
 		}
-		# Selecting a court position
-		mark_court_position_for_employment_effect = {
-			CHARACTER = scope:consort_relative
-		}
 	}
 
 	option = { #Give title away
@@ -6229,28 +6234,39 @@ harem_events.2105 = {
 				opinion = 20
 			}
         }
-		hp_grant_worst_title_effect = {
-			CONSORT = scope:matriarch
-		}
-		if = { #Stress gains unless you are over your domain limit
-			limit = {
-				domain_size <= domain_limit
+		hidden_effect = {
+			scope:consort_relative = {
+				if = {
+					limit = {
+						NOT = { is_courtier_of = root }
+					}
+					root = {
+						add_courtier = scope:consort_relative
+					}
+					return_to_court = yes
+				}
 			}
-			stress_impact = {
-				greedy = medium_stress_impact_gain # But, titles
-				diligent = medium_stress_impact_gain # But, I like managing stuff
-				arrogant = medium_stress_impact_gain # But, my titles
-			}
 		}
+		if = {
+        	limit = {
+        		court_positions_currently_filled < court_positions_currently_available
+        		scope:consort_relative = {
+        			has_any_court_position = no
+					can_be_employed_as_any_court_position_trigger = yes
+        		}
+        	}
+        	employ_character_as_any_free_position_effect = {
+        		CHARACTER = scope:consort_relative
+        	}
+        }
 		stress_impact = {
-			lazy = minor_stress_impact_loss
 			generous = minor_stress_impact_loss
 		}
         ai_chance = {
             base = 20
             ai_value_modifier = {
    				ai_honor = 0.2
-   				ai_greed = -1
+   				ai_greed = -0.2
    			}
 			opinion_modifier = {
 				who = root
@@ -6264,123 +6280,11 @@ harem_events.2105 = {
 				}
 			}
 
-            modifier = {	#Weight down for stress.
-				add = -25
-				has_trait = greedy
-			}
-			modifier = {	#Weight down for stress.
-				add = -25
-				has_trait = diligent
-			}
-			modifier = {	#Weight down for stress.
-				add = 15
-				has_trait = humble
-			}
-			modifier = {	#Weight down for stress.
-				add = 25
-				has_trait = lazy
-			}
 			modifier = {	#Weight down for stress.
 				add = 25
 				has_trait = generous
 			}
-			modifier = {	#Weight down for stress.
-				add = -25
-				has_trait = arrogant
-			}
-			modifier = { # To clean the family lineage
-				scope:matriarch = {
-					has_no_particular_noble_roots_trigger = yes
-					is_close_family_of = scope:consort_relative
-				}
-				add = 15
-			}
-			modifier = {
-				scope:consort_relative = {
-					is_lowborn = yes
-				}
-				add = -25
-			}
-			modifier = {
-				domain_size > domain_limit
-				add = 15
-			}
-        }
-    }
-	option = { # Make them a noble family head
-        name = harem_politics.2104.b
-		trigger = {
-			government_allows = noble_families
-			is_independent_ruler = yes
-			scope:matriarch.house.house_head ?= scope:consort_relative
-		}
-		show_as_unavailable = { NOT = { gold >= massive_gold_value } }
-		remove_short_term_gold = massive_gold_value
-		hidden_effect = {
-			add_courtier = scope:consort_relative
-			return_to_court = yes
-		}
-		scope:consort_relative = {
-			create_noble_family_effect = { GOVERNMENT_GIVER = root }
-			create_title_and_vassal_change = {
-				type = swear_fealty
-				add_claim_on_loss = no
-				save_scope_as = title_change
-			}
-			change_liege = {
-				liege = root
-				change = scope:title_change
-			}
-			resolve_title_and_vassal_change = scope:title_change
-			hidden_effect = {
-				domicile ?= {
-					if = {
-						limit = {
-							NOT = { domicile_location = root.capital_province }
-						}
-						move_domicile = root.capital_province
-					}
-				}
-			}
-		}
-		add_piety = minor_piety_gain
-		scope:matriarch = {
-        	add_opinion = {
-				target = root
-				modifier = pleased_opinion
-				opinion = 10
-			}
-        }
-		stress_impact = {
-			greedy = medium_stress_impact_gain
-			generous = minor_stress_impact_loss
-		}
-        ai_chance = {
-            base = 20
-            ai_value_modifier = {
-   				ai_honor = 0.1
-   				ai_greed = -0.75
-   			}
-			opinion_modifier = {
-				who = root
-				opinion_target = scope:matriarch
-				multiplier = 0.3
-			}
 
-            modifier = {	#Weight down for stress.
-				add = -25
-				has_trait = greedy
-			}
-
-			modifier = {	#Weight down for stress.
-				add = 25
-				has_trait = generous
-			}
-			modifier = {
-				add = 10
-				has_trait = arrogant
-				has_no_particular_noble_roots_trigger = yes
-			}
 			modifier = { # To clean the family lineage
 				scope:matriarch = {
 					has_no_particular_noble_roots_trigger = yes
