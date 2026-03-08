@@ -4812,6 +4812,10 @@ harem_events.2100 = {
 						}
 						add = -5
 					}
+					modifier = {
+						has_character_flag = matriarch_requested_title_flag
+						add = -10
+					}
 					trigger_event = harem_events.2104
 				}
 				15 = { # They ask you to grant a court position to a relative
@@ -5888,6 +5892,10 @@ harem_events.2104 = {
 				}
 				add = -25
 			}
+			modifier = {
+				domain_size > domain_limit
+				add = 15
+			}
         }
     }
 	option = { # Make them a noble family head
@@ -5941,8 +5949,8 @@ harem_events.2104 = {
         ai_chance = {
             base = 20
             ai_value_modifier = {
-   				ai_honor = 0.2
-   				ai_greed = -1
+   				ai_honor = 0.1
+   				ai_greed = -0.75
    			}
 			opinion_modifier = {
 				who = root
@@ -6008,89 +6016,27 @@ harem_events.2104 = {
 			}
 		}
         stress_impact = {
-			greedy = medium_stress_impact_gain # But, titles
+			greedy = medium_stress_impact_gain
 			generous = minor_stress_impact_loss
 		}
         ai_chance = {
-            base = 100
+            base = 20
             ai_value_modifier = {
-   				ai_rationality = 0.75
-   				ai_greed = -0.5
-   			}
+				ai_honor = 0.1
+				ai_greed = -0.5
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
 			modifier = {
 				gold <= medium_gold_value
-				add = -15
+				add = -20
 			}
-            modifier = { # Weight up for family members.
-            	add = 15
-            	scope:consort_relative = { is_close_or_extended_family_of = ROOT }
-            }
-			modifier = { # Weight up for opinion.
-            	add = 10
-            	opinion = {
-            		target = scope:meddling_relative
-            		value >= low_positive_opinion
-            	}
-            }
-            modifier = { # Weight up for opinion.
-            	add = 10
-            	opinion = {
-            		target = scope:meddling_relative
-            		value >= 50
-            	}
-            }
-			modifier = { # Weight up for opinion.
-            	add = 5
-            	opinion = {
-            		target = scope:consort_relative
-            		value >= 50
-            	}
-            }
-			modifier = { #Fertile consort
-				scope:meddling_relative = {
-					any_child = {
-						is_child_of = root
-						count >= 3
-					}
-				}
-				add = 5
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					any_close_or_extended_family_member = {
-						OR = {
-							this = root.primary_spouse
-							is_powerful_vassal_of = root
-							is_councillor_of = root
-							is_parent_of = root
-							is_liege_or_above_of = root
-						}
-					}
-				}
-				add = 5
-			}
-			modifier = { #Influential consort
-				exists = root.primary_spouse
-				scope:meddling_relative = {
-					this = root.primary_spouse
-				}
+			modifier = { # It's better than giving them titles
+				gold >= major_gold_value
 				add = 15
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					has_court_position = grand_consort_court_position
-				}
-				add = 10
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					is_married = yes
-					NOR = {
-						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
-					}
-				}
-				add = 5
 			}
 
             modifier = {	#Weight down for stress.
@@ -6101,95 +6047,13 @@ harem_events.2104 = {
 				add = 20
 				has_trait = generous
 			}
-			modifier = {	#Weight down for stress.
-				add = -15
-				has_trait = arrogant
-			}
-			
 			modifier = { #Influential consort
-				scope:meddling_relative = {
-					has_character_modifier = favored_consort_modifier
-				}
-				add = 5
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					has_character_modifier = beloved_consort_modifier
-				}
-				add = 10
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					has_character_modifier = favor_boost_modifier
-				}
-				add = 5
-			}
-			
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					any_child = {
-						this = root
-					}
-				}
-				add = 15
-			}
-			modifier = { #Influential consort
-				scope:meddling_relative = {
-					any_child = {
-						this = root.primary_heir
-					}
-				}
-				add = 15
-			}
-        }
-    }
-	# Just nod, and do nothing
-	option = {
-        name = harem_events.2104.c
-		add_piety = minor_piety_loss
-		scope:matriarch = {
-			add_opinion = {
-				target = root
-				modifier = disappointed_opinion
-				opinion = -5
-			}
-		}
-		scope:consort = {
-			calyver_favor_minor_gain_effect = yes
-		}
-		ai_chance = {
-            base = 25
-			ai_value_modifier = {
-				ai_honor = -0.15
-			}
-			opinion_modifier = {
-				who = root
-				opinion_target = scope:consort
-				multiplier = 0.15
-			}
-			modifier = {
-				trait_compatibility = {
-					target = scope:consort
-					value > neutral_trait_compatibility
-				}
-				add = 10
-			}
-			modifier = {
-				OR = {
-					has_relation_friend = scope:consort
-					has_relation_lover = scope:consort
-				}
-				add = 10
-			}
-			modifier = {
-				scope:consort = {
-					harem_politics_beloved_consort_trigger = yes
-				}
+				domain_size <= domain_limit
 				add = 10
 			}
         }
     }
-	# Don't get involved in my harem!
+	# Don't talk about government matters
 	option = {
         name = harem_events.2104.d
 		add_piety = medium_piety_loss
@@ -6200,54 +6064,28 @@ harem_events.2104 = {
 				opinion = -15
 			}
 		}
-		scope:consort = {
-			calyver_favor_moderate_loss_effect = yes
-		}
 		stress_impact = {
-			forgiving = minor_stress_impact_gain
-			compassionate = minor_stress_impact_gain
+			generous = minor_stress_impact_gain
 		}
 		ai_chance = {
             base = 15
 			ai_value_modifier = {
-				ai_honor = -0.3
-				ai_compassion = -0.3
+				ai_compassion = -0.5
+				ai_honor = -0.5
+				ai_greed = 0.5
 			}
 			opinion_modifier = {
 				who = root
 				opinion_target = scope:matriarch
-				multiplier = -0.35
-			}
-			opinion_modifier = {
-				who = root
-				opinion_target = scope:consort
-				multiplier = 0.35
+				multiplier = -0.5
 			}
 			modifier = {
-				has_trait = callous
+				has_trait = generous
+				add = -15
+			}
+			modifier = {
+				has_trait = greedy
 				add = 25
-			}
-			modifier = {
-				has_trait = compassionate
-				add = -15
-			}
-			modifier = {
-				has_trait = forgiving
-				add = -15
-			}
-			modifier = {
-				trait_compatibility = {
-					target = scope:consort
-					value > medium_positive_trait_compatibility
-				}
-				add = 20
-			}
-			modifier = {
-				OR = {
-					has_relation_best_friend = scope:consort
-					has_relation_soulmate = scope:consort
-				}
-				add = 20
 			}
 			modifier = {
 				scope:consort = {
@@ -6259,7 +6097,7 @@ harem_events.2104 = {
     }
 	after = {
 		add_character_flag = {
-			flag = matriarch_requested_stop_favor_flag
+			flag = matriarch_requested_title_flag
 			years = 4
 		}
 	}
