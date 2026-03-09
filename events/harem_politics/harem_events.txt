@@ -6756,6 +6756,8 @@ harem_events.2106 = {
 			}
 			save_scope_as = consort_relative
 		}
+		root = { save_scope_as = petition_liege }
+		scope:consort_relative = { save_scope_as = petition_vassal }
 		petition_liege_save_council_seat_effect = {
 			JOB_TAKER = scope:consort_relative
 			LIEGE = root
@@ -6763,21 +6765,20 @@ harem_events.2106 = {
 	}
 
 	option = { # Grant them a council position
-        name = harem_politics.0008.a
+		name = harem_politics.2106.a
 		trigger = {
-			court_positions_currently_filled < court_positions_currently_available
-			character_can_be_employed_in_a_court_position_trigger = {
-				CHARACTER = scope:consort_relative
+			scope:consort_relative = {
+				is_valid_matriarch_relative_for_council_position_grant_trigger = yes
 			}
 		}
 		add_piety = medium_piety_gain
 		scope:matriarch = {
-        	add_opinion = {
+			add_opinion = {
 				target = root
 				modifier = pleased_opinion
 				opinion = 15
 			}
-        }
+		}
 		scope:consort_relative = {
 			add_opinion = {
 				target = scope:matriarch
@@ -6800,75 +6801,64 @@ harem_events.2106 = {
 					return_to_court = yes
 				}
 			}
-
 		}
-		if = {
-        	limit = {
-        		court_positions_currently_filled < court_positions_currently_available
-        		scope:consort_relative = {
-        			has_any_court_position = no
-					can_be_employed_as_any_court_position_trigger = yes
-        		}
-        	}
-        	employ_character_as_any_free_position_effect = {
-        		CHARACTER = scope:consort_relative
-        	}
-        }
-		# Position effects
-		send_interface_toast = {
-			type = event_toast_effect_neutral
-			title = ep3_story_cycle_admin_eunuch.2040.a.toast
-			left_icon = scope:eunuch
-			right_icon = scope:second_party
-			if = {
-				limit = { exists = scope:second_party }
-				scope:second_party = {
-					send_interface_toast = {
-						type = event_toast_effect_bad
-						title = ep3_story_cycle_admin_eunuch.toast
-						left_icon = scope:eunuch
-						right_icon = scope:emperor
-						scope:emperor = { fire_councillor = scope:second_party }
-					}
+		# Fire current councillor and assign consort_relative to the chosen seat
+		switch = {
+			trigger = scope:consort_relative.var:petition_liege_council_first
+			flag:chancellor = {
+				if = {
+					limit = { exists = scope:root.cp:councillor_chancellor }
+					fire_councillor = cp:councillor_chancellor
+				}
+				assign_councillor_type = {
+					type = councillor_chancellor
+					target = scope:consort_relative
 				}
 			}
-			switch = {
-				trigger = scope:eunuch.var:petition_liege_council_first
-				flag:chancellor = {
-					assign_councillor_type = {
-						type = councillor_chancellor
-						target = scope:petition_vassal
-					}
+			flag:marshal = {
+				if = {
+					limit = { exists = scope:root.cp:councillor_marshal }
+					fire_councillor = cp:councillor_marshal
 				}
-				flag:marshal = {
-					assign_councillor_type = {
-						type = councillor_marshal
-						target = scope:petition_vassal
-					}
-				}
-				flag:steward = {
-					assign_councillor_type = {
-						type = councillor_steward
-						target = scope:petition_vassal
-					}
-				}
-				flag:spymaster = {
-					assign_councillor_type = {
-						type = councillor_spymaster
-						target = scope:petition_vassal
-					}
-				}
-				flag:court_chaplain = {
-					assign_councillor_type = {
-						type = councillor_court_chaplain
-						target = scope:petition_vassal
-					}
+				assign_councillor_type = {
+					type = councillor_marshal
+					target = scope:consort_relative
 				}
 			}
-			petition_liege_block_firing_councillor_effect = {
-				COURT_OWNER = root
-				JOB_TAKER = scope:eunuch
+			flag:steward = {
+				if = {
+					limit = { exists = scope:root.cp:councillor_steward }
+					fire_councillor = cp:councillor_steward
+				}
+				assign_councillor_type = {
+					type = councillor_steward
+					target = scope:consort_relative
+				}
 			}
+			flag:spymaster = {
+				if = {
+					limit = { exists = scope:root.cp:councillor_spymaster }
+					fire_councillor = cp:councillor_spymaster
+				}
+				assign_councillor_type = {
+					type = councillor_spymaster
+					target = scope:consort_relative
+				}
+			}
+			flag:court_chaplain = {
+				if = {
+					limit = { exists = scope:root.cp:councillor_court_chaplain }
+					fire_councillor = cp:councillor_court_chaplain
+				}
+				assign_councillor_type = {
+					type = councillor_court_chaplain
+					target = scope:consort_relative
+				}
+			}
+		}
+		petition_liege_block_firing_councillor_effect = {
+			COURT_OWNER = root
+			JOB_TAKER = scope:consort_relative
 		}
 		stress_impact = {
 			generous = minor_stress_impact_loss
