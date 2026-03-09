@@ -4363,7 +4363,7 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 	NOR = {
 		has_character_modifier = recently_tortured
 		is_consort_of = root
-		is_child_of = root
+		is_close_family_of = = root
 	}
 	any_held_title = { count = 0 }
 }
@@ -4554,6 +4554,16 @@ scripted_trigger is_valid_for_council_position_request_trigger = {
 		trigger_else = {
 			any_close_family_member = {
 				is_valid_matriarch_relative_for_council_position_grant_trigger = yes
+			}
+		}
+		NOR = {
+			house ?= {
+				any_house_member = {
+					is_councillor_of = root
+				}
+			}
+			any_close_family_member = {
+				is_councillor_of = root
 			}
 		}
 	}
@@ -4894,6 +4904,11 @@ harem_events.2100 = {
 						}
 						add = -5
 					}
+					modifier = {
+						has_character_flag = matriarch_requested_council_position_flag
+						add = -10
+					}
+					trigger_event = harem_events.2106
 				}
 				15 = { # They offer you a consort
 					trigger = {
@@ -6565,6 +6580,514 @@ harem_events.2105 = {
 	# Don't talk about government matters
 	option = {
         name = harem_events.2105.d
+		add_piety = medium_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+		stress_impact = {
+			trusting = minor_stress_impact_gain
+			generous = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			callous = minor_stress_impact_loss
+		}
+		ai_chance = {
+            base = 15
+			ai_value_modifier = {
+				ai_compassion = -0.5
+				ai_honor = -0.5
+				ai_greed = 0.2
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = -0.5
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort_relative
+				multiplier = -0.5
+			}
+			modifier = {
+				has_trait = trusting
+				add = -25
+			}
+			modifier = {
+				has_trait = generous
+				add = -25
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = callous
+				add = 25
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 15
+			}
+			modifier = {
+				has_trait = greedy
+				add = 15
+			}
+        }
+    }
+	after = {
+		add_character_flag = {
+			flag = matriarch_requested_court_position_flag
+			years = 4
+		}
+	}
+}
+# They ask you to grant a court position to a relative
+harem_events.2106 = {
+	type = character_event
+	title = harem_events.2106.t
+	desc = harem_events.2106.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = personality_honorable
+	}
+	lower_center_portrait = {
+		character = scope:consort_relative
+	}
+	
+	trigger = {
+		is_valid_for_council_position_request_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_matriarch_fallback_effect = yes
+	}
+	
+	immediate = {
+		scope:matriarch = {
+			if = {
+				limit = {
+					exists = house
+					any_house_member = {
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+					}
+					root = {
+						character_can_be_employed_in_a_court_position_trigger = {
+							CHARACTER = scope:relative
+						}
+					}
+				}
+				every_house_member = {
+					limit = {
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+						root = {
+							character_can_be_employed_in_a_court_position_trigger = {
+								CHARACTER = scope:relative
+							}
+						}
+					}
+					add_to_temporary_list = relative_list
+				}
+			}
+			else = {
+				every_close_family_member = {
+					limit = {
+						is_valid_matriarch_relative_for_court_position_grant_trigger = yes
+						save_temporary_scope_as = relative
+						root = {
+							character_can_be_employed_in_a_court_position_trigger = {
+								CHARACTER = scope:relative
+							}
+						}
+					}
+					add_to_temporary_list = relative_list
+				}
+			}
+		}
+		random_in_list = {
+			list = relative_list
+			weight = {
+				base = 10
+				modifier = {
+					is_close_family_of = scope:matriarch
+					add = 20
+				}
+				modifier = {
+					house ?= {
+						any_house_member = {
+							this = scope:matriarch
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					add = {
+						value = sum_of_all_skills_value
+						divide = 5
+					}
+				}
+				modifier = {
+					house.house_head ?= this
+					add = 20
+				}
+				modifier = {
+					add = {
+						value = "reverse_opinion(scope:matriarch)"
+						multiply = 0.2
+					}
+				}
+			}
+			save_scope_as = consort_relative
+		}
+		petition_liege_save_council_seat_effect = {
+			JOB_TAKER = scope:sycophant_scope
+			LIEGE = root
+		}
+	}
+
+	option = { # Grant them a council position
+        name = harem_politics.0008.a
+		trigger = {
+			court_positions_currently_filled < court_positions_currently_available
+			character_can_be_employed_in_a_court_position_trigger = {
+				CHARACTER = scope:consort_relative
+			}
+		}
+		add_piety = medium_piety_gain
+		scope:matriarch = {
+        	add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 15
+			}
+        }
+		scope:consort_relative = {
+			add_opinion = {
+				target = scope:matriarch
+				modifier = grateful_opinion
+				opinion = 15
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 15
+			}
+			hidden_effect = {
+				if = {
+					limit = {
+						NOT = { is_courtier_of = root }
+					}
+					root = {
+						add_courtier = scope:consort_relative
+					}
+					return_to_court = yes
+				}
+			}
+
+		}
+		if = {
+        	limit = {
+        		court_positions_currently_filled < court_positions_currently_available
+        		scope:consort_relative = {
+        			has_any_court_position = no
+					can_be_employed_as_any_court_position_trigger = yes
+        		}
+        	}
+        	employ_character_as_any_free_position_effect = {
+        		CHARACTER = scope:consort_relative
+        	}
+        }
+		# Position effects
+		send_interface_toast = {
+			type = event_toast_effect_neutral
+			title = ep3_story_cycle_admin_eunuch.2040.a.toast
+			left_icon = scope:eunuch
+			right_icon = scope:second_party
+			if = {
+				limit = { exists = scope:second_party }
+				scope:second_party = {
+					send_interface_toast = {
+						type = event_toast_effect_bad
+						title = ep3_story_cycle_admin_eunuch.toast
+						left_icon = scope:eunuch
+						right_icon = scope:emperor
+						scope:emperor = { fire_councillor = scope:second_party }
+					}
+				}
+			}
+			switch = {
+				trigger = scope:eunuch.var:petition_liege_council_first
+				flag:chancellor = {
+					assign_councillor_type = {
+						type = councillor_chancellor
+						target = scope:petition_vassal
+					}
+				}
+				flag:marshal = {
+					assign_councillor_type = {
+						type = councillor_marshal
+						target = scope:petition_vassal
+					}
+				}
+				flag:steward = {
+					assign_councillor_type = {
+						type = councillor_steward
+						target = scope:petition_vassal
+					}
+				}
+				flag:spymaster = {
+					assign_councillor_type = {
+						type = councillor_spymaster
+						target = scope:petition_vassal
+					}
+				}
+				flag:court_chaplain = {
+					assign_councillor_type = {
+						type = councillor_court_chaplain
+						target = scope:petition_vassal
+					}
+				}
+			}
+			petition_liege_block_firing_councillor_effect = {
+				COURT_OWNER = root
+				JOB_TAKER = scope:eunuch
+			}
+		}
+		stress_impact = {
+			generous = minor_stress_impact_loss
+			greedy = minor_stress_impact_gain
+			paranoid = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+   				ai_honor = 0.2
+   				ai_greed = -0.2
+   			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
+			modifier = {
+				add = {
+					value = scope:consort_relative.sum_of_all_skills_value
+					divide = 5
+				}
+			}
+			modifier = {	#Weight down for stress.
+				add = 15
+				has_trait = trusting
+			}
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = generous
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = greedy
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = paranoid
+			}
+
+			modifier = { # To clean the family lineage
+				scope:matriarch = {
+					has_no_particular_noble_roots_trigger = yes
+					is_close_family_of = scope:consort_relative
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort_relative.sum_of_all_skills_value <= sum_of_all_skills_threshold_poor
+				add = -10
+			}
+			modifier = {
+				scope:consort_relative.sum_of_all_skills_value >= sum_of_all_skills_threshold_good
+				add = 10
+			}
+        }
+    }
+	option = { # Compromise - give them gold
+        name = harem_politics.0031.b
+		trigger = {
+			gold >= minor_gold_value
+		}
+		show_as_unavailable = { NOT = { gold >= minor_gold_value } }
+		save_scope_value_as = {
+			name = gold_to_pay
+			value = minor_gold_value
+		}
+		pay_short_term_gold = {
+			target = scope:consort_relative
+			gold = scope:gold_to_pay
+		}
+		add_piety = minor_piety_gain
+		scope:matriarch = {
+        	add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+        }
+		scope:consort_relative = {
+			add_opinion = {
+				target = scope:matriarch
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
+			hidden_effect = {
+				if = {
+					limit = {
+						NOT = { is_courtier_of = root }
+					}
+					root = {
+						add_courtier = scope:consort_relative
+					}
+					return_to_court = yes
+				}
+			}
+		}
+        stress_impact = {
+			greedy = medium_stress_impact_gain
+			generous = minor_stress_impact_loss
+			paranoid = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_greed = -0.5
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.3
+			}
+			modifier = {
+				gold <= minor_gold_value
+				add = -20
+			}
+			modifier = {
+				gold >= medium_gold_value
+				add = 15
+			}
+			modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = paranoid
+			}
+            modifier = {	#Weight down for stress.
+				add = -25
+				has_trait = greedy
+			}
+			modifier = {	#Weight down for stress.
+				add = 25
+				has_trait = generous
+			}
+			modifier = {	#Weight down for stress.
+				add = 15
+				has_trait = trusting
+			}
+			modifier = {
+				scope:consort_relative.sum_of_all_skills_value <= sum_of_all_skills_threshold_average
+				add = 10
+			}
+        }
+    }
+	option = { # They can enjoy my hospitality
+        name = harem_events.2106.c
+		trigger = {
+			scope:consort_relative = {
+				NOT = { is_courtier_of = root }
+			}
+		}
+		add_piety = minor_piety_loss
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+		}
+		scope:consort_relative = {
+			add_opinion = {
+				target = scope:matriarch
+				modifier = grateful_opinion
+				opinion = 5
+			}
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 5
+			}
+			root = {
+				add_courtier = scope:consort_relative
+			}
+			return_to_court = yes
+		}
+		stress_impact = {
+			paranoid = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_greed = 0.2
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.2
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort_relative
+				multiplier = -0.2
+			}
+			modifier = {
+				scope:consort_relative.sum_of_all_skills_value <= sum_of_all_skills_threshold_average
+				add = 10
+			}
+			modifier = {
+				has_trait = paranoid
+				add = -25
+			}
+			modifier = {
+				has_trait = generous
+				add = 15
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+        }
+    }
+	# Don't talk about government matters
+	option = {
+        name = harem_events.2106.d
 		add_piety = medium_piety_loss
 		scope:matriarch = {
 			add_opinion = {
