@@ -7421,7 +7421,7 @@ harem_events.2107 = {
 		}
 	}
 
-	option = { # Grant them a council position
+	option = { # Make them your concubine
 		name = harem_politics.2107.a
 		trigger = {
 			allowed_more_concubines = yes
@@ -7483,227 +7483,148 @@ harem_events.2107 = {
         ai_chance = {
             base = 10
             ai_value_modifier = {
+				ai_rationality = -0.2
    				ai_honor = 0.2
    			}
 			opinion_modifier = {
 				who = root
 				opinion_target = scope:matriarch
-				multiplier = 0.3
+				multiplier = 0.4
 			}
-			modifier = {
-				add = {
-					value = scope:consort_relative.sum_of_all_skills_value
-					divide = 5
-				}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort_relative
+				multiplier = 0.1
+			}
+			simple_attraction_modifier = {
+				WHO = root
+				TARGET = scope:consort_relative
+				MAX_PERSONALITY = 15
+				MAX_PHYSICAL = 15
 			}
 			modifier = {	#Weight down for stress.
 				add = 15
 				has_trait = trusting
 			}
 			modifier = {	#Weight down for stress.
-				add = 25
-				has_trait = generous
-			}
-			modifier = {	#Weight down for stress.
-				add = -25
-				has_trait = greedy
-			}
-			modifier = {	#Weight down for stress.
 				add = -25
 				has_trait = paranoid
 			}
 
-			modifier = { # To clean the family lineage
+			modifier = { # To give power to their family
 				scope:matriarch = {
 					has_no_particular_noble_roots_trigger = yes
 					is_close_family_of = scope:consort_relative
 				}
 				add = 15
 			}
-			# Low skill level
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:chancellor
-					diplomacy < medium_skill_rating
+        }
+    }
+	option = { # Make them your spouse
+		name = harem_politics.2107.a
+		trigger = {
+			allowed_more_spouses = yes
+			allowed_more_concubines = no
+		}
+		add_piety = medium_piety_gain
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 15
+			}
+		}
+		scope:consort_relative = {
+			if = {
+				limit = {
+					hp_accepts_harems = yes
 				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.diplomacy
-					multiply = -1
+				add_opinion = {
+					target = scope:matriarch
+					modifier = grateful_opinion
+					opinion = 15
+				}
+				add_opinion = {
+					target = root
+					modifier = grateful_opinion
+					opinion = 15
 				}
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:marshal
-					martial < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.martial
-					multiply = -1
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:steward
-					stewardship < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.stewardship
-					multiply = -1
+			hidden_effect = {
+				if = {
+					limit = {
+						NOT = { is_courtier_of = root }
+					}
+					root = {
+						add_courtier = scope:consort_relative
+					}
+					return_to_court = yes
 				}
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:spymaster
-					intrigue < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.intrigue
-					multiply = -1
+		}
+		# Make them your spouse
+		if = {
+			limit = {
+				is_character_interaction_valid = {
+					recipient = scope:consort_relative
+					interaction = marry_off_interaction
 				}
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:court_chaplain
-					learning < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.learning
-					multiply = -1
-				}
+			run_interaction = {
+				interaction = marry_off_interaction
+				actor = root
+				secondary_actor = root
+				recipient = root
+				secondary_recipient = scope:consort_relative
+				execute_threshold = accept
 			}
-			# High skill level
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:chancellor
-					diplomacy > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.diplomacy
-					subtract = decent_skill_rating
-				}
+		}
+		stress_impact = {
+			paranoid = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 10
+            ai_value_modifier = {
+				ai_rationality = -0.2
+   				ai_honor = 0.2
+   			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.4
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:marshal
-					martial > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.martial
-					subtract = decent_skill_rating
-				}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort_relative
+				multiplier = 0.1
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:steward
-					stewardship > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.stewardship
-					subtract = decent_skill_rating
-				}
+			simple_attraction_modifier = {
+				WHO = root
+				TARGET = scope:consort_relative
+				MAX_PERSONALITY = 15
+				MAX_PHYSICAL = 15
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:spymaster
-					intrigue > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.intrigue
-					subtract = decent_skill_rating
-				}
+			modifier = {	#Weight down for stress.
+				add = 15
+				has_trait = trusting
 			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:court_chaplain
-					learning > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.learning
-					subtract = decent_skill_rating
-				}
-			}
-			# Current councillor considerations (scope:second_party set by petition_liege_save_council_seat_effect)
-			modifier = {
-				scope:second_party ?= { is_powerful_vassal_of = root }
+			modifier = {	#Weight down for stress.
 				add = -25
+				has_trait = paranoid
 			}
-			modifier = {
-				exists = scope:second_party
-				add = {
-					value = "root.opinion(scope:second_party)"
-					multiply = -0.3
+
+			modifier = { # To give power to their family
+				scope:matriarch = {
+					has_no_particular_noble_roots_trigger = yes
+					is_close_family_of = scope:consort_relative
 				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:chancellor
-				exists = scope:second_party
-				scope:consort_relative.diplomacy > scope:second_party.diplomacy
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.diplomacy
-					subtract = scope:second_party.diplomacy
-					multiply = 5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:marshal
-				exists = scope:second_party
-				scope:consort_relative.martial > scope:second_party.martial
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.martial
-					subtract = scope:second_party.martial
-					multiply = 5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:steward
-				exists = scope:second_party
-				scope:consort_relative.stewardship > scope:second_party.stewardship
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.stewardship
-					subtract = scope:second_party.stewardship
-					multiply = 5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:spymaster
-				exists = scope:second_party
-				scope:consort_relative.intrigue > scope:second_party.intrigue
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.intrigue
-					subtract = scope:second_party.intrigue
-					multiply = 5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:court_chaplain
-				exists = scope:second_party
-				scope:consort_relative.learning > scope:second_party.learning
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.learning
-					subtract = scope:second_party.learning
-					multiply = 5
-				}
+				add = 15
 			}
         }
     }
 	# Don't talk about government matters
 	option = {
-        name = harem_events.2107.b
+        name = harem_events.2107.c
 		add_piety = medium_piety_loss
 		scope:matriarch = {
 			add_opinion = {
@@ -7720,219 +7641,43 @@ harem_events.2107 = {
 		}
 		ai_chance = {
             base = 15
-			ai_value_modifier = {
-				ai_compassion = -0.5
-				ai_honor = -0.5
-				ai_greed = 0.2
-			}
+            ai_value_modifier = {
+				ai_rationality = 0.2
+   				ai_honor = -0.2
+   			}
 			opinion_modifier = {
 				who = root
 				opinion_target = scope:matriarch
-				multiplier = -0.5
+				multiplier = -0.3
 			}
 			opinion_modifier = {
 				who = root
 				opinion_target = scope:consort_relative
-				multiplier = -0.5
+				multiplier = 0.05
 			}
-			modifier = {
+			modifier = {	#Weight down for stress.
+				add = -25
 				has_trait = trusting
-				add = -25
 			}
-			modifier = {
+			modifier = {	#Weight down for stress.
+				add = -25
 				has_trait = forgiving
-				add = -25
 			}
-			modifier = {
+			modifier = {	#Weight down for stress.
+				add = -25
 				has_trait = compassionate
-				add = -25
 			}
-			modifier = {
+			modifier = {	#Weight down for stress.
+				add = 25
 				has_trait = callous
-				add = 25
 			}
-			modifier = {
-				has_trait = paranoid
+			modifier = {	#Weight down for stress.
 				add = 15
-			}
-			# Low skill level
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:chancellor
-					diplomacy < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.diplomacy
-				}
+				has_trait = paranoid
 			}
 			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:marshal
-					martial < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.martial
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:steward
-					stewardship < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.stewardship
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:spymaster
-					intrigue < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.intrigue
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:court_chaplain
-					learning < medium_skill_rating
-				}
-				add = {
-					value = medium_skill_rating
-					subtract = scope:consort_relative.learning
-				}
-			}
-			# High skill level
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:chancellor
-					diplomacy > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.diplomacy
-					subtract = decent_skill_rating
-					multiply = -1
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:marshal
-					martial > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.martial
-					subtract = decent_skill_rating
-					multiply = -1
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:steward
-					stewardship > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.stewardship
-					subtract = decent_skill_rating
-					multiply = -1
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:spymaster
-					intrigue > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.intrigue
-					subtract = decent_skill_rating
-					multiply = -1
-				}
-			}
-			modifier = {
-				NOT = { exists = scope:second_party }
-				scope:consort_relative = {
-					var:petition_liege_council_first ?= flag:court_chaplain
-					learning > decent_skill_rating
-				}
-				add = {
-					value = scope:consort_relative.learning
-					subtract = decent_skill_rating
-					multiply = -1
-				}
-			}
-			# Current councillor considerations (scope:second_party set by petition_liege_save_council_seat_effect)
-			modifier = {
-				scope:second_party ?= { is_powerful_vassal_of = root }
-				add = 25
-			}
-			modifier = {
-				exists = scope:second_party
-				add = {
-					value = "root.opinion(scope:second_party)"
-					multiply = 0.3
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:chancellor
-				exists = scope:second_party
-				scope:consort_relative.diplomacy > scope:second_party.diplomacy
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.diplomacy
-					subtract = scope:second_party.diplomacy
-					multiply = -5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:marshal
-				exists = scope:second_party
-				scope:consort_relative.martial > scope:second_party.martial
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.martial
-					subtract = scope:second_party.martial
-					multiply = -5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:steward
-				exists = scope:second_party
-				scope:consort_relative.stewardship > scope:second_party.stewardship
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.stewardship
-					subtract = scope:second_party.stewardship
-					multiply = -5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:spymaster
-				exists = scope:second_party
-				scope:consort_relative.intrigue > scope:second_party.intrigue
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.intrigue
-					subtract = scope:second_party.intrigue
-					multiply = -5
-				}
-			}
-			modifier = {
-				scope:consort_relative.var:petition_liege_council_first ?= flag:court_chaplain
-				exists = scope:second_party
-				scope:consort_relative.learning > scope:second_party.learning
-				add ={ # We add the difference in skills
-					value = scope:consort_relative.learning
-					subtract = scope:second_party.learning
-					multiply = -5
-				}
+				NOT = { is_attracted_to_gender_of = scope:consort_relative }
+				add = 10
 			}
         }
     }
