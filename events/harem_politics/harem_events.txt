@@ -4610,6 +4610,9 @@ scripted_trigger is_valid_for_consort_offer_trigger = {
 		allowed_more_spouses = yes
 		allowed_more_concubines = yes
 	}
+	NOT = { 
+		has_character_modifier = mourner_modifier 
+	}
 }
 scripted_effect on_trigger_fail_visit_matriarch_fallback_effect = {
 	send_interface_toast = {
@@ -4882,7 +4885,7 @@ harem_events.2100 = {
 					}
 					trigger_event = harem_events.2105
 				}
-				15 = { # They ask you to grant a council position to a relative
+				5 = { # They ask you to grant a council position to a relative
 					trigger = {
 						is_valid_for_council_position_request_trigger = yes
 					}
@@ -4890,7 +4893,7 @@ harem_events.2100 = {
 						scope:matriarch = {
 							has_trait = ambitious
 						}
-						add = 10
+						add = 15
 					}
 					modifier = {
 						scope:matriarch = {
@@ -4902,7 +4905,7 @@ harem_events.2100 = {
 						scope:matriarch = {
 							has_trait = greedy
 						}
-						add = 5
+						add = 10
 					}
 					modifier = {
 						scope:matriarch = {
@@ -4918,7 +4921,7 @@ harem_events.2100 = {
 					}
 					modifier = {
 						has_character_flag = matriarch_requested_council_position_flag
-						add = -10
+						add = -5
 					}
 					trigger_event = harem_events.2106
 				}
@@ -7525,6 +7528,7 @@ harem_events.2107 = {
 		trigger = {
 			allowed_more_spouses = yes
 			allowed_more_concubines = no
+			could_marry_character_trigger = { CHARACTER = scope:consort_relative }
 		}
 		add_piety = medium_piety_gain
 		scope:matriarch = {
@@ -7537,7 +7541,16 @@ harem_events.2107 = {
 		scope:consort_relative = {
 			if = {
 				limit = {
-					hp_accepts_harems = yes
+					OR = {
+						AND = {
+							hp_accepts_harems = yes
+							root = { hp_accepts_harems = yes }
+						}
+						AND = {
+							hp_accepts_harems = no
+							root = { hp_accepts_harems = no }
+						}
+					}
 				}
 				add_opinion = {
 					target = scope:matriarch
@@ -7560,25 +7573,25 @@ harem_events.2107 = {
 					}
 					return_to_court = yes
 				}
+				save_scope_as = secondary_recipient
 			}
 		}
 		# Make them your spouse
 		if = {
 			limit = {
-				is_character_interaction_valid = {
-					recipient = scope:consort_relative
-					interaction = marry_off_interaction
-				}
+				is_female = yes
 			}
-			run_interaction = {
-				interaction = marry_off_interaction
-				actor = root
-				secondary_actor = root
-				recipient = root
-				secondary_recipient = scope:consort_relative
-				execute_threshold = accept
-			}
+			marry_matrilineal = scope:potential_candidate
 		}
+		else = {
+			marry = scope:potential_candidate
+		}
+		
+		#Marriage effects
+		save_scope_as = actor
+		save_scope_as = recipient
+		save_scope_as = secondary_actor
+		marriage_interaction_on_accept_effect = yes
 		stress_impact = {
 			paranoid = minor_stress_impact_gain
 		}
@@ -7619,6 +7632,12 @@ harem_events.2107 = {
 					is_close_family_of = scope:consort_relative
 				}
 				add = 15
+			}
+			modifier = {
+				scope:consort_relative = {
+					is_lowborn = yes
+				}
+				add = -25
 			}
         }
     }
@@ -7683,7 +7702,7 @@ harem_events.2107 = {
     }
 	after = {
 		add_character_flag = {
-			flag = matriarch_requested_council_position_flag
+			flag = matriarch_offered_consort_flag
 			years = 4
 		}
 	}
