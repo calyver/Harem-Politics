@@ -3645,8 +3645,7 @@ set_primary_spouse_effect = {
 		if = {
 			limit = {
 				employs_court_position = grand_consort_court_position
-				exists = scope:previous_primary_spouse
-				court_position:grand_consort_court_position = scope:previous_primary_spouse
+				scope:previous_primary_spouse ? = court_position:grand_consort_court_position
 			}
 			hidden_effect = {
 				revoke_court_position = {
@@ -3692,9 +3691,10 @@ set_primary_spouse_effect = {
 			# Managing GC opinions
 			if = {
 				limit = {
-					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
+					any_consort = {
+						is_high_consort_trigger = {
+							LIEGE = scope:recipient
+						}
 						this != scope:recipient
 						trigger_if = {
 							limit = {
@@ -3704,100 +3704,20 @@ set_primary_spouse_effect = {
 						}
 					}
 				}
-				random_court_position_holder = {
-					type = grand_consort_court_position
-					save_scope_as = grand_consort_scope
-				}
-				if = {
+				every_consort = {
 					limit = {
-						exists = scope:grand_consort_scope
-					}
-					if = {
-						limit = {
-							scope:previous_primary_spouse ?= {
-								has_opinion_modifier = {
-									target = scope:grand_consort_scope
-									modifier = threatening_consort_opinion
-								}
-							}
+						is_high_consort_trigger = {
+							LIEGE = scope:recipient
 						}
-						scope:previous_primary_spouse = {
-							remove_opinion = {
-								target = scope:grand_consort_scope
-								modifier = threatening_consort_opinion
-							}
-						}
-					}
-					scope:recipient = {
-						if = {
+						this != scope:recipient
+						trigger_if = {
 							limit = {
-								OR = {
-									has_trait = craven
-									has_trait = paranoid
-	
-									harem_politics_evil_consort_trigger = yes
-	
-									has_relation_rival = scope:grand_consort_scope
-									has_relation_nemesis = scope:grand_consort_scope
-								}
-								NOR = {
-									has_relation_best_friend = scope:grand_consort_scope
-									has_relation_friend = scope:grand_consort_scope
-									has_relation_soulmate = scope:grand_consort_scope
-									has_relation_lover = scope:grand_consort_scope
-	
-									has_trait = trusting
-								}
-								opinion = {
-									target = scope:grand_consort_scope
-									value <= low_positive_opinion
-								}
+								exists = scope:previous_primary_spouse
 							}
-							add_opinion = {
-								target = scope:grand_consort_scope
-								modifier = threatening_consort_opinion
-							}
+							this != scope:previous_primary_spouse
 						}
 					}
-					scope:grand_consort_scope = { #The Grand Consort expects to be the next PS.
-						calyver_favor_moderate_loss_effect = yes
-						if = {
-							limit = {
-								harem_politics_evil_consort_trigger = yes
-								opinion = {
-									target = scope:recipient
-									value <= low_positive_opinion
-								}
-								NOR = {
-									has_opinion_modifier = {
-										modifier = forced_me_concubine_marriage_opinion
-										target = scope:actor
-									}
-									has_demoted_or_divorced_as_ps_opinion_trigger = {
-										TARGET = scope:actor
-									}
-								}
-								trigger_if = {
-									limit = {
-										hp_accepts_harems = no
-									}
-									OR = {
-										has_trait = ambitious
-										has_trait = arrogant
-										has_trait = greedy
-									}
-								}
-								trigger_else = {
-									hp_accepts_harems = yes
-								}
-							}
-							add_opinion = {
-								target = scope:actor
-								modifier = ignored_consort_opinion
-								opinion = -15
-							}
-						}
-					}
+					high_consort_reacts_ps_effect = { CONSORT = prev }
 				}
 			}
 			send_interface_toast = {
@@ -4138,6 +4058,137 @@ make_primary_spouse_effect = {
 }
 
 #Updating consorts' opinions
+high_consort_reacts_ps_effect = {
+	if = {
+		limit = {
+			scope:previous_primary_spouse ?= {
+				has_opinion_modifier = {
+					target = $CONSORT$
+					modifier = threatening_consort_opinion
+				}
+			}
+		}
+		scope:previous_primary_spouse = {
+			remove_opinion = {
+				target = $CONSORT$
+				modifier = threatening_consort_opinion
+			}
+		}
+	}
+	scope:recipient = {
+		if = {
+			limit = {
+				OR = {
+					has_trait = craven
+					has_trait = paranoid
+
+					harem_politics_evil_consort_trigger = yes
+
+					has_relation_rival = $CONSORT$
+					has_relation_nemesis = $CONSORT$
+				}
+				NOR = {
+					has_relation_best_friend = $CONSORT$
+					has_relation_friend = $CONSORT$
+					has_relation_soulmate = $CONSORT$
+					has_relation_lover = $CONSORT$
+
+					has_trait = trusting
+				}
+				opinion = {
+					target = $CONSORT$
+					value <= low_positive_opinion
+				}
+			}
+			if = {
+				limit = {
+					$CONSORT$ = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+				add_opinion = {
+					target = $CONSORT$
+					modifier = threatening_consort_opinion
+				}
+			}
+			else = {
+				if = {
+					limit = {
+						$CONSORT$ = {
+							OR = {
+								has_relation_lover = scope:actor
+								has_relation_soulmate = scope:actor
+	
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = beloved_consort_modifier
+								has_character_modifier = favor_boost_modifier
+							}
+						}
+					}
+					add_opinion = {
+						target = $CONSORT$
+						modifier = threatening_consort_opinion
+						opinion = -10
+					}
+				}
+				else = {
+					add_opinion = {
+						target = $CONSORT$
+						modifier = threatening_consort_opinion
+						opinion = -5
+					}
+				}
+			}
+		}
+	}
+	$CONSORT$ = {
+		if = {
+			limit = {
+				has_court_position = grand_consort_court_position
+			}
+			calyver_favor_moderate_loss_effect = yes
+			if = {
+				limit = {
+					harem_politics_evil_consort_trigger = yes
+					opinion = {
+						target = scope:recipient
+						value <= low_positive_opinion
+					}
+					NOR = {
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = scope:actor
+						}
+						has_demoted_or_divorced_as_ps_opinion_trigger = {
+							TARGET = scope:actor
+						}
+					}
+					trigger_if = {
+						limit = {
+							hp_accepts_harems = no
+						}
+						OR = {
+							has_trait = ambitious
+							has_trait = arrogant
+							has_trait = greedy
+						}
+					}
+					trigger_else = {
+						hp_accepts_harems = yes
+					}
+				}
+				add_opinion = {
+					target = scope:actor
+					modifier = ignored_consort_opinion
+					opinion = -15
+				}
+			}
+		}
+		else = {
+			calyver_favor_minor_loss_effect = yes
+		}	
+	}
+}
 calyver_update_active_consort_opinion_effect = {
 
 	if = {
