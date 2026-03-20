@@ -283,7 +283,11 @@ harem_politics_is_valid_authority_trigger = {
     trigger_else_if = {
         # 3. If authority is Grand Consort, target must be a consort but not the PS
         limit = {
-            $AUTHORITY$ = { has_court_position = grand_consort_court_position }
+            $AUTHORITY$ = { 
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
+				}
+			}
         }
 		$TARGET$ = {
 			is_consort_of = $LIEGE$
@@ -291,8 +295,11 @@ harem_politics_is_valid_authority_trigger = {
 				limit = {
 					exists = $LIEGE$.primary_spouse
 				}
-				NOT = {
-					this = $LIEGE$.primary_spouse
+				this != $LIEGE$.primary_spouse
+			}
+			NOT = { # The Four Consorts technically rank the same
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
 				}
 			}
 		}
@@ -320,16 +327,11 @@ harem_politics_ranks_the_same_as_target_trigger = {
 		is_active_harem_member_trigger = {
 			LIEGE = $LIEGE$
 		}
-		NOT = {
-			has_court_position = grand_consort_court_position
-		}
 		trigger_if = {
 			limit = {
 				exists = $LIEGE$.primary_spouse
 			}
-			NOT = {
-				this = $LIEGE$.primary_spouse
-			}
+			this != $LIEGE$.primary_spouse
 		}
 	}
     $TARGET$ = {
@@ -343,15 +345,12 @@ harem_politics_ranks_the_same_as_target_trigger = {
 			is_uncle_or_aunt_of = $CHARACTER$
 			is_nibling_of = $CHARACTER$
 			is_consort_of = $CHARACTER$
-			has_court_position = grand_consort_court_position
 		}
 		trigger_if = {
 			limit = {
 				exists = $LIEGE$.primary_spouse
 			}
-			NOT = {
-				this = $LIEGE$.primary_spouse
-			}
+			this != $LIEGE$.primary_spouse
 		}
 	}
 
@@ -406,23 +405,33 @@ harem_politics_ranks_the_same_as_target_trigger = {
 				is_sibling_of = $LIEGE$
 			}
 		}
+		trigger_else = {
+			always = no
+		}
 	}
 	trigger_else = {
 		trigger_if = {
 			limit = {
-				exists = $LIEGE$.primary_spouse
 				$TARGET$ = {
-					is_spouse_of = $LIEGE$
-					NOT = {
-						this = $LIEGE$.primary_spouse
+					is_high_consort_trigger = {
+						LIEGE = $LIEGE$
 					}
 				}
 			}
 			$CHARACTER$ = {
-				is_spouse_of = $LIEGE$
-				NOT = {
-					this = $LIEGE$.primary_spouse
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
 				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_spouse_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_spouse_of = $LIEGE$
 			}
 		}
 		trigger_else_if = {
@@ -434,6 +443,9 @@ harem_politics_ranks_the_same_as_target_trigger = {
 			$CHARACTER$ = {
 				is_concubine_of = $LIEGE$
 			}
+		}
+		trigger_else = {
+			always = no
 		}
 	}
 }
