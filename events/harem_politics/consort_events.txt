@@ -8394,9 +8394,7 @@ consort_events.0007 = {
 						modifier = { #Spouses
 							scope:valid_target_consort = { 
 								is_spouse_of = root
-								NOT = { 
-									has_court_position = grand_consort_court_position
-								}
+								has_high_consort_position_trigger = no
 							}
 							add = -10
 						}
@@ -8629,14 +8627,14 @@ consort_events.0007 = {
 
 						modifier = { #GC
 							scope:valid_target_consort = { 
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								is_spouse_of = root
 							}
 							add = -10
 						}
 						modifier = { #GC
 							scope:valid_target_consort = { 
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								NOT = { 
 									is_spouse_of = root
 								}
@@ -8647,9 +8645,7 @@ consort_events.0007 = {
 						modifier = { #Spouses
 							scope:valid_target_consort = { 
 								is_spouse_of = root
-								NOT = { 
-									has_court_position = grand_consort_court_position
-								}
+								has_high_consort_position_trigger = no
 							}
 							add = -5
 						}
@@ -8832,7 +8828,7 @@ consort_events.0007 = {
 
 						modifier = { #GC
 							scope:valid_target_consort = { 
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								is_spouse_of = root
 							}
 							add = -5
@@ -9034,14 +9030,14 @@ consort_events.0007 = {
 
 						modifier = { #GC
 							scope:valid_target_consort = { 
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								is_spouse_of = root
 							}
 							add = 10
 						}
 						modifier = { #GC
 							scope:valid_target_consort = { 
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								NOT = { 
 									is_spouse_of = root
 								}
@@ -9052,9 +9048,7 @@ consort_events.0007 = {
 						modifier = { #Spouses
 							scope:valid_target_consort = { 
 								is_spouse_of = root
-								NOT = { 
-									has_court_position = grand_consort_court_position
-								}
+								has_high_consort_position_trigger = no
 							}
 							add = 5
 						}
@@ -10008,23 +10002,30 @@ consort_events.0009 = {
 					modifier = { #Bad consorts
 						OR = {
 							AND = {
-								exists = root.primary_spouse
-								root.primary_spouse = {
-									this = scope:consort_rival
-								}
+								root.primary_spouse ?= scope:consort_rival
 								OR = {
-									has_court_position = grand_consort_court_position
+									has_high_consort_position_trigger = yes
 									harem_politics_favored_consort_trigger = yes
 								}
 							}
 							AND = {
-								exists = root.primary_spouse
-								this = root.primary_spouse
+								root.primary_spouse ?= scope:consort_rival
 								scope:consort_rival = {
 									OR = {
-										has_court_position = grand_consort_court_position
+										has_high_consort_position_trigger = yes
 										harem_politics_favored_consort_trigger = yes
 									}
+								}
+							}
+							AND = {
+								scope:consort_rival = {
+									is_high_consort_trigger = {
+										LIEGE = root
+									}
+								}
+								OR = {
+									has_high_consort_position_trigger = yes
+									harem_politics_favored_consort_trigger = yes
 								}
 							}
 						}
@@ -10357,15 +10358,11 @@ consort_events.0010 = {
 				}
 				modifier = { #The PS
 					exists = root.primary_spouse
-					NOT = {		
-						this = root.primary_spouse
-					}
+					this != root.primary_spouse
 					add = 10
 				}
 				modifier = { #The GC
-					NOT = {		
-						has_court_position = grand_consort_court_position
-					}
+					has_high_consort_position_trigger = no
 					add = 5
 				}
 				modifier = { #Spouses
@@ -10695,7 +10692,7 @@ consort_events.0011 = {
 				add = 10
 			}
 			modifier = { #The GC has to guard their position
-				has_court_position = grand_consort_court_position
+				has_high_consort_position_trigger = yes
 				add = 5
 			}
 			modifier = { #A spouse has to guard their position
@@ -11100,11 +11097,8 @@ scripted_trigger potential_ally_trigger = {
 	}
 	can_set_relation_friend_trigger = { CHARACTER = root }
 	OR = {
-		AND = {
-			exists = $PARTNER$.primary_spouse
-			this = $PARTNER$.primary_spouse
-		}
-		has_court_position = grand_consort_court_position
+		$PARTNER$.primary_spouse ?= this
+		has_high_consort_position_trigger = yes
 		has_court_position = chief_eunuch_court_position
 		has_court_position = lady_in_waiting_court_position
 		has_court_position = keeper_of_the_harem_court_position
@@ -11292,16 +11286,14 @@ consort_events.0012 = {
 					}
 					any_consort = {
 						is_physically_able_adult = yes
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						exists = court_owner
-						court_owner = {
+						court_owner ?= {
 							any_consort = {
 								this = root
 							}
 						}
-						NOT = { 
-							this = root
-						}
+						this != root
 						is_demoted_consort_trigger = no
 						can_set_relation_friend_trigger = { CHARACTER = root }
 					}
@@ -11383,7 +11375,7 @@ consort_events.0012 = {
 								add = 30
 							}
 							modifier = {
-								has_court_position = grand_consort_court_position
+								has_high_consort_position_trigger = yes
 								add = 20
 							}
 							modifier = {
@@ -11721,7 +11713,7 @@ consort_events.0012 = {
 			modifier = { #GC
 				add = 5
 				scope:first_target = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					NOT = {
 						is_head_of_the_harem_trigger = {
 							LIEGE = scope:partner
@@ -11913,7 +11905,7 @@ consort_events.0012 = {
 			modifier = { #GC
 				add = 5
 				scope:second_target = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					NOT = {
 						is_head_of_the_harem_trigger = {
 							LIEGE = scope:partner
@@ -12105,7 +12097,7 @@ consort_events.0012 = {
 			modifier = { #GC
 				add = 5
 				scope:third_target = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					NOT = {
 						is_head_of_the_harem_trigger = {
 							LIEGE = scope:partner
@@ -13622,21 +13614,19 @@ consort_events.0017 = {
 					add = 20
 				}
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					is_married = yes
 					add = 15
 				}
 
 				modifier = {
 					is_married = yes
-					NOT = {
-						has_court_position = grand_consort_court_position
-					}
+					has_high_consort_position_trigger = no
 					add = 10
 				}
 				modifier = {
 					is_married = no
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 10
 				}
 
@@ -14162,7 +14152,7 @@ consort_events.0019 = {
 		}
 		modifier = {
 			add = 0.05
-			has_court_position = grand_consort_court_position
+			has_high_consort_position_trigger = yes
 		}
 
 		#GC - High aptitude
@@ -14277,7 +14267,7 @@ consort_events.0019 = {
 						add = 15
 					}
 					modifier = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						add = 10
 					}
 					modifier = {
@@ -14357,7 +14347,7 @@ consort_events.0019 = {
 				any_spouse = { 
 					this = scope:partner
 				}
-				has_court_position = grand_consort_court_position
+				has_high_consort_position_trigger = yes
 			}
 		}
 		random_list = {
@@ -14379,7 +14369,7 @@ consort_events.0019 = {
 				}
 				modifier = { #Grand Consort
 					root = { 
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 5
 				}
@@ -14479,7 +14469,7 @@ consort_events.0019 = {
 				}
 				modifier = { #GC
 					scope:threatening_consort = { 
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 5
 				}
@@ -14618,7 +14608,9 @@ consort_events.0019 = {
 				add = 15
 			}
 			modifier = { #Rank
-				has_court_position = grand_consort_court_position
+				is_high_consort_trigger = {
+					LIEGE = scope:partner
+				}
 				add = 10
 			}
 			modifier = { #Rank
@@ -14775,17 +14767,14 @@ consort_events.0019 = {
 				}
 				modifier = { #Grand Consort
 					root = { 
-						has_court_position = grand_consort_court_position
+						is_high_consort_trigger = {
+							LIEGE = scope:partner
+						}
 					}
 					add = 5
 				}
 				modifier = { #Primary Spouse
-					scope:partner = { 
-						exists = primary_spouse
-						primary_spouse = {
-							this = root
-						}
-					}
+					scope:partner.primary_spouse ?= root
 					add = 50
 				}
 
@@ -14875,7 +14864,7 @@ consort_events.0019 = {
 				}
 				modifier = { #GC
 					scope:threatening_consort = { 
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 5
 				}
@@ -15014,7 +15003,9 @@ consort_events.0019 = {
 				add = 10
 			}
 			modifier = { #Rank
-				has_court_position = grand_consort_court_position
+				is_high_consort_trigger = {
+					LIEGE = scope:partner
+				}
 				add = 5
 			}
 			modifier = { #Rank
@@ -15259,7 +15250,7 @@ consort_events.0019 = {
 			}
 			modifier = { #GC
 				scope:threatening_consort = { 
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 10
 			}
@@ -15490,7 +15481,9 @@ consort_events.0020 = {
 				}
 				modifier = { #The Grand Consort too
 					add = 5
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
 				}
 				modifier = { #The Main Spouse and parents do more
 					add = 10
@@ -15518,7 +15511,7 @@ consort_events.0020 = {
 				modifier = { #The Grand Consort too
 					add = -5
 					scope:recipient = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				modifier = { #The Main Spouse and parents do more
@@ -15693,7 +15686,9 @@ consort_events.0020 = {
 				}
 				modifier = { #The Grand Consort too
 					add = -5
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
 				}
 				modifier = { #The Main Spouse and parents do more
 					add = -10
@@ -15721,7 +15716,7 @@ consort_events.0020 = {
 				modifier = { #The Grand Consort too
 					add = 5
 					scope:recipient = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				modifier = { #The Main Spouse and parents do more
@@ -15905,11 +15900,8 @@ consort_events.0020 = {
 			modifier = { #You're a powerful consort
 				add = 10
 				OR = {
-					AND = {
-						exists = scope:partner.primary_spouse
-						this = scope:partner.primary_spouse
-					}
-					has_court_position = grand_consort_court_position
+					scope:partner.primary_spouse ?= this
+					has_high_consort_position_trigger = yes
 					is_spouse_of = scope:partner
 				}
 			}
@@ -15917,11 +15909,8 @@ consort_events.0020 = {
 				add = 10
 				scope:recipient = {
 					OR = {
-						AND = {
-							exists = scope:partner.primary_spouse
-							this = scope:partner.primary_spouse
-						}
-						has_court_position = grand_consort_court_position
+						scope:partner.primary_spouse ?= this
+						has_high_consort_position_trigger = yes
 						is_spouse_of = scope:partner
 						has_character_modifier = favored_consort_modifier
 					}
@@ -16105,7 +16094,9 @@ consort_events.0020 = {
 				}
 				modifier = { #The Grand Consort too
 					add = 7
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
 				}
 				modifier = { #The Main Spouse and parents do more
 					add = 15
@@ -16133,7 +16124,7 @@ consort_events.0020 = {
 				modifier = { #The Grand Consort too
 					add = -7
 					scope:recipient = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				modifier = { #The Main Spouse and parents do more
@@ -16308,7 +16299,9 @@ consort_events.0020 = {
 				}
 				modifier = { #The Grand Consort too
 					add = -7
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
 				}
 				modifier = { #The Main Spouse and parents do more
 					add = -15
@@ -16336,7 +16329,7 @@ consort_events.0020 = {
 				modifier = { #The Grand Consort too
 					add = 7
 					scope:recipient = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				modifier = { #The Main Spouse and parents do more
@@ -16520,11 +16513,10 @@ consort_events.0020 = {
 			modifier = { #You're a powerful consort
 				add = 10
 				OR = {
-					AND = {
-						exists = scope:partner.primary_spouse
-						this = scope:partner.primary_spouse
+					scope:partner.primary_spouse ?= this
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
 					}
-					has_court_position = grand_consort_court_position
 					is_spouse_of = scope:partner
 				}
 			}
@@ -16532,11 +16524,8 @@ consort_events.0020 = {
 				add = 10
 				scope:recipient = {
 					OR = {
-						AND = {
-							exists = scope:partner.primary_spouse
-							this = scope:partner.primary_spouse
-						}
-						has_court_position = grand_consort_court_position
+						scope:partner.primary_spouse ?= this
+						has_high_consort_position_trigger = yes
 						is_spouse_of = scope:partner
 						has_character_modifier = favored_consort_modifier
 					}
@@ -17152,7 +17141,7 @@ consort_events.0027 = {
 					add = 10
 				}
 				modifier = { #The GC will attract more unwanted attention
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 5
 				}
 				modifier = { #Spouses will attract more unwanted attention
@@ -17265,12 +17254,12 @@ consort_events.0027 = {
 						add = 10
 					}
 					modifier = { #The GC wants less competition
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						is_concubine = yes
 						add = 15
 					}
 					modifier = { #The GC wants less competition
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						is_married = yes
 						add = 5
 					}
@@ -18148,7 +18137,7 @@ consort_events.0030 = {
 				}
 				#GC
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 2
 				}
 				#SS
@@ -18156,7 +18145,7 @@ consort_events.0030 = {
 					is_married = yes
 					NOR = {
 						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 1
 				}
@@ -18380,7 +18369,7 @@ consort_events.0031 = {
 				}
 				#GC
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 2
 				}
 				#SS
@@ -18388,7 +18377,7 @@ consort_events.0031 = {
 					is_married = yes
 					NOR = {
 						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 1
 				}
@@ -18603,7 +18592,7 @@ consort_events.0032 = {
 				}
 				#GC
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 2
 				}
 				#SS
@@ -18611,7 +18600,7 @@ consort_events.0032 = {
 					is_married = yes
 					NOR = {
 						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 1
 				}
@@ -18944,7 +18933,7 @@ consort_events.0033 = {
 				}
 				#GC
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 2
 				}
 				#SS
@@ -18952,7 +18941,7 @@ consort_events.0033 = {
 					is_married = yes
 					NOR = {
 						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 1
 				}
@@ -19185,7 +19174,7 @@ consort_events.0033 = {
 					}
 					#GC
 					modifier = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						add = 15
 					}
 					#SS
@@ -19193,7 +19182,7 @@ consort_events.0033 = {
 						is_married = yes
 						NOR = {
 							this = root.primary_spouse
-							has_court_position = grand_consort_court_position
+							has_high_consort_position_trigger = yes
 						}
 						add = 10
 					}
@@ -19292,7 +19281,7 @@ consort_events.0033 = {
 					}
 					#GC
 					modifier = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						add = -10
 					}
 					#SS
@@ -19300,7 +19289,7 @@ consort_events.0033 = {
 						is_married = yes
 						NOR = {
 							this = root.primary_spouse
-							has_court_position = grand_consort_court_position
+							has_high_consort_position_trigger = yes
 						}
 						add = -5
 					}
@@ -19593,14 +19582,14 @@ consort_events.0035 = {
 					add = 20
 				}
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = 15
 				}
 				modifier = {
 					is_married = yes
 					NOR = {
 						this = root.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 					add = 10
 				}
@@ -20156,7 +20145,7 @@ consort_events.0036 = {
 						add = 15
 					}
 					modifier = { # Higher-ups have more resources
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						trigger_if = {
 							limit = {
 								exists = root.primary_spouse
@@ -20169,7 +20158,7 @@ consort_events.0036 = {
 						is_spouse_of = root
 						NOR = {
 							this = root.primary_spouse
-							has_court_position = grand_consort_court_position
+							has_high_consort_position_trigger = yes
 						}
 						add = 5
 					}
@@ -20982,7 +20971,7 @@ consort_events.0039 = {
 					add = -15
 				}
 				modifier = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 					add = -10
 				}
 				modifier = {
@@ -21158,7 +21147,7 @@ consort_events.0039 = {
 			# Rank
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 15
 			}
@@ -21167,7 +21156,7 @@ consort_events.0039 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = 10
@@ -21268,7 +21257,7 @@ consort_events.0039 = {
 			# Rank
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = -15
 			}
@@ -21277,7 +21266,7 @@ consort_events.0039 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = -10
@@ -21337,7 +21326,7 @@ consort_events.0040 = {
 		scope:jealous_consort = {
 			if = { #If they're a GC, demote them
 				limit = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				scope:actor = {
 					revoke_court_position = {
@@ -21495,7 +21484,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:jealous_consort = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = -15
 			}
@@ -21503,7 +21492,7 @@ consort_events.0040 = {
 				scope:jealous_consort = {
 					is_spouse_of = scope:actor
 					NOR = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						this = scope:actor.primary_spouse
 					}
 				}
@@ -21511,7 +21500,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 15
 			}
@@ -21520,7 +21509,7 @@ consort_events.0040 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = 10
@@ -21704,7 +21693,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:jealous_consort = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = -10
 			}
@@ -21712,7 +21701,7 @@ consort_events.0040 = {
 				scope:jealous_consort = {
 					is_spouse_of = scope:actor
 					NOR = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						this = scope:actor.primary_spouse
 					}
 				}
@@ -21720,7 +21709,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 10
 			}
@@ -21729,7 +21718,7 @@ consort_events.0040 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = 5
@@ -21920,7 +21909,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:jealous_consort = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = -5
 			}
@@ -21928,7 +21917,7 @@ consort_events.0040 = {
 				scope:jealous_consort = {
 					is_spouse_of = scope:actor
 					NOR = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						this = scope:actor.primary_spouse
 					}
 				}
@@ -21936,7 +21925,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 10
 			}
@@ -21945,7 +21934,7 @@ consort_events.0040 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = 5
@@ -22137,7 +22126,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:jealous_consort = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = 10
 			}
@@ -22145,7 +22134,7 @@ consort_events.0040 = {
 				scope:jealous_consort = {
 					is_spouse_of = scope:actor
 					NOR = {
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 						this = scope:actor.primary_spouse
 					}
 				}
@@ -22153,7 +22142,7 @@ consort_events.0040 = {
 			}
 			modifier = {
 				scope:recipient = {
-					has_court_position = grand_consort_court_position
+					has_high_consort_position_trigger = yes
 				}
 				add = -15
 			}
@@ -22162,7 +22151,7 @@ consort_events.0040 = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
-						has_court_position = grand_consort_court_position
+						has_high_consort_position_trigger = yes
 					}
 				}
 				add = -10
