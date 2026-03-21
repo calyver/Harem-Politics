@@ -1035,13 +1035,13 @@ harem_politics.0001 = {
 				if = { #If there is a Grand Consort, they are demoted too
 					limit = {
 						any_consort = {
-							has_high_consort_position_trigger = yes
+							has_court_position = grand_consort_court_position
 							is_courtier_of = root
 						}
 					}
 					random_consort = {
 						limit = {
-							has_high_consort_position_trigger = yes
+							has_court_position = grand_consort_court_position
 							is_courtier_of = root
 						}
 						save_scope_as = current_grand_consort
@@ -2239,20 +2239,14 @@ harem_politics.0002 = {
 					harem_politics_ruyi_trigger = { HAI = scope:hai_changzai }
 					save_temporary_scope_as = xian_fei
 				}
-				OR = {
-					AND = {
-						NOT = { employs_court_position = grand_consort_court_position }
-						any_spouse = { #Noble Consort Gao was the second highest consort and evil
-							harem_politics_hui_trigger = { HAI = scope:hai_changzai XIAN = scope:xian_fei }
+				any_spouse = { #Noble Consort Gao was the second highest consort and evil
+					trigger_if = {
+						limit = {
+							root = { employs_high_consort_court_position_trigger = yes }
 						}
+						has_high_consort_position_trigger = yes
 					}
-					AND = {
-						employs_court_position = grand_consort_court_position
-						any_spouse = { #Noble Consort Gao was the second highest consort and evil
-							has_high_consort_position_trigger = yes
-							harem_politics_hui_trigger = { HAI = scope:hai_changzai XIAN = scope:xian_fei }
-						}
-					}
+					harem_politics_hui_trigger = { HAI = scope:hai_changzai XIAN = scope:xian_fei }
 				}
 			}
 			AND = {
@@ -2266,7 +2260,6 @@ harem_politics.0002 = {
 					harem_politics_ruyi_trigger = { HAI = scope:hai_changzai }
 					save_temporary_scope_as = xian_fei
 				}
-				employs_court_position = grand_consort_court_position
 				any_concubine = { #Noble Consort Gao was the second highest consort and evil
 					has_high_consort_position_trigger = yes
 					harem_politics_hui_trigger = { HAI = scope:hai_changzai XIAN = scope:xian_fei }
@@ -2283,7 +2276,6 @@ harem_politics.0002 = {
 					harem_politics_ruyi_trigger = { HAI = scope:hai_changzai }
 					save_temporary_scope_as = xian_fei
 				}
-				employs_court_position = grand_consort_court_position
 				any_spouse = { #Noble Consort Gao was the second highest consort and evil
 					has_high_consort_position_trigger = yes
 					harem_politics_hui_trigger = { HAI = scope:hai_changzai XIAN = scope:xian_fei }
@@ -2490,34 +2482,24 @@ harem_politics.0002 = {
 		random_in_list = {
 			list = consorts_list
 			limit = {
-				AND = {
-					OR = {
-						has_high_consort_position_trigger = yes
-						AND = {
-							NOT = { has_high_consort_position_trigger = yes }
-							ROOT = {
-								NOT = { employs_court_position = grand_consort_court_position }
-								hp_accepts_concubinage = yes
-								hp_accepts_polygamy = yes
-							}
-						}
+				trigger_if = {
+					limit = {
+						root = { employs_high_consort_court_position_trigger = yes }
 					}
-					OR = {
-						AND = {
-							ROOT = {
-								hp_accepts_polygamy = no
-							}
-							is_concubine = yes
-						}
-						AND = {
-							ROOT = {
-								hp_accepts_polygamy = yes
-							}
-							is_married = yes
-						}
-					}
-					harem_politics_hui_trigger = { HAI = scope:hailan XIAN = scope:ruyi }	
+					has_high_consort_position_trigger = yes
 				}
+				trigger_else = {
+					trigger_if = {
+						limit = {
+							root = { hp_accepts_polygamy = yes }
+						}
+						is_spouse_of = root
+					}
+					trigger_else = {
+						is_concubine_of = root
+					}
+				}
+				harem_politics_hui_trigger = { HAI = scope:hailan XIAN = scope:ruyi }
 			}
 			weight = {
 				base = 50
