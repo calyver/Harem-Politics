@@ -1887,7 +1887,7 @@ spouse_demotion_effect = {
 		else_if = { #GC#
 			limit = {
 				$RECIPIENT$ = {
-					is_grand_consort_trigger = {
+					is_high_consort_trigger = {
 						LIEGE = $ACTOR$
 					}
 				}
@@ -2026,7 +2026,7 @@ spouse_demotion_effect = {
 										$RECIPIENT$ = {
 											OR = {
 												is_married = yes
-												is_grand_consort_trigger = {
+												is_high_consort_trigger = {
 													LIEGE = $ACTOR$
 												}
 											}
@@ -2037,7 +2037,7 @@ spouse_demotion_effect = {
 										$RECIPIENT$ = {
 											OR = {
 												this = $ACTOR$.primary_spouse
-												is_grand_consort_trigger = {
+												is_high_consort_trigger = {
 													LIEGE = $ACTOR$
 												}
 											}
@@ -3022,7 +3022,7 @@ divorcee_effect = {
 			}
 			if = { #Craven consorts don't feel threatened by a despot
 				limit = {
-					NOT = { this = $DIVORCER$ }
+					this != $DIVORCER$
 					OR = {
 						AND = {
 							OR = {
@@ -3032,7 +3032,7 @@ divorcee_effect = {
 									$DIVORCER$ = {
 										OR = {
 											this = $DIVORCEE$.primary_spouse
-											is_grand_consort_trigger = {
+											is_high_consort_trigger = {
 												LIEGE = $DIVORCEE$
 											}
 										}
@@ -3147,7 +3147,7 @@ divorcer_effect = {
 			}
 			if = { #Craven consorts don't feel threatened by a despot
 				limit = {
-					NOT = { this = $DIVORCEE$ }
+					this != $DIVORCEE$
 					OR = {
 						AND = {
 							OR = {
@@ -3157,7 +3157,7 @@ divorcer_effect = {
 									$DIVORCEE$ = {
 										OR = {
 											this = $DIVORCER$.primary_spouse
-											is_grand_consort_trigger = {
+											is_high_consort_trigger = {
 												LIEGE = $DIVORCER$
 											}
 										}
@@ -4209,11 +4209,13 @@ calyver_update_active_consort_opinion_effect = {
 			}
 			if = {
 				limit = {
-					is_high_consort_trigger = {
-						LIEGE = $PARTNER$
-					}
-					has_demoted_or_divorced_as_ps_opinion_trigger = {
-						TARGET = $PARTNER$
+					OR = {
+						is_high_consort_trigger = {
+							LIEGE = $PARTNER$
+						}
+						has_demoted_or_divorced_as_hc_opinion_trigger = {
+							TARGET = $PARTNER$
+						}
 					}
 				}
 				if = {
@@ -4854,21 +4856,8 @@ calyver_dismiss_concubine_effect = {
 					is_high_consort_trigger = {
 						LIEGE = scope:actor
 					}
-					has_opinion_modifier = {
-						modifier = demoted_me_as_gc
-						target = scope:actor
-					}
-					has_opinion_modifier = {
-						modifier = divorced_me_as_gc
-						target = scope:actor
-					}
-					has_opinion_modifier = {
-						modifier = demoted_me_as_hc
-						target = scope:actor
-					}
-					has_opinion_modifier = {
-						modifier = divorced_me_as_hc
-						target = scope:actor
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
+						TARGET = scope:actor
 					}
 				}
 			}
@@ -4884,6 +4873,10 @@ calyver_dismiss_concubine_effect = {
 						}
 						has_opinion_modifier = {
 							modifier = divorced_me_as_gc
+							target = scope:actor
+						}
+						has_opinion_modifier = {
+							modifier = dismissed_me_as_gc
 							target = scope:actor
 						}
 					}
@@ -6536,6 +6529,7 @@ calyver_revoke_high_consort_court_position_effect = {
 		if = {
 			limit = {
 				court_owner ?= $LIEGE$
+				has_high_consort_position_trigger = yes
 			}
 			if = {
 				limit = {
