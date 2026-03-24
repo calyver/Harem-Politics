@@ -4544,6 +4544,66 @@ request_concubine_interaction = {
 
 	auto_accept = no
 
+	# If you want the AI to set these options then it needs to be hooked into the code as well
+	send_option = {
+		is_valid = {
+			scope:actor = {
+				has_usable_hook = scope:recipient
+			}
+		}
+		flag = hook
+		localization = MARRIAGE_HOOK
+	}
+	send_option = {
+		flag = offer_hook
+		is_valid = {
+			NOT = {
+				scope:recipient = {
+					has_usable_hook = scope:actor
+				}
+			}
+		}
+		localization = purchase_land_interaction_offer_hook
+		current_description = purchase_land_interaction_offer_hook_desc
+	}
+	send_option = {
+		flag = offer_gold
+		is_valid = {
+			scope:actor.gold >= medium_gold_value
+		}
+		localization = OFFER_GOLD_FOR_BETTER_AI_ACCEPTANCE # Check
+		current_description = {
+			# Triggered desc so that we don't get a weird double tooltip.
+			triggered_desc = {
+				trigger = { scope:actor.gold >= medium_gold_value }
+				desc = SCHEME_AGENT_GOLD_VALID
+			}
+		}
+	}
+	send_option = { # EP3 Influence
+		is_shown = { # Actor must have a government that uses influence
+			scope:actor = {
+				government_has_flag = government_has_influence
+			}
+			scope:recipient = {
+				government_has_flag = government_has_influence
+			}
+		}
+		is_valid = {
+			# Actor has enough influence
+			scope:actor = { influence >= medium_influence_value }
+			# Both characters are within the same top realm
+			custom_tooltip = {
+				text = not_same_realm_tt
+				scope:recipient.top_liege = scope:actor.top_liege
+			}
+		}
+		flag = influence_send_option
+		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
+	}
+
+
+
 	ai_accept = {
 		base = 0
 		
@@ -4572,10 +4632,10 @@ request_concubine_interaction = {
 		opinion_modifier = { # Opinion Factor
 			who = scope:recipient
 			opinion_target = scope:actor
-			multiplier = 1.0
+			multiplier = 0.5
 			desc = AI_OPINION_REASON
 		}
-		
+
 		modifier = {
 			add = -25
 			scope:secondary_actor = {
@@ -4602,7 +4662,7 @@ request_concubine_interaction = {
 		}
 		
 		modifier = {
-			add = -25
+			add = -10
 			scope:secondary_actor = {
 				is_close_or_extended_family_of = scope:recipient
 			}
@@ -4668,6 +4728,13 @@ request_concubine_interaction = {
 				has_trait = ambitious
 			}
 			desc = INTERACTION_AMBITIOUS
+		}
+		modifier = {
+			add = 10
+			scope:recipient = {
+				has_trait = greedy
+			}
+			desc = INTERACTION_GREEDY
 		}
 
 		# Crown Authority #
@@ -4754,6 +4821,56 @@ request_concubine_interaction = {
 			add = 75
 			desc = AI_JAPANESE_BUREAUCRACY_3_REASON
 		}
+
+		# Option modifiers #
+		modifier = {
+			add = 100
+			scope:hook = yes
+			desc = YOU_HAVE_HOOK_REASON
+		}
+		modifier = {
+			add = 100
+			scope:offer_hook = yes
+			desc = PURCHASE_LAND_OFFER_HOOK_REASON
+		}
+		modifier = {
+			add = 50
+			scope:offer_gold = yes
+			desc = GOLD_REASON
+		}
+		modifier = {
+			add = 50
+			scope:offer_influence = yes
+			desc = INFLUENCE_REASON
+		}
+
+		# Powerful vassals and dominant houses
+		modifier = {
+			add = -10
+			scope:recipient.house ?= {
+				is_powerful_family = yes
+				is_dominant_family = no
+				house_head.top_liege ?= scope:actor.house.house_head.top_liege
+			}
+			desc = POWERFUL_FAMILY_REASON
+		}
+		modifier = {
+			add = -10
+			scope:recipient.house ?= {
+				is_powerful_family = no
+				is_dominant_family = no
+				is_powerful_vassal_of = scope:actor
+			}
+			desc = POWERFUL_VASSAL_REASON
+		}
+		modifier = {
+			add = -20
+			scope:recipient.house ?= {
+				is_dominant_family = yes
+				house_head.top_liege ?= scope:actor.house.house_head.top_liege
+			}
+			desc = DOMINANT_HOUSE_REASON
+		}
 	}
 
 	ai_potential = {
@@ -4761,7 +4878,7 @@ request_concubine_interaction = {
 			has_trait = lustful
 			ai_honor <= 0
 		}
-		any_tributary = { }
+		any_vassal = { }
 	}
 
 	ai_will_do = {
@@ -4772,26 +4889,6 @@ request_concubine_interaction = {
 			ai_boldness = 0.25
 			ai_greed = 0.3
 			ai_honor = -0.2
-		}
-		modifier = {
-			add = 30
-			scope:actor = {
-				government_has_flag = government_is_nomadic
-			}
-			scope:recipient = {
-				is_obedient_to = scope:actor
-			}
-		}
-		modifier = {
-			add = -80
-			scope:actor = {
-				government_has_flag = government_is_nomadic
-			}
-			scope:recipient = {
-				NOT = {
-					is_obedient_to = scope:actor
-				}
-			}
 		}
 
 		modifier = {
