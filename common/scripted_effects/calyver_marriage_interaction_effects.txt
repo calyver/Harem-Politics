@@ -6380,106 +6380,108 @@ request_concubine_interaction_on_accept_effect = {
 			}
 		}
 		scope:recipient = {
-			send_interface_toast = {
-				type = event_toast_effect_neutral
-				title = msg_concubine_requested_accepted_title
-				right_icon = scope:actor
-				left_icon = scope:secondary_actor
-				scope:actor = {
-					show_as_tooltip = {
-						make_concubine = scope:secondary_actor
-						add_clan_unity_interaction_effect = {
-							CHARACTER = scope:harem_actor
-							TARGET = scope:harem_recipient
-							VALUE = minor_unity_gain
-							DESC = clan_unity_concubinage.desc
-							REVERSE_NON_HOUSE_TARGET = no
-						}
-						if = { # Used Hook
-							limit = {
-								scope:hook = yes
-								has_usable_hook = scope:recipient
+			hidden_effect = {
+				send_interface_toast = {
+					type = event_toast_effect_neutral
+					title = msg_concubine_requested_accepted_title
+					right_icon = scope:actor
+					left_icon = scope:secondary_actor
+					scope:actor = {
+						show_as_tooltip = {
+							make_concubine = scope:secondary_actor
+							add_clan_unity_interaction_effect = {
+								CHARACTER = scope:harem_actor
+								TARGET = scope:harem_recipient
+								VALUE = minor_unity_gain
+								DESC = clan_unity_concubinage.desc
+								REVERSE_NON_HOUSE_TARGET = no
 							}
-							use_hook = scope:recipient
-						}
-						if = { # Offer Hook
-							limit = { scope:offer_hook = yes }
-							scope:recipient = {
-								add_hook = {
-									type = favor_hook
-									target = scope:actor
+							if = { # Used Hook
+								limit = {
+									scope:hook = yes
+									has_usable_hook = scope:recipient
+								}
+								use_hook = scope:recipient
+							}
+							if = { # Offer Hook
+								limit = { scope:offer_hook = yes }
+								scope:recipient = {
+									add_hook = {
+										type = favor_hook
+										target = scope:actor
+									}
+								}
+							}
+							if = { # Offer Gold
+								limit = { scope:offer_gold = yes }
+								pay_short_term_gold = {
+									gold = scope:actor.medium_gold_value
+									target = scope:recipient
 								}
 							}
 						}
-						if = { # Offer Gold
-							limit = { scope:offer_gold = yes }
-							pay_short_term_gold = {
-								gold = scope:actor.medium_gold_value
+						scope:recipient = {
+							if = {
+								limit = {
+									scope:influence_send_option = yes
+								}
+								change_influence = medium_influence_gain
+							}
+						}
+						if = { #Scale opinion gain a bit depending on how cool the concubine is
+							limit = {
+								scope:secondary_actor = {
+									OR = {
+										has_trait = beauty_good_2
+										has_trait = beauty_good_3
+										num_of_good_genetic_traits > 1
+										has_relation_lover = scope:actor
+										has_relation_soulmate = scope:actor
+									}
+									trigger_if = {
+										limit = {
+											is_female = yes
+										}
+										age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
+									}
+								}
+							}
+							add_opinion = {
 								target = scope:recipient
+								modifier = grateful_opinion
+								opinion = 40
 							}
 						}
-					}
-					scope:recipient = {
-						if = {
+						else_if = {
 							limit = {
-								scope:influence_send_option = yes
-							}
-							change_influence = medium_influence_gain
-						}
-					}
-					if = { #Scale opinion gain a bit depending on how cool the concubine is
-						limit = {
-							scope:secondary_actor = {
-								OR = {
-									has_trait = beauty_good_2
-									has_trait = beauty_good_3
-									num_of_good_genetic_traits > 1
-									has_relation_lover = scope:actor
-									has_relation_soulmate = scope:actor
-								}
-								trigger_if = {
-									limit = {
-										is_female = yes
+								scope:secondary_actor = {
+									OR = {
+										is_lowborn = no
+										has_trait = beauty_good_1
+										num_of_good_genetic_traits > 0
+										has_relation_friend = scope:actor
+										has_relation_best_friend = scope:actor
 									}
-									age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-								}
-							}
-						}
-						add_opinion = {
-							target = scope:recipient
-							modifier = grateful_opinion
-							opinion = 40
-						}
-					}
-					else_if = {
-						limit = {
-							scope:secondary_actor = {
-								OR = {
-									is_lowborn = no
-									has_trait = beauty_good_1
-									num_of_good_genetic_traits > 0
-									has_relation_friend = scope:actor
-									has_relation_best_friend = scope:actor
-								}
-								trigger_if = {
-									limit = {
-										is_female = yes
+									trigger_if = {
+										limit = {
+											is_female = yes
+										}
+										age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
 									}
-									age < define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
 								}
 							}
+							add_opinion = {
+								target = scope:recipient
+								modifier = grateful_opinion
+								opinion = 30
+							}
 						}
-						add_opinion = {
-							target = scope:recipient
-							modifier = grateful_opinion
-							opinion = 30
-						}
-					}
-					else = {
-						add_opinion = {
-							target = scope:recipient
-							modifier = grateful_opinion
-							opinion = 20
+						else = {
+							add_opinion = {
+								target = scope:recipient
+								modifier = grateful_opinion
+								opinion = 20
+							}
 						}
 					}
 				}
@@ -6488,22 +6490,24 @@ request_concubine_interaction_on_accept_effect = {
 	}
 	# Send us a notification about what we just did. If the secondary_actor somehow ended up as a consort (spouse/concubine) or betrothed to actor during the consideration time of this request we'll send a message about that instead (should only happen to AI tho)
 	else = {
-		scope:actor = {
-			send_interface_toast = {
-				type = event_toast_effect_neutral
-				title = msg_concubine_offered_invalidated_recipient_title
-				right_icon = scope:actor
-				left_icon = scope:secondary_actor
-				custom_tooltip = msg_concubine_requested_invalidated_tooltip
+		hidden_effect = {
+			scope:actor = {
+				send_interface_toast = {
+					type = event_toast_effect_neutral
+					title = msg_concubine_offered_invalidated_recipient_title
+					right_icon = scope:actor
+					left_icon = scope:secondary_actor
+					custom_tooltip = msg_concubine_requested_invalidated_tooltip
+				}
 			}
-		}
-		scope:recipient = {
-			send_interface_toast = {
-				type = event_toast_effect_neutral
-				title = msg_concubine_offered_invalidated_title
-				right_icon = scope:actor
-				left_icon = scope:secondary_actor
-				custom_tooltip = msg_concubine_requested_invalidated_tooltip
+			scope:recipient = {
+				send_interface_toast = {
+					type = event_toast_effect_neutral
+					title = msg_concubine_offered_invalidated_title
+					right_icon = scope:actor
+					left_icon = scope:secondary_actor
+					custom_tooltip = msg_concubine_requested_invalidated_tooltip
+				}
 			}
 		}
 	}
