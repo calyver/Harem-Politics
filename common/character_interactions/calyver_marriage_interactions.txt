@@ -4465,10 +4465,10 @@ request_concubine_interaction = {
 	ai_frequency_by_tier = {
 		barony = 0
 		county = 0
-		duchy = 36
-		kingdom = 12
-		empire = 12
-		hegemony = 12
+		duchy = 0
+		kingdom = 60
+		empire = 60
+		hegemony = 48
 	}
 	cooldown_against_recipient = { years = 3 }
 
@@ -4614,7 +4614,7 @@ request_concubine_interaction = {
 
 
 	ai_accept = {
-		base = 0
+		base = -25
 		
 		modifier = {
 			add = 25
@@ -4838,7 +4838,7 @@ request_concubine_interaction = {
 			desc = YOU_HAVE_HOOK_REASON
 		}
 		modifier = {
-			add = 100
+			add = 50
 			scope:offer_hook = yes
 			desc = PURCHASE_LAND_OFFER_HOOK_REASON
 		}
@@ -4888,6 +4888,7 @@ request_concubine_interaction = {
 		OR = {
 			has_trait = lustful
 			ai_honor <= 0
+			ai_rationality > 0
 		}
 		any_vassal = { }
 	}
@@ -4895,158 +4896,76 @@ request_concubine_interaction = {
 	ai_will_do = {
 		base = 0
 		# Harem Politics #
-		## Weight for personality.
-		ai_value_modifier = {
-			ai_boldness = 0.25
-			ai_greed = 0.3
-			ai_honor = -0.2
-		}
 
 		modifier = {
-			add = 40
+			add = 25
 			scope:actor = {
 				number_of_concubines < number_of_desired_concubines
 			}
 		}
 		modifier = {
-			add = -50
-			scope:actor = {
-				number_of_concubines >= number_of_desired_concubines
+			add = 50
+			scope:recipient = {
+				NOT = { government_allows = administrative }
+				is_close_family_of = scope:secondary_actor
+				is_powerful_vassal_of = scope:actor
+			}
+			scope:secondary_actor = {
+				is_bastard_child_trigger = no
+			}
+		}
+		modifier = {
+			add = 50
+			scope:actor = { government_allows = administrative }
+			scope:recipient = {
+				government_allows = administrative
+				is_close_family_of = scope:secondary_actor
 				OR = {
-					any_child = {
-						character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
-						NOR = {
-							has_trait = bastard
-							has_trait = eunuch
-							has_trait = disinherited
-							has_trait = devoted
+					house ?= {
+						any_house_member = {
+							this = scope:secondary_actor
+						}
+						OR = {
+							is_powerful_family = yes
+							is_dominant_family = yes
 						}
 					}
-					any_consort = {
-						can_have_children_with = { CHARACTER = scope:actor }
-						fertility > 0.1
-					}
+					is_powerful_vassal_of = scope:actor
 				}
 			}
-		}
-
-		#More/Less likely based on difference in rank between actor and recipient
-		modifier = {
-			add = 20
-			scope:actor = {
-				tier_difference = {
-					target = scope:recipient
-					value >= 1
-				}
-			}
-		}
-		modifier = {
-			add = 10
-			scope:actor = {
-				tier_difference = {
-					target = scope:recipient
-					value >= 2
-				}
-			}
-		}
-		modifier = {
-			add = 10
-			scope:actor = {
-				tier_difference = {
-					target = scope:recipient
-					value >= 3
-				}
-			}
-		}
-
-		modifier = {
-			add = 10
-			scope:actor = {
-				has_trait = lustful
-			}
-		}
-
-		modifier = {
-			add = -50
-			scope:actor = {
-				has_trait = celibate
-			}
-		}
-		modifier = {
-			add = -25
-			scope:actor = {
-				has_trait = chaste
-			}
-		}
-		modifier = {
-			add = -25
-			scope:actor = {
-				has_trait = forgiving
-			}
-		}
-		modifier = {
-			add = -25
-			scope:actor = {
-				has_trait = compassionate
+			scope:secondary_actor = {
+				is_bastard_child_trigger = no
 			}
 		}
 
 		modifier = { #Virginity is prized
-			add = -65
+			add = -25
 			scope:secondary_actor = {
 				is_virgin_trigger = no
 			}
 		}
-
-		# Vanilla #
-		modifier = { # Slightly modified #
-			add = 100
-			scope:secondary_actor = {
-				OR = {
-					has_relation_friend = scope:actor
-					has_relation_best_friend = scope:actor
-					has_relation_lover = scope:actor
-					has_relation_soulmate = scope:actor
-					sum_of_all_skills_value >= sum_of_all_skills_threshold_good
-					martial >= monumentally_high_skill_rating
-					prowess >= extremely_high_skill_rating
-					exists = inspiration
-					AND = {
-						OR = {
-							AND = {
-								is_female = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
-							}
-							AND = {
-								is_male = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
-							}
-						}
-						diplomacy >= monumentally_high_skill_rating
-						scope:actor.cp:councillor_chancellor ?= { diplomacy < monumentally_high_skill_rating }
-					}
-					AND = {
-						OR = {
-							AND = {
-								is_female = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
-							}
-							AND = {
-								is_male = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
-							}
-						}
-						stewardship >= monumentally_high_skill_rating
-						scope:actor.cp:councillor_steward ?= { stewardship < monumentally_high_skill_rating }
-					}
-					AND = {
-						intrigue >= monumentally_high_skill_rating
-						scope:actor.cp:councillor_spymaster ?= { intrigue < monumentally_high_skill_rating }
-					}
-					has_conventionally_attractive_trigger = yes
-					num_of_good_genetic_traits > 1
-				}
+		modifier = { #Virginity is prized
+			add = 10
+			scope:actor.culture = {
+				has_cultural_parameter = dishu_system
 			}
+			scope:secondary_actor = {
+				has_trait = di_child
+			}
+		}
+		modifier = { #Genetic traits
+			add = {
+				value = scope:secondary_actor.num_of_good_genetic_traits
+				multiply = 5
+			}
+			scope:secondary_actor.num_of_good_genetic_traits > 0
+		}
+		modifier = { #Genetic traits
+			add = {
+				value = scope:secondary_actor.num_of_bad_genetic_traits
+				multiply = -10
+			}
+			scope:secondary_actor.num_of_bad_genetic_traits > 0
 		}
 
 		modifier = { # Slightly modified #
