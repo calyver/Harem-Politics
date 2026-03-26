@@ -6273,13 +6273,12 @@ request_concubine_interaction_on_accept_effect = {
 					}
 				}
 			}
-	
-			# Family members of victim are also angry that you've forced them into concubinage.
-			every_close_family_member = {
-				limit = { 
-					this != scope:actor # Don't hate yourself.
-				}
-				hidden_effect = {
+
+			hidden_effect = {
+				every_close_family_member = {
+					limit = { 
+						this != scope:actor # Don't hate yourself.
+					}
 					send_interface_message = {
 						type = msg_family_became_concubine
 						title = msg_close_family_member_taken_as_concubine_title
@@ -6288,10 +6287,13 @@ request_concubine_interaction_on_accept_effect = {
 						show_as_tooltip = { scope:actor = { make_concubine = scope:secondary_actor } }
 					}
 				}
+			}
 	
-				# Family members are even *more* angry if they don't believe in concubines/polyamory (different from polygamy). Also if they don't accept same-sex relationships
-				if = {
-					limit = { 
+			# Family members of victim are also angry that you've forced them into concubinage.
+			if = {
+				limit = {
+					any_close_family_member = {
+						this != scope:actor
 						OR = {
 							AND = {
 								hp_accepts_concubinage = no
@@ -6303,11 +6305,26 @@ request_concubine_interaction_on_accept_effect = {
 							}
 						}
 					}
-					custom = all_family_members
-					add_opinion = {
-						target = scope:actor
-						modifier = relative_in_blasphemous_union_opinion
+				}
+			}
+			every_close_family_member = {
+				limit = { 
+					this != scope:actor # Don't hate yourself.
+					OR = {
+						AND = {
+							hp_accepts_concubinage = no
+							NOT = { faith = { has_doctrine = tenet_polyamory } }
+						}
+						AND = {
+							allowed_to_marry_same_sex_trigger = no
+							scope:actor = { sex_same_as = scope:secondary_actor }
+						}
 					}
+				}
+				custom = all_family_members
+				add_opinion = {
+					target = scope:actor
+					modifier = relative_in_blasphemous_union_opinion
 				}
 			}
 	
