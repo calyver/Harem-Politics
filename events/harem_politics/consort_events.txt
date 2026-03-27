@@ -9390,38 +9390,143 @@ consort_events.0008 = {
 	
 	immediate = {
 		save_scope_as = partner
-		while = {
-			count = 2
-			random_courtier = {
+		random_courtier = {
+			limit = {
+				is_valid_generic_consort_trigger = yes
+			}
+			weight = {
+				base = 20
+				modifier = {
+					add = 10
+					any_relation = {
+						type = potential_friend
+						is_consort_of = root
+						is_courtier_of = root
+					}
+				}
+				modifier = {
+					harem_politics_evil_consort_trigger = no
+					add = 20
+				}
+				modifier = {
+					is_parent_of = scope:partner
+					add = 20
+				}
+				modifier = {
+					is_grandparent_of = scope:partner
+					add = 20
+				}
+				modifier = {
+					scope:partner.primary_spouse ?= this
+					add = 20
+				}
+				modifier = {
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
+					add = 20
+				}
+				modifier = {
+					OR = {
+						has_relation_best_friend = scope:partner
+						has_relation_soulmate = scope:partner
+					}
+					add = 20
+				}
+				modifier = {
+					OR = {
+						has_relation_friend = scope:partner
+						has_relation_lover = scope:partner
+					}
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 20
+				}
+				modifier = {
+					harem_politics_favored_consort_trigger = yes
+					add = 10
+				}
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 10
+				}
+				modifier = {
+					has_trait = beauty_good_1
+					add = 5
+				}
+				modifier = {
+					has_trait = beauty_good_2
+					add = 10
+				}
+				modifier = {
+					has_trait = beauty_good_3
+					add = 20
+				}
+				modifier = {
+					any_child = {
+						is_child_of = scope:partner
+						is_primary_heir_of = scope:partner
+					}
+					add = 20
+				}
+				modifier = {
+					is_head_of_the_harem_trigger = {
+						LIEGE = scope:partner
+					}
+					NOT = {
+						scope:partner.primary_spouse ?= this
+					}
+					add = 20
+				}
+				modifier = {
+					OR = {
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+						has_court_position = keeper_of_the_harem_court_position
+					}
+					add = 25
+				}
+			}
+			save_scope_as = consort_friend
+		}
+		if = {
+			limit = {
+				exists = scope:consort_friend
+				any_consort = {
+					NOR = {
+						this = scope:consort_friend
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+						has_court_position = keeper_of_the_harem_court_position
+					}
+					is_valid_generic_consort_trigger = yes
+				}
+			}
+			
+			random_consort = {
 				limit = {
-					trigger_if = {
-						limit = {
-							exists = scope:consort_friend
-						}
-						this != scope:consort_friend
-						is_consort_of = scope:partner
+					NOR = {
+						this = scope:consort_friend
+						has_court_position = chief_eunuch_court_position
+						has_court_position = lady_in_waiting_court_position
+						has_court_position = keeper_of_the_harem_court_position
 					}
 					is_valid_generic_consort_trigger = yes
 				}
 				weight = {
-					base = 20
-					modifier = {
-						add = 10
-						any_relation = {
-							type = potential_friend
-							is_consort_of = root
-							is_courtier_of = root
-						}
+					base = 50
+					opinion_modifier = { #Opinion
+						opinion_target = scope:consort_friend
+						multiplier = 0.5
 					}
-	
-					modifier = {
-						is_consort_of = root
-						add = 40
+
+					compatibility_modifier = { #Trait compatibility
+						compatibility_target = scope:consort_friend
+						multiplier = 0.5
 					}
-					modifier = {
-						harem_politics_evil_consort_trigger = no
-						add = 20
-					}
+
 					modifier = {
 						scope:partner.primary_spouse ?= this
 						add = 20
@@ -9494,209 +9599,221 @@ consort_events.0008 = {
 						}
 						add = 25
 					}
-				}
-				if = {
-					limit = {
-						NOT = {
-							exists = scope:consort_friend
-						}
+
+
+					modifier = {
+						has_relation_potential_friend = scope:consort_friend
+						add = 20
 					}
-					save_scope_as = consort_friend
-				}
-				else = {
-					save_scope_as = valid_target_consort
-				}
-			}
-		}
-		if = {
-			limit = {
-				exists = scope:consort_friend
-				exists = scope:valid_target_consort
-				scope:consort_friend != scope:valid_target_consort
-			}
-			scope:consort_friend = {
-				if = { #From nemesis to rivals
-					limit = { has_relation_nemesis = scope:valid_target_consort }
-					remove_relation_nemesis = scope:valid_target_consort
-					set_relation_rival = scope:valid_target_consort
-					add_opinion = {
-						target = scope:valid_target_consort
-						modifier = friendliness_opinion
-						opinion = 25
+
+					modifier = { #Traits
+						has_trait = gregarious
+						add = 25
 					}
-					scope:valid_target_consort = {
+					modifier = { #Traits
+						has_trait = shy
+						add = -25
+					}
+					modifier = { #Traits
+						has_trait = craven
+						add = -15
+					}
+					modifier = { #Traits
+						has_trait = paranoid
+						add = -25
+					}
+				}
+				save_scope_as = valid_target_consort
+			}
+			if = {
+				limit = {
+					exists = scope:consort_friend
+					exists = scope:valid_target_consort
+				}
+				scope:consort_friend = {
+					if = { #From nemesis to rivals
+						limit = { has_relation_nemesis = scope:valid_target_consort }
+						remove_relation_nemesis = scope:valid_target_consort
+						set_relation_rival = scope:valid_target_consort
 						add_opinion = {
-							target = scope:consort_friend
+							target = scope:valid_target_consort
 							modifier = friendliness_opinion
 							opinion = 25
 						}
-					}
-					if = {
-						limit = {
-							debug_only = yes
+						scope:valid_target_consort = {
+							add_opinion = {
+								target = scope:consort_friend
+								modifier = friendliness_opinion
+								opinion = 25
+							}
 						}
-						root = {
-							send_interface_toast = {
-								type = event_generic_neutral
-								title = new_relation_t
-								right_icon = scope:consort_friend
-								left_icon = scope:valid_target_consort
-								custom_tooltip = new_relation_potential_friend_desc
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_potential_friend_desc
+								}
 							}
 						}
 					}
-				}
-				else_if = { #From rivals to nothing
-					limit = { has_relation_rival = scope:valid_target_consort }
-					remove_relation_rival = scope:valid_target_consort
-					add_opinion = {
-						target = scope:valid_target_consort
-						modifier = friendliness_opinion
-						opinion = 10
-					}
-					scope:valid_target_consort = {
+					else_if = { #From rivals to nothing
+						limit = { has_relation_rival = scope:valid_target_consort }
+						remove_relation_rival = scope:valid_target_consort
 						add_opinion = {
-							target = scope:consort_friend
+							target = scope:valid_target_consort
 							modifier = friendliness_opinion
 							opinion = 10
 						}
-					}
-					if = {
-						limit = {
-							debug_only = yes
+						scope:valid_target_consort = {
+							add_opinion = {
+								target = scope:consort_friend
+								modifier = friendliness_opinion
+								opinion = 10
+							}
 						}
-						root = {
-							send_interface_toast = {
-								type = event_generic_neutral
-								title = new_relation_t
-								right_icon = scope:consort_friend
-								left_icon = scope:valid_target_consort
-								custom_tooltip = new_relation_potential_friend_desc
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_potential_friend_desc
+								}
 							}
 						}
 					}
-				}
-				else_if = { #From neutral to potential friends
-					limit = {
-						can_set_relation_potential_friend_trigger = { CHARACTER = scope:valid_target_consort }
-					}
-					set_relation_potential_friend = scope:valid_target_consort
-					add_opinion = {
-						target = scope:valid_target_consort
-						modifier = friendliness_opinion
-						opinion = 10
-					}
-					scope:valid_target_consort = {
+					else_if = { #From neutral to potential friends
+						limit = {
+							can_set_relation_potential_friend_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_potential_friend = scope:valid_target_consort
 						add_opinion = {
-							target = scope:consort_friend
+							target = scope:valid_target_consort
 							modifier = friendliness_opinion
 							opinion = 10
 						}
-					}
-					if = {
-						limit = {
-							debug_only = yes
+						scope:valid_target_consort = {
+							add_opinion = {
+								target = scope:consort_friend
+								modifier = friendliness_opinion
+								opinion = 10
+							}
 						}
-						root = {
-							send_interface_toast = {
-								type = event_generic_neutral
-								title = new_relation_t
-								right_icon = scope:consort_friend
-								left_icon = scope:valid_target_consort
-								custom_tooltip = new_relation_potential_friend_desc
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_potential_friend_desc
+								}
+							}
+						}
+					}
+					else_if = { #From potential friends to friends
+						limit = {
+							has_relation_potential_friend = scope:valid_target_consort
+						}
+						set_relation_friend = { 
+							target = scope:valid_target_consort
+							reason = consort_friendship_reason
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_friend_desc
+								}
+							}
+						}
+					}
+					else_if = { #From friends to best friends
+						limit = {
+							has_relation_friend = scope:valid_target_consort
+							can_set_relation_best_friend_trigger = { CHARACTER = scope:valid_target_consort }
+						}
+						set_relation_best_friend = { 
+							target = scope:valid_target_consort
+							reason = consort_friendship_reason 
+						}
+						if = {
+							limit = {
+								debug_only = yes
+							}
+							root = {
+								send_interface_toast = {
+									type = event_generic_neutral
+									title = new_relation_t
+									right_icon = scope:consort_friend
+									left_icon = scope:valid_target_consort
+									custom_tooltip = new_relation_bff_desc
+								}
 							}
 						}
 					}
 				}
-				else_if = { #From potential friends to friends
-					limit = {
-						has_relation_potential_friend = scope:valid_target_consort
-					}
-					set_relation_friend = { 
-						target = scope:valid_target_consort
-						reason = consort_friendship_reason
-					}
-					if = {
-						limit = {
-							debug_only = yes
+				random_list = {
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 8
 						}
-						root = {
-							send_interface_toast = {
-								type = event_generic_neutral
-								title = new_relation_t
-								right_icon = scope:consort_friend
-								left_icon = scope:valid_target_consort
-								custom_tooltip = new_relation_friend_desc
+					}
+					20 = {	
+						modifier = {
+							any_consort = {
+								count <= 3
 							}
+							add = -10
+						}
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 5
 						}
 					}
-				}
-				else_if = { #From friends to best friends
-					limit = {
-						has_relation_friend = scope:valid_target_consort
-						can_set_relation_best_friend_trigger = { CHARACTER = scope:valid_target_consort }
-					}
-					set_relation_best_friend = { 
-						target = scope:valid_target_consort
-						reason = consort_friendship_reason 
-					}
-					if = {
-						limit = {
-							debug_only = yes
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							years = 1
 						}
-						root = {
-							send_interface_toast = {
-								type = event_generic_neutral
-								title = new_relation_t
-								right_icon = scope:consort_friend
-								left_icon = scope:valid_target_consort
-								custom_tooltip = new_relation_bff_desc
+					}
+					50 = {			
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 18
+						}
+					}
+					10 = {	
+						modifier = {
+							any_consort = {
+								count <= 3
 							}
+							add = -10
 						}
-					}
-				}
-			}
-			random_list = {
-				50 = {			
-					add_character_flag = {
-						flag = had_consort_positive_relation_flag
-						months = 8
-					}
-				}
-				20 = {	
-					modifier = {
-						any_consort = {
-							count <= 3
+						add_character_flag = {
+							flag = had_consort_positive_relation_flag
+							months = 3
 						}
-						add = -10
-					}
-					add_character_flag = {
-						flag = had_consort_positive_relation_flag
-						months = 5
-					}
-				}
-				50 = {			
-					add_character_flag = {
-						flag = had_consort_positive_relation_flag
-						years = 1
-					}
-				}
-				50 = {			
-					add_character_flag = {
-						flag = had_consort_positive_relation_flag
-						months = 18
-					}
-				}
-				10 = {	
-					modifier = {
-						any_consort = {
-							count <= 3
-						}
-						add = -10
-					}
-					add_character_flag = {
-						flag = had_consort_positive_relation_flag
-						months = 3
 					}
 				}
 			}
