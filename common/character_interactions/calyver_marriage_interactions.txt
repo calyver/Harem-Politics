@@ -3327,92 +3327,19 @@ offer_concubine = {
 		# Liege modifiers - Non-Administrative Realms
 		modifier = { # More likely to send concubines to liege or above in non-admin realms
 			add = {
-				value = 20
-				if = {
-					limit = {
-						scope:actor.liege ?= scope:recipient
-					}
-					add = 10
-				}
+				value = 10
 				if = {
 					limit = {
 						scope:actor = {
 							is_powerful_vassal_of = scope:recipient
 						}
 					}
-					add = 10
+					add = 50
 				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -10
-				}
-				if = {
-					limit = {
-						scope:actor.house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							is_close_family_of = scope:secondary_recipient
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							recipient_has_actor_relative_consort_trigger = yes
-						}
-					}
-					add = -40
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							allowed_more_spouses = no
-						}
-					}
-					add = 10
-				}
-			}
-			scope:recipient = {
-				NOT = { government_allows = administrative }
 			}
 			scope:actor = {
+				is_vassal_of = scope:recipient
+				NOT = { government_allows = administrative }
 				trigger_if = {
 					limit = {
 						religion = religion:islam_religion
@@ -3426,240 +3353,95 @@ offer_concubine = {
 						}
 					}
 				}
-				NOR = { 
-					government_allows = administrative
-					has_character_flag = received_influence_offer_concubine_flag
+				trigger_else = {
+					is_close_family_of = scope:secondary_recipient
 				}
-				is_vassal_of = scope:recipient
+			}
+			scope:recipient = {
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+					hp_accepts_polygamy = yes
+				}
 			}
 		}
 
-		modifier = { # More likely to send to top_liege in administrative realms (base bonus)
+		# Admin realms
+		modifier = { # More likely to send concubines to liege or above in admin realms
 			add = {
-				value = 40
+				value = 10
 				if = {
 					limit = {
 						scope:actor = {
-							house ?= {
-								OR = {
-									is_powerful_family = yes
-									is_dominant_family = yes
-								}
-							}
+							is_powerful_vassal_of = scope:recipient
 						}
 					}
-					add = 20
+					add = 40
 				}
-				if = {
+			}
+			scope:actor = {
+				top_liege ?= scope:recipient
+				government_allows = administrative
+				trigger_if = {
 					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
+						religion = religion:islam_religion
 					}
-					add = 15
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -20
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:actor.house ?= {
+					NOR = {
+						is_close_or_extended_family_of = scope:secondary_recipient
+						house ?= {
 							any_house_member = {
 								this = scope:secondary_recipient
 							}
 						}
 					}
-					add = 25
 				}
-				if = {
-					limit = {
-						scope:actor = {
-							is_close_family_of = scope:secondary_recipient
-						}
-					}
-					add = 25
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							recipient_has_actor_relative_consort_trigger = yes
-						}
-					}
-					add = -40
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -20
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							allowed_more_spouses = no
-						}
-					}
-					add = 15
-				}
-			}
-			scope:recipient = {
-				government_allows = administrative
-				government_has_flag = government_has_influence
-			}
-			scope:actor = {
-				NOR = { 
-					has_character_flag = received_influence_offer_concubine_flag
+				trigger_else = {
 					house ?= {
 						any_house_member = {
-							this = scope:recipient
+							this = scope:secondary_recipient
 						}
 					}
-				}
-				trigger_if = {
-					limit = {
-						religion = religion:islam_religion
-					}
-					NOR = {
-						is_close_or_extended_family_of = scope:secondary_recipient
-						house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-				}
-				government_allows = administrative
-				government_has_flag = government_has_influence
-				OR = {	
-					top_liege ?= scope:recipient
-					trigger_if = {
-						limit = { tgp_realm_has_ceremonial_liege_trigger = yes }
-						scope:recipient = {tgp_is_ceremonial_liege_trigger = yes }
-					}
-				}
-			}
-		}
-
-		modifier = { # More likely to send to fellow vassals in admin realms
-			add = {
-				value = 5
-				if = {
-					limit = {
-						scope:recipient.house ?= {
-							is_dominant_family = yes
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -10
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							OR = {
-								house ?= {
-									any_house_member = {
-										this = scope:secondary_recipient
-									}
-								}
-								is_extended_family_of = scope:secondary_recipient
-							}
-						}
-					}
-					add = -5
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -10
 				}
 			}
 			scope:recipient = {
 				government_allows = administrative
-				government_has_flag = government_has_influence
-				is_independent_ruler = no
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+					hp_accepts_polygamy = yes
+				}
+			}
+		}
+
+		modifier = { # More likely to send concubines to fellow vassals inadmin realms
+			add = 15
+			scope:actor = {
+				top_liege ?= {
+					this != scope:recipient
+				}
+				government_allows = administrative
+				NOR = {
+					is_close_or_extended_family_of = scope:secondary_recipient
+					house ?= {
+						any_house_member = {
+							this = scope:secondary_recipient
+						}
+					}
+				}
+			}
+			scope:recipient = {
+				government_allows = administrative
+				top_liege ?= {
+					this != scope:actor
+					this = scope:actor.top_liege
+				}
 				house ?= {
 					OR = {
 						is_powerful_family = yes
 						is_dominant_family = yes
 					}
-				}
-				NOT = {
-					recipient_has_actor_relative_consort_trigger = yes
-				}
-			}
-			scope:actor = {
-				trigger_if = {
-					limit = {
-						religion = religion:islam_religion
-					}
-					NOR = {
-						is_close_or_extended_family_of = scope:secondary_recipient
-						house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-				}
-				government_allows = administrative
-				government_has_flag = government_has_influence
-				is_independent_ruler = no #Avoid sending to vassals
-				top_liege ?= scope:recipient.top_liege
-				NOR = { 
-					has_character_flag = received_influence_offer_concubine_flag 
-					house ?= {
-						any_house_member = {
-							this = scope:recipient
-						}
-					}
-					house ?= {
-						OR = {
-							is_powerful_family = yes
-							is_dominant_family = yes
-						}
-					}
-					is_close_family_of = scope:secondary_recipient
 				}
 			}
 		}
@@ -3699,7 +3481,7 @@ offer_concubine = {
 					has_realm_law = japanese_bureaucracy_1
 				}
 			}
-			add = 15
+			add = 10
 		}
 		modifier = { # Powerful vassals are more likely at higher authority levels
 			scope:actor = {
@@ -3736,7 +3518,7 @@ offer_concubine = {
 					has_realm_law = japanese_bureaucracy_2
 				}
 			}
-			add = 25
+			add = 20
 		}
 		modifier = { # Powerful vassals are more likely at higher authority levels
 			scope:actor = {
@@ -3773,7 +3555,7 @@ offer_concubine = {
 					has_realm_law = japanese_bureaucracy_3
 				}
 			}
-			add = 35
+			add = 30
 		}
 
 		modifier = { #More likely if the recipient is a child who needs concubines
