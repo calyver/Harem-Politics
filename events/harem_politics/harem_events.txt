@@ -457,6 +457,17 @@ scripted_effect on_trigger_fail_visit_harem_fallback_effect = {
 			custom_tooltip = harem_events.0001.fallback_2.desc
 		}
 	}
+	if = {
+		limit = {
+			NOT = {
+				has_variable = flag_visited_harem
+			}
+		}
+		set_variable = {
+			name = flag_visited_harem
+			years = 1
+		}
+	}
 }
 harem_events.0001 = {
 	type = character_event
@@ -586,190 +597,195 @@ harem_events.0001 = {
 			add_to_list = valid_consorts_list
 		}
 		#Saving the scopes
-		while = {
-			count = 3
-			random_in_list = {
-				list = valid_consorts_list
-				limit = {
-					valid_harem_consort_trigger = yes
-				}
-				weight = {
-					base = 30
-					modifier = { #The PS
-						exists = root.primary_spouse
-						this = root.primary_spouse
-						add = 25
+		hidden_effect = {
+			while = {
+				count = 3
+				random_in_list = {
+					list = valid_consorts_list
+					limit = {
+						valid_harem_consort_trigger = yes
 					}
-					modifier = { #The GC
-						has_high_consort_position_trigger = yes
-						add = 15
-					}
-					modifier = { #Spouses
-						is_married = yes
-						add = 10
-					}
-					modifier = { #Demoted consorts
-						is_demoted_consort_trigger = no
-						add = 15
-					}
-					modifier = { #Good opinion
-						reverse_opinion = {
-							target = root
-							value > 9
+					weight = {
+						base = 30
+						modifier = { #The PS
+							exists = root.primary_spouse
+							this = root.primary_spouse
+							add = 25
 						}
-						add = 10
-					}
-					
-					modifier = { #Beautiful consorts have priority
-						has_character_flag = flag_new_consort
-						add = 10
-					}
-					
-					modifier = { #Beautiful consorts have priority
-						has_trait = beauty_good_1
-						add = 10
-					}
-					modifier = { #Beautiful consorts have priority
-						has_trait = beauty_good_2
-						add = 15
-					}
-					modifier = { #Beautiful consorts have priority
-						has_trait = beauty_good_3
-						add = 20
-					}
-	
-					modifier = {
-						has_character_modifier = favored_consort_modifier
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = favor_boost_modifier
-						add = 15
-					}
-					modifier = {
-						has_character_modifier = beloved_consort_modifier
-						add = 20
-					}
-	
-					modifier = {
-						has_character_modifier = unfavored_consort_modifier
-						add = -10
-					}
-					modifier = {
-						has_character_modifier = forgotten_consort_modifier
-						add = -20
-					}
-	
-					modifier = {
-						OR = {
-							has_relation_lover = root
-							has_relation_friend = root
+						modifier = { #The GC
+							has_high_consort_position_trigger = yes
+							add = 15
 						}
-						add = 15
-					}
-					modifier = {
-						OR = {
-							has_relation_soulmate = root
-							has_relation_best_friend = root
+						modifier = { #Spouses
+							is_married = yes
+							add = 10
 						}
-						add = 20
-					}
-					modifier = {
-						any_close_family_member = {
-							NOT = { is_child_of = root }
+						modifier = { #Demoted consorts
+							is_demoted_consort_trigger = no
+							add = 15
+						}
+						modifier = { #Good opinion
+							reverse_opinion = {
+								target = root
+								value > 9
+							}
+							add = 10
+						}
+						
+						modifier = { #Beautiful consorts have priority
+							has_character_flag = flag_new_consort
+							add = 10
+						}
+						
+						modifier = { #Beautiful consorts have priority
+							has_trait = beauty_good_1
+							add = 10
+						}
+						modifier = { #Beautiful consorts have priority
+							has_trait = beauty_good_2
+							add = 15
+						}
+						modifier = { #Beautiful consorts have priority
+							has_trait = beauty_good_3
+							add = 20
+						}
+		
+						modifier = {
+							has_character_modifier = favored_consort_modifier
+							add = 10
+						}
+						modifier = {
+							has_character_modifier = favor_boost_modifier
+							add = 15
+						}
+						modifier = {
+							has_character_modifier = beloved_consort_modifier
+							add = 20
+						}
+		
+						modifier = {
+							has_character_modifier = unfavored_consort_modifier
+							add = -10
+						}
+						modifier = {
+							has_character_modifier = forgotten_consort_modifier
+							add = -20
+						}
+		
+						modifier = {
 							OR = {
-								is_powerful_vassal_of = root
-								is_liege_or_above_of = root
-								is_councillor_of = root
-								highest_held_title_tier >= tier_kingdom
+								has_relation_lover = root
+								has_relation_friend = root
+							}
+							add = 15
+						}
+						modifier = {
+							OR = {
+								has_relation_soulmate = root
+								has_relation_best_friend = root
+							}
+							add = 20
+						}
+						modifier = {
+							any_close_family_member = {
+								NOT = { is_child_of = root }
+								OR = {
+									is_powerful_vassal_of = root
+									is_liege_or_above_of = root
+									is_councillor_of = root
+									highest_held_title_tier >= tier_kingdom
+								}
+							}
+							add = 20
+						}
+						modifier = {
+							any_close_family_member = {
+								NOT = { is_child_of = root }
+								highest_held_title_tier = tier_duchy
+							}
+							add = 10
+						}
+						modifier = {
+							any_child = {
+								is_child_of = root
+								count >= 1
+							}
+							add = 10
+						}
+						modifier = {
+							any_child = {
+								is_child_of = root
+								count >= 3
+							}
+							add = 5
+						}
+						modifier = {
+							any_child = {
+								is_player_heir_of = root
+							}
+							add = 20
+						}
+						modifier = { #Give a chance to other consorts
+							NOT = {
+								has_trait = pregnant
+							}
+							add = 20
+						}
+						modifier = { #Good traits
+							num_of_good_genetic_traits = 1
+							add = 5
+						}
+						modifier = { #Good traits
+							num_of_good_genetic_traits = 2
+							add = 10
+						}
+						modifier = { #Good traits
+							num_of_good_genetic_traits = 3
+							add = 20
+						}
+						modifier = { #Good traits
+							has_trait = pure_blooded
+							add = 20
+						}
+						modifier = { #Good traits
+							has_trait = fecund
+							add = 10
+						}
+						
+						modifier = { #Fertile consorts
+							age <= 30
+							add = 10
+						}
+						modifier = { #Fertile consorts
+							fertility >= medium_fertility
+							add = 10
+						}
+						modifier = { #Sexual preferences
+							is_attracted_to_gender_of = root
+							add = 25
+						}
+					}
+					if = {
+						limit = {
+							NOT = {
+								exists = scope:consort_1
 							}
 						}
-						add = 20
+						save_scope_as = consort_1
 					}
-					modifier = {
-						any_close_family_member = {
-							NOT = { is_child_of = root }
-							highest_held_title_tier = tier_duchy
+					else_if = {
+						limit = {
+							NOT = {
+								exists = scope:consort_2
+							}
 						}
-						add = 10
+						save_scope_as = consort_2
 					}
-					modifier = {
-						any_child = {
-							is_child_of = root
-							count >= 1
-						}
-						add = 10
+					else = {
+						save_scope_as = consort_3
 					}
-					modifier = {
-						any_child = {
-							is_child_of = root
-							count >= 3
-						}
-						add = 5
-					}
-					modifier = {
-						any_child = {
-							is_player_heir_of = root
-						}
-						add = 20
-					}
-					modifier = { #Give a chance to other consorts
-						NOT = {
-							has_trait = pregnant
-						}
-						add = 20
-					}
-					modifier = { #Good traits
-						num_of_good_genetic_traits = 1
-						add = 5
-					}
-					modifier = { #Good traits
-						num_of_good_genetic_traits = 2
-						add = 10
-					}
-					modifier = { #Good traits
-						num_of_good_genetic_traits = 3
-						add = 20
-					}
-					modifier = { #Good traits
-						has_trait = pure_blooded
-						add = 20
-					}
-					modifier = { #Good traits
-						has_trait = fecund
-						add = 10
-					}
-					
-					modifier = { #Fertile consorts
-						age <= 30
-						add = 10
-					}
-					modifier = { #Fertile consorts
-						fertility >= medium_fertility
-						add = 10
-					}
-					modifier = { #Sexual preferences
-						is_attracted_to_gender_of = root
-						add = 25
-					}
+					remove_from_list = valid_consorts_list
 				}
-				if = {
-					NOT = {
-						exists = scope:consort_1
-					}
-					save_scope_as = consort_1
-				}
-				else_if = {
-					NOT = {
-						exists = scope:consort_2
-					}
-					save_scope_as = consort_2
-				}
-				else = {
-					save_scope_as = consort_3
-				}
-				remove_from_list = valid_consorts_list
-				save_scope_as = consort_1
 			}
 		}
 		if = {
