@@ -13,7 +13,7 @@ random_yearly_playable_pulse = {
 
 quarterly_playable_pulse = {
 	first_valid_on_action = { 
-		consort_events_on_actions
+		calyver_ruler_events_on_actions
 	}
 }
 
@@ -21,7 +21,7 @@ quarterly_playable_pulse = {
 # Root is the character
 random_yearly_everyone_pulse = {
 	first_valid_on_action = { 
-		consort_events_on_actions
+		calyver_consort_events_on_actions
 	}
 }
 
@@ -104,74 +104,43 @@ calyver_random_yearly_playable_events = {
 	}
 }
 
-consort_events_on_actions = {
+calyver_consort_events_on_actions = {
 	trigger = {			# On_actions can have triggers. If an on_action fires and its trigger returns false, nothing happens
-		OR = { 
-			AND = {
-				hp_accepts_harems = yes
-				is_landed_or_landless_administrative = yes
-			}
-			any_consort = {
-				is_landed_or_landless_administrative = yes
-				hp_accepts_harems = yes
-			}
+		any_consort = {
+			is_landed_or_landless_administrative = yes
+			hp_accepts_harems = yes
 		}
 	}
 	random_events = {	# A single event will be picked to fire
 		chance_to_happen = 75	# A percentage chance determining whether the events involved will be evaluated at all
 
 		chance_of_no_event = {
-			value = 0
+			value = 60
 			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
 					is_ai = yes
 					NOT = {
 						any_consort = {
-							is_ai = no
-						}
-					}
-				}
-				add = {
-					value = 70
-					if = {
-						limit = {
+							is_landed_or_landless_administrative = yes
+							hp_accepts_harems = yes
 							any_consort = {
 								count > 5
 							}
 						}
-						add = -50
 					}
 				}
-			}
-			if = { #Less drama for only polygamous rulers
-				limit = {
-					NOR = {
-						AND = {
-							is_landed_or_landless_administrative = yes
-							hp_accepts_concubinage = yes
-						}
-						any_consort = {
-							is_landed_or_landless_administrative = yes
-							hp_accepts_concubinage = yes
-						}
-					}
-				}
-				add = 25
+				add = 15
 			}
 			if = { # Tribal/Nomadic rulers don't have a well-defined harem
 				limit = {
-					OR = {
-						AND = {
-							is_landed_or_landless_administrative = yes
-							has_unsettled_government_trigger = yes
-						}
+					NOT = {
 						any_consort = {
 							is_landed_or_landless_administrative = yes
-							has_unsettled_government_trigger = yes
+							has_settled_harem_trigger = yes
 						}
 					}
 				}
-				add = 50
+				add = 15
 			}
 		}
 
@@ -180,10 +149,7 @@ consort_events_on_actions = {
 		100 = consort_events.0004   # A badmouthing concubine
 		100 = consort_events.0005	# The morning greeting
 		100 = consort_events.0006	# Yanwan is courting favor
-		110 = consort_events.0007	# Hidden events - An authority punishes a random consort
-		110 = consort_events.0008	# Hidden events - Two consorts become friends
-		110 = consort_events.0009	# Hidden events - Two consorts become enemies
-		100 = consort_events.0010	# Hidden events - Unfavored consorts
+
 		100 = consort_events.0011   # Scheming and diplomatic consorts
 		100 = consort_events.0012	# Choosing an ally
 		100 = consort_events.0013	# Killing the main heir
@@ -192,17 +158,309 @@ consort_events_on_actions = {
 		100 = consort_events.0016	# No longer demoted
 		100 = consort_events.0017	# Killing a higher-ranked consort
 		50 = consort_events.0019	# Poisoning a consort
-		110 = consort_events.0027	# A consort causes a miscarriage
-		5 = consort_events.0028		# Hidden events - A consort becomes a lifestyle_poet
-		15 = consort_events.0029	# Hidden events - A consort becomes a seducer
+
+		1000 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+
+calyver_ruler_events_on_actions = {
+	trigger = {			# On_actions can have triggers. If an on_action fires and its trigger returns false, nothing happens
+		hp_accepts_harems = yes
+		is_landed_or_landless_administrative = yes
+	}
+	on_actions = {
+		delay = { days = { 1 6 } }
+		calyver_consort_punishment_on_actions
+		delay = { days = { 7 14 } }
+		calyver_consort_relations_on_actions
+		delay = { days = { 15 28 } }
+		calyver_consort_favor_on_actions
+		delay = { days = { 29 56 } }
+		calyver_consort_traits_on_actions
+		delay = { days = { 57 112 } }
+		calyver_consort_secrets_on_actions
+		delay = { days = { 113 224 } }
+		calyver_consort_influence_on_actions
+		delay = { days = { 225 448 } }
+		calyver_consort_schemes_on_actions
+	}
+}
+calyver_consort_punishment_on_actions = {
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
+		100 = consort_events.0007	# Hidden events - An authority punishes a random consort
+		500 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_relations_on_actions = {
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
+		100 = consort_events.0008	# Hidden events - Two consorts become friends
+		100 = consort_events.0009	# Hidden events - Two consorts become enemies
+		400 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_favor_on_actions = {
+	# trigger = {
+	# 	NOT = { has_game_rule = consort_favor_off }
+	# }
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = {
+				limit = {
+					NOT = { has_game_rule = consort_favor_off }
+					any_consort = {
+						count >= 5
+					}
+				}
+				add = 50
+			}
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+		}
+
+		100 = consort_events.0010	# Hidden events - Unfavored consorts
+		100 = consort_favor_valuation.0006	# Hidden events - Increasing a consort's favor
+		500 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_traits_on_actions = {
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
+		10 = consort_events.0028		# Hidden events - A consort becomes a lifestyle_poet
+		10 = consort_events.0029	# Hidden events - A consort becomes a seducer
+		400 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_secrets_on_actions = {
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
 		25 = consort_events.0030	# Hidden events - Consort learns of a courtier's secrets
 		25 = consort_events.0031	# Hidden events - Consort learns of one of your known secrets
 		25 = consort_events.0032	# Hidden events - Consort learns of one of your secrets
 		50 = consort_events.0033	# Hidden events - Consort leaks a secret to a vassal
-		70 = consort_events.0035	# Hidden events - Influential consort gives influence to family
-		100 = consort_events.0036	# Hidden events - A consort murders an heir
-		100 = consort_favor_valuation.0006	# Hidden events - Increasing a consort's favor
-		500 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+		800 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_influence_on_actions = {
+	trigger = {
+		government_has_flag = government_has_influence
+	}
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
+		10 = consort_events.0035	# Hidden events - Influential consort gives influence to family
+		90 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	}
+}
+calyver_consort_schemes_on_actions = {
+	random_events = {	# A single event will be picked to fire
+		chance_to_happen = 50	# A percentage chance determining whether the events involved will be evaluated at all
+		chance_of_no_event = {
+			value = 0
+			if = { # Consorts of AI rulers aren't particularly important
+				limit = {
+					is_ai = yes
+				}
+				add = {
+					value = 50
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = -30
+					}
+				}
+			}
+			if = { # Tribal/Nomadic rulers don't have a well-defined harem
+				limit = {
+					NOT = {
+						any_consort = {
+							is_landed_or_landless_administrative = yes
+							has_settled_harem_trigger = yes
+						}
+					}
+				}
+				add = 75
+			}
+		}
+
+		2 = consort_events.0036	# Hidden events - A consort murders an heir
+		2 = consort_events.0027	# Hidden events - A consort causes a miscarriage
+		2 = consort_events.0027	# Hidden events - A consort causes a miscarriage
+		294 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
 	}
 }
 
