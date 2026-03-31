@@ -4385,6 +4385,7 @@ harem_events.2000 = {
 #####################
 # Base trigger
 scripted_trigger is_valid_matriarch_relative_trigger = {
+	this != scope:matriarch
 	trigger_if = {
 		limit = {
 			exists = house
@@ -4402,6 +4403,7 @@ scripted_trigger is_valid_matriarch_relative_trigger = {
 		is_consort_of = root
 		is_sibling_of = root
 		is_child_of = root
+		is_diarch = yes
 	}
 }
 # They ask you to favor a consort
@@ -4422,6 +4424,7 @@ scripted_trigger is_valid_consort_for_favor_request_trigger = {
 			target = scope:matriarch
 			value >= low_positive_opinion
 		}
+		is_close_or_extended_family_of = scope:matriarch
 	}
 	harem_politics_favored_consort_trigger = no
 }
@@ -4444,6 +4447,7 @@ scripted_trigger is_valid_consort_for_stop_favor_request_trigger = {
 		has_relation_best_friend = scope:matriarch
 		has_relation_lover = scope:matriarch
 		has_relation_soulmate = scope:matriarch
+		is_close_or_extended_family_of = scope:matriarch
 	}
 }
 scripted_trigger is_valid_for_consort_stop_favor_request_trigger = {
@@ -4508,7 +4512,10 @@ scripted_trigger is_valid_matriarch_relative_for_title_grant_trigger = {
 		limit = { is_female = yes }
 		ROOT = { faith_dominant_gender_female_or_equal = yes }
 	}
-	trigger_else = { faith_dominant_gender_male_or_equal = yes }
+	trigger_else = { ROOT = { faith_dominant_gender_male_or_equal = yes } }
+	character_gender_can_inherit_from_trigger = {
+		CHARACTER = root
+	}
 }
 scripted_trigger is_valid_for_title_request_trigger = {
 	OR = {
@@ -4595,7 +4602,15 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 	is_councillor = no
 	OR = {
 		AND = {
-			can_be_chancellor_trigger = { COURT_OWNER = root }
+			trigger_if = { # If the liege has a ministry, we check a separate minister trigger
+				limit = {
+					root = { tgp_has_access_to_ministry_trigger = yes }
+				}
+				tgp_can_be_a_minister_trigger = { COURT_OWNER = root }
+			}
+			trigger_else = {
+				can_be_chancellor_trigger = { COURT_OWNER = root }
+			}
 			root.cp:councillor_chancellor ?= {
 				NOT = {
 					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
@@ -4603,7 +4618,15 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 			}
 		}
 		AND = {
-			can_be_steward_trigger = { COURT_OWNER = root }
+			trigger_if = { # If the liege has a ministry, we check a separate minister trigger
+				limit = {
+					root = { tgp_has_access_to_ministry_trigger = yes }
+				}
+				tgp_can_be_a_minister_trigger = { COURT_OWNER = root }
+			}
+			trigger_else = {
+				can_be_steward_trigger = { COURT_OWNER = root }
+			}
 			root.cp:councillor_steward ?= {
 				NOT = {
 					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
@@ -4611,7 +4634,13 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 			}
 		}
 		AND = {
-			can_be_marshal_trigger = { COURT_OWNER = root }
+			trigger_if = { # If the liege has a ministry, we check a separate minister trigger
+				limit = {
+					root = { tgp_has_access_to_ministry_trigger = yes }
+				}
+				tgp_can_be_a_minister_trigger = { COURT_OWNER = root }
+			}
+			trigger_else = { can_be_marshal_trigger = { COURT_OWNER = root } }
 			root.cp:councillor_marshal ?= {
 				NOT = {
 					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
@@ -4619,7 +4648,44 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 			}
 		}
 		AND = {
-			can_be_spymaster_trigger = { COURT_OWNER = root }
+			trigger_if = { # If the liege has a ministry, we check a separate minister trigger
+				limit = {
+					root = { tgp_has_access_to_ministry_trigger = yes }
+				}
+				tgp_can_be_a_minister_trigger = { COURT_OWNER = root }
+			}
+			trigger_else = { can_be_spymaster_trigger = { COURT_OWNER = root } }
+			# Gender must follow laws in merit based realms
+			trigger_if = {
+				limit = {
+					root = {
+						is_landed = yes
+						government_has_flag = government_has_merit
+					}
+				}
+				trigger_if = {
+					limit = {
+						root = {
+							OR = {
+								has_realm_law = male_only_law
+								has_realm_law = male_preference_law
+							}
+						}
+					}
+					is_male = yes
+				}
+				trigger_if = {
+					limit = {
+						root = {
+							OR = {
+								has_realm_law = female_only_law
+								has_realm_law = female_preference_law
+							}
+						}
+					}
+					is_female = yes
+				}
+			}
 			root.cp:councillor_spymaster ?= {
 				NOT = {
 					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
@@ -6492,6 +6558,7 @@ harem_events.2105 = {
 			}
         }
 		scope:consort_relative = {
+			custom_tooltip = consort_relative_gained_court_position_tooltip
 			add_opinion = {
 				target = scope:matriarch
 				modifier = grateful_opinion
@@ -6970,41 +7037,46 @@ harem_events.2106 = {
 			}
 		}
 		# Fire current councillor and assign consort_relative to the chosen seat
-		if = {
-			limit = {
-				exists = scope:second_party
-			}
-			fire_councillor = scope:second_party
-		}
+		# if = {
+		# 	limit = {
+		# 		exists = scope:second_party
+		# 	}
+		# 	fire_councillor = scope:second_party
+		# }
 		switch = {
 			trigger = scope:consort_relative.var:petition_liege_council_first
 			flag:chancellor = {
 				assign_councillor_type = {
 					type = councillor_chancellor
+					remove_existing_councillor = yes
 					target = scope:consort_relative
 				}
 			}
 			flag:marshal = {
 				assign_councillor_type = {
 					type = councillor_marshal
+					remove_existing_councillor = yes
 					target = scope:consort_relative
 				}
 			}
 			flag:steward = {
 				assign_councillor_type = {
 					type = councillor_steward
+					remove_existing_councillor = yes
 					target = scope:consort_relative
 				}
 			}
 			flag:spymaster = {
 				assign_councillor_type = {
 					type = councillor_spymaster
+					remove_existing_councillor = yes
 					target = scope:consort_relative
 				}
 			}
 			flag:court_chaplain = {
 				assign_councillor_type = {
 					type = councillor_court_chaplain
+					remove_existing_councillor = yes
 					target = scope:consort_relative
 				}
 			}
