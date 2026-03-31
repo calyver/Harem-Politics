@@ -4593,6 +4593,23 @@ scripted_trigger is_valid_for_court_position_request_trigger = {
 	}
 }
 # Requesting a council position for a relative
+scripted_trigger councillor_can_be_fired_by_matriarch_trigger = {
+	NOR = {
+		is_close_family_of = root
+		house ?= {
+			any_house_member = {
+				this = root
+			}
+		}
+		is_close_or_extended_family_of = scope:matriarch
+		house ?= {
+			any_house_member = {
+				this = scope:matriarch
+			}
+		}
+		is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
+	}
+}
 scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger = {
 	is_valid_matriarch_relative_trigger = yes
 	OR = {
@@ -4612,9 +4629,7 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 				can_be_chancellor_trigger = { COURT_OWNER = root }
 			}
 			root.cp:councillor_chancellor ?= {
-				NOT = {
-					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
-				}
+				councillor_can_be_fired_by_matriarch_trigger = yes
 			}
 		}
 		AND = {
@@ -4628,9 +4643,7 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 				can_be_steward_trigger = { COURT_OWNER = root }
 			}
 			root.cp:councillor_steward ?= {
-				NOT = {
-					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
-				}
+				councillor_can_be_fired_by_matriarch_trigger = yes
 			}
 		}
 		AND = {
@@ -4642,9 +4655,7 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 			}
 			trigger_else = { can_be_marshal_trigger = { COURT_OWNER = root } }
 			root.cp:councillor_marshal ?= {
-				NOT = {
-					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
-				}
+				councillor_can_be_fired_by_matriarch_trigger = yes
 			}
 		}
 		AND = {
@@ -4687,18 +4698,14 @@ scripted_trigger is_valid_matriarch_relative_for_council_position_grant_trigger 
 				}
 			}
 			root.cp:councillor_spymaster ?= {
-				NOT = {
-					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
-				}
+				councillor_can_be_fired_by_matriarch_trigger = yes
 			}
 		}
 		AND = {
 			can_be_court_chaplain_trigger = { COURT_OWNER = root }
 			root.faith = { has_doctrine = doctrine_clerical_succession_temporal_appointment }
 			root.cp:councillor_court_chaplain ?= {
-				NOT = {
-					is_blocked_from_being_fired_from_council_trigger = { COURT_OWNER = root }
-				}
+				councillor_can_be_fired_by_matriarch_trigger = yes
 			}
 		}
 	}
@@ -7305,6 +7312,34 @@ harem_events.2106 = {
 					subtract = scope:second_party.learning
 					multiply = 5
 				}
+			}
+			modifier = {
+				government_has_flag = government_is_celestial
+				government_has_flag = government_has_merit
+				highest_held_title_tier > tier_empire
+				scope:consort_relative.merit_level < 7
+				add = -25
+			}
+			modifier = {
+				government_has_flag = government_is_celestial
+				government_has_flag = government_has_merit
+				highest_held_title_tier > tier_empire
+				scope:consort_relative.merit_level >= 7
+				add = 10
+			}
+			modifier = {
+				government_has_flag = government_is_celestial
+				government_has_flag = government_has_merit
+				highest_held_title_tier > tier_empire
+				scope:consort_relative.merit_level >= 8
+				add = 10
+			}
+			modifier = {
+				government_has_flag = government_is_celestial
+				government_has_flag = government_has_merit
+				highest_held_title_tier > tier_empire
+				scope:consort_relative.merit_level >= 9
+				add = 10
 			}
         }
     }
