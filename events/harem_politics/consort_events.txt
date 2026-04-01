@@ -732,6 +732,25 @@ scripted_trigger is_valid_harem_authority_trigger = {
 }
 
 scripted_trigger is_valid_harem_victim_trigger = {
+	harem_politics_is_valid_authority_trigger = {
+		AUTHORITY = $CONSORT_AUTHORITY$
+		TARGET = this
+		LIEGE = root
+	}
+	trigger_if = {
+		limit = {
+			root = {
+				religion = religion:islam_religion
+				OR = {
+					primary_spouse ?= $CONSORT_AUTHORITY$
+					$CONSORT_AUTHORITY$ = { is_sibling_of = root }
+				}
+			}
+		}
+		NOT = {
+			is_spouse_of = root
+		}
+	}
 	is_healthy = yes
 
 	harem_politics_punished_consort_trigger = no
@@ -765,25 +784,7 @@ scripted_trigger is_valid_harem_victim_trigger = {
 		has_relation_best_friend = $CONSORT_AUTHORITY$
 		has_relation_friend = $CONSORT_AUTHORITY$
 	}
-	harem_politics_is_valid_authority_trigger = {
-		AUTHORITY = $CONSORT_AUTHORITY$
-		TARGET = this
-		LIEGE = root
-	}
-	trigger_if = {
-		limit = {
-			root = {
-				religion = religion:islam_religion
-				OR = {
-					primary_spouse ?= $CONSORT_AUTHORITY$
-					$CONSORT_AUTHORITY$ = { is_sibling_of = root }
-				}
-			}
-		}
-		NOT = {
-			is_spouse_of = root
-		}
-	}
+
 	OR = {
 		AND = {
 			is_travelling = yes
@@ -7793,14 +7794,7 @@ consort_events.0007 = {
 
 				modifier = {
 					harem_politics_evil_consort_trigger = yes
-					add = 10
-				}
-
-				modifier = {
-					NOT = {
-						sex_same_as = root
-					}
-					add = 15
+					add = 20
 				}
 
 				modifier = {
@@ -7826,7 +7820,7 @@ consort_events.0007 = {
 					has_character_modifier = favored_consort_modifier
 				}
 
-				modifier = { #Unfavored consorts are less so
+				modifier = { #Unfavored consorts are less likely to do so
 					add = -10
 					has_character_modifier = unfavored_consort_modifier
 				}
@@ -7884,7 +7878,9 @@ consort_events.0007 = {
 					}
 					modifier = { #Spouses are harder to punish
 						add = 10
-						is_concubine = yes
+						is_regular_concubine_of = {
+							LIEGE = scope:partner
+						}
 					}
 					modifier = { #Spouses are harder to punish
 						add = -10
@@ -7966,7 +7962,7 @@ consort_events.0007 = {
 					exists = scope:valid_target_consort
 				}
 				random_list = {
-					50 = { #The victim is punished severely
+					35 = { #The victim is punished severely
 						trigger = {
 							trigger_if = {
 								limit = {

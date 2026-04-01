@@ -193,40 +193,104 @@ calyver_consort_punishment_on_actions = {
 	}
 }
 calyver_consort_relations_on_actions = {
-	random_events = {	# A single event will be picked to fire
-		chance_to_happen = 75	# A percentage chance determining whether the events involved will be evaluated at all
-		chance_of_no_event = {
-			value = 0
-			if = {
-				limit = {
-					any_consort = {
-						count <= 5
+	effect = { 	# An on_action can run effects. It can access the same default or saved scopes as the script chain/code functionality it was fired from. Note that it happens concurrently to events triggered by the on_action, NOT before. Effects run here create a separate chain than events the on_action fires, so you can for example not manipulate values in the effect, and then reliably access those in an event that was fired at the same time. Scopes or local variables set in the effect here will not carry over to any event fired by the on_action.
+		if = {
+			limit = {
+				has_settled_harem_trigger = yes
+			}
+			random = {
+				chance = {
+					value = 35
+					if = {
+						limit = {
+							any_consort = {
+								count > 3
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = 10
+					}
+					if = { # Consorts of AI rulers aren't particularly important
+						limit = {
+							is_ai = no
+						}
+						add = 20
 					}
 				}
-				add = 20
-				if = { # Consorts of AI rulers aren't particularly important
-					limit = {
-						is_ai = yes
-					}
-					add = 20
+				trigger_event = {
+					id = consort_events.0008
+					days = { 2 30 }
 				}
 			}
-			if = { # Tribal/Nomadic rulers don't have a well-defined harem
-				limit = {
-					NOT = {
-						any_consort = {
-							is_landed_or_landless_administrative = yes
-							has_settled_harem_trigger = yes
+			random = {
+				chance = {
+					value = 35
+					if = {
+						limit = {
+							any_consort = {
+								count > 3
+							}
 						}
+						add = 10
+					}
+					if = {
+						limit = {
+							any_consort = {
+								count > 5
+							}
+						}
+						add = 10
+					}
+					if = { # Consorts of AI rulers aren't particularly important
+						limit = {
+							is_ai = no
+						}
+						add = 20
 					}
 				}
-				add = 75
+				trigger_event = {
+					id = consort_events.0009
+					days = { 2 30 }
+				}
 			}
 		}
-		1 = consort_events.0008	# Hidden events - Two consorts become friends
-		1 = consort_events.0009	# Hidden events - Two consorts become enemies
-		# 500 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
 	}
+	# random_events = {	# A single event will be picked to fire
+	# 	chance_to_happen = 75	# A percentage chance determining whether the events involved will be evaluated at all
+	# 	chance_of_no_event = {
+	# 		value = 0
+	# 		if = {
+	# 			limit = {
+	# 				any_consort = {
+	# 					count <= 5
+	# 				}
+	# 			}
+	# 			add = 25
+	# 		}
+	# 		if = { # Consorts of AI rulers aren't particularly important
+	# 			limit = {
+	# 				is_ai = yes
+	# 			}
+	# 			add = 25
+	# 		}
+	# 		if = { # Tribal/Nomadic rulers don't have a well-defined harem
+	# 			limit = {
+	# 				has_settled_harem_trigger = no
+	# 			}
+	# 			add = 75
+	# 		}
+	# 	}
+	# 	1 = consort_events.0008	# Hidden events - Two consorts become friends
+	# 	1 = consort_events.0009	# Hidden events - Two consorts become enemies
+	# 	# 500 = 0		# Having a "0" entry means that there is a chance no event fires, even if there are other valid events. Good for making sure that rare events don't always fire just because every other possible event is invalid.
+	# }
 }
 calyver_consort_favor_on_actions = {
 	# trigger = {
@@ -248,22 +312,14 @@ calyver_consort_traits_on_actions = {
 			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
 					is_ai = yes
-				}
-				add = {
-					value = 50
-					if = {
-						limit = {
-							any_consort = {
-								count > 5
-							}
-						}
-						add = -30
+					any_consort = {
+						count < 6
 					}
 				}
+				add = 30
 			}
 			if = { # Tribal/Nomadic rulers don't have a well-defined harem
 				limit = {
-					is_landed_or_landless_administrative = no
 					has_settled_harem_trigger = no
 				}
 				add = 75
@@ -283,27 +339,15 @@ calyver_consort_secrets_on_actions = {
 			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
 					is_ai = yes
-				}
-				add = {
-					value = 50
-					if = {
-						limit = {
-							any_consort = {
-								count > 5
-							}
-						}
-						add = -30
+					any_consort = {
+						count < 6
 					}
 				}
+				add = 30
 			}
 			if = { # Tribal/Nomadic rulers don't have a well-defined harem
 				limit = {
-					NOT = {
-						any_consort = {
-							is_landed_or_landless_administrative = yes
-							has_settled_harem_trigger = yes
-						}
-					}
+					has_settled_harem_trigger = no
 				}
 				add = 75
 			}
@@ -327,27 +371,15 @@ calyver_consort_influence_on_actions = {
 			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
 					is_ai = yes
-				}
-				add = {
-					value = 50
-					if = {
-						limit = {
-							any_consort = {
-								count > 5
-							}
-						}
-						add = -30
+					any_consort = {
+						count < 6
 					}
 				}
+				add = 30
 			}
 			if = { # Tribal/Nomadic rulers don't have a well-defined harem
 				limit = {
-					NOT = {
-						any_consort = {
-							is_landed_or_landless_administrative = yes
-							has_settled_harem_trigger = yes
-						}
-					}
+					has_settled_harem_trigger = no
 				}
 				add = 75
 			}
@@ -365,27 +397,15 @@ calyver_consort_schemes_on_actions = {
 			if = { # Consorts of AI rulers aren't particularly important
 				limit = {
 					is_ai = yes
-				}
-				add = {
-					value = 50
-					if = {
-						limit = {
-							any_consort = {
-								count > 5
-							}
-						}
-						add = -30
+					any_consort = {
+						count < 6
 					}
 				}
+				add = 30
 			}
 			if = { # Tribal/Nomadic rulers don't have a well-defined harem
 				limit = {
-					NOT = {
-						any_consort = {
-							is_landed_or_landless_administrative = yes
-							has_settled_harem_trigger = yes
-						}
-					}
+					has_settled_harem_trigger = no
 				}
 				add = 75
 			}
