@@ -10276,8 +10276,8 @@ scripted_effect take_special_concubine_event_effect = {
 				name = favor
 				value = initial_favor_valuation
 			}
-			calyver_favor_moderate_gain_effect = yes
 		}
+		calyver_favor_moderate_gain_effect = yes
 		add_opinion = {
 			target = root
 			modifier = grateful_opinion
@@ -34353,6 +34353,7 @@ harem_politics.0038 = {
 						count < 3
 					}
 				}
+				hp_select_concubine_location_effect = yes
 				while = {
 					limit = {
 						any_in_list = {
@@ -39452,6 +39453,457 @@ harem_politics.0046 = {
 		add_character_modifier = {
 			modifier = councillor_spouse_health_modifier
 			years = 4
+		}
+	}
+}
+
+#########################################################
+##One of your consorts is praying to get your attention##
+#########################################################
+scripted_trigger praying_consort_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_adult = yes
+	is_imprisoned = no
+
+	intrigue >= medium_skill_rating
+	has_any_good_relationship_with_root_trigger = no
+	has_any_bad_relationship_with_root_trigger = no
+	NOR = {
+		has_trait = craven
+		has_trait = honest
+	}
+	opinion = {
+		target = root
+		value >= -20
+	}
+	OR = {
+		has_trait = arrogant
+		has_trait = greedy
+		has_trait = ambitious
+	}
+	trigger_if = {
+		limit = {
+			is_consort_of = root
+		}
+		harem_politics_favored_consort_trigger = no
+	}
+	trigger_else = {
+		can_become_concubine_of_character_trigger = { CHARACTER = root }
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = root 
+			RECEIVER = root
+		}
+		is_virgin_trigger = yes
+		age <= 23
+	}
+}
+harem_politics.0047 = {
+	orphan = yes
+	type = character_event
+	title = harem_politics.0047.t
+	desc = harem_politics.0047.desc
+	theme = family
+	override_background = {
+		reference = garden
+	}
+	
+	left_portrait  = {
+		character = root
+		animation = personality_rational
+	}
+	right_portrait = {
+		character = scope:consort
+		animation = prayer
+	}
+	
+	trigger = {
+		is_landed_or_landless_administrative = yes
+
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			is_imprisoned = no
+			count >= 2
+		}
+
+		is_available_healthy_adult = yes
+		trigger_if = {
+			limit = {
+				hp_accepts_concubinage = yes
+			}
+			allowed_more_concubines = yes
+		}
+		trigger_else = {
+			allowed_more_spouses = yes
+		}
+		NOR = {
+			has_trait = cynical
+			has_character_flag = had_praying_consort_flag
+		}
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		save_scope_as = liege
+		if = {
+			limit = {
+				any_courtier = {
+					praying_consort_trigger = yes
+				}
+			}
+			random_courtier = {
+				limit = {
+					praying_consort_trigger = yes
+				}
+				weight = {
+					base = 1
+					modifier = {
+						has_trait = ambitious
+						add = 15
+					}
+					modifier = {
+						is_consort_of = root
+						harem_politics_unfavored_consort_trigger = yes
+						add = 15
+					}
+					modifier = {
+						add = intrigue
+					}
+					modifier = {
+						is_lowborn = yes
+						add = 25
+					}
+					modifier = {
+						is_consort_of = root
+						has_character_flag = flag_new_consort
+						add = 25
+					}
+				}
+				save_scope_as = consort
+			}
+		}
+		else = {
+			hp_character_creation_effect = {
+				CHARACTER = praying_consort
+			}
+			scope:praying_consort = {
+				save_scope_as = consort
+			}
+		}
+	}
+
+	option = { # Take them as your consort
+        name = harem_politics.0047.a
+		trigger = {
+			NOT = { is_consort_of = scope:consort }
+			trigger_if = {
+				limit = {
+					hp_accepts_concubinage = yes
+				}
+				allowed_more_concubines = yes
+				scope:consort = {
+					can_become_concubine_of_character_trigger = { CHARACTER = root }
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = root 
+						RECEIVER = root
+					}
+				}
+			}
+			trigger_else = {
+				allowed_more_spouses = yes
+			}
+		}
+		hidden_effect = {
+			scope:consort = {
+				if = {
+					limit = {
+						NOT = {
+							is_courtier_of = root
+						}
+					}
+					root = {
+						add_courtier = prev
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				hp_accepts_concubinage = yes
+				allowed_more_concubines = yes
+			}
+			if = {
+				limit = {
+					allowed_more_concubines = yes
+					is_character_interaction_valid = {
+						recipient = scope:consort
+						interaction = ai_make_concubine_interaction
+					}
+				}
+				hidden_effect = {
+					run_interaction = {
+						interaction = ai_make_concubine_interaction
+						actor = scope:harem_liege
+						recipient = scope:consort
+						execute_threshold = accept
+					}
+				}
+				show_as_tooltip = {
+					make_concubine = scope:consort
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				allowed_more_spouses = yes
+				can_marry_character_trigger = { CHARACTER = scope:consort }
+			}
+			hidden_effect = {
+				run_interaction = {
+					interaction = arrange_marriage_interaction
+					actor = root
+					recipient = root
+					secondary_actor = root
+					secondary_recipient = scope:consort
+					execute_threshold = accept
+				}
+			}
+			show_as_tooltip = {
+				marry = scope:consort
+			}
+		}
+		scope:consort = {
+			if = {
+				limit = {
+					root = {
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+							has_variable = favor
+							count >= 3
+						}
+					}
+				}
+				set_variable = {
+					name = favor
+					value = initial_favor_valuation
+				}
+			}
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 20
+			}
+		}
+		add_opinion = {
+			target = root
+			modifier = pleased_opinion
+			opinion = 25
+		}
+		hidden_effect = {
+			every_consort = {
+				limit = {
+					this != scope:consort
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				}
+				add_opinion = {
+					target = scope:consort
+					modifier = suspicion_opinion
+					opinion = -15
+				}
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = -0.1
+				ai_sociability = 0.1
+   			}
+			opinion_modifier = {
+				opinion_target = scope:consort
+				min = -25
+				max = 25
+				multiplier = 1
+			}
+			compatibility_modifier = { #Trait compatibility
+				compatibility_target = scope:consort_1
+				min = -20
+				max = 20
+				multiplier = 2
+			}
+
+			modifier = {
+				has_trait = gregarious
+				add = 10
+			}
+			modifier = {
+				has_trait = zealous
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = -15
+			}
+			modifier = {
+				has_trait = shy
+				add = -25
+			}
+
+			modifier = {
+				number_of_concubines < number_of_desired_concubines
+				add = 25
+			}
+			modifier = {
+				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
+				factor = 0
+			}
+        }
+    }
+
+	option = { # You should spend more time with me
+        name = harem_politics.0047.b
+		trigger = {
+			is_consort_of = scope:consort
+		}
+
+		scope:consort = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 20
+			}
+		}
+		add_opinion = {
+			target = root
+			modifier = pleased_opinion
+			opinion = 25
+		}
+		hidden_effect = {
+			every_consort = {
+				limit = {
+					this != scope:consort
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				}
+				add_opinion = {
+					target = scope:consort
+					modifier = suspicion_opinion
+					opinion = -15
+				}
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = -0.1
+				ai_sociability = 0.1
+   			}
+			opinion_modifier = {
+				opinion_target = scope:consort
+				min = -25
+				max = 25
+				multiplier = 1
+			}
+			compatibility_modifier = { #Trait compatibility
+				compatibility_target = scope:consort_1
+				min = -20
+				max = 20
+				multiplier = 2
+			}
+
+			modifier = {
+				has_trait = gregarious
+				add = 10
+			}
+			modifier = {
+				has_trait = zealous
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = -15
+			}
+			modifier = {
+				has_trait = shy
+				add = -25
+			}
+
+			modifier = {
+				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
+				factor = 0
+			}
+        }
+    }
+	
+	option = { # Ignore them
+        name = harem_politics.0047.c
+		scope:consort = {
+			hidden_effect = {
+				if = {
+					limit = {
+						NOT = {
+							is_courtier_of = root
+						}
+					}
+					silent_disappearance_effect = yes
+				}
+			}
+		}
+        ai_chance = {
+            base = 20
+            ai_value_modifier = {
+				ai_honor = 0.1
+				ai_sociability = -0.15
+   			}
+			opinion_modifier = {
+				opinion_target = scope:consort
+				min = -25
+				max = 25
+				multiplier = -1
+			}
+			compatibility_modifier = { #Trait compatibility
+				compatibility_target = scope:consort_1
+				min = -20
+				max = 20
+				multiplier = -2
+			}
+
+			modifier = {
+				has_trait = gregarious
+				add = -15
+			}
+			modifier = {
+				has_trait = zealous
+				add = -10
+			}
+			modifier = {
+				has_trait = chaste
+				add = 15
+			}
+			modifier = {
+				has_trait = shy
+				add = 25
+			}
+
+			modifier = {
+				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
+				add = 100
+			}
+        }
+    }
+
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_praying_consort_flag
+				years = 4
+			}
 		}
 	}
 }
