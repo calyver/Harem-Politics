@@ -3,14 +3,12 @@
 ###############
 ##First event##
 ###############
-
 scripted_trigger valid_harem_consort_trigger = {
 	is_courtier_of = root
 	is_physically_able_ai_adult = yes
-	is_available_healthy_adult = yes
+	is_healthy = yes
 	NOR = { 
 		has_character_flag = visited_consort_flag 
-		has_trait = ill
 	}
 	OR = {
 		AND = {
@@ -25,6 +23,46 @@ scripted_trigger valid_harem_consort_trigger = {
 				is_travelling = no
 			}
 		}
+	}
+}
+scripted_trigger consort_events_hua_fei_trigger = {
+	valid_harem_consort_trigger = yes
+	harem_politics_evil_consort_trigger = yes
+	harem_politics_forgotten_consort_trigger = no
+	NOR = {
+		has_trait = craven
+		has_trait = shy
+	}
+}
+scripted_trigger consort_events_lingron_trigger = {
+	valid_harem_consort_trigger = yes
+	calyver_rank_is_superior_trigger = {
+		AUTHORITY = $HUA_FEI$
+		TARGET_CONSORT = this
+		HAREM_LIEGE = root
+	}
+	harem_politics_favored_consort_trigger = no
+	NOR = {
+		has_trait = pregnant
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
+		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
+
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $HUA_FEI$ }
+	}
+}
+scripted_trigger consort_events_hua_fei_lingron_trigger = {
+	is_physically_able_adult = yes
+	is_healthy = yes
+	any_consort = {
+		consort_events_hua_fei_trigger = yes
+		save_temporary_scope_as = hua_fei
+	}
+	any_consort = {
+		consort_events_lingron_trigger = { HUA_FEI = scope:hua_fei }
+	}
+	is_landed_or_landless_administrative = yes
+	NOT = {
+		has_character_flag = had_hua_fei_lingron_event_flag
 	}
 }
 
@@ -428,6 +466,15 @@ scripted_effect harem_random_event_effect = {
 			}
 			trigger_event = {
 				id = harem_events.0010 
+				days = { 5 14 }
+			}
+		}
+		15 = { # Consort Hua scolds Lingron
+			trigger = {
+				consort_events_hua_fei_lingron_trigger = yes
+			}
+			trigger_event = {
+				id = harem_events.0011 
 				days = { 5 14 }
 			}
 		}
@@ -3065,6 +3112,420 @@ harem_events.0010 = {
     }
 }
 
+##########################################
+##Consort Hua scolds Lingron for singing##
+##########################################
+harem_events.1011 = {
+	hidden = yes
+	
+	trigger = {
+		consort_events_hua_fei_lingron_trigger = yes
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				consort_events_hua_fei_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 20
+				}
+				modifier = {
+					root.primary_spouse ?= this
+					add = -10
+				}
+				modifier = {
+					add = {
+						value = ai_honor
+						multiply = -1
+					}
+				}
+			}
+			save_scope_as = hua_fei
+		}
+		if = {
+			limit = {
+				exists = scope:hua_fei
+			}
+			random_consort = {
+				limit = {
+					consort_events_lingron_trigger = { HUA_FEI = scope:hua_fei }
+				}
+				weight = {
+					base = 10
+					modifier = {
+						is_regular_concubine_of = {
+							LIEGE = root
+						}
+						add = 10
+					}
+					modifier = {
+						is_lowborn = yes
+						add = 15
+					}
+					modifier = {
+						add = diplomacy
+					}
+					modifier = {
+						has_trait = shy
+						add = 15
+					}
+					modifier = {
+						has_trait = craven
+						add = 15
+					}
+					modifier = {
+						harem_politics_unfavored_consort_trigger = yes
+						add = 15
+					}
+					modifier = {
+						harem_politics_forgotten_consort_trigger = yes
+						add = 15
+					}
+				}
+				save_scope_as = an_daying
+			}
+			if = {
+				limit = {
+					exists = scope:an_daying
+					scope:an_daying != scope:hua_fei
+				}
+				scope:an_daying = {
+					if = {
+						limit = {
+							diplomacy < decent_skill_rating
+						}
+						while = {
+							limit = {
+								diplomacy < decent_skill_rating
+							}
+							add_diplomacy_skill = 1
+						}
+					}
+				}
+				trigger_event = harem_events.0011
+			}
+			else = {
+				on_trigger_fail_visit_harem_fallback_effect = yes
+			}
+		}
+		else = {
+			on_trigger_fail_visit_harem_fallback_effect = yes
+		}
+	}
+}
+harem_events.0011 = {
+	type = character_event
+	title = harem_events.0001.t
+	desc = harem_events.0011.desc
+	
+	theme = family
+	override_background = {
+		reference = garden
+	}
+	
+	right_portrait = { 	
+		character = scope:hua_fei
+		animation = disapproval
+	}
+	right_portrait = { 	
+		character = scope:an_daying
+		animation = shame
+	}
+	
+	trigger = {
+		exists = scope:hua_fei
+		exists = scope:an_daying
+		scope:hua_fei != scope:an_daying
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+	
+	immediate = {
+
+	}
+	
+	# You summon Lingron to sing in your chambers
+	option = {
+        name = harem_events.0011.a
+		scope:an_daying = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = romance_opinion
+				opinion = 15
+			}
+			hidden_effect = {
+				add_character_flag = {
+					flag = visited_consort_flag
+					days = 20
+				}
+			}
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:an_daying
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		progress_towards_lover_effect = {
+			CHARACTER = scope:an_daying
+			OPINION = 0
+			REASON = lover_liege_harem_reason
+		}
+		scope:hua_fei = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+			add_opinion = {
+				target = scope:an_daying
+				modifier = upset_opinion
+				opinion = -15
+			}
+			progress_towards_rival_effect = {
+				CHARACTER = scope:an_daying
+				REASON = consort_rival_reason
+				OPINION = 0
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+			chaste = minor_stress_impact_gain
+		}
+		
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = 0.1
+				ai_sociability = -0.2
+			}
+			modifier = {
+				has_trait = shy
+				add = -25
+			}
+			modifier = {
+				has_trait = craven
+				add = -25
+			}
+			modifier = {
+				has_trait = chaste
+				add = -25
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = just
+				add = 15
+			}
+			compatibility_modifier = {
+				who = root
+				compatibility_target = scope:an_daying
+				multiplier = 1
+				max = 30
+				min = -30
+			}
+			opinion_modifier = {
+				opinion_target = scope:an_daying
+				multiplier = 1
+				min = -25
+				max = 25
+			}
+			modifier = {
+				NOT = { root = { is_attracted_to_gender_of = scope:an_daying } }
+				factor = 0
+			}
+        }
+    }
+
+	# Hua Fei is right
+	option = {
+        name = harem_events.0011.b
+		scope:hua_fei = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 15
+			}
+		}
+		scope:an_daying = {
+			calyver_favor_minor_loss_effect = yes
+			add_character_modifier = {
+				modifier = sleep_deprived_modifier
+				years = 2
+			}
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+			add_opinion = {
+				target = scope:hua_fei
+				modifier = upset_opinion
+				opinion = -15
+			}
+			progress_towards_rival_effect = {
+				CHARACTER = scope:hua_fei
+				REASON = consort_rival_reason
+				OPINION = 0
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+			just = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = -0.1
+			}
+			modifier = {
+				has_trait = shy
+				add = -25
+			}
+			modifier = {
+				has_trait = craven
+				add = -25
+			}
+			modifier = {
+				has_trait = lustful
+				add = -15
+			}
+			modifier = {
+				has_trait = just
+				add = -25
+			}
+			compatibility_modifier = {
+				who = root
+				compatibility_target = scope:hua_fei
+				multiplier = 1
+				max = 30
+				min = -30
+			}
+			opinion_modifier = {
+				opinion_target = scope:hua_fei
+				multiplier = 1
+				min = -25
+				max = 25
+			}
+			compatibility_modifier = {
+				who = root
+				compatibility_target = scope:an_daying
+				multiplier = -1
+				max = 30
+				min = -30
+			}
+			opinion_modifier = {
+				opinion_target = scope:an_daying
+				multiplier = -1
+				min = -25
+				max = 25
+			}
+        }
+    }
+
+	# I'll leave them to their dramas
+	option = {
+        name = harem_events.0011.b
+		custom_tooltip = harem_events.0002.b.tt
+		hidden_effect = {
+			scope:an_daying = {
+				progress_towards_rival_effect = {
+					CHARACTER = scope:hua_fei
+					REASON = consort_rival_reason
+					OPINION = 0
+				}
+				add_character_modifier = {
+					modifier = sleep_deprived_modifier
+					years = 2
+				}
+				add_opinion = {
+					target = scope:hua_fei
+					modifier = cruelty_opinion
+					opinion = -15
+				}
+				save_scope_as = secondary_recipient
+			}
+			scope:hua_fei = {
+				save_scope_as = authority
+			}
+			send_interface_toast = {
+				type = event_generic_bad
+				title = punished_consort_t
+				right_icon = scope:an_daying
+				left_icon = scope:hua_fei
+				custom_tooltip = punished_consort_desc
+			}
+		}
+		harem_random_event_effect = yes
+		stress_impact = {
+			just = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 10
+			ai_value_modifier = {
+				ai_honor = -0.1
+			}
+
+			modifier = {
+				has_trait = shy
+				add = 15
+			}
+			modifier = {
+				has_trait = craven
+				add = 15
+			}
+
+			modifier = {
+				has_trait = lustful
+				add = -15
+			}
+			modifier = {
+				has_trait = just
+				add = -25
+			}
+			compatibility_modifier = {
+				who = root
+				compatibility_target = scope:an_daying
+				multiplier = -1
+				max = 30
+				min = -30
+			}
+			opinion_modifier = {
+				opinion_target = scope:an_daying
+				multiplier = -1
+				min = -25
+				max = 25
+			}
+        }
+    }
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_hua_fei_lingron_event_flag
+				years = 4
+			}
+		}
+	}
+}
 ########################
 ## Worship Ancestors ##
 #######################
