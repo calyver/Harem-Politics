@@ -10244,7 +10244,16 @@ scripted_effect create_yanwan_effect = {
 ## Make them a concubine
 scripted_effect base_make_concubine_harem_politics_events_effect = {
 	hidden_effect = {
-		add_courtier = $CONSORT$
+		if = {
+			limit = {
+				$CONSORT$ = {
+					NOT = {
+						is_courtier_of = scooe:harem_liege
+					}
+				}
+			}
+			add_courtier = $CONSORT$
+		}
 		run_interaction = {
 			interaction = make_concubine_interaction
 			actor = scope:harem_liege
@@ -39496,6 +39505,12 @@ scripted_trigger praying_consort_trigger = {
 		is_virgin_trigger = yes
 		age <= 23
 	}
+	trigger_if = {
+		limit = {
+			exists = root.primary_spouse
+		}
+		this != root.primary_spouse
+	}
 }
 harem_politics.0047 = {
 	orphan = yes
@@ -39528,12 +39543,21 @@ harem_politics.0047 = {
 		is_available_healthy_adult = yes
 		trigger_if = {
 			limit = {
-				hp_accepts_concubinage = yes
+				NOT = {
+					any_courtier = {
+						praying_consort_trigger = yes
+					}
+				}
 			}
-			allowed_more_concubines = yes
-		}
-		trigger_else = {
-			allowed_more_spouses = yes
+			trigger_if = {
+				limit = {
+					hp_accepts_concubinage = yes
+				}
+				allowed_more_concubines = yes
+			}
+			trigger_else = {
+				allowed_more_spouses = yes
+			}
 		}
 		NOR = {
 			has_trait = cynical
@@ -39631,25 +39655,8 @@ harem_politics.0047 = {
 				hp_accepts_concubinage = yes
 				allowed_more_concubines = yes
 			}
-			if = {
-				limit = {
-					allowed_more_concubines = yes
-					is_character_interaction_valid = {
-						recipient = scope:consort
-						interaction = ai_make_concubine_interaction
-					}
-				}
-				hidden_effect = {
-					run_interaction = {
-						interaction = ai_make_concubine_interaction
-						actor = scope:harem_liege
-						recipient = scope:consort
-						execute_threshold = accept
-					}
-				}
-				show_as_tooltip = {
-					make_concubine = scope:consort
-				}
+			base_make_concubine_harem_politics_events_effect = {
+				CONSORT = scope:consort
 			}
 		}
 		else_if = {
