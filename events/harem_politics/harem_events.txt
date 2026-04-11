@@ -25,25 +25,10 @@ scripted_trigger valid_harem_consort_trigger = {
 		}
 	}
 }
-
-scripted_trigger consort_events_lingron_trigger = {
-	valid_harem_consort_trigger = yes
-	harem_politics_favored_consort_trigger = no
-	NOR = {
-		has_trait = pregnant
-		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
-		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
-		any_close_family_member = {
-			is_liege_or_above_of = root
-		}
-	}
-}
 scripted_trigger consort_events_hua_fei_trigger = {
 	valid_harem_consort_trigger = yes
-	calyver_rank_is_superior_trigger = {
-		HAREM_LIEGE = $LIEGE$
-		AUTHORITY = this
-		TARGET_CONSORT = $LINGRON$
+	is_high_ranking_consort_trigger = {
+		LIEGE = root
 	}
 	harem_politics_evil_consort_trigger = yes
 	harem_politics_forgotten_consort_trigger = no
@@ -52,19 +37,37 @@ scripted_trigger consort_events_hua_fei_trigger = {
 		has_trait = shy
 		has_trait = calm
 		has_trait = temperate
-		has_any_good_relationship_with_character_trigger = { CHARACTER = $LINGRON$ }
 	}
 }
+scripted_trigger consort_events_lingron_trigger = {
+	valid_harem_consort_trigger = yes
+	calyver_rank_is_superior_trigger = {
+		HAREM_LIEGE = $LIEGE$
+		AUTHORITY = $HUA_FEI$
+		TARGET_CONSORT = this
+	}
+	harem_politics_favored_consort_trigger = no
+	NOR = {
+		has_trait = pregnant
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
+		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $HUA_FEI$ }
+		any_close_family_member = {
+			is_liege_or_above_of = root
+		}
+	}
+}
+
 scripted_trigger consort_events_hua_fei_lingron_trigger = {
 	is_physically_able_adult = yes
 	is_healthy = yes
 	any_consort = {
-		consort_events_lingron_trigger = yes
-		save_temporary_scope_as = temporary_lingron
+		consort_events_hua_fei_trigger = yes
+		save_temporary_scope_as = temporary_hua_fei
 	}
 	any_consort = {
-		consort_events_hua_fei_trigger = { 
-			LINGRON = scope:temporary_lingron 
+		consort_events_lingron_trigger = {
+			HUA_FEI = scope:temporary_hua_fei
 			LIEGE = $LIEGE$
 		}
 	}
@@ -3141,112 +3144,110 @@ harem_events.1011 = {
 		}
 		random_consort = {
 			limit = {
-				consort_events_lingron_trigger = yes
+				consort_events_hua_fei_trigger = yes
 			}
 			weight = {
 				base = 10
 				modifier = {
-					is_regular_concubine_of = {
-						LIEGE = root
-					}
+					has_character_modifier = favor_boost_modifier
 					add = 10
 				}
 				modifier = {
-					is_lowborn = yes
-					add = 15
+					has_character_modifier = favored_consort_modifier
+					add = 10
 				}
 				modifier = {
-					add = diplomacy
+					has_character_modifier = beloved_consort_modifier
+					add = 20
 				}
 				modifier = {
-					has_trait = shy
-					add = 15
+					root.primary_spouse ?= this
+					add = -10
 				}
 				modifier = {
-					has_trait = craven
-					add = 15
-				}
-				modifier = {
-					harem_politics_unfavored_consort_trigger = yes
-					add = 15
-				}
-				modifier = {
-					harem_politics_forgotten_consort_trigger = yes
-					add = 15
-				}
-				modifier = {
-					NOR = {
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = root
-								is_councillor_of = root
-							}
-						}
-						house ?= {
-							house_head.top_liege ?= root.top_liege
-							is_dominant_family = yes
-							any_house_member = {
-								this = prev
-							}
-						}
+					add = {
+						value = ai_honor
+						multiply = -1
 					}
-					add = 15
 				}
 			}
-			save_scope_as = an_daying
+			save_scope_as = hua_fei
 		}
 		if = {
 			limit = {
-				exists = scope:an_daying
+				exists = scope:hua_fei
 			}
 			random_consort = {
 				limit = {
-					consort_events_hua_fei_trigger = { 
-						LINGRON = scope:an_daying 
+					consort_events_lingron_trigger = {
+						HUA_FEI = scope:hua_fei
 						LIEGE = root
 					}
 				}
 				weight = {
 					base = 10
 					modifier = {
-						has_character_modifier = favor_boost_modifier
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = favored_consort_modifier
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = beloved_consort_modifier
-						add = 20
-					}
-					modifier = {
-						root.primary_spouse ?= this
-						add = -10
-					}
-					modifier = {
-						add = {
-							value = ai_honor
-							multiply = -1
+						is_regular_concubine_of = {
+							LIEGE = root
 						}
-					}
-					modifier = {
-						has_relation_potential_rival = scope:an_daying
 						add = 10
 					}
 					modifier = {
-						has_relation_rival = scope:an_daying
+						is_lowborn = yes
+						add = 15
+					}
+					modifier = {
+						add = diplomacy
+					}
+					modifier = {
+						has_trait = shy
+						add = 15
+					}
+					modifier = {
+						has_trait = craven
+						add = 15
+					}
+					modifier = {
+						harem_politics_unfavored_consort_trigger = yes
+						add = 15
+					}
+					modifier = {
+						harem_politics_forgotten_consort_trigger = yes
+						add = 15
+					}
+					modifier = {
+						NOR = {
+							any_close_family_member = {
+								OR = {
+									is_powerful_vassal_of = root
+									is_councillor_of = root
+								}
+							}
+							house ?= {
+								house_head.top_liege ?= root.top_liege
+								is_dominant_family = yes
+								any_house_member = {
+									this = prev
+								}
+							}
+						}
+						add = 15
+					}
+					modifier = {
+						has_relation_potential_rival = scope:hua_fei
+						add = 10
+					}
+					modifier = {
+						has_relation_rival = scope:hua_fei
 						add = 20
 					}
 				}
-				save_scope_as = hua_fei
+				save_scope_as = an_daying
 			}
 			if = {
 				limit = {
 					exists = scope:an_daying
-					scope:hua_fei ?= {
-						this != scope:an_daying
-					}
+					scope:hua_fei != scope:an_daying
 				}
 				scope:an_daying = {
 					if = {
