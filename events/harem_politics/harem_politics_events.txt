@@ -10254,11 +10254,19 @@ scripted_effect base_make_concubine_harem_politics_events_effect = {
 			}
 			add_courtier = $CONSORT$
 		}
-		run_interaction = {
-			interaction = make_concubine_interaction
-			actor = scope:harem_liege
-			recipient = $CONSORT$
-			execute_threshold = accept
+		if = {
+			limit = {
+				is_character_interaction_valid = {
+					recipient = $CONSORT$
+					interaction = ai_make_concubine_interaction
+				}
+			}
+			run_interaction = {
+				interaction = ai_make_concubine_interaction
+				actor = scope:harem_liege
+				recipient = $CONSORT$
+				execute_threshold = accept
+			}
 		}
 	}
 	show_as_tooltip = {
@@ -10273,6 +10281,7 @@ scripted_effect take_special_concubine_event_effect = {
 	$RECIPIENT$ = {
 		if = {
 			limit = {
+				is_consort_of = root
 				root = {
 					any_consort = {
 						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
@@ -39513,7 +39522,6 @@ scripted_trigger praying_consort_trigger = {
 	}
 }
 harem_politics.0047 = {
-	orphan = yes
 	type = character_event
 	title = harem_politics.0047.t
 	desc = harem_politics.0047.desc
@@ -39665,14 +39673,22 @@ harem_politics.0047 = {
 				can_marry_character_trigger = { CHARACTER = scope:consort }
 			}
 			hidden_effect = {
-				run_interaction = {
-					interaction = arrange_marriage_interaction
-					actor = root
-					recipient = root
-					secondary_actor = root
-					secondary_recipient = scope:consort
-					execute_threshold = accept
+				save_scope_as = actor
+				save_scope_as = secondary_actor
+				save_scope_as = recipient
+				scope:consort = {
+					save_scope_as = secondary_recipient
 				}
+				if = {
+					limit = {
+						is_female = yes
+					}
+					marry_matrilineal = scope:consort
+				}
+				else = {
+					marry = scope:consort
+				}
+				marriage_interaction_on_accept_effect = yes
 			}
 			show_as_tooltip = {
 				marry = scope:consort
