@@ -7,7 +7,7 @@ scripted_trigger valid_harem_consort_trigger = {
 	is_courtier_of = root
 	is_physically_able_ai_adult = yes
 	is_healthy = yes
-	NOR = { 
+	NOR = {
 		has_character_flag = visited_consort_flag 
 	}
 	OR = {
@@ -33,6 +33,9 @@ scripted_trigger consort_events_lingron_trigger = {
 		has_trait = pregnant
 		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
 		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
+		any_close_family_member = {
+			is_liege_or_above_of = root
+		}
 	}
 }
 scripted_trigger consort_events_hua_fei_trigger = {
@@ -61,7 +64,7 @@ scripted_trigger consort_events_hua_fei_lingron_trigger = {
 	}
 	any_consort = {
 		consort_events_hua_fei_trigger = { 
-			HUA_FEI = scope:temporary_lingron 
+			LINGRON = scope:temporary_lingron 
 			LIEGE = $LIEGE$
 		}
 	}
@@ -480,7 +483,7 @@ scripted_effect harem_random_event_effect = {
 					consort_events_hua_fei_lingron_trigger = { LIEGE = root }
 				}
 				trigger_event = {
-					id = harem_events.0011 
+					id = harem_events.1011
 					days = { 5 14 }
 				}
 			}
@@ -3171,6 +3174,24 @@ harem_events.1011 = {
 					harem_politics_forgotten_consort_trigger = yes
 					add = 15
 				}
+				modifier = {
+					NOR = {
+						any_close_family_member = {
+							OR = {
+								is_powerful_vassal_of = root
+								is_councillor_of = root
+							}
+						}
+						house ?= {
+							house_head.top_liege ?= root.top_liege
+							is_dominant_family = yes
+							any_house_member = {
+								this = prev
+							}
+						}
+					}
+					add = 15
+				}
 			}
 			save_scope_as = an_daying
 		}
@@ -3181,7 +3202,7 @@ harem_events.1011 = {
 			random_consort = {
 				limit = {
 					consort_events_hua_fei_trigger = { 
-						HUA_FEI = scope:an_daying 
+						LINGRON = scope:an_daying 
 						LIEGE = root
 					}
 				}
@@ -3223,7 +3244,9 @@ harem_events.1011 = {
 			if = {
 				limit = {
 					exists = scope:an_daying
-					scope:an_daying != scope:hua_fei
+					scope:hua_fei ?= {
+						this != scope:an_daying
+					}
 				}
 				scope:an_daying = {
 					if = {
@@ -3398,7 +3421,7 @@ harem_events.0011 = {
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
-				opinion = -5
+				opinion = -15
 			}
 			add_opinion = {
 				target = scope:hua_fei
