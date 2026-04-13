@@ -135,7 +135,7 @@ calyver_update_harem_list_effect = {
 			}
 		}
 	}
-	# The Primary Spouse (when they're not the head of the harem, and there is only 1)
+	# The Primary Spouse (when they're not the head of the harem, and there is only 1) and the Four Consorts
 	if = {
 		limit = {
 			any_in_list = {
@@ -152,155 +152,201 @@ calyver_update_harem_list_effect = {
 				}
 				count = 0
 			}
-			any_in_list = {
-				list = harem_members_list
-				is_spouse_of = scope:harem_liege
-				NOR = {
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_primary_spouse_list
-							target = prev
+			OR = {
+				any_in_list = {
+					list = harem_members_list
+					is_spouse_of = scope:harem_liege
+					NOR = {
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_primary_spouse_list
+								target = prev
+							}
 						}
-					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_head_list
+								target = prev
+							}
 						}
+						this = scope:harem_head
 					}
-					this = scope:harem_head
+					count = 1
 				}
-				count = 1
+				AND = {
+					scope:harem_liege = {
+						can_have_four_consorts_trigger = yes
+					}
+					any_in_list = {
+						list = harem_members_list
+						is_high_consort_trigger = {
+							LIEGE = scope:harem_liege
+						}
+						NOR = {
+							scope:harem_liege = {
+								is_target_in_variable_list = {
+									name = harem_top_four_consort_list
+									target = prev
+								}
+							}
+							scope:harem_liege = {
+								is_target_in_variable_list = {
+									name = harem_primary_spouse_list
+									target = prev
+								}
+							}
+							scope:harem_liege = {
+								is_target_in_variable_list = {
+									name = harem_head_list
+									target = prev
+								}
+							}
+							this = scope:harem_head
+						}
+					}
+				}
 			}
 		}
-		random_in_list = {
-			list = harem_members_list
+		# The sole spouse
+		if = {
 			limit = {
-				is_spouse_of = scope:harem_liege
-				NOR = {
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_primary_spouse_list
-							target = prev
+				any_in_list = {
+					list = harem_members_list
+					is_spouse_of = scope:harem_liege
+					NOR = {
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_primary_spouse_list
+								target = prev
+							}
 						}
-					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_head_list
+								target = prev
+							}
 						}
+						this = scope:harem_head
 					}
-					this = scope:harem_head
+					count = 1
 				}
 			}
-			min = 0
-			scope:harem_liege = {
-				add_to_variable_list = {
-					name = harem_primary_spouse_list
-					target = prev
+			random_in_list = {
+				list = harem_members_list
+				limit = {
+					is_spouse_of = scope:harem_liege
+					NOR = {
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_primary_spouse_list
+								target = prev
+							}
+						}
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_head_list
+								target = prev
+							}
+						}
+						this = scope:harem_head
+					}
+				}
+				min = 0
+				save_temporary_scope_as = harem_primary_spouse
+				scope:harem_liege = {
+					add_to_variable_list = {
+						name = harem_primary_spouse_list
+						target = scope:harem_primary_spouse
+					}
 				}
 			}
 		}
-	}
-	# The Four Consorts
-	if = {
-		limit = {
-			scope:harem_liege = {
-				can_have_four_consorts_trigger = yes
-			}
-			any_in_list = {
-				list = harem_members_list
-				NOR = {
-					is_consort_of = scope:harem_liege
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
-						}
-					}
-					this = scope:harem_head
-				}
-				count = 0
-			}
-			any_in_list = {
-				list = harem_members_list
-				is_high_consort_trigger = {
-					LIEGE = scope:harem_liege
-				}
-				NOR = {
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_top_four_consort_list
-							target = prev
-						}
-					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_primary_spouse_list
-							target = prev
-						}
-					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
-						}
-					}
-					this = scope:harem_head
-				}
-			}
-		}
-		ordered_in_list = {
-			list = harem_members_list
+		# The Four Consorts
+		if = {
 			limit = {
-				is_high_consort_trigger = {
-					LIEGE = scope:harem_liege
+				scope:harem_liege = {
+					can_have_four_consorts_trigger = yes
 				}
-				NOR = {
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_top_four_consort_list
-							target = prev
-						}
+				any_in_list = {
+					list = harem_members_list
+					is_high_consort_trigger = {
+						LIEGE = scope:harem_liege
 					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_primary_spouse_list
-							target = prev
+					NOR = {
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_top_four_consort_list
+								target = prev
+							}
 						}
-					}
-					scope:harem_liege = {
-						is_target_in_variable_list = {
-							name = harem_head_list
-							target = prev
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_primary_spouse_list
+								target = prev
+							}
 						}
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_head_list
+								target = prev
+							}
+						}
+						this = scope:harem_head
 					}
-					this = scope:harem_head
 				}
 			}
-			order_by = {
-
-				#Favor
-				if = {
-					limit = {
-						has_variable = favor
+			ordered_in_list = {
+				list = harem_members_list
+				limit = {
+					is_high_consort_trigger = {
+						LIEGE = scope:harem_liege
 					}
-					add = var:favor
-					divide = 50
-				}
-				# Rank
-				if = {
-					limit = {
-						has_court_position = grand_consort_court_position
+					NOR = {
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_top_four_consort_list
+								target = prev
+							}
+						}
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_primary_spouse_list
+								target = prev
+							}
+						}
+						scope:harem_liege = {
+							is_target_in_variable_list = {
+								name = harem_head_list
+								target = prev
+							}
+						}
+						this = scope:harem_head
 					}
-					add = 35
 				}
-			}
-			min = 0
-			scope:harem_liege = {
-				add_to_variable_list = {
-					name = harem_top_four_consort_list
-					target = prev
+				order_by = {
+	
+					#Favor
+					if = {
+						limit = {
+							has_variable = favor
+						}
+						add = var:favor
+						divide = 50
+					}
+					# Rank
+					if = {
+						limit = {
+							has_court_position = grand_consort_court_position
+						}
+						add = 35
+					}
+				}
+				min = 0
+				scope:harem_liege = {
+					add_to_variable_list = {
+						name = harem_top_four_consort_list
+						target = prev
+					}
 				}
 			}
 		}
