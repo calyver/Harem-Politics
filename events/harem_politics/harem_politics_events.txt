@@ -39657,8 +39657,18 @@ harem_politics.0047 = {
 		hidden_effect = {
 			every_consort = {
 				limit = {
-					this != scope:consort
 					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					NOR = {
+						this = scope:consort
+						has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
+						has_opinion_modifier = {
+							target = root
+							modifier = forced_me_concubine_marriage_opinion
+						}
+						has_trait = trusting
+						has_trait = forgiving
+						has_trait = compationate
+					}
 				}
 				add_opinion = {
 					target = scope:consort
@@ -40433,7 +40443,7 @@ scripted_trigger is_valid_for_hp_1048_event_trigger = {
 	}
 	any_consort = {
 		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-		is_imprisoned = yes
+		is_imprisoned_by = root
 		save_temporary_scope_as = temporary_wu_yuanzhao
 	}
 	any_child = {
@@ -40577,284 +40587,149 @@ harem_politics.0048 = {
 	}
 	
 	immediate = {
+		scope:gaoyong = {
+			if = {
+				limit = {
+					NOR = {
+						any_owned_story = { type = story_cycle_pet_cat }
+						has_character_modifier = cat_story_modifier
 
+						any_owned_story = { type = story_cycle_pet_dog }
+						has_character_modifier = dog_story_modifier
+					}
+				}
+			}
+			start_cat_story_cycle_effect = yes
+		}
 	}
 
 	option = { # Wu is innocent
+		trigger = {
+			scope:wu_yuanzhao = {
+				is_imprisoned_by = root
+			}
+		}
         name = harem_politics.0048.a
-
-		hidden_effect = {
-			scope:consort = {
-				if = {
-					limit = {
-						NOT = {
-							is_courtier_of = root
-						}
-					}
-					root = {
-						add_courtier = prev
-					}
-				}
-			}
-		}
-		if = {
-			limit = {
-				hp_accepts_concubinage = yes
-				allowed_more_concubines = yes
-			}
-			base_make_concubine_harem_politics_events_effect = {
-				CONSORT = scope:consort
-			}
-		}
-		else_if = {
-			limit = {
-				allowed_more_spouses = yes
-				can_marry_character_trigger = { CHARACTER = scope:consort }
-			}
-			hidden_effect = {
-				save_scope_as = actor
-				save_scope_as = secondary_actor
-				save_scope_as = recipient
-				scope:consort = {
-					save_scope_as = secondary_recipient
-				}
-				if = {
-					limit = {
-						is_female = yes
-					}
-					marry_matrilineal = scope:consort
-				}
-				else = {
-					marry = scope:consort
-				}
-				marriage_interaction_on_accept_effect = yes
-			}
-			show_as_tooltip = {
-				marry = scope:consort
-			}
-		}
-		scope:consort = {
-			if = {
-				limit = {
-					root = {
-						any_consort = {
-							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-							has_variable = favor
-							count >= 3
-						}
-					}
-				}
-				set_variable = {
-					name = favor
-					value = initial_favor_valuation
-				}
-			}
-			calyver_favor_moderate_gain_effect = yes
+		scope:gaoyong = {
 			add_opinion = {
 				target = root
-				modifier = grateful_opinion
-				opinion = 20
+				modifier = pleased_opinion
+				opinion = 10
 			}
 		}
-		add_opinion = {
-			target = scope:consort
-			modifier = pleased_opinion
-			opinion = 25
-		}
-		hidden_effect = {
-			every_consort = {
-				limit = {
-					this != scope:consort
-					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-				}
-				add_opinion = {
-					target = scope:consort
-					modifier = suspicion_opinion
-					opinion = -15
-				}
+		scope:wu_yuanzhao = {
+			release_from_prison = yes
+			calyver_favor_minor_gain_effect = yes
+			improve_relationship_effect = {
+				TARGET = scope:gaoyong
+				REASON = plead_for_me_reason
+			}
+			add_opinion = {
+				target = scope:gaoyong
+				modifier = grateful_opinion
+				opinion = 10
 			}
 		}
 		stress_impact = {
-			shy = minor_stress_impact_gain
+			just = minor_stress_impact_gain
+			stuborn = minor_stress_impact_gain
+			forgiving = minor_stress_impact_loss
+			compassionate = minor_stress_impact_loss
+			fickle = minor_stress_impact_loss
 		}
         ai_chance = {
-            base = 20
+            base = 30
             ai_value_modifier = {
 				ai_honor = -0.1
-				ai_sociability = 0.1
+				ai_compassion = 0.5
    			}
 			opinion_modifier = {
-				opinion_target = scope:consort
+				opinion_target = scope:gaoyong
 				min = -25
 				max = 25
-				multiplier = 1
-			}
-			compatibility_modifier = { #Trait compatibility
-				compatibility_target = scope:consort
-				min = -20
-				max = 20
-				multiplier = 2
+				multiplier = 0.25
 			}
 
 			modifier = {
-				has_trait = gregarious
-				add = 10
-			}
-			modifier = {
-				has_trait = zealous
-				add = 15
-			}
-			modifier = {
-				has_trait = chaste
+				has_trait = callous
 				add = -15
 			}
 			modifier = {
-				has_trait = shy
+				has_trait = stubborn
 				add = -25
 			}
-
 			modifier = {
-				number_of_concubines < number_of_desired_concubines
+				has_trait = just
+				add = -25
+			}
+			modifier = {
+				has_trait = forgiving
 				add = 25
 			}
 			modifier = {
-				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
-				factor = 0
+				has_trait = compassionate
+				add = 25
+			}
+			modifier = {
+				has_trait = fickle
+				add = 25
 			}
         }
     }
 
-	option = { # You should spend more time with me
+	option = { # Wu is a criminal
         name = harem_politics.0048.b
-		trigger = {
-			is_consort_of = scope:consort
-		}
 
-		scope:consort = {
-			calyver_favor_moderate_gain_effect = yes
+		scope:gaoyong = {
 			add_opinion = {
 				target = root
-				modifier = grateful_opinion
-				opinion = 20
+				modifier = disappointed_opinion
+				opinion = -15
 			}
 		}
-		add_opinion = {
-			target = root
-			modifier = pleased_opinion
-			opinion = 25
-		}
-		hidden_effect = {
-			every_consort = {
-				limit = {
-					this != scope:consort
-					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-				}
-				add_opinion = {
-					target = scope:consort
-					modifier = suspicion_opinion
-					opinion = -15
-				}
-			}
-		}
+
 		stress_impact = {
-			shy = minor_stress_impact_gain
+			stuborn = minor_stress_impact_loss
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			fickle = minor_stress_impact_gain
 		}
         ai_chance = {
-            base = 20
-            ai_value_modifier = {
-				ai_honor = -0.1
-				ai_sociability = 0.1
-   			}
-			opinion_modifier = {
-				opinion_target = scope:consort
-				min = -25
-				max = 25
-				multiplier = 1
-			}
-			compatibility_modifier = { #Trait compatibility
-				compatibility_target = scope:consort
-				min = -20
-				max = 20
-				multiplier = 2
-			}
-
-			modifier = {
-				has_trait = gregarious
-				add = 10
-			}
-			modifier = {
-				has_trait = zealous
-				add = 15
-			}
-			modifier = {
-				has_trait = chaste
-				add = -15
-			}
-			modifier = {
-				has_trait = shy
-				add = -25
-			}
-
-			modifier = {
-				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
-				factor = 0
-			}
-        }
-    }
-	
-	option = { # Ignore them
-        name = harem_politics.0048.c
-		scope:consort = {
-			hidden_effect = {
-				if = {
-					limit = {
-						NOT = {
-							is_courtier_of = root
-						}
-					}
-					silent_disappearance_effect = yes
-				}
-			}
-		}
-        ai_chance = {
-            base = 20
+            base = 30
             ai_value_modifier = {
 				ai_honor = 0.1
-				ai_sociability = -0.15
+				ai_compassion = -0.5
    			}
 			opinion_modifier = {
-				opinion_target = scope:consort
+				opinion_target = scope:gaoyong
 				min = -25
 				max = 25
-				multiplier = -1
-			}
-			compatibility_modifier = { #Trait compatibility
-				compatibility_target = scope:consort
-				min = -20
-				max = 20
-				multiplier = -2
+				multiplier = -0.25
 			}
 
 			modifier = {
-				has_trait = gregarious
-				add = -15
-			}
-			modifier = {
-				has_trait = zealous
-				add = -10
-			}
-			modifier = {
-				has_trait = chaste
+				has_trait = callous
 				add = 15
 			}
 			modifier = {
-				has_trait = shy
+				has_trait = stubborn
 				add = 25
 			}
-
 			modifier = {
-				NOT = { root = { is_attracted_to_gender_of = scope:consort } }
-				add = 100
+				has_trait = just
+				add = 15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = fickle
+				add = -25
 			}
         }
     }
