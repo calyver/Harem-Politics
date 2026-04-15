@@ -22576,7 +22576,159 @@ consort_events.0041 = {
 	}
 }
 
+#########################################
+##Hidden events - A consort gets a pet ##
+#########################################
+scripted_trigger is_valid_target_consort_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_imprisoned = no
 
+	is_physically_able_ai_adult = yes
+	OR = {
+		is_relevant_consort_trigger = { LIEGE = root }
+		any_relation = {
+			type = rival
+			is_consort_of = root
+			is_courtier_of = root
+		}
+		any_relation = {
+			type = nemesis
+			is_consort_of = root
+			is_courtier_of = root
+		}
+	}
+}
+scripted_trigger is_valid_consort_for_pet_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_adult = yes
+	is_relevant_consort_trigger = { LIEGE = root }
+	NOR = {
+		any_owned_story = { type = story_cycle_pet_cat }
+		has_character_modifier = cat_story_modifier
+		any_owned_story = { type = story_cycle_pet_dog }
+		has_character_modifier = dog_story_modifier
+
+		has_character_modifier = cat_story_allergy_modifier
+	}
+}
+
+consort_events.0042 = {
+	hidden = yes
+	
+	trigger = {
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 4
+		}
+		any_consort = {
+			is_valid_consort_for_pet_trigger = yes
+			count <= 5
+		}
+		is_landed_or_landless_administrative = yes
+		NOT = {
+			has_character_flag = had_consort_pet_flag
+		}
+	}
+	
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				count >= 5
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				count >= 10
+			}
+		}
+
+		modifier = {
+			add = 0.15
+			highest_held_title_tier >= tier_kingdom
+		}
+
+	}
+	
+	immediate = {
+		save_scope_as = partner
+		random_consort = {
+			limit = {
+				is_valid_consort_for_pet_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					scope:partner.primary_spouse ?= this
+					add = 10
+				}
+				modifier = {
+					harem_politics_favored_consort_trigger = yes
+					add = 5
+				}
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 5
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 10
+				}
+				modifier = {
+					add = {
+						value = ai_compassion
+						multiply = 0.15
+					}
+				}
+			}
+			save_scope_as = target_consort
+		}
+
+		if = {
+			limit = {
+				exists = scope:target_consort
+			}
+			if = {
+				limit = {
+					debug_only = yes
+				}
+				send_interface_toast = {
+					type = event_generic_neutral
+					title = success_hidden_event_t
+					right_icon = scope:target_consort
+					scope:target_consort = {
+						random_list = {
+							1 = {
+								start_cat_story_cycle_effect = yes
+							}
+							1 = {
+								start_dog_story_cycle_effect = yes
+							}
+						}
+					}
+				}
+			}
+			else = {
+				scope:target_consort = {
+					random_list = {
+						1 = {
+							start_cat_story_cycle_effect = yes
+						}
+						1 = {
+							start_dog_story_cycle_effect = yes
+						}
+					}
+				}
+			}
+			add_character_flag = {
+				flag = had_consort_pet_flag
+				years = 1
+			}
+		}
+	}
+}
 #############################
 ## Elevate to High Consort ##
 #############################
