@@ -40439,7 +40439,7 @@ scripted_trigger is_valid_for_hp_1049_event_trigger = {
 	any_consort = {
 		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 		is_imprisoned = no
-		count >= 2
+		count >= 3
 	}
 	any_consort = {
 		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
@@ -40742,6 +40742,408 @@ harem_politics.0049 = {
 			add_character_flag = {
 				flag = had_gaoyang_wu_event_flag
 				years = 4
+			}
+		}
+	}
+}
+
+#########################################
+## Concubine Chun visits Concubine Jia ##
+#########################################
+scripted_trigger is_valid_jia_pin_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_imprisoned = no
+	is_physically_able_ai_adult = yes
+	is_healthy = yes
+	any_child = {
+		is_child_of = root
+		character_gender_can_inherit_from_trigger = { CHARACTER = root }
+		is_healthy = yes
+		age < 1
+	}
+	NOR = {
+		has_any_bad_relationship_with_root_trigger = yes
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+	}
+	trigger_if = {
+		limit = {
+			root = {
+				is_travelling = yes
+			}
+		}
+		is_travelling = yes
+		current_travel_plan = {
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
+}
+scripted_trigger is_valid_chun_pin_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_imprisoned = no
+	is_physically_able_ai_adult = yes
+	is_healthy = yes
+	any_child = {
+		is_child_of = root
+		character_gender_can_inherit_from_trigger = { CHARACTER = root }
+		is_healthy = yes
+		age >= 1
+	}
+	NOR = {
+		this = $JIA$
+		has_any_bad_relationship_with_root_trigger = yes
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+	}
+	trigger_if = {
+		limit = {
+			root = {
+				is_travelling = yes
+			}
+		}
+		is_travelling = yes
+		current_travel_plan = {
+			travel_plan_owner = root
+		}
+	}
+	trigger_else = {
+		is_travelling = no
+		root = {
+			is_travelling = no
+		}
+	}
+}
+scripted_trigger is_valid_for_hp_1050_event_trigger = {
+	is_landed_or_landless_administrative = yes
+
+	any_consort = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		is_imprisoned = no
+		count >= 4
+	}
+	any_consort = {
+		is_valid_jia_pin_trigger = yes
+		save_temporary_scope_as = temporary_jia_pin
+	}
+	any_consort = {
+		is_valid_chun_pin_trigger = { JIA = scope:temporary_jia_pin }
+	}
+
+	is_available_healthy_adult = yes
+
+	NOR = {
+		has_character_flag = had_chun_pin_jia_pin_event_flag
+	}
+}
+harem_politics.1050 = {
+	hidden = yes
+	
+	trigger = {
+		is_valid_for_hp_1050_event_trigger = yes
+	}
+	
+	immediate = {
+		save_scope_as = harem_liege
+		save_scope_as = liege
+		random_consort = {
+			limit = {
+				is_valid_jia_pin_trigger = yes
+			}
+			weight = {
+				base = 1
+				modifier = {
+					harem_politics_favored_consort_trigger = yes
+					add = 5
+				}
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 5
+				}
+				modifier = {
+					has_character_modifier = favor_boost_modifier
+					add = 5
+				}
+			}
+			save_scope_as = jia_pin
+		}
+		if = {
+			limit = {
+				exists = scope:jia_pin
+			}
+			scope:jia_pin = {
+				random_child = {
+					limit = {
+						is_child_of = root
+						character_gender_can_inherit_from_trigger = { CHARACTER = root }
+						is_healthy = yes
+						age < 1
+					}
+					save_scope_as = yongcheng
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:yongcheng
+				}
+				random_consort = {
+					limit = {
+						is_valid_chun_pin_trigger = { JIA = scope:jia_pin }
+					}
+					weight = {
+						base = 1
+						modifier = {
+							OR = {
+								harem_politics_unfavored_consort_trigger = yes
+								harem_politics_favored_consort_trigger = yes
+							}
+							add = 5
+						}
+						modifier = {
+							has_character_modifier = favor_boost_modifier
+							add = 5
+						}
+						modifier = {
+							has_trait = ambitious
+							add = 5
+						}
+						modifier = {
+							has_trait = arrogant
+							add = 5
+						}
+						modifier = {
+							any_child = {
+								is_child_of = root
+								count > 1
+							}
+							add = 5
+						}
+					}
+					save_scope_as = chun_pin
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:chun_pin
+				}
+				trigger_event = harem_politics.0050
+			}
+		}
+	}
+}
+harem_politics.0050 = {
+	type = character_event
+	title = harem_politics.0050.t
+	desc = harem_politics.0050.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	left_portrait  = {
+		character = scope:jia_pin
+		animation = acknowledging
+	}
+	right_portrait = {
+		character = scope:chun_pin
+		animation = interested
+	}
+	lower_center_portrait = {
+		character = scope:yongcheng
+	}
+	
+	trigger = {
+		is_valid_for_hp_1050_event_trigger = yes
+		exists = scope:jia_pin
+		exists = scope:chun_pin
+		exists = scope:yongcheng
+	}
+	
+	immediate = {
+		scope:jia_pin = {
+			calyver_favor_minor_gain_effect = yes
+			hidden_effect = {
+				if = {
+					limit = {
+						NOR = {
+							has_trait = trusting
+							has_trait = forgiving
+							has_trait = compassionate
+							has_trait = calm
+							has_any_good_relationship_with_character_trigger = { CHARACTER = scope:chun_pin }
+						}
+					}
+					add_opinion = {
+						target = scope:chun_pin
+						modifier = suspicion_opinion
+						opinion = -10
+					}
+				}
+			}
+		}
+	}
+
+	option = { # Promote Chun to High Consort
+		trigger = {
+			can_employ_char_to_high_consort_court_position_trigger = {
+				CONSORT = scope:chun_pin
+			}
+		}
+		name = harem_politics.0050.a
+        appoint_target_to_available_high_consort_court_position_effect = {
+			LIEGE = root
+			CONSORT = scope:loved_consort
+		}
+		scope:chun_pin = {
+			add_opinion = {
+				target = scope:gaoyang
+				modifier = grateful_opinion
+				opinion = 10
+			}
+		}
+		scope:jia_pin = {
+			worsen_relationship_effect = {
+				TARGET = scope:impatient_pilgrim
+				REASON = consort_rival_reason
+			}
+			add_opinion = {
+				target = scope:chun_pin
+				modifier = envy_opinion
+				opinion = -10
+			}
+		}
+        ai_chance = {
+            base = 30
+            ai_value_modifier = {
+				ai_honor = -0.1
+   			}
+			opinion_modifier = {
+				opinion_target = scope:chun_pin
+				min = -25
+				max = 25
+				multiplier = 0.25
+			}
+
+			modifier = {
+				scope:chun_pin = { harem_politics_favored_consort_trigger = yes }
+				add = 10
+			}
+			modifier = {
+				scope:chun_pin = {  harem_politics_beloved_consort_trigger = yes }
+				add = 10
+			}
+			modifier = {
+				scope:chun_pin = { has_character_modifier = favor_boost_modifier }
+				add = 10
+			}
+			modifier = {
+				add = {
+					value = scope:chun_pin.sum_of_all_skills_value
+					divide = 5
+				}
+				scope:chun_pin.sum_of_all_skills_value >= sum_of_all_skills_threshold_good
+			}
+        }
+    }
+
+	option = { # Chun is a good parent
+		name = harem_politics.0050.b
+		scope:chun_pin = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = scope:gaoyang
+				modifier = grateful_opinion
+				opinion = 10
+			}
+		}
+		scope:jia_pin = {
+			worsen_relationship_effect = {
+				TARGET = scope:impatient_pilgrim
+				REASON = consort_rival_reason
+			}
+			add_opinion = {
+				target = scope:chun_pin
+				modifier = envy_opinion
+				opinion = -5
+			}
+		}
+        ai_chance = {
+            base = 30
+            ai_value_modifier = {
+				ai_honor = 0.15
+   			}
+			opinion_modifier = {
+				opinion_target = scope:chun_pin
+				min = -25
+				max = 25
+				multiplier = 0.25
+			}
+
+			modifier = {
+				scope:chun_pin = { harem_politics_favored_consort_trigger = yes }
+				add = 10
+			}
+			modifier = {
+				scope:chun_pin = {  harem_politics_beloved_consort_trigger = yes }
+				add = 10
+			}
+			modifier = {
+				scope:chun_pin = { has_character_modifier = favor_boost_modifier }
+				add = 10
+			}
+			modifier = {
+				has_trait = gregarious
+				add = 10
+			}
+        }
+    }
+
+	option = { # Leave me alone with Jia
+		name = harem_politics.0050.c
+		scope:jia_pin = {
+			calyver_favor_minor_gain_effect = yes
+		}
+		scope:chun_pin = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+		}
+        ai_chance = {
+            base = 15
+            ai_value_modifier = {
+				ai_honor = -0.1
+   			}
+			opinion_modifier = {
+				opinion_target = scope:chun_pin
+				min = -25
+				max = 25
+				multiplier = -0.25
+			}
+			modifier = {
+				has_trait = callous
+				add = 15
+			}
+        }
+    }
+
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_chun_pin_jia_pin_event_flag
+				years = 2
 			}
 		}
 	}
