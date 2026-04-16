@@ -77,6 +77,74 @@ scripted_trigger consort_events_hua_fei_lingron_trigger = {
 		has_character_flag = had_hua_fei_lingron_event_flag
 	}
 }
+scripted_trigger consort_events_ying_pin_trigger = {
+	is_physically_able_ai_adult = yes
+	is_healthy = yes
+
+	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	
+	hp_accepts_harems = yes
+	
+	NOR = {
+		
+		has_any_bad_relationship_with_root_trigger = yes
+
+		has_opinion_modifier = {
+			target = root
+			modifier = forced_me_concubine_marriage_opinion
+		}
+		has_character_flag = had_harem_event_flag
+	}
+
+	opinion = {
+		target = root
+		value >= -15
+	}
+	
+	is_courtier_of = root
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+	OR = { #Isn't unfavored
+		AND = {
+			has_variable = favor
+			var:favor >= neutral_consort_lower_limit
+		}
+		NOT = {
+			has_variable = favor
+		}
+	}
+}
+scripted_trigger is_valid_for_concubine_ying_harem_event_trigger = {
+	any_consort = {
+		consort_events_ying_pin_trigger = yes
+	}
+	
+	any_consort = {
+		is_courtier_of = root
+		count >= 3
+	}
+	
+	NOT = {	
+		has_character_modifier = mourner_modifier
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+}
 
 scripted_effect visited_consort_scope_effect = {
 	$CONSORT$ = {
@@ -447,9 +515,7 @@ scripted_effect harem_random_event_effect = {
 			}
 			0 = { #You find Consort Ying playing in the garden
 				modifier = {
-					any_consort = {
-						consort_events_ying_pin_trigger = yes
-					}
+					is_valid_for_concubine_ying_harem_event_trigger = yes
 					add = 25
 				}
 				trigger_event = {
@@ -1950,69 +2016,6 @@ harem_events.0003 = {
 ##########################
 ##Meeting Concubine Ying##
 ##########################
-scripted_trigger consort_events_ying_pin_trigger = {
-	is_physically_able_ai_adult = yes
-	is_healthy = yes
-
-	is_demoted_consort_trigger = no
-	harem_politics_unfavored_consort_trigger = no
-	harem_politics_punished_consort_trigger = no
-	
-	hp_accepts_harems = yes
-	
-	NOR = {
-		
-		has_trait = pregnant
-		has_trait = lunatic_1
-		has_trait = lunatic_genetic
-		has_trait = possessed_1
-		has_trait = possessed_genetic
-		
-		has_trait = wounded
-		has_trait = ill
-		
-		has_relation_nemesis = root
-		has_relation_rival = root
-		has_relation_potential_rival = root
-
-		has_opinion_modifier = {
-			target = root
-			modifier = forced_me_concubine_marriage_opinion
-		}
-		has_character_flag = had_harem_event_flag
-	}
-
-	opinion = {
-		target = root
-		value >= -15
-	}
-	
-	is_courtier_of = root
-	OR = {
-		AND = {
-			is_travelling = yes
-			current_travel_plan ={
-				travel_plan_owner = root
-			}
-		}
-		AND = {
-			is_travelling = no
-			root = {
-				is_travelling = no
-			}
-		}
-	}
-	OR = { #Isn't unfavored
-		AND = {
-			has_variable = favor
-			var:favor >= neutral_consort_lower_limit
-		}
-		NOT = {
-			has_variable = favor
-		}
-	}
-}
-
 harem_events.0004 = {
 	type = character_event
 	title = harem_events.0004.t
@@ -2094,21 +2097,10 @@ harem_events.0004 = {
 	}
 	
 	trigger = {
-		any_consort = {
-			consort_events_ying_pin_trigger = yes
-		}
-		
-		any_consort = {
-			is_courtier_of = root
-			count >= 3
-		}
-		
-		NOT = {	
-			has_character_modifier = mourner_modifier
-		}
-		is_physically_able_adult = yes
-		is_at_war = no
-		is_landed_or_landless_administrative = yes
+		is_valid_for_concubine_ying_harem_event_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
 	}
 	
 	immediate = {
