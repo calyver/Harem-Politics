@@ -41009,7 +41009,7 @@ harem_politics.0050 = {
 		}
 		scope:chun_pin = {
 			add_opinion = {
-				target = scope:gaoyang
+				target = root
 				modifier = grateful_opinion
 				opinion = 10
 			}
@@ -41064,7 +41064,7 @@ harem_politics.0050 = {
 		scope:chun_pin = {
 			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
-				target = scope:gaoyang
+				target = root
 				modifier = grateful_opinion
 				opinion = 10
 			}
@@ -41164,6 +41164,25 @@ scripted_trigger yang_shufei_trigger = {
 		has_any_bad_relationship_with_root_trigger = yes
 	}
 }
+scripted_trigger yang_shufei_murder_trigger = {
+	scope:yang_shufei = {
+		harem_politics_evil_consort_trigger = yes
+		OR = {
+			has_any_bad_relationship_with_root_trigger = yes
+			has_opinion_modifier = {
+				modifier = forced_me_concubine_marriage_opinion
+				target = root
+			}
+			any_child = {
+				is_child_of = root
+				is_primary_heir_of = root
+				age >= 9
+			}
+		}
+		intrigue >= decent_skill_rating
+	}
+	age >= 40
+}
 harem_politics.0051 = {
 	type = character_event
 	title = harem_politics.0051.t
@@ -41194,7 +41213,7 @@ harem_politics.0051 = {
 			yang_shufei_trigger = yes
 		}
 		NOR = {
-			has_any_bad_relationship_with_root_trigger = yes
+			has_character_flag = had_yang_shufei_event_flag
 		}
 	}
 	
@@ -41238,123 +41257,182 @@ harem_politics.0051 = {
 		name = harem_politics.0051.a
         hidden_effect = {
 			random_list = {
-				10 = { # An innocent soup
-
+				39 = { # An innocent soup
+					send_interface_toast = {
+						type = event_generic_bad
+						title = punished_consort_t
+						right_icon = scope:yang_shufei
+						add_stress = minor_stress_impact_loss
+						if = {
+							limit = {
+								NOT = {
+									has_character_modifier = councillor_spouse_health_modifier
+								}
+								add_character_modifier = {
+									modifier = councillor_spouse_health_modifier
+									years = 2
+								}
+							}
+						}
+						add_opinion = {
+							target = scope:yang_shufei
+							modifier = pleased_opinion
+							opinion = 10
+						}
+						scope:yang_shufei = {
+							calyver_favor_minor_gain_effect = yes
+						}
+					}
+				}
+				1= { # It's poisoned
+					trigger = {
+						yang_shufei_murder_trigger = yes
+					}
+					modifier = {
+						scope:shu_fei = {
+							any_child = {
+								is_primary_heir_of = root
+							}
+							has_trait = ambitious
+						}
+						add = 2
+					}
+					modifier = {
+						root.designated_diarch ?= scope:yang_shufei
+						scope:shu_fei = {
+							any_child = {
+								is_primary_heir_of = root
+								is_adult = no
+							}
+						}
+						add = 2
+					}
+					# trigger_event = {
+					# 	id = harem_politics.0052
+					# 	days = { 2 4 }
+					# }
 				}
 			}
+		}
+		stress_impact = {
+			paranoid = minor_stress_impact_gain
 		}
         ai_chance = {
             base = 30
             ai_value_modifier = {
-				ai_honor = -0.1
+				ai_sociability = 0.1
    			}
 			opinion_modifier = {
-				opinion_target = scope:chun_pin
+				opinion_target = scope:yang_shufei
 				min = -25
 				max = 25
 				multiplier = 0.25
 			}
 
 			modifier = {
-				scope:chun_pin = { harem_politics_favored_consort_trigger = yes }
+				scope:yang_shufei = { harem_politics_favored_consort_trigger = yes }
 				add = 10
 			}
 			modifier = {
-				scope:chun_pin = {  harem_politics_beloved_consort_trigger = yes }
+				scope:yang_shufei = {  harem_politics_beloved_consort_trigger = yes }
 				add = 10
 			}
 			modifier = {
-				scope:chun_pin = { has_character_modifier = favor_boost_modifier }
+				scope:yang_shufei = { has_character_modifier = favor_boost_modifier }
 				add = 10
 			}
 			modifier = {
-				add = {
-					value = scope:chun_pin.sum_of_all_skills_value
-					divide = 5
-				}
-				scope:chun_pin.sum_of_all_skills_value >= sum_of_all_skills_threshold_good
-			}
-        }
-    }
-
-	option = { # Chun is a good parent
-		name = harem_politics.0051.b
-		scope:chun_pin = {
-			calyver_favor_minor_gain_effect = yes
-			add_opinion = {
-				target = scope:gaoyang
-				modifier = grateful_opinion
-				opinion = 10
-			}
-		}
-		scope:jia_pin = {
-			worsen_relationship_effect = {
-				TARGET = scope:impatient_pilgrim
-				REASON = consort_rival_reason
-			}
-			add_opinion = {
-				target = scope:chun_pin
-				modifier = envy_opinion
-				opinion = -5
-			}
-		}
-        ai_chance = {
-            base = 30
-            ai_value_modifier = {
-				ai_honor = 0.15
-   			}
-			opinion_modifier = {
-				opinion_target = scope:chun_pin
-				min = -25
-				max = 25
-				multiplier = 0.25
-			}
-
-			modifier = {
-				scope:chun_pin = { harem_politics_favored_consort_trigger = yes }
-				add = 10
-			}
-			modifier = {
-				scope:chun_pin = {  harem_politics_beloved_consort_trigger = yes }
-				add = 10
-			}
-			modifier = {
-				scope:chun_pin = { has_character_modifier = favor_boost_modifier }
-				add = 10
+				add = scope:yang_shufei.diplomacy
 			}
 			modifier = {
 				has_trait = gregarious
-				add = 10
+				add = 15
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+			modifier = {
+				has_trait = gluttonous
+				add = 15
+			}
+			modifier = {
+				has_trait = temperate
+				add = -15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = -25
+			}
+
+			modifier = {
+				yang_shufei_murder_trigger = yes
+				intrigue >= scope:yang_shufei.intrigue
+				add = -20
+			}
+
+			modifier = {
+				stress >= higher_than_baseline_stress
+				add = 15
 			}
         }
     }
 
-	option = { # Leave me alone with Jia
-		name = harem_politics.0051.c
-		scope:jia_pin = {
-			calyver_favor_minor_gain_effect = yes
-		}
-		scope:chun_pin = {
+	option = { # You reject the soup
+		name = harem_politics.0051.b
+		scope:yang_shufei = {
 			calyver_favor_minor_loss_effect = yes
 			add_opinion = {
 				target = root
 				modifier = disappointed_opinion
-				opinion = -15
+				opinion = -10
 			}
 		}
+		stress_impact = {
+			trusting = minor_stress_impact_gain
+			gluttonous = minor_stress_impact_gain
+		}
         ai_chance = {
-            base = 15
+            base = 30
             ai_value_modifier = {
-				ai_honor = -0.1
+				ai_sociability = -0.15
    			}
 			opinion_modifier = {
-				opinion_target = scope:chun_pin
+				opinion_target = scope:yang_shufei
 				min = -25
 				max = 25
 				multiplier = -0.25
 			}
+
 			modifier = {
-				has_trait = callous
+				scope:yang_shufei = { harem_politics_unfavored_consort_trigger = yes }
+				add = 10
+			}
+			modifier = {
+				scope:yang_shufei = {  harem_politics_forgotten_consort_trigger = yes }
+				add = 10
+			}
+
+			modifier = {
+				has_trait = trusting
+				add = -25
+			}
+			modifier = {
+				has_trait = gluttonous
+				add = -25
+			}
+			modifier = {
+				has_trait = temperate
+				add = 15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 25
+			}
+
+			modifier = {
+				yang_shufei_murder_trigger = yes
+				intrigue >= scope:yang_shufei.intrigue
 				add = 15
 			}
         }
@@ -41364,7 +41442,7 @@ harem_politics.0051 = {
 	after = {
 		hidden_effect = {
 			add_character_flag = {
-				flag = had_chun_pin_jia_pin_event_flag
+				flag = had_yang_shufei_event_flag
 				years = 2
 			}
 		}
