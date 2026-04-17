@@ -22761,6 +22761,413 @@ consort_events.0042 = {
 		}
 	}
 }
+######################
+##Summon to chambers##
+######################
+# A consort miscarries
+consort_events.0043 = {
+	type = character_event
+	title = consort_events.0043.t
+	desc = consort_events.0043.desc
+	theme = unfriendly
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = { 	
+		character = scope:recipient
+		animation = personality_rational # Check - she should be mad
+	}
+	right_portrait = { 	
+		character = scope:attendant
+		animation = shame # Check - he should beg
+	}
+	lower_center_portrait = { 	
+		character = scope:recipient # The pregnant consort
+	}
+	
+	trigger = {
+		scope:recipient = {
+			is_alive = yes
+			is_consort_of = scope:actor
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+			NOT = {
+				has_trait = pregnant
+			}
+			is_imprisoned = no
+			location ?= scope:actor.location
+		}
+		scope:actor = {
+			is_alive = yes
+			is_physically_able = yes
+			is_healthy = yes
+			is_imprisoned = no
+			NOR = {
+				has_trait = celibate
+				has_trait = devoted
+				has_trait = pregnant
+				has_trait = eunuch
+			}
+			harem_politics_accident_event_trigger = yes
+		}
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				harem_politics_bad_night_jealous_consort_trigger = yes
+			}
+			weight = {
+				base = 30
+				modifier = {
+					add = {
+						value = ai_compassion
+						multiply = -0.5
+					}
+				}
+				modifier = {
+					add = {
+						value = ai_honor
+						multiply = -0.5
+					}
+				}
+				modifier = {
+					add = {
+						value = ai_vengefulness
+						multiply = -0.5
+					}
+				}
+				modifier = {
+					add = {
+						value = ai_zeal
+						multiply = -0.2
+					}
+				}
+				opinion_modifier = { # Opinion
+					WHO = this
+					opinion_target = scope:recipient
+					min = -25
+					max = 25
+					multiplier = -0.5
+				}
+				modifier = {
+					exists = scope:actor.primary_spouse
+					this = scope:actor.primary_spouse
+					add = -15
+				}
+				modifier = {
+					has_high_consort_position_trigger = yes
+					add = -10
+				}
+				modifier = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:actor
+							is_councillor_of = scope:actor
+							is_liege_or_above_of = scope:actor
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = favored_consort_modifier
+					add = 10
+				}
+				modifier = {
+					has_character_modifier = beloved_consort_modifier
+					add = 20
+				}
+				modifier = {
+					has_relation_rival = scope:recipient
+					add = 10
+				}
+				modifier = {
+					has_relation_nemesis = scope:recipient
+					add = 20
+				}
+			}
+			save_scope_as = jealous_consort
+		}
+		scope:recipient = {
+			add_trait = wounded_1
+			hidden_effect = {
+				add_opinion = {
+					target = scope:jealous_consort
+					modifier = hatred_spouse_opinion
+				}
+				if = {
+					limit = {
+						can_set_relation_rival_trigger = { CHARACTER = scope:jealous_consort }
+					}
+					progress_towards_rival_effect = {
+						REASON = consort_rival_reason
+						CHARACTER = scope:jealous_consort
+						OPINION = 0
+					}
+				}
+				scope:jealous_consort = {
+					add_opinion = {
+						target = scope:recipient
+						modifier = jealousy_opinion
+						opinion = -15
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_courtier = {
+					is_valid_attendant_trigger = yes
+				}
+			}
+			random_courtier = {
+				limit = {	
+					is_valid_attendant_trigger = yes
+				}
+				weight = {
+					base = 1
+					modifier = {
+						sex_same_as = scope:recipient
+						add = 10
+					}
+				}
+				save_scope_as = attendant
+			}
+		}
+		else = {
+			save_scope_as = attendant
+		}
+	}
+
+	# Investigate the matter
+	option = {
+		name = consort_events.0043.a
+		add_summoned_to_chambers_flag_effect = yes
+		trigger_event = {
+			id = consort_events.0040
+			days = 1
+		}
+		ai_chance = {
+			base = 30
+			ai_value_modifier = {
+				ai_compassion = 0.25
+				ai_honor = 0.25
+				ai_energy = 0.25
+			}
+			opinion_modifier = { #Opinion
+				WHO = root
+				opinion_target = scope:recipient
+				min = -20
+				max = 20
+				multiplier = 0.2
+			}
+			modifier = {
+				has_trait = diligent
+				add = 15
+			}
+			modifier = {
+				scope:recipient = {
+					has_relation_rival = scope:actor
+				}
+				add = -10
+			}
+			modifier = {
+				scope:recipient = {
+					has_relation_nemesis = scope:actor
+				}
+				add = -20
+			}
+			modifier = {
+				scope:recipient = {
+					OR = {
+						has_relation_friend = scope:actor
+						has_relation_lover = scope:actor
+					}
+				}
+				add = 15
+			}
+			modifier = {
+				scope:recipient = {
+					OR = {
+						has_relation_best_friend = scope:actor
+						has_relation_soulmate = scope:actor
+					}
+				}
+				add = 25
+			}
+			modifier = {
+				scope:recipient = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:actor
+							is_councillor_of = scope:actor
+							is_liege_or_above_of = scope:actor
+							tier_difference = {
+								target = scope:actor
+								value >= 0
+							}
+						}
+					}
+				}
+				add = 25
+			}
+			modifier = { # Favor
+				add = 10
+				scope:recipient = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 20
+				scope:recipient = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 10
+				scope:recipient = {
+					has_character_modifier = favor_boost_modifier
+				}
+			}
+			# Rank
+			modifier = {
+				scope:recipient = {
+					has_high_consort_position_trigger = yes
+				}
+				add = 15
+			}
+			modifier = {
+				scope:recipient = {
+					is_spouse_of = scope:actor
+					NOR = {
+						this = scope:actor.primary_spouse
+						has_high_consort_position_trigger = yes
+					}
+				}
+				add = 10
+			}
+		}
+	}
+
+	# Ignore them
+	option = {
+		name = consort_events.0043.b
+		custom_tooltip = consort_events.0038.c.tt
+		remove_summoned_to_chambers_flag_effect = yes
+		hidden_effect = {
+			add_opinion = {
+				target = scope:recipient
+				modifier = indisposed_consort_opinion
+				opinion = -2
+			}
+		}
+		scope:recipient = {
+			calyver_favor_moderate_loss_effect = yes
+			add_opinion = {
+				target = scope:actor
+				modifier = disappointed_opinion
+				opinion = -15
+			}
+			#HANDLE TREATMENT
+			hidden_effect = {
+				if = {
+					limit = {
+						scope:actor = {
+							any_court_position_holder = {
+								type = court_physician_court_position
+							}
+						}
+					}
+					save_court_physician_as_effect = { SCOPE_NAME = court_physician }
+					if = {
+						limit = { exists = scope:court_physician }
+						wound_treatment_results_effect = { TREATMENT = safe OUTCOME = success }
+					}
+				}
+			}
+		}
+		stress_impact = {
+			just = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 30
+			ai_value_modifier = {
+				ai_compassion = -0.25
+				ai_honor = -0.25
+				ai_energy = -0.25
+			}
+			opinion_modifier = { #Opinion
+				WHO = root
+				opinion_target = scope:recipient
+				min = -20
+				max = 20
+				multiplier = -0.2
+			}
+			modifier = {
+				has_trait = callous
+				add = 15
+			}
+			modifier = {
+				has_trait = sadistic
+				add = 10
+			}
+			modifier = {
+				has_trait = just
+				add = -25
+			}
+			modifier = {
+				scope:recipient = {
+					has_relation_rival = scope:actor
+				}
+				add = 15
+			}
+			modifier = {
+				scope:recipient = {
+					has_relation_nemesis = scope:actor
+				}
+				add = 25
+			}
+			modifier = { # Favor
+				add = 10
+				scope:recipient = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 20
+				scope:recipient = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+			}
+			# Rank
+			modifier = {
+				scope:recipient = {
+					has_high_consort_position_trigger = yes
+				}
+				add = -15
+			}
+			modifier = {
+				scope:recipient = {
+					is_spouse_of = scope:actor
+					NOR = {
+						this = scope:actor.primary_spouse
+						has_high_consort_position_trigger = yes
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				scope:recipient = {
+					is_regular_concubine_of = {
+						LIEGE = scope:actor
+					}
+				}
+				add = 5
+			}
+		}
+	}
+}
+
 #############################
 ## Elevate to High Consort ##
 #############################
