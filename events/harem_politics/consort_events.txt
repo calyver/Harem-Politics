@@ -22862,7 +22862,7 @@ consort_events.0043 = {
 	# Go comfort the other consort
 	option = {
 		name = consort_events.0043.a
-		add_summoned_to_chambers_flag_effect = yes
+
 		scope:recipient = {
 			calyver_favor_minor_loss_effect = yes
 			if = {
@@ -22985,7 +22985,7 @@ consort_events.0043 = {
 	option = {
 		name = consort_events.0043.b
 		had_sex_with_effect = {
-			CHARACTER = scope:employee
+			CHARACTER = scope:recipient
 			PREGNANCY_CHANCE = pregnancy_chance
 		}
 		add_opinion = {
@@ -23087,6 +23087,7 @@ consort_events.0043 = {
 
 	after = {
 		hidden_effect = {
+			add_summoned_to_chambers_flag_effect = yes
 			add_character_flag = {
 				flag = had_pregnant_consort_miscarriage_event_flag
 				years = 1
@@ -23124,17 +23125,67 @@ consort_events.0044 = {
 	# Go comfort the other consort
 	option = {
 		name = consort_events.0044.a
-
+		scope:consort = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root 
+				modifier = thankful_opinion
+				opinion = 15
+			}
+		}
 		ai_chance = {
 			base = 1
 		}
 	}
 
-	# Ignore them
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_pregnant_consort_miscarriage_event_flag
+				years = 1
+			}
+			trigger_event = {
+				id = consort_events.0045
+				days = { 3 5}
+			}
+		}
+	}
+}
+consort_events.0044 = {
+	type = character_event
+	title = consort_events.0044.t
+	desc = consort_events.0044.desc
+	theme = unfriendly
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = { 	
+		character = scope:consort
+		animation = rage
+	}
+	right_portrait = { 	
+		character = root
+		animation = beg
+	}
+	
+	trigger = {
+		scope:actor = {
+			is_character_interaction_shown = {
+				recipient = scope:recipient
+    			interaction = summon_to_chambers_interaction
+			}
+		}
+	}
+	
+	immediate = {
+	}
+
+	# Sleep with the recipient again
 	option = {
-		name = consort_events.0044.b
+		name = consort_events.0043.b
 		had_sex_with_effect = {
-			CHARACTER = scope:employee
+			CHARACTER = scope:recipient
 			PREGNANCY_CHANCE = pregnancy_chance
 		}
 		add_opinion = {
@@ -23143,81 +23194,56 @@ consort_events.0044 = {
 			opinion = 5
 		}
 		scope:recipient = {
-			calyver_favor_moderate_gain_effect = yes
+			calyver_favor_minor_gain_effect = yes
 			add_opinion = {
 				modifier = romance_opinion
 				target = root
-				opinion = 15
+				opinion = 10
 			}
 		}
-		hidden_effect = {
-			# The miscarriage effect
-			send_interface_toast = {
-				type = event_generic_bad
-				title = consort_events.0044.b.tt
-				right_icon = scope:consort
-				scope:consort = {
-					pregnancy_cleanup_effect = yes
-					# Favor loss and opinion penalty
-					calyver_favor_minor_loss_effect = yes
-					add_opinion = {
-						modifier = disappointment_opinion
-						target = scope:recipient
-						opinion = -20
-					}
-				}
-			}
-		}
-		stress_impact = {
-			compassionate = minor_stress_impact_gain
-			forgiving = minor_stress_impact_gain
-		}
+
 		ai_chance = {
 			base = 30
-			ai_value_modifier = {
-				ai_compassion = -0.25
-				ai_honor = -0.25
-				ai_energy = -0.25
-			}
+
 			opinion_modifier = { #Opinion
 				WHO = root
-				opinion_target = scope:consort
+				opinion_target = scope:recipient
 				min = -20
 				max = 20
-				multiplier = -0.2
-			}
-			modifier = { # Favor
-				add = 5
-				scope:consort = {
-					has_character_modifier = unfavored_consort_modifier
-				}
+				multiplier = 0.2
 			}
 			modifier = { # Favor
 				add = 10
-				scope:consort = {
-					has_character_modifier = forgotten_consort_modifier
+				scope:recipient = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 20
+				scope:recipient = {
+					has_character_modifier = beloved_consort_modifier
 				}
 			}
 			# Rank
 			modifier = {
-				scope:actor.primary_spouse ?= scope:consort
-				add = -20
+				scope:actor.primary_spouse ?= scope:recipient
+				add = 20
 			}
 			modifier = {
-				scope:consort = {
+				scope:recipient = {
 					has_high_consort_position_trigger = yes
 				}
-				add = -15
+				add = 15
 			}
 			modifier = {
-				scope:consort = {
+				scope:recipient = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
 						has_high_consort_position_trigger = yes
 					}
 				}
-				add = -10
+				add = 10
 			}
 			modifier = {
 				has_trait = lustful
@@ -23243,7 +23269,6 @@ consort_events.0044 = {
 		}
 	}
 }
-
 #############################
 ## Elevate to High Consort ##
 #############################
