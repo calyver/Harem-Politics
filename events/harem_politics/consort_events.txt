@@ -22910,6 +22910,9 @@ consort_events.0043 = {
 			id = consort_events.0044
 			days = 1
 		}
+		stress_impact = {
+			lustful = minor_stress_impact_gain
+		}
 		ai_chance = {
 			base = 30
 			ai_value_modifier = {
@@ -22963,6 +22966,18 @@ consort_events.0043 = {
 				}
 				add = 10
 			}
+			modifier = {
+				has_trait = lustful
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = 15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = 15
+			}
 		}
 	}
 
@@ -22974,15 +22989,15 @@ consort_events.0043 = {
 			PREGNANCY_CHANCE = pregnancy_chance
 		}
 		add_opinion = {
-			modifier = recipient
-			target = scope:employee
-			opinion = 10
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
 		}
 		scope:recipient = {
 			calyver_favor_moderate_gain_effect = yes
 			add_opinion = {
 				modifier = romance_opinion
-				target = scope:liege
+				target = root
 				opinion = 15
 			}
 		}
@@ -22995,8 +23010,18 @@ consort_events.0043 = {
 				scope:consort = {
 					pregnancy_cleanup_effect = yes
 					# Favor loss and opinion penalty
+					calyver_favor_minor_loss_effect = yes
+					add_opinion = {
+						modifier = disappointment_opinion
+						target = scope:recipient
+						opinion = -20
+					}
 				}
 			}
+		}
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
 		}
 		ai_chance = {
 			base = 30
@@ -23007,56 +23032,36 @@ consort_events.0043 = {
 			}
 			opinion_modifier = { #Opinion
 				WHO = root
-				opinion_target = scope:recipient
+				opinion_target = scope:consort
 				min = -20
 				max = 20
 				multiplier = -0.2
 			}
-			modifier = {
-				has_trait = callous
-				add = 15
-			}
-			modifier = {
-				has_trait = sadistic
-				add = 10
-			}
-			modifier = {
-				has_trait = just
-				add = -25
-			}
-			modifier = {
-				scope:recipient = {
-					has_relation_rival = scope:actor
-				}
-				add = 15
-			}
-			modifier = {
-				scope:recipient = {
-					has_relation_nemesis = scope:actor
-				}
-				add = 25
-			}
 			modifier = { # Favor
-				add = 10
-				scope:recipient = {
+				add = 5
+				scope:consort = {
 					has_character_modifier = unfavored_consort_modifier
 				}
 			}
 			modifier = { # Favor
-				add = 20
-				scope:recipient = {
+				add = 10
+				scope:consort = {
 					has_character_modifier = forgotten_consort_modifier
 				}
 			}
 			# Rank
 			modifier = {
-				scope:recipient = {
+				scope:actor.primary_spouse ?= scope:consort
+				add = -20
+			}
+			modifier = {
+				scope:consort = {
 					has_high_consort_position_trigger = yes
 				}
 				add = -15
 			}
 			modifier = {
-				scope:recipient = {
+				scope:consort = {
 					is_spouse_of = scope:actor
 					NOR = {
 						this = scope:actor.primary_spouse
@@ -23066,12 +23071,360 @@ consort_events.0043 = {
 				add = -10
 			}
 			modifier = {
-				scope:recipient = {
-					is_regular_concubine_of = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_pregnant_consort_miscarriage_event_flag
+				years = 1
+			}
+		}
+	}
+}
+consort_events.0044 = {
+	type = character_event
+	title = consort_events.0044.t
+	desc = consort_events.0044.desc
+	theme = unfriendly
+	override_background = {
+		reference = bedchamber
+	}
+	
+	left_portrait = { 	
+		character = scope:recipient
+		animation = rage
+	}
+	right_portrait = { 	
+		character = scope:attendant
+		animation = beg # Check - he should beg
+	}
+	lower_center_portrait = { 	
+		character = scope:consort # The pregnant consort
+	}
+	
+	trigger = {
+		scope:recipient = {
+			is_alive = yes
+			is_consort_of = scope:actor
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+			NOT = {
+				has_trait = pregnant
+			}
+			location ?= scope:actor.location
+		}
+		scope:actor = {
+			is_alive = yes
+			is_physically_able = yes
+			is_healthy = yes
+			NOR = {
+				has_trait = celibate
+				has_trait = devoted
+				has_trait = pregnant
+				has_trait = eunuch
+			}
+			harem_politics_miscarriage_event_trigger = yes
+		}
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				harem_politics_bad_night_pregnant_consort_trigger = yes
+			}
+			weight = {
+				base = 1	
+				modifier = {
+					NOT = {
+						has_character_flag = birth_will_go_smoothly
+					}
+					add = 10
+				}
+				modifier = {
+					scope:actor.primary_spouse ?= this
+					add = 10
+				}
+				modifier = {
+					is_high_consort_trigger = {
 						LIEGE = scope:actor
 					}
+					add = 5
 				}
+				modifier = {
+					is_relevant_consort_trigger = { LIEGE = scope:actor }
+					add = 5
+				}
+			}
+			save_scope_as = consort
+		}
+		if = {
+			limit = {
+				any_courtier = {
+					is_valid_attendant_trigger = yes
+				}
+			}
+			random_courtier = {
+				limit = {	
+					is_valid_attendant_trigger = yes
+				}
+				weight = {
+					base = 1
+					modifier = {
+						sex_same_as = scope:recipient
+						add = 10
+					}
+				}
+				save_scope_as = attendant
+			}
+		}
+		else = {
+			save_scope_as = attendant
+		}
+	}
+
+	# Go comfort the other consort
+	option = {
+		name = consort_events.0044.a
+		add_summoned_to_chambers_flag_effect = yes
+		scope:recipient = {
+			calyver_favor_minor_loss_effect = yes
+			if = {
+				limit = {
+					NOR = {
+						has_trait = compassionate
+						has_trait = forgiving
+						has_trait = trusting
+						has_opinion_modifier = {
+							modifier = forced_me_concubine_marriage_opinion
+							target = scope:actor
+						}
+						is_attracted_to_gender_of = scope:actor
+						hp_accepts_harems = no
+						has_any_bad_relationship_with_root_trigger = yes
+						has_any_good_relationship_with_character_trigger = {
+							CHARACTER = scope:consort
+						}
+					}
+				}
+				add_opinion = {
+					target = scope:actor
+					modifier = disappointed_opinion
+					opinion = -5
+				}
+				hidden_effect = {
+					if = {
+						limit = {
+							harem_politics_evil_consort_trigger = yes
+						}
+						worsen_relationship_effect = {
+							TARGET = scope:impatient_pilgrim
+							REASON = consort_rival_reason
+						}
+						add_opinion = {
+							target = scope:consort
+							modifier = hatred_spouse_opinion
+							opinion = -10
+						}
+					}
+				}
+			}
+		}
+		trigger_event = {
+			id = consort_events.0044
+			days = 1
+		}
+		stress_impact = {
+			lustful = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 30
+			ai_value_modifier = {
+				ai_compassion = 0.25
+				ai_honor = 0.25
+				ai_energy = 0.25
+			}
+			opinion_modifier = { #Opinion
+				WHO = root
+				opinion_target = scope:consort
+				min = -20
+				max = 20
+				multiplier = 0.2
+			}
+			modifier = { # Favor
+				add = 10
+				scope:consort = {
+					has_character_modifier = favored_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 20
+				scope:consort = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 10
+				scope:consort = {
+					has_character_modifier = favor_boost_modifier
+				}
+			}
+			# Rank
+			modifier = {
+				scope:actor.primary_spouse ?= scope:consort
+				add = 20
+			}
+			modifier = {
+				scope:consort = {
+					has_high_consort_position_trigger = yes
+				}
+				add = 15
+			}
+			modifier = {
+				scope:consort = {
+					is_spouse_of = scope:actor
+					NOR = {
+						this = scope:actor.primary_spouse
+						has_high_consort_position_trigger = yes
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				has_trait = lustful
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = 15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = 15
+			}
+		}
+	}
+
+	# Ignore them
+	option = {
+		name = consort_events.0044.b
+		had_sex_with_effect = {
+			CHARACTER = scope:employee
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		add_opinion = {
+			modifier = romance_opinion
+			target = scope:recipient
+			opinion = 5
+		}
+		scope:recipient = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				modifier = romance_opinion
+				target = root
+				opinion = 15
+			}
+		}
+		hidden_effect = {
+			# The miscarriage effect
+			send_interface_toast = {
+				type = event_generic_bad
+				title = consort_events.0044.b.tt
+				right_icon = scope:consort
+				scope:consort = {
+					pregnancy_cleanup_effect = yes
+					# Favor loss and opinion penalty
+					calyver_favor_minor_loss_effect = yes
+					add_opinion = {
+						modifier = disappointment_opinion
+						target = scope:recipient
+						opinion = -20
+					}
+				}
+			}
+		}
+		stress_impact = {
+			compassionate = minor_stress_impact_gain
+			forgiving = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 30
+			ai_value_modifier = {
+				ai_compassion = -0.25
+				ai_honor = -0.25
+				ai_energy = -0.25
+			}
+			opinion_modifier = { #Opinion
+				WHO = root
+				opinion_target = scope:consort
+				min = -20
+				max = 20
+				multiplier = -0.2
+			}
+			modifier = { # Favor
 				add = 5
+				scope:consort = {
+					has_character_modifier = unfavored_consort_modifier
+				}
+			}
+			modifier = { # Favor
+				add = 10
+				scope:consort = {
+					has_character_modifier = forgotten_consort_modifier
+				}
+			}
+			# Rank
+			modifier = {
+				scope:actor.primary_spouse ?= scope:consort
+				add = -20
+			}
+			modifier = {
+				scope:consort = {
+					has_high_consort_position_trigger = yes
+				}
+				add = -15
+			}
+			modifier = {
+				scope:consort = {
+					is_spouse_of = scope:actor
+					NOR = {
+						this = scope:actor.primary_spouse
+						has_high_consort_position_trigger = yes
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_pregnant_consort_miscarriage_event_flag
+				years = 1
 			}
 		}
 	}
