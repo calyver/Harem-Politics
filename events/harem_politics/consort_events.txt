@@ -22763,10 +22763,8 @@ consort_events.0043 = {
 	type = character_event
 	title = consort_events.0043.t
 	desc = consort_events.0043.desc
-	theme = unfriendly
-	override_background = {
-		reference = bedchamber
-	}
+	theme = seduce_scheme
+	override_background = { reference = relaxing_room }
 	
 	left_portrait = { 	
 		character = scope:recipient
@@ -22774,7 +22772,7 @@ consort_events.0043 = {
 	}
 	right_portrait = { 	
 		character = scope:attendant
-		animation = beg # Check - he should beg
+		animation = beg
 	}
 	lower_center_portrait = { 	
 		character = scope:consort # The pregnant consort
@@ -23008,6 +23006,7 @@ consort_events.0043 = {
 				title = birth.3001.t
 				right_icon = scope:consort
 				scope:consort = {
+					end_pregnancy = yes
 					pregnancy_cleanup_effect = yes
 					# Favor loss and opinion penalty
 					calyver_favor_minor_loss_effect = yes
@@ -23106,11 +23105,11 @@ consort_events.0044 = {
 	
 	left_portrait = { 	
 		character = scope:consort
-		animation = rage
+		animation = crying
 	}
 	right_portrait = { 	
 		character = root
-		animation = beg
+		animation = worry
 	}
 	
 	trigger = {
@@ -23118,6 +23117,7 @@ consort_events.0044 = {
 	
 	immediate = {
 		scope:consort = {
+			end_pregnancy = yes
 			pregnancy_cleanup_effect = yes
 		}
 	}
@@ -23151,22 +23151,20 @@ consort_events.0044 = {
 		}
 	}
 }
-consort_events.0044 = {
+consort_events.0045 = {
 	type = character_event
-	title = consort_events.0044.t
-	desc = consort_events.0044.desc
+	title = consort_events.0045.t
+	desc = consort_events.0045.desc
 	theme = unfriendly
-	override_background = {
-		reference = bedchamber
-	}
+	override_background = { reference = relaxing_room }
 	
 	left_portrait = { 	
-		character = scope:consort
-		animation = rage
+		character = root
+		animation = thinking
 	}
 	right_portrait = { 	
-		character = root
-		animation = beg
+		character = scope:recipient
+		animation = disappointed
 	}
 	
 	trigger = {
@@ -23183,7 +23181,7 @@ consort_events.0044 = {
 
 	# Sleep with the recipient again
 	option = {
-		name = consort_events.0043.b
+		name = consort_events.0045.a
 		had_sex_with_effect = {
 			CHARACTER = scope:recipient
 			PREGNANCY_CHANCE = pregnancy_chance
@@ -23201,7 +23199,10 @@ consort_events.0044 = {
 				opinion = 10
 			}
 		}
-
+		add_summoned_to_chambers_flag_effect = yes
+		stress_impact = {
+			lustful = minor_stress_impact_loss
+		}
 		ai_chance = {
 			base = 30
 
@@ -23247,26 +23248,86 @@ consort_events.0044 = {
 			}
 			modifier = {
 				has_trait = lustful
-				add = 15
+				add = 25
 			}
 			modifier = {
 				has_trait = compassionate
-				add = -25
+				add = 15
 			}
 			modifier = {
 				has_trait = forgiving
-				add = -25
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = -15
 			}
 		}
 	}
 
-	after = {
-		hidden_effect = {
-			add_character_flag = {
-				flag = had_pregnant_consort_miscarriage_event_flag
-				years = 1
+	# Sleep with the recipient again
+	option = {
+		name = consort_events.0045.b
+		custom_tooltip = consort_events.0038.c.tt
+		remove_summoned_to_chambers_flag_effect = yes
+		ai_chance = {
+			base = 20
+
+			opinion_modifier = { #Opinion
+				WHO = root
+				opinion_target = scope:recipient
+				min = -20
+				max = 20
+				multiplier = -0.2
+			}
+			modifier = { # Favor
+				add = -15
+				scope:recipient = {
+					has_character_modifier = beloved_consort_modifier
+				}
+			}
+			# Rank
+			modifier = {
+				scope:actor.primary_spouse ?= scope:recipient
+				add = -15
+			}
+			modifier = {
+				scope:recipient = {
+					has_high_consort_position_trigger = yes
+				}
+				add = -10
+			}
+			modifier = {
+				scope:recipient = {
+					is_spouse_of = scope:actor
+					NOR = {
+						this = scope:actor.primary_spouse
+						has_high_consort_position_trigger = yes
+					}
+				}
+				add = 5
+			}
+			modifier = {
+				has_trait = lustful
+				add = -15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = {
+				has_trait = chaste
+				add = 15
 			}
 		}
+	}
+
+
+	after = {
 	}
 }
 #############################
