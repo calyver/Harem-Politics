@@ -235,6 +235,72 @@ could_marry_character_trigger = {
 		scope:can_marry_check = { is_spouse_of = $CHARACTER$ }
 	}
 }
+# Same as above, switching out could_marry_character_trigger for can_take_as_concubine_character_trigger, in order to better inform the player that they cannot take their ex-spouse as a concubine
+can_become_concubine_of_character_valid_trigger = {
+	is_available_quick = {
+		adult = yes
+		ruler = no
+		advanced_ruler = no
+	}
+	trigger_if = {
+		limit = {
+			NOT = { is_imprisoned_by = $CHARACTER$ }
+		}
+		is_married = no
+		is_betrothed = no
+		is_concubine = no
+		is_diarch = no
+		number_of_concubines = 0
+	}
+	trigger_if = {
+		limit = {
+			is_imprisoned_by = $CHARACTER$
+			is_married = yes
+		}
+		NOT = { is_spouse_of = $CHARACTER$ }
+	}
+	NOR = {
+		is_concubine_of = $CHARACTER$
+		has_character_flag = has_been_offered_as_concubine
+	}
+	can_take_as_concubine_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, allowed to marry, no illegal incest etc.
+	has_any_disease_trigger = no
+	has_easily_mocked_physical_attribute_trigger = no
+	trigger_if = {
+		limit = {
+			court_owner ?= {
+				this != $CHARACTER$
+			}
+		}
+		court_owner = {
+			save_temporary_scope_as = consort_court_owner
+		}
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = scope:consort_court_owner
+			RECEIVER = $CHARACTER$
+		}
+	}
+	trigger_else_if = {
+		limit = {
+			host ?= {
+				this != $CHARACTER$
+			}
+		}
+		host = {
+			save_temporary_scope_as = consort_court_owner
+		}
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = scope:consort_court_owner
+			RECEIVER = $CHARACTER$
+		}
+	}
+	trigger_else = {
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = $CHARACTER$ 
+			RECEIVER = $CHARACTER$
+		}
+	}
+}
 
 ## Harem Politics triggers ##
 valid_marriage_legitimacy_rank_trigger = {
