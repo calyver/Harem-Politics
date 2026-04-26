@@ -1313,28 +1313,40 @@ marry_off_interaction = {
 		#otherwise, populate with anyone eligible
 		else = {
 			scope:secondary_actor = {
-				every_opposite_sex_spouse_candidate = { add_to_list = characters }
 				if = {
-					limit = { allowed_to_marry_same_sex_trigger = yes }
-					every_same_sex_spouse_candidate = {
+					limit = {
+						culture = { has_cultural_parameter = reduced_marriage_acceptance_distant_realms }
+					}
+					every_opposite_sex_spouse_candidate = {
 						limit = {
-							scope:secondary_actor != this
+							top_liege.culture = scope:secondary_actor.top_liege.culture
 						}
 						add_to_list = characters
 					}
-				}
-			}
-			# Cleanup list if insular culture
-			if = {
-				limit = {
-					scope:secondary_actor.culture = { has_cultural_parameter = reduced_marriage_acceptance_distant_realms }
-				}
-				every_in_list = {
-					list = characters
-					limit = {
-						NOT = { top_liege.culture = scope:secondary_actor.top_liege.culture }
+					if = {
+						limit = { allowed_to_marry_same_sex_trigger = yes }
+						every_same_sex_spouse_candidate = {
+							limit = {
+								scope:secondary_actor != this
+								top_liege.culture = scope:secondary_actor.top_liege.culture
+							}
+							add_to_list = characters
+						}
 					}
-					remove_from_list = characters
+				}
+				else = {
+					every_opposite_sex_spouse_candidate = {
+						add_to_list = characters
+					}
+					if = {
+						limit = { allowed_to_marry_same_sex_trigger = yes }
+						every_same_sex_spouse_candidate = {
+							limit = {
+								scope:secondary_actor != this
+							}
+							add_to_list = characters
+						}
+					}
 				}
 			}
 		}
@@ -1656,6 +1668,12 @@ marry_off_interaction = {
 	send_option = {
 		flag = matrilineal
 		localization = "MATRILINEAL_OFFER"
+		is_shown = {
+			NAND = {
+				scope:secondary_actor ?= { is_male = yes }
+				scope:secondary_recipient ?= { is_male = yes }
+			}
+		}
 		starts_enabled = {
 			scope:actor = {
 				OR = {
@@ -1663,16 +1681,26 @@ marry_off_interaction = {
 						has_doctrine = doctrine_gender_female_dominated
 					}
 					AND = {
-						scope:secondary_actor = { is_female = yes }
+						scope:secondary_actor ?= { is_female = yes }
 						faith = { has_doctrine = doctrine_gender_equal }
 					}
 					AND = {
-						exists = scope:secondary_actor
-						scope:actor = scope:secondary_actor
+						scope:secondary_actor ?= this
 						is_female = yes
 						is_ai = no
 					}
+					AND = {
+						scope:secondary_actor ?= { is_female = yes }
+						scope:secondary_recipient ?= { is_female = yes }
+					}
 				}
+			}
+		}
+		# so they can use grand wedding...
+		can_be_changed = {
+			NAND = {
+				scope:secondary_actor ?= { is_female = yes }
+				scope:secondary_recipient ?= { is_female = yes }
 			}
 		}
 	}
@@ -1692,11 +1720,6 @@ marry_off_interaction = {
 		is_shown = { # Actor must have a government that uses influence
 			scope:actor = {
 				government_has_flag = government_has_influence
-				exists = top_liege
-			}
-			scope:recipient ?= {
-				government_has_flag = government_has_influence
-				top_liege ?= scope:actor.top_liege
 			}
 		}
 		is_valid = {
