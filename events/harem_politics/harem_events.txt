@@ -146,6 +146,40 @@ scripted_trigger is_valid_for_concubine_ying_harem_event_trigger = {
 	is_landed_or_landless_administrative = yes
 }
 
+scripted_trigger is_valid_for_visit_matriarch_decision_trigger = {
+	can_execute_decision = visit_matriarch_decision
+	any_ancestor = {
+		is_eligible_harem_member_trigger = {
+			LIEGE = root
+		}
+		trigger_if = {
+			limit = {
+				root = {
+					any_ancestor = {
+						is_grandparent_of = root
+						is_eligible_harem_member_trigger = {
+							LIEGE = root
+						}
+					}
+				}
+			}
+			is_grandparent_of = root
+		}
+		trigger_else = {
+			is_parent_of = root
+		}
+		NOR = { 
+			has_any_bad_relationship_with_root_trigger = yes
+			has_opinion_modifier = {
+				target = root
+				modifier = pleased_opinion
+			}
+			has_trait = forgiving
+			has_trait = compassionate
+			has_character_flag = had_matriarch_requested_visit_event_flag
+		}
+	}
+}
 scripted_effect visited_consort_scope_effect = {
 	$CONSORT$ = {
 		save_scope_as = target_consort
@@ -436,6 +470,7 @@ scripted_effect visited_consort_scope_effect = {
 }
 
 scripted_effect harem_random_event_effect = {
+	custom_tooltip = harem_events.0001.e.tt
 	hidden_effect = {
 		random_list = {
 			25 = { #Your consorts are performing
@@ -554,6 +589,15 @@ scripted_effect harem_random_event_effect = {
 				}
 				trigger_event = {
 					id = harem_events.1011
+					days = { 5 14 }
+				}
+			}
+			15 = { # The Empress Dowager scolds you for not visiting her
+				trigger = {
+					is_valid_for_visit_matriarch_decision_trigger
+				}
+				trigger_event = {
+					id = harem_events.0012
 					days = { 5 14 }
 				}
 			}
@@ -1598,9 +1642,7 @@ harem_events.0001 = {
 	}
 	
 	option = { # Just take a walk
-		name = harem_events.0001.e
-		custom_tooltip = harem_events.0001.e.tt
-		
+		name = harem_events.0001.e		
 		##OTHER EVENTS##
 		harem_random_event_effect = yes
 		
@@ -3558,6 +3600,355 @@ harem_events.0011 = {
 			add_character_flag = {
 				flag = had_hua_fei_lingron_event_flag
 				years = 4
+			}
+		}
+	}
+}
+
+#######################################################
+## Your matriarch is mad at you for not visiting her ##
+#######################################################
+harem_events.0012 = {
+	type = character_event
+	title = harem_events.00012.t
+	desc = harem_events.0012.desc
+	
+	theme = family
+	override_background = {
+		reference = garden
+	}
+	
+	left_portrait = { 	
+		character = scope:hua_fei
+		animation = disapproval
+	}
+	right_portrait = { 	
+		character = root
+		animation = eyeroll
+	}
+	
+	trigger = {
+		is_valid_for_visit_matriarch_decision_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+	
+	immediate = {
+		# Muslim: mother first, then grandmother
+		if = {
+			limit = {
+				religion = religion:islam_religion
+				any_parent = {
+					is_eligible_harem_member_trigger = { LIEGE = root }
+				}
+			}
+			random_parent = {
+				limit = {
+					is_eligible_harem_member_trigger = { LIEGE = root }
+				}
+				save_scope_as = matriarch
+			}
+		}
+		else_if = {
+			limit = {
+				any_ancestor = {
+					is_eligible_harem_member_trigger = {
+						LIEGE = root
+					}
+					is_grandparent_of = root
+				}
+			}
+			random_ancestor = {
+				limit = {
+					is_eligible_harem_member_trigger = {
+						LIEGE = root
+					}
+					is_grandparent_of = root
+				}
+				save_scope_as = matriarch
+			}
+		}
+		else = {
+			random_parent = {
+				limit = {
+					is_eligible_harem_member_trigger = { LIEGE = root }
+				}
+				save_scope_as = matriarch
+			}
+		}
+		scope:matriarch = {
+			save_scope_as = attendant
+		}
+	}
+	
+	# Okay then, I shall visit you
+	option = {
+        name = harem_events.0012.a
+		trigger = {
+			can_execute_decision = visit_matriarch_decision
+		}
+		execute_decision = visit_matriarch_decision
+		
+        ai_chance = {
+            base = 45
+			ai_value_modifier = {
+				ai_honor = 0.2
+				ai_sociability = 0.2
+				ai_compassion = 0.5
+				ai_zeal = 0.3
+			}
+			opinion_modifier = {
+				opinion_target = scope:matriarch
+				multiplier = 1
+				min = -25
+				max = 25
+			}
+			modifier = {
+				faith = {
+					has_doctrine_parameter = parents_get_hooks_on_children
+				}
+				add = 25
+			}
+			modifier = {
+				has_trait = arrogant
+				add = -15
+			}
+			modifier = {
+				has_trait = callous
+				add = -15
+			}
+			modifier = {
+				has_trait = lustful
+				add = -15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = -15
+			}
+			modifier = {
+				has_trait = chaste
+				add = 15
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = 15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = 15
+			}
+			modifier = {
+				has_trait = humble
+				add = 15
+			}
+			modifier = {
+				has_trait = zealous
+				add = 15
+			}
+        }
+    }
+
+	# But I was just planning to visit you
+	option = {
+        name = harem_events.0012.b
+		duel = {
+			skill = diplomacy
+			target = scope:matriarch
+			# She believes you
+			50 = {
+				compare_modifier = {
+					value = scope:duel_value
+					multiplier = 3.5
+					min = -49
+				}
+				modifier = {
+					scope:matriarch.intrigue < root.intrigue
+					add = {
+						value = root.intrigue
+						subtract = scope:matriarch.intrigue
+					}
+				}
+				desc = harem_events.0012.b.success
+				scope:matriarch = {
+					add_opinion = {
+						target = root
+						modifier = pleased_opinion
+						opinion = 15
+					}
+				}
+			}
+			# She doesn't believe you
+			50 = {
+				compare_modifier = {
+					value = scope:duel_value
+					multiplier = -3.5
+					min = -49
+				}
+				modifier = {
+					scope:matriarch.intrigue > root.intrigue
+					add = {
+						value = scope:matriarch.intrigue
+						subtract = root.intrigue
+					}
+				}
+				desc = harem_events.0012.b.failure
+				scope:matriarch = {
+					add_opinion = {
+						target = root
+						modifier = frustrated_opinion
+						opinion = -10
+					}
+				}
+				add_piety = minor_piety_loss
+			}
+		}
+		harem_random_event_effect = yes
+        ai_chance = {
+            base = 45
+			ai_value_modifier = {
+				ai_honor = -0.1
+				ai_zeal = -0.15
+				ai_compassion = -0.15
+			}
+			opinion_modifier = {
+				opinion_target = scope:matriarch
+				multiplier = -1
+				min = -25
+				max = 25
+			}
+			modifier = {
+				has_trait = callous
+				add = 15
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = -15
+			}
+			modifier = {
+				has_trait = trusting
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+			modifier = {
+				has_trait = zealous
+				add = -15
+			}
+        }
+    }
+
+	# I'll visit you when I see fit
+	option = {
+        name = harem_events.0012.c
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -10
+			}
+		}
+		add_piety = medium_piety_loss
+		if = {
+			limit = {
+				faith = {
+					has_doctrine_parameter = parents_get_hooks_on_children
+				}
+			}
+			zealous = minor_stress_impact_gain
+		}
+		stress_impact = {
+			forgiving = minor_stress_impact_gain
+			compassionate = minor_stress_impact_gain
+			humble = minor_stress_impact_gain
+		}
+		harem_random_event_effect = yes
+        ai_chance = {
+            base = 45
+			ai_value_modifier = {
+				ai_honor = -0.5
+				ai_zeal = -0.2
+				ai_compassion = -0.5
+			}
+			opinion_modifier = {
+				opinion_target = scope:matriarch
+				multiplier = -1
+				min = -25
+				max = 25
+			}
+			modifier = {
+				has_trait = arrogant
+				add = 15
+			}
+			modifier = {
+				has_trait = callous
+				add = 15
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = -15
+			}
+			modifier = {
+				has_trait = trusting
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -25
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -25
+			}
+			modifier = {
+				has_trait = humble
+				add = -25
+			}
+			modifier = {
+				has_trait = zealous
+				add = -15
+			}
+			modifier = {
+				faith = {
+					has_doctrine_parameter = parents_get_hooks_on_children
+				}
+				has_trait = zealous
+				add = -10
+			}
+        }
+    }
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_matriarch_requested_visit_event_flag
+				years = 2
 			}
 		}
 	}
