@@ -3,183 +3,7 @@
 ###############
 ##First event##
 ###############
-scripted_trigger valid_harem_consort_trigger = {
-	is_courtier_of = root
-	is_physically_able_ai_adult = yes
-	is_healthy = yes
-	NOR = {
-		has_character_flag = visited_consort_flag 
-	}
-	OR = {
-		AND = {
-			is_travelling = yes
-			current_travel_plan ={
-				travel_plan_owner = root
-			}
-		}
-		AND = {
-			is_travelling = no
-			root = {
-				is_travelling = no
-			}
-		}
-	}
-}
-scripted_trigger consort_events_hua_fei_trigger = {
-	valid_harem_consort_trigger = yes
-	is_high_ranking_consort_trigger = {
-		LIEGE = root
-	}
-	harem_politics_evil_consort_trigger = yes
-	harem_politics_forgotten_consort_trigger = no
-	NOR = {
-		has_trait = craven
-		has_trait = shy
-		has_trait = calm
-		has_trait = temperate
-	}
-}
-scripted_trigger consort_events_lingron_trigger = {
-	valid_harem_consort_trigger = yes
-	harem_politics_favored_consort_trigger = no
-	NOR = {
-		has_trait = pregnant
-		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
-		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
-		has_any_good_relationship_with_character_trigger = { CHARACTER = $HUA_FEI$ }
-		any_close_family_member = {
-			is_liege_or_above_of = root
-		}
-	}
-	save_temporary_scope_as = temporary_lingron
-	calyver_rank_is_superior_trigger = {
-		HAREM_LIEGE = $LIEGE$
-		AUTHORITY = $HUA_FEI$
-		TARGET_CONSORT = scope:temporary_lingron
-	}
-}
-
-scripted_trigger consort_events_hua_fei_lingron_trigger = {
-	is_physically_able_adult = yes
-	is_healthy = yes
-	any_consort = {
-		consort_events_hua_fei_trigger = yes
-		save_temporary_scope_as = temporary_hua_fei
-	}
-	any_consort = {
-		consort_events_lingron_trigger = {
-			HUA_FEI = scope:temporary_hua_fei
-			LIEGE = $LIEGE$
-		}
-	}
-	is_landed_or_landless_administrative = yes
-	NOT = {
-		has_character_flag = had_hua_fei_lingron_event_flag
-	}
-}
-scripted_trigger consort_events_ying_pin_trigger = {
-	is_physically_able_ai_adult = yes
-	is_healthy = yes
-
-	is_demoted_consort_trigger = no
-	harem_politics_unfavored_consort_trigger = no
-	harem_politics_punished_consort_trigger = no
-	
-	hp_accepts_harems = yes
-	
-	NOR = {
-		
-		has_any_bad_relationship_with_root_trigger = yes
-
-		has_opinion_modifier = {
-			target = root
-			modifier = forced_me_concubine_marriage_opinion
-		}
-		has_character_flag = had_harem_event_flag
-	}
-
-	opinion = {
-		target = root
-		value >= -15
-	}
-	
-	is_courtier_of = root
-	OR = {
-		AND = {
-			is_travelling = yes
-			current_travel_plan ={
-				travel_plan_owner = root
-			}
-		}
-		AND = {
-			is_travelling = no
-			root = {
-				is_travelling = no
-			}
-		}
-	}
-	OR = { #Isn't unfavored
-		AND = {
-			has_variable = favor
-			var:favor >= neutral_consort_lower_limit
-		}
-		NOT = {
-			has_variable = favor
-		}
-	}
-}
-scripted_trigger is_valid_for_concubine_ying_harem_event_trigger = {
-	any_consort = {
-		consort_events_ying_pin_trigger = yes
-	}
-	
-	any_consort = {
-		is_courtier_of = root
-		count >= 3
-	}
-	
-	NOT = {	
-		has_character_modifier = mourner_modifier
-	}
-	is_physically_able_adult = yes
-	is_at_war = no
-	is_landed_or_landless_administrative = yes
-}
-
-scripted_trigger is_valid_for_visit_matriarch_decision_trigger = {
-	can_execute_decision = visit_matriarch_decision
-	any_ancestor = {
-		is_eligible_harem_member_trigger = {
-			LIEGE = root
-		}
-		trigger_if = {
-			limit = {
-				root = {
-					any_ancestor = {
-						is_grandparent_of = root
-						is_eligible_harem_member_trigger = {
-							LIEGE = root
-						}
-					}
-				}
-			}
-			is_grandparent_of = root
-		}
-		trigger_else = {
-			is_parent_of = root
-		}
-		NOR = { 
-			has_any_bad_relationship_with_root_trigger = yes
-			has_opinion_modifier = {
-				target = root
-				modifier = pleased_opinion
-			}
-			has_trait = forgiving
-			has_trait = compassionate
-			has_character_flag = had_matriarch_requested_visit_event_flag
-		}
-	}
-}
+scripted_trigger 
 scripted_effect visited_consort_scope_effect = {
 	$CONSORT$ = {
 		save_scope_as = target_consort
@@ -469,142 +293,6 @@ scripted_effect visited_consort_scope_effect = {
 	}
 }
 
-scripted_effect harem_random_event_effect = {
-	custom_tooltip = harem_events.0001.e.tt
-	hidden_effect = {
-		random_list = {
-			25 = { #Your consorts are performing
-				modifier = {
-					any_consort = {
-						is_courtier_of = root
-						has_character_flag = flag_new_consort
-						count >= 3
-					}
-					add = 10
-				}
-				modifier = {
-					any_consort = {
-						is_courtier_of = root
-						count >= 5
-					}
-					add = 5
-				}
-				trigger_event = {
-					id = harem_politics.0016
-					days = { 5 14 }
-				}
-			}
-			25 = { #You find two consorts on a walk
-				modifier = {
-					any_consort = {
-						is_courtier_of = root
-						count >= 4
-					}
-					add = 10
-				}
-				trigger_event = {
-					id = harem_politics.0020
-					days = { 5 14 }
-				}
-			}
-			5 = { #Meeting Consort Ling through Consort Chun
-				modifier = {
-					highest_held_title_tier < tier_kingdom
-					factor = 0
-				}
-				trigger_event = {
-					id = harem_politics.0009
-					days = { 5 14 }
-				}
-			}
-			5 = { #Meeting Consort Ling through Consort Jia
-				modifier = {
-					highest_held_title_tier < tier_kingdom
-					factor = 0
-				}
-				trigger_event = {
-					id = harem_politics.0010
-					days = { 5 14 }
-				}
-			}
-			25 = { #Yu disrespects Zhen Huan
-				modifier = {
-					any_consort = {
-						is_courtier_of = root
-						has_character_flag = flag_new_consort
-						count >= 3
-					}
-					add = 10
-				}
-				modifier = {
-					any_consort = {
-						is_courtier_of = root
-						count >= 5
-					}
-					add = 10
-				}
-				trigger_event = {
-					id = harem_politics.0019
-					days = { 5 14 }
-				}
-			}
-			0 = { #You find Consort Ying playing in the garden
-				modifier = {
-					is_valid_for_concubine_ying_harem_event_trigger = yes
-					add = 25
-				}
-				trigger_event = {
-					id = harem_events.0004
-					days = { 5 14 }
-				}
-			}
-			25 = { #Generic event	
-				modifier = {
-					OR = {	
-						has_trait = impotent
-						has_trait = lovers_pox 
-						has_trait = early_great_pox 
-						has_trait = inbred 
-					}
-					add = 20
-				}
-				modifier = {
-					any_consort = {
-						count <= 3
-					}
-					add = 10
-				}
-				modifier = {
-					stress_level >= 1
-					add = 20
-				}
-				trigger_event = {
-					id = harem_events.0010 
-					days = { 5 14 }
-				}
-			}
-			15 = { # Consort Hua scolds Lingron
-				trigger = {
-					consort_events_hua_fei_lingron_trigger = { LIEGE = root }
-				}
-				trigger_event = {
-					id = harem_events.1011
-					days = { 5 14 }
-				}
-			}
-			15 = { # The Empress Dowager scolds you for not visiting her
-				trigger = {
-					is_valid_for_visit_matriarch_decision_trigger
-				}
-				trigger_event = {
-					id = harem_events.0012
-					days = { 5 14 }
-				}
-			}
-		}
-	}
-}
-
 scripted_effect on_trigger_fail_visit_harem_fallback_effect = {
 	if = {
 		limit = {
@@ -682,11 +370,7 @@ harem_events.0001 = {
 	}
 	
 	trigger = {
-		any_consort = {
-			valid_harem_consort_trigger = yes
-			count >= 3
-		}
-		is_landed_or_landless_administrative = yes
+		harem_events_choose_consort_trigger = yes
 	}
 	on_trigger_fail = {
 		on_trigger_fail_visit_harem_fallback_effect = yes
@@ -1644,6 +1328,10 @@ harem_events.0001 = {
 	option = { # Just take a walk
 		name = harem_events.0001.e		
 		##OTHER EVENTS##
+		add_character_flag = {
+			name = harem_event_reroll_flag
+			days = 20
+		}
 		harem_random_event_effect = yes
 		
 		ai_chance = {
@@ -3166,6 +2854,9 @@ harem_events.1011 = {
 	
 	trigger = {
 		consort_events_hua_fei_lingron_trigger = { LIEGE = root }
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
 	}
 	
 	immediate = {
