@@ -6355,45 +6355,48 @@ request_concubine_interaction_on_accept_effect = {
 					modifier = forced_me_concubine_marriage_opinion
 				}
 			}
-			hidden_effect = {
-				every_close_family_member = {
-					limit = { 
-						this != scope:actor # Don't hate yourself.
-						this != scope:recipient
-					}
-					send_interface_toast = {
-						type = event_toast_effect_neutral
-						title = msg_close_family_member_offered_as_concubine_title
-						right_icon = scope:actor
-						left_icon = scope:secondary_actor
-						scope:actor = {
-							show_as_tooltip = {
-								make_concubine = scope:secondary_actor
-							}
-						}
-					}
-				}
-			}
 	
 			# Family members of victim are also angry that you've forced them into concubinage.
 			every_close_family_member = {
 				limit = { 
 					this != scope:actor # Don't hate yourself.
-					OR = {
-						AND = {
-							hp_accepts_concubinage = no
-							NOT = { faith = { has_doctrine = tenet_polyamory } }
-						}
-						AND = {
-							allowed_to_marry_same_sex_trigger = no
-							scope:actor = { sex_same_as = scope:secondary_actor }
+				}
+				if = {
+					limit = { 
+						this != scope:recipient
+					}
+					hidden_effect = {
+						send_interface_toast = {
+							type = event_toast_effect_neutral
+							title = msg_close_family_member_offered_as_concubine_title
+							right_icon = scope:actor
+							left_icon = scope:secondary_actor
+							scope:actor = {
+								show_as_tooltip = {
+									make_concubine = scope:secondary_actor
+								}
+							}
 						}
 					}
 				}
-				custom = all_family_members
-				add_opinion = {
-					target = scope:actor
-					modifier = relative_in_blasphemous_union_opinion
+				if = {
+					limit = {
+						OR = {
+							AND = {
+								hp_accepts_concubinage = no
+								NOT = { faith = { has_doctrine = tenet_polyamory } }
+							}
+							AND = {
+								allowed_to_marry_same_sex_trigger = no
+								scope:actor = { sex_same_as = scope:secondary_actor }
+							}
+						}
+					}
+					custom = all_family_members
+					add_opinion = {
+						target = scope:actor
+						modifier = relative_in_blasphemous_union_opinion
+					}
 				}
 			}
 	
