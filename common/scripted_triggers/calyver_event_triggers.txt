@@ -1996,3 +1996,62 @@ is_valid_for_visit_matriarch_decision_trigger = {
 	}
 	NOT = { has_character_flag = had_matriarch_requested_visit_event_flag }
 }
+
+## You overhear two consorts gossiping ##
+# General trigger
+harem_events_valid_gossiping_consort_trigger = {
+	valid_harem_consort_trigger = yes
+	NOT = {
+		has_any_bad_relationship_with_root_trigger = yes
+	}
+}
+# Two consorts gossip about you
+# An older consort gives information about you
+harem_events_is_valid_new_consort_trigger = {
+	harem_events_valid_gossiping_consort_trigger = yes
+	has_character_flag = flag_new_consort
+	NOR = {
+		has_trait = pregnant
+		any_child = {
+			even_if_dead = yes
+			is_child_of = root
+			count > 0
+		}
+	}
+}
+harem_events_is_valid_older_consort_trigger = {
+	harem_events_valid_gossiping_consort_trigger = yes
+	NOR = {
+		this = $CONSORT$
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = $CONSORT$ }
+	}
+	OR = {
+		any_child = {
+			even_if_dead = yes
+			is_child_of = root
+			count > 0
+		}
+		NOT = {
+			has_character_flag = flag_new_consort
+		}
+	}
+}
+harem_events_gossiping_about_liege_consorts_trigger = {
+	is_physically_able_adult = yes
+	is_healthy = yes
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 4
+	}
+	any_consort = {
+		harem_events_is_valid_new_consort_trigger = yes
+		save_temporary_scope_as = temporary_consort
+	}
+	any_consort = {
+		harem_events_is_valid_older_consort_trigger = { CONSORT = scope:temporary_consort }
+	}
+	is_landed_or_landless_administrative = yes
+	NOT = {
+		has_character_flag = had_gossiping_consorts_about_liege_event_flag
+	}
+}

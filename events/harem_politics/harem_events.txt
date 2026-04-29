@@ -4088,6 +4088,376 @@ harem_events.0013 = {
 		}
 	}
 }
+###################################
+## Two consorts gossip about you ##
+###################################
+harem_events.1014 = {
+	hidden = yes
+	
+	trigger = {
+		harem_events_gossiping_about_liege_consorts_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+	
+	immediate = {
+		if = {
+			limit = {
+				NOT = {
+					exists = scope:harem_liege
+				}
+			}
+			save_scope_as = harem_liege
+		}
+		random_consort = {
+			limit = {
+				harem_events_is_valid_new_consort_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					has_trait = shy
+					add = 10
+				}
+				modifier = {
+					has_trait = brave
+					add = 10
+				}
+				modifier = {
+					has_trait = lustful
+					add = 10
+				}
+				modifier = {
+					has_trait = ambitious
+					add = 10
+				}
+				modifier = {
+					has_trait = greedy
+					add = 10
+				}
+				modifier = {
+					has_trait = arrogant
+					add = 5
+				}
+			}
+			save_scope_as = new_consort
+		}
+		if = {
+			limit = {
+				exists = scope:new_consort
+			}
+			random_consort = {
+				limit = {
+					harem_events_is_valid_older_consort_trigger = yes
+				}
+				weight = {
+					base = 10
+					modifier = {
+						add = this.age
+					}
+					modifier = {
+						any_child = {
+							even_if_dead = yes
+							is_child_of = root
+							count > 0
+						}
+						add = 10
+					}
+					modifier = {
+						any_child = {
+							even_if_dead = yes
+							is_child_of = root
+							count > 1
+						}
+						add = 10
+					}
+					modifier = {
+						NOT = {
+							has_character_flag = flag_new_consort
+						}
+						add = 15
+					}
+				}
+				save_scope_as = older_consort
+			}
+			if = {
+				limit = {
+					exists = scope:older_consort
+					scope:new_consort != scope:older_consort
+				}
+				trigger_event = harem_events.0014
+			}
+			else = {
+				on_trigger_fail_visit_harem_fallback_effect = yes
+			}
+		}
+		else = {
+			on_trigger_fail_visit_harem_fallback_effect = yes
+		}
+	}
+}
+harem_events.1014 = {
+	type = character_event
+	title = harem_events.0001.t
+	desc = harem_events.1014.desc
+	
+	theme = family
+	override_background = {
+		reference = garden
+	}
+	
+	left_portrait = { 	
+		character = scope:older_consort
+		animation = fanning
+	}
+	right_portrait = { 	
+		character = scope:new_consort
+		animation = happiness
+	}
+	
+	trigger = {
+		harem_events_gossiping_about_liege_consorts_trigger = yes
+		exists = scope:older_consort
+		exists = scope:new_consort
+		scope:older_consort != scope:new_consort
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+	
+	immediate = {
+
+	}
+	
+	# Step inside
+	option = {
+        name = harem_events.1014.a
+
+		random_list = {
+			25 = { # The consort will be impressed by you
+				modifier = {
+					add = root.diplomacy
+				}
+			}
+		}
+		stress_impact = {
+			shy = minor_stress_impact_gain
+			craven = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_honor = 0.1
+				ai_boldness = 0.1
+			}
+			modifier = {
+				has_trait = shy
+				add = -25
+			}
+			modifier = {
+				has_trait = chaste
+				add = -25
+			}
+			modifier = {
+				has_trait = zealous
+				OR = {
+					faith = { trait_is_sin = lustful }
+					faith = { trait_is_sin = deviant }
+					trait_is_shunned_or_criminal_in_faith_trigger = {
+						FAITH = root.faith
+						TRAIT = trait:deviant
+						GENDER_CHARACTER = root
+					}
+				}
+				add = -25
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = deviant
+				add = 15
+			}
+			modifier = {
+				has_sexuality = asexual
+				add = -15
+			}
+        }
+    }
+
+	# Ban the lessons
+	option = {
+        name = harem_events.1014.b
+
+		scope:lustful_consort = {
+			add_opinion = {
+				target = root
+				modifier = disapproval_opinion
+				opinion = -10
+			}
+		}
+		scope:prudent_consort = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+		}
+		hidden_effect = {
+			every_consort = { # Lustful consorts are unhappy
+				limit = {
+					valid_harem_consort_trigger = yes
+					this != scope:lustful_consort
+					OR = {
+						has_trait = lustful
+						has_trait = deviant
+					}
+					trigger_if = {
+						limit = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = root
+							}
+						}
+						OR = {
+							has_trait = greedy
+							has_trait = ambitious
+							has_trait = arrogant
+						}
+					}
+					NAND = {
+						has_trait = zealous
+						OR = {
+							faith = { trait_is_sin = lustful }
+							faith = { trait_is_sin = deviant }
+							trait_is_shunned_or_criminal_in_faith_trigger = {
+								FAITH = this.faith
+								TRAIT = trait:deviant
+								GENDER_CHARACTER = this
+							}
+						}
+						NOT = { has_trait = arbitrary }
+					}
+				}
+				add_opinion = {
+					target = root
+					modifier = disappointed_opinion
+					opinion = -10
+				}
+			}
+		}
+		
+		stress_impact = {
+			lustful = minor_stress_impact_gain
+			deviant = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_boldness = -0.2
+			}
+			modifier = {
+				has_trait = shy
+				add = 15
+			}
+			modifier = {
+				has_trait = chaste
+				add = 15
+			}
+			modifier = {
+				has_trait = zealous
+				OR = {
+					faith = { trait_is_sin = lustful }
+					faith = { trait_is_sin = deviant }
+					trait_is_shunned_or_criminal_in_faith_trigger = {
+						FAITH = root.faith
+						TRAIT = trait:deviant
+						GENDER_CHARACTER = root
+					}
+				}
+				add = 15
+			}
+			modifier = {
+				has_trait = lustful
+				add = -25
+			}
+			modifier = {
+				has_trait = deviant
+				add = -25
+			}
+        }
+    }
+
+	# If some will do it, then be it
+	option = {
+        name = harem_events.1014.c
+		custom_tooltip = harem_events.1014.c.tooltip
+
+		hidden_effect = {
+			every_consort = {
+				limit = {
+					valid_harem_consort_trigger = yes
+					OR = {
+						has_trait = lustful
+						has_trait = deviant
+					}
+					trigger_if = {
+						limit = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = root
+							}
+						}
+						OR = {
+							has_trait = greedy
+							has_trait = ambitious
+							has_trait = arrogant
+						}
+					}
+					NAND = {
+						has_trait = zealous
+						OR = {
+							faith = { trait_is_sin = lustful }
+							faith = { trait_is_sin = deviant }
+							trait_is_shunned_or_criminal_in_faith_trigger = {
+								FAITH = this.faith
+								TRAIT = trait:deviant
+								GENDER_CHARACTER = this
+							}
+						}
+						NOT = { has_trait = arbitrary }
+					}
+				}
+				add_character_modifier = {
+					modifier = herbalist_sex_lessons_modifier
+					years = 3
+				}
+			}
+		}
+
+        ai_chance = {
+            base = 25
+			ai_value_modifier = {
+				ai_energy = -0.2
+			}
+			modifier = {
+				has_sexuality = asexual
+				add = 15
+			}
+        }
+    }
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_gossiping_consorts_about_liege_event_flag
+				years = 2
+			}
+		}
+	}
+}
 ########################
 ## Worship Ancestors ##
 #######################
