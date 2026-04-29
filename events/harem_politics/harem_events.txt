@@ -5497,6 +5497,7 @@ scripted_trigger is_valid_for_consort_stop_favor_request_trigger = {
 		count >= 3
 	}
 }
+# Another consort is visiting them
 scripted_trigger is_valid_filial_consort_trigger = {
 	is_available_healthy_adult = yes
 	OR = {
@@ -5828,6 +5829,45 @@ scripted_trigger is_valid_for_consort_offer_trigger = {
 		}
 	}
 }
+# Requesting you to promote a consort
+scripted_trigger is_valid_for_consort_promotion_request_trigger = {
+	scope:matriarch = {
+		trigger_if = {
+			limit = {
+				exists = house
+			}
+			house = {
+				any_house_member = {
+					is_valid_matriarch_relative_for_consort_offer_trigger = yes
+				}
+			}
+		}
+		trigger_else = {
+			any_close_family_member = {
+				is_valid_matriarch_relative_for_consort_offer_trigger = yes
+			}
+		}
+	}
+	OR = {
+		allowed_more_spouses = yes
+		allowed_more_concubines = yes
+	}
+	NOR = { 
+		has_character_modifier = mourner_modifier
+		any_consort = {
+			OR = {
+				house ?= {
+					any_house_member = {
+						this = scope:matriarch
+					}
+				}
+				is_close_family_of = scope:matriarch
+			}
+			count >= 2
+		}
+	}
+}
+# Fallback
 scripted_effect on_trigger_fail_visit_matriarch_fallback_effect = {
 	send_interface_toast = {
 		type = event_generic_neutral
