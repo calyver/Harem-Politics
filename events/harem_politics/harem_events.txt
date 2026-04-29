@@ -3850,7 +3850,6 @@ harem_events.0013 = {
 		}
 		if = {
 			limit = {
-				has_trait = zealous
 				OR = {
 					faith = { trait_is_sin = lustful }
 					faith = { trait_is_sin = deviant }
@@ -3861,8 +3860,14 @@ harem_events.0013 = {
 					}
 				}
 			}
-			stress_impact = {
-				zealous = minor_stress_impact_gain
+			add_piety = minor_piety_loss
+			if = {
+				limit = {
+					has_trait = zealous
+				}
+				stress_impact = {
+					zealous = minor_stress_impact_gain
+				}
 			}
 		}
 		stress_impact = {
@@ -5464,15 +5469,24 @@ scripted_trigger is_valid_consort_for_favor_request_trigger = {
 		is_close_or_extended_family_of = scope:matriarch
 	}
 	harem_politics_favored_consort_trigger = no
+	NOT = {
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:matriarch }
+	}
 }
 scripted_trigger is_valid_for_consort_favor_request_trigger = {
 	any_consort = {
 		is_valid_consort_for_favor_request_trigger = yes
 	}
+	any_consort = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		is_imprisoned = no
+		count >= 3
+	}
 }
 # They ask you to stop favoring a consort
 scripted_trigger is_valid_consort_for_stop_favor_request_trigger = {
 	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_ai_adult = yes
 	harem_politics_favored_consort_trigger = yes
 	NOR = {
 		house ?= {
@@ -5499,6 +5513,7 @@ scripted_trigger is_valid_for_consort_stop_favor_request_trigger = {
 }
 # Another consort is visiting them
 scripted_trigger is_valid_filial_consort_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 	is_available_healthy_adult = yes
 	OR = {
 		has_relation_friend = scope:matriarch
@@ -5527,6 +5542,9 @@ scripted_trigger is_valid_filial_consort_trigger = {
 	reverse_opinion = {
 		target = scope:matriarch
 		value >= -15
+	}
+	NOT = {
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:matriarch }
 	}
 }
 scripted_trigger is_valid_for_filial_consort_visit_trigger = {
@@ -5830,38 +5848,77 @@ scripted_trigger is_valid_for_consort_offer_trigger = {
 	}
 }
 # Requesting you to promote a consort
-scripted_trigger is_valid_for_consort_promotion_request_trigger = {
-	scope:matriarch = {
-		trigger_if = {
-			limit = {
-				exists = house
-			}
-			house = {
-				any_house_member = {
-					is_valid_matriarch_relative_for_consort_offer_trigger = yes
-				}
+scripted_trigger is_valid_consort_for_promotion_request_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_ai_adult = yes
+	OR = {
+		house ?= {
+			any_house_member = {
+				this = scope:matriarch
 			}
 		}
-		trigger_else = {
-			any_close_family_member = {
-				is_valid_matriarch_relative_for_consort_offer_trigger = yes
+		has_relation_friend = scope:matriarch
+		has_relation_best_friend = scope:matriarch
+		has_relation_lover = scope:matriarch
+		has_relation_soulmate = scope:matriarch
+		reverse_opinion = {
+			target = scope:matriarch
+			value >= low_positive_opinion
+		}
+		is_close_or_extended_family_of = scope:matriarch
+	}
+	NOR = {
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:matriarch }
+		root.primary_spouse ?= this
+	}
+	save_temporary_scope_as = temporary_consort
+	OR = {
+		AND = {
+			is_concubine_of = root
+			root = {
+				allowed_more_spouses = yes
+			}
+		}
+		root = {
+			can_employ_char_to_high_consort_court_position_trigger = {
+				CONSORT = scope:temporary_consort
 			}
 		}
 	}
-	OR = {
-		allowed_more_spouses = yes
-		allowed_more_concubines = yes
+}
+scripted_trigger is_valid_for_consort_promotion_request_trigger = {
+	any_consort = {
+		is_valid_consort_for_promotion_request_trigger = yes
+	}
+	any_consort = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		is_imprisoned = no
+		count >= 3
 	}
 	NOR = { 
 		has_character_modifier = mourner_modifier
 		any_consort = {
+			OR = {
+				root.primary_spouse ?= this
+				is_high_consort_trigger = {
+					LIEGE = root
+				}
+			}
 			OR = {
 				house ?= {
 					any_house_member = {
 						this = scope:matriarch
 					}
 				}
-				is_close_family_of = scope:matriarch
+				has_relation_friend = scope:matriarch
+				has_relation_best_friend = scope:matriarch
+				has_relation_lover = scope:matriarch
+				has_relation_soulmate = scope:matriarch
+				reverse_opinion = {
+					target = scope:matriarch
+					value >= low_positive_opinion
+				}
+				is_close_or_extended_family_of = scope:matriarch
 			}
 			count >= 2
 		}
@@ -6244,6 +6301,46 @@ harem_events.2100 = {
 						add = -10
 					}
 					trigger_event = harem_events.2107
+				}
+				15 = {
+					trigger = {
+						is_valid_for_consort_promotion_request_trigger = yes
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = ambitious
+						}
+						add = 10
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = arrogant
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = greedy
+						}
+						add = 5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = humble
+						}
+						add = -5
+					}
+					modifier = {
+						scope:matriarch = {
+							has_trait = content
+						}
+						add = -5
+					}
+					modifier = {
+						has_character_flag = matriarch_consort_promotion_flag
+						add = -10
+					}
+					trigger_event = harem_events.2110
 				}
 				15 = { # They outright reject you
 					trigger = {
@@ -9443,6 +9540,321 @@ harem_events.2109 = {
 	after = {
 		add_character_flag = {
 			flag = matriarch_filial_consort_flag
+			years = 3
+		}
+	}
+}
+# They request you to promote a consort
+harem_events.2110 = {
+	type = character_event
+	title = harem_events.2110.t
+	desc = harem_events.2110.desc
+	theme = family
+	override_background = {
+		reference = study
+	}
+	
+	right_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	left_portrait = {
+		character = scope:matriarch
+		animation = personality_honorable
+	}
+	lower_center_portrait = {
+		character = scope:consort
+	}
+	
+	trigger = {
+		exists = scope:matriarch
+		is_valid_for_consort_promotion_request_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_matriarch_fallback_effect = yes
+	}
+	
+	immediate = {
+		random_consort = {
+			limit = {
+				is_valid_consort_for_promotion_request_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					house ?= {
+						any_house_member = {
+							this = scope:matriarch
+						}
+					}
+					add = 20
+				}
+				modifier = {
+					OR = {
+						has_relation_friend = scope:matriarch
+						has_relation_lover = scope:matriarch
+					}
+					add = 10
+				}
+				modifier = {
+					OR = {
+						has_relation_best_friend = scope:matriarch
+						has_relation_soulmate = scope:matriarch
+					}
+					add = 20
+				}
+				modifier = {
+					is_close_or_extended_family_of = scope:matriarch
+					add = 10
+				}
+				modifier = {
+					is_close_family_of = scope:matriarch
+					add = 10
+				}
+				opinion_modifier = {
+					who = scope:consort
+					opinion_target = this
+					min = 0
+					max = 20
+					multiplier = 0.20
+				}
+			}
+			save_scope_as = consort
+		}
+		scope:consort = {
+			hidden_effect = {
+				if = {
+					limit = {
+						NOR = {
+							has_relation_friend = scope:matriarch
+							has_relation_best_friend = scope:matriarch
+						}
+					}
+					progress_towards_friend_effect = {
+						REASON = friend_bonding_at_court
+						CHARACTER = scope:matriarch
+						TARGET_CHARACTER_2 = root
+						OPINION = default_friend_opinion
+					}
+				}
+			}
+		}
+	}
+	
+	# You agree
+	option = {
+		trigger = {
+			OR = {
+				AND = {
+					scope:consort = { is_concubine_of = root }
+					allowed_more_spouses = yes
+				}
+				can_employ_char_to_high_consort_court_position_trigger = {
+					CONSORT = scope:consort
+				}
+			}
+		}
+        name = harem_events.2110.a
+		add_piety = minor_piety_gain
+		if = {
+			limit = {
+				can_employ_char_to_high_consort_court_position_trigger = {
+					CONSORT = scope:consort
+				}
+			}
+			appoint_target_to_available_high_consort_court_position_effect = {
+				LIEGE = root
+				CONSORT = scope:loved_consort
+			}
+		}
+		else_if = {
+			limit = {
+				scope:consort = { is_concubine_of = root }
+				allowed_more_spouses = yes
+			}
+			# Make them your spouse
+			if = {
+				limit = {
+					is_female = yes
+				}
+				marry_matrilineal = scope:consort_relative
+			}
+			else = {
+				marry = scope:consort_relative
+			}
+			
+			#Marriage effects
+			save_scope_as = actor
+			save_scope_as = recipient
+			save_scope_as = secondary_actor
+			marriage_interaction_on_accept_effect = yes
+		}
+		scope:consort = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 5
+			}
+			hidden_effect = {
+				add_opinion = {
+					target = scope:matriarch
+					modifier = thankful_opinion
+					opinion = 10
+				}
+			}
+		}
+		scope:matriarch = {
+			add_opinion = {
+				target = root
+				modifier = pleased_opinion
+				opinion = 10
+			}
+		}
+		stress_impact = {
+			paranoid = minor_stress_impact_gain
+		}
+        ai_chance = {
+            base = 20
+			ai_value_modifier = {
+				ai_honor = 0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = 0.25
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort
+				multiplier = 0.15
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:consort
+					value >= medium_positive_trait_compatibility
+				}
+				add = 20
+			}
+			modifier = {
+				has_trait = trusting
+				add = 15
+			}
+			modifier = {
+				has_trait = zealous
+				add = 15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = 15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = 15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = -25
+			}
+			modifier = {
+				scope:consort = {
+					is_high_consort_trigger = {
+						LIEGE = root
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				OR = {
+					has_relation_friend = scope:consort
+					has_relation_lover = scope:consort
+				}
+				add = 10
+			}
+			modifier = {
+				OR = {
+					has_relation_best_friend = scope:consort
+					has_relation_soulmate = scope:consort
+				}
+				add = 20
+			}
+			modifier = {
+				scope:consort = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = root
+							is_councillor_of = root
+							house ?= {
+								is_dominant_family = yes
+								is_powerful_family = yes
+							}
+						}
+					}
+				}
+				add = 15
+			}
+        }
+    }
+	# You dismiss the consort
+	option = {
+        name = harem_events.2110.b
+		add_piety = minor_piety_loss
+		scope:consort = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -5
+			}
+		}
+		ai_chance = {
+            base = 30
+			ai_value_modifier = {
+				ai_honor = -0.15
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:matriarch
+				multiplier = -0.25
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:consort
+				multiplier = -0.15
+			}
+			modifier = {
+				trait_compatibility = {
+					target = scope:consort
+					value < neutral_trait_compatibility
+				}
+				add = 10
+			}
+			modifier = {
+				has_trait = trusting
+				add = -15
+			}
+			modifier = {
+				has_trait = zealous
+				add = -15
+			}
+			modifier = {
+				has_trait = compassionate
+				add = -15
+			}
+			modifier = {
+				has_trait = forgiving
+				add = -15
+			}
+			modifier = {
+				has_trait = paranoid
+				add = 15
+			}
+        }
+    }
+
+	after = {
+		add_character_flag = {
+			flag = matriarch_consort_promotion_flag
 			years = 3
 		}
 	}
