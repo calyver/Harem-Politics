@@ -4306,18 +4306,26 @@ harem_events.0014 = {
 					add = -15
 				}
 				custom_tooltip = harem_events.0014.a.success
-				scope:new_consort = {
-					calyver_favor_moderate_gain_effect = yes
-					add_opinion = {
-						target = root
-						modifier = admiration_opinion
-						opinion = 15
+
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_good
+						title = harem_events.0014.a.success.tt
+						right_icon = scope:new_consort
+						scope:new_consort = {
+							calyver_favor_moderate_gain_effect = yes
+							add_opinion = {
+								target = root
+								modifier = admiration_opinion
+								opinion = 15
+							}
+						}
+						add_opinion = {
+							target = scope:new_consort
+							modifier = pleased_opinion
+							opinion = 15
+						}
 					}
-				}
-				add_opinion = {
-					target = scope:new_consort
-					modifier = pleased_opinion
-					opinion = 15
 				}
 			}
 			25 = { # The consort will be scared of you
@@ -4389,11 +4397,18 @@ harem_events.0014 = {
 					add = 15
 				}
 				custom_tooltip = harem_events.0014.a.failure
-				scope:new_consort = {
-					add_opinion = {
-						target = root
-						modifier = scared_opinion
-						opinion = -10
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_generic_bad
+						title = harem_events.0014.a.failure.tt
+						right_icon = scope:new_consort
+						scope:new_consort = {
+							add_opinion = {
+								target = root
+								modifier = scared_opinion
+								opinion = -10
+							}
+						}
 					}
 				}
 			}
@@ -4801,6 +4816,501 @@ harem_events.0014 = {
 		hidden_effect = {
 			add_character_flag = {
 				flag = had_gossiping_consorts_about_liege_event_flag
+				years = 2
+			}
+		}
+	}
+}
+
+###################################
+## Whispers in the Hall (wrapper) ##
+###################################
+harem_events.1015 = {
+	hidden = yes
+
+	trigger = {
+		harem_events_gossiping_consorts_trigger = yes
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { NOT = { exists = scope:harem_liege } }
+			save_scope_as = harem_liege
+		}
+
+		random_consort = {
+			limit = { harem_events_is_valid_new_consort_trigger = yes }
+			save_scope_as = new_consort
+		}
+
+		if = {
+			limit = { exists = scope:new_consort }
+			random_consort = {
+				limit = {
+					harem_events_is_valid_older_consort_15_trigger = { CONSORT = scope:new_consort }
+				}
+				save_scope_as = older_consort
+			}
+			if = {
+				limit = {
+					exists = scope:older_consort
+					scope:new_consort != scope:older_consort
+				}
+				random_list = {
+					20 = { # 1) Personal rivalry (older consort has a rival in harem)
+						trigger = {
+							scope:older_consort = {
+								any_relation = {
+									type = rival
+									is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								}
+							}
+						}
+						scope:older_consort = {
+							random_relation = {
+								type = rival
+								limit = {
+									is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								}
+								save_scope_as = slander_target
+							}
+						}
+						set_local_variable = {
+							name = chosen_topic
+							value = gossiping_about_rival
+						}
+					}
+				
+					18 = { # 2) Rivalry warning (two other consorts are rivals)
+						trigger = {
+							any_consort = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								this != scope:new_consort
+								this != scope:older_consort
+								any_relation = {
+									type = rival
+									this != scope:new_consort
+									this != scope:older_consort
+									is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								}
+							}
+						}
+						random_consort = {
+							limit = {
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								this != scope:new_consort
+								this != scope:older_consort
+								any_relation = {
+									type = rival
+									this != scope:new_consort
+									this != scope:older_consort
+									is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								}
+							}
+							save_scope_as = first_rival
+						}
+						random_consort = {
+							limit = {
+								this != scope:new_consort
+								this != scope:older_consort
+								this != scope:first_rival
+								is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+								has_relation_rival = scope:first_rival
+							}
+							save_scope_as = second_rival
+						}
+						set_local_variable = {
+							name = chosen_topic
+							value = gossiping_about_rival_consorts
+						}
+					}
+				
+					8 = { # 3) Outsider warning (eligible harem member, not consort)
+						trigger = {
+							root = {
+								is_eligible_harem_member_trigger = {
+									LIEGE = root
+								}
+								NOR = {
+									is_consort_of = root
+									has_any_bad_relationship_with_root_trigger = yes
+								}
+							}
+						}
+						random_courtier = {
+							limit = {
+								is_eligible_harem_member_trigger = {
+									LIEGE = root
+								}
+								NOR = {
+									is_consort_of = root
+									has_any_bad_relationship_with_root_trigger = yes
+								}
+							}
+							save_scope_as = liege_relative
+						}
+						set_local_variable = {
+							name = chosen_topic
+							value = gossiping_about_liege_relative
+						}
+					}
+				
+					12 = { # 4) Chief eunuch / admin story topic
+						trigger = {
+							any_owned_story = { type = story_cycle_admin_eunuch }
+							var:eunuch ?= {
+								has_court_position = chief_eunuch_court_position
+							}
+						}
+						court_position:chief_eunuch_court_position = { save_scope_as = eunuch }
+						set_local_variable = {
+							name = chosen_topic
+							value = gossiping_about_chief_eunuch
+						}
+					}
+				
+					12 = { # 5) Secret gossip (unknown to ruler)
+						trigger = {
+							any_courtier = {
+								this != scope:new_consort
+								any_secret = {
+									NOT = { is_known_by = root }
+									is_blackmailable_secret_trigger = {
+										PARTICIPANT = prev
+										BLACKMAILER = root
+									}
+								}
+							}
+						}
+						random_courtier = {
+							limit = {
+								this != scope:new_consort
+								any_secret = {
+									NOT = { is_known_by = root }
+									is_blackmailable_secret_trigger = {
+										PARTICIPANT = prev
+										BLACKMAILER = root
+									}
+								}
+							}
+							weight = {
+								base = 10
+								modifier = {
+									this != scope:older_consort
+									add = 10
+								}
+							}
+							save_scope_as = secret_holder
+						}
+						scope:secret_holder = {
+							random_secret = {
+								limit = {
+									NOT = { is_known_by = root }
+									is_blackmailable_secret_trigger = {
+										PARTICIPANT = prev
+										BLACKMAILER = root
+									}
+								}
+								save_scope_as = secret
+								if = {
+									limit = {
+										exists = scope:secret
+									}
+									scope:secret = {
+										if = {
+											limit = {
+												NOT = {
+													is_known_by = scope:older_consort
+												}
+											}
+											reveal_to = scope:older_consort
+										}
+										if = {
+											limit = {
+												NOT = {
+													is_known_by = scope:new_consort
+												}
+											}
+											reveal_to = scope:new_consort
+										}
+									}
+									set_local_variable = {
+										name = chosen_topic
+										value = gossiping_about_court_secret
+									}
+								}
+							}
+						}
+					}
+				
+					30 = { # 6) High-ranking evil consort warning
+						trigger = {
+							any_consort = {
+								this != scope:older_consort
+								this != $CONSORT$
+								OR = {
+									is_high_ranking_consort_trigger = {
+										LIEGE = root
+									}
+									harem_politics_favored_consort_trigger = yes
+								}
+								harem_politics_evil_consort_trigger = yes
+							}
+						}
+						random_consort = {
+							limit = {
+								this != scope:older_consort
+								this != $CONSORT$
+								OR = {
+									is_high_ranking_consort_trigger = {
+										LIEGE = root
+									}
+									harem_politics_favored_consort_trigger = yes
+								}
+								harem_politics_evil_consort_trigger = yes
+							}
+							save_scope_as = evil_consort
+						}
+						set_local_variable = {
+							name = chosen_topic
+							value = gossiping_about_evil_consort
+						}
+					}
+				}
+				if = {
+					limit = {
+						exists = local_var:chosen_topic
+					}
+					trigger_event = harem_events.0015
+				}
+				else = { on_trigger_fail_visit_harem_fallback_effect = yes }
+			}
+			else = { on_trigger_fail_visit_harem_fallback_effect = yes }
+		}
+		else = { on_trigger_fail_visit_harem_fallback_effect = yes }
+	}
+}
+
+harem_events.0015 = {
+	type = character_event
+	title = harem_events.0015.t
+	desc = harem_events.0015.desc
+
+	theme = intrigue
+	override_background = { reference = garden }
+
+	left_portrait = {
+		character = scope:older_consort
+		animation = personality_honorable
+	}
+	right_portrait = {
+		character = scope:new_consort
+		animation = personality_coward
+	}
+
+	trigger = {
+		harem_events_gossiping_consorts_trigger = yes
+		exists = scope:older_consort
+		exists = scope:new_consort
+		scope:older_consort != scope:new_consort
+		exists = local_var:chosen_topic
+	}
+	on_trigger_fail = {
+		on_trigger_fail_visit_harem_fallback_effect = yes
+	}
+
+	immediate = {
+		hidden_effect = {
+			calyver_improve_relationship_effect = {
+				CHARACTER = scope:older_consort
+				TARGET = scope:new_consort
+				REASON = consort_friendship_reason
+			}
+		}
+	}
+
+	# Stay and listen -> Event 2
+	option = {
+		name = harem_events.0015.a
+		trigger_event = harem_events.0016
+		stress_impact = {
+			honest = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 45
+			modifier = { has_trait = deceitful add = 15 }
+			modifier = { has_trait = honest add = -15 }
+		}
+	}
+
+	# Leave
+	option = {
+		name = harem_events.0015.b
+		ai_chance = {
+			base = 55
+			modifier = { has_trait = honest add = 15 }
+			modifier = { has_trait = shy add = 10 }
+			modifier = { has_trait = craven add = 10 }
+			modifier = { has_trait = deceitful add = -15 }
+		}
+	}
+}
+
+harem_events.0016 = {
+	type = character_event
+	title = harem_events.0016.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_1 }
+				desc = harem_events.0016.topic_1.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_2 }
+				desc = harem_events.0016.topic_2.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_3 }
+				desc = harem_events.0016.topic_3.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_4 }
+				desc = harem_events.0016.topic_4.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_5 }
+				desc = harem_events.0016.topic_5.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_6 }
+				desc = harem_events.0016.topic_6.desc
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = harem_gossip_topic_7 }
+				desc = harem_events.0016.topic_7.desc
+			}
+			triggered_desc = { desc = harem_events.0016.topic_fallback.desc }
+		}
+	}
+
+	theme = intrigue
+	override_background = { reference = garden }
+
+	left_portrait = { character = scope:older_consort animation = personality_bold }
+	right_portrait = { character = scope:new_consort animation = interested }
+
+	trigger = {
+		harem_events_gossiping_consorts_trigger = yes
+		exists = scope:older_consort
+		exists = scope:new_consort
+		scope:older_consort != scope:new_consort
+		exists = local_var:chosen_topic
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				exists = scope:secret
+			}
+			scope:secret = {
+				if = {
+					limit = {
+						NOT = {
+							is_known_by = root
+						}
+					}
+					reveal_to = root
+				}
+			}
+		}
+	}
+
+	# Scold them (only when older is slandering rival)
+	option = {
+		name = harem_events.0016.a
+		trigger = {
+			exists = scope:slander_target
+		}
+
+		scope:older_consort = {
+			calyver_favor_minor_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = scolded_me_opinion
+				opinion = -10
+			}
+			add_character_flag = {
+				flag = flag_scolded_consort
+				years = 2
+			}
+		}
+		scope:slander_target = {
+			calyver_favor_minor_gain_effect = yes
+		}
+
+		ai_chance = {
+			base = 35
+		}
+	}
+
+	# Force apology (only when older is slandering rival)
+	option = {
+		name = harem_events.0016.b
+		trigger = { has_character_flag = harem_gossip_slandering_topic }
+
+		scope:older_consort = {
+			calyver_favor_moderate_loss_effect = yes
+			add_opinion = {
+				target = root
+				modifier = humiliated_opinion
+				opinion = -10
+			}
+		}
+		scope:slander_target = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = grateful_opinion
+				opinion = 10
+			}
+		}
+
+		stress_impact = {
+			arbitrary = minor_stress_impact_gain
+		}
+
+		ai_chance = {
+			base = 25
+		}
+	}
+
+	# "Interesting..." / leave
+	option = {
+		name = harem_events.0016.c
+		name = {
+			text = {
+				first_valid = {
+					triggered_desc = {
+						trigger = { exists = scope:secret }
+						desc = harem_events.0016.c.secret
+					}
+					desc = harem_events.0016.c
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 40
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_gossiping_consorts_event_flag
 				years = 2
 			}
 		}

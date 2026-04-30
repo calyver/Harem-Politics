@@ -2055,3 +2055,81 @@ harem_events_gossiping_about_liege_consorts_trigger = {
 		has_character_flag = had_gossiping_consorts_about_liege_event_flag
 	}
 }
+# An older consort spills the tea
+harem_events_is_valid_older_consort_15_trigger = {
+	harem_events_is_valid_older_consort_trigger = { CONSORT = $CONSORT$ }
+	save_temporary_scope_as = older_consort
+	OR = {
+		# A rivalry
+		any_relation = {
+			type = rival
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		}
+		root = {
+			OR = {
+				any_consort = {
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					this != $CONSORT$
+					any_relation = {
+						type = rival
+						this != $CONSORT$
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					}
+				}
+				any_courtier = {
+					is_eligible_harem_member_trigger = {
+						LIEGE = root
+					}
+					NOR = {
+						is_consort_of = root
+						has_any_bad_relationship_with_root_trigger = yes
+					}
+				}
+				AND = {
+					any_owned_story = { type = story_cycle_admin_eunuch }
+					var:eunuch ?= {
+						has_court_position = chief_eunuch_court_position
+					}
+				}
+				any_courtier = {
+					this != $CONSORT$
+					any_secret = {
+						NOT = { is_known_by = root }
+						is_blackmailable_secret_trigger = {
+							PARTICIPANT = prev
+							BLACKMAILER = root
+						}
+					}
+				}
+				any_consort = {
+					this != scope:older_consort
+					this != $CONSORT$
+					OR = {
+						is_high_ranking_consort_trigger = {
+							LIEGE = root
+						}
+						harem_politics_favored_consort_trigger = yes
+					}
+					harem_politics_evil_consort_trigger = yes
+				}
+			}
+		}
+	}
+}
+harem_events_gossiping_consorts_trigger = {
+	is_physically_able_adult = yes
+	is_healthy = yes
+	is_landed_or_landless_administrative = yes
+	NOT = { has_character_flag = had_gossiping_consorts_event_flag }
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 4
+	}
+	any_consort = {
+		harem_events_is_valid_new_consort_trigger = yes
+		save_temporary_scope_as = temporary_new_consort
+	}
+	any_consort = {
+		harem_events_is_valid_older_consort_15_trigger = { CONSORT = scope:temporary_new_consort }
+	}
+}
