@@ -4936,7 +4936,6 @@ harem_events.1015 = {
 								}
 								NOR = {
 									is_consort_of = root
-									has_any_bad_relationship_with_root_trigger = yes
 								}
 							}
 						}
@@ -4947,7 +4946,6 @@ harem_events.1015 = {
 								}
 								NOR = {
 									is_consort_of = root
-									has_any_bad_relationship_with_root_trigger = yes
 								}
 							}
 							save_scope_as = liege_relative
@@ -5043,7 +5041,7 @@ harem_events.1015 = {
 						}
 					}
 				
-					30 = { # 6) High-ranking evil consort warning
+					30 = { # 6) High-ranking/favored evil consort warning
 						trigger = {
 							any_consort = {
 								this != scope:older_consort
@@ -5093,7 +5091,7 @@ harem_events.1015 = {
 
 harem_events.0015 = {
 	type = character_event
-	title = harem_events.0015.t
+	title = harem_events.0001.t
 	desc = harem_events.0015.desc
 
 	theme = intrigue
@@ -5146,6 +5144,12 @@ harem_events.0015 = {
 	# Leave
 	option = {
 		name = harem_events.0015.b
+		hidden_effect = {
+			add_character_flag = {
+				flag = had_gossiping_consorts_event_flag
+				years = 2
+			}
+		}
 		ai_chance = {
 			base = 55
 			modifier = { has_trait = honest add = 15 }
@@ -5158,39 +5162,47 @@ harem_events.0015 = {
 
 harem_events.0016 = {
 	type = character_event
-	title = harem_events.0016.t
+	title = harem_events.0001.t
 	desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_1 }
-				desc = harem_events.0016.topic_1.desc
+				trigger = { # Gossiping about a rival
+					exists = scope:slander_target
+				}
+				desc = harem_events.0016.rival.desc
 			}
 			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_2 }
-				desc = harem_events.0016.topic_2.desc
+				trigger = { # Gossiping about two rival consorts
+					local_var:chosen_topic ?= gossiping_about_rival_consorts
+				}
+				desc = harem_events.0016.rival_consorts.desc
 			}
-			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_3 }
-				desc = harem_events.0016.topic_3.desc
+			triggered_desc = { # Gossiping about a liege relative
+				trigger = {
+					local_var:chosen_topic ?= gossiping_about_liege_relative
+				}
+				desc = harem_events.0016.liege_relative.desc
 			}
-			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_4 }
-				desc = harem_events.0016.topic_4.desc
+			triggered_desc = { # Gossiping about the chief eunuch
+				trigger = {
+					exists = scope:eunuch
+				}
+				desc = harem_events.0016.eunuch.desc
 			}
-			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_5 }
-				desc = harem_events.0016.topic_5.desc
+			triggered_desc = { # Gossiping about a secret
+				trigger = {
+					exists = scope:secret
+				}
+				desc = harem_events.0016.secret.desc
 			}
-			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_6 }
-				desc = harem_events.0016.topic_6.desc
+			triggered_desc = { # Gossiping about a high-ranking/favored evil consort
+				trigger = {
+					exists = scope:evil_consort
+				}
+				desc = harem_events.0016.evil_consort.desc
 			}
-			triggered_desc = {
-				trigger = { has_character_flag = harem_gossip_topic_7 }
-				desc = harem_events.0016.topic_7.desc
-			}
-			triggered_desc = { desc = harem_events.0016.topic_fallback.desc }
 		}
+		desc = harem_events.0016.end.desc
 	}
 
 	theme = intrigue
@@ -5256,7 +5268,9 @@ harem_events.0016 = {
 	# Force apology (only when older is slandering rival)
 	option = {
 		name = harem_events.0016.b
-		trigger = { has_character_flag = harem_gossip_slandering_topic }
+		trigger = {
+			exists = scope:slander_target
+		}
 
 		scope:older_consort = {
 			calyver_favor_moderate_loss_effect = yes
@@ -5286,7 +5300,6 @@ harem_events.0016 = {
 
 	# "Interesting..." / leave
 	option = {
-		name = harem_events.0016.c
 		name = {
 			text = {
 				first_valid = {
