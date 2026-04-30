@@ -4200,7 +4200,10 @@ harem_events.1014 = {
 harem_events.0014 = {
 	type = character_event
 	title = harem_events.0001.t
-	desc = harem_events.0014.desc
+	desc = {
+		desc = harem_events.0014.start.desc
+		desc = harem_events.0014.end.desc
+	}
 	
 	theme = family
 	override_background = {
@@ -4822,9 +4825,9 @@ harem_events.0014 = {
 	}
 }
 
-###################################
-## Whispers in the Hall (wrapper) ##
-###################################
+##########################
+## Whispers in the Hall ##
+##########################
 harem_events.1015 = {
 	hidden = yes
 
@@ -5092,7 +5095,10 @@ harem_events.1015 = {
 harem_events.0015 = {
 	type = character_event
 	title = harem_events.0001.t
-	desc = harem_events.0015.desc
+	desc = {
+		desc = harem_events.0014.start.desc
+		desc = harem_events.0015.desc
+	}
 
 	theme = intrigue
 	override_background = { reference = garden }
@@ -5143,7 +5149,7 @@ harem_events.0015 = {
 
 	# Leave
 	option = {
-		name = harem_events.0015.b
+		name = harem_events.0014.c
 		hidden_effect = {
 			add_character_flag = {
 				flag = had_gossiping_consorts_event_flag
@@ -5179,7 +5185,15 @@ harem_events.0016 = {
 			}
 			triggered_desc = { # Gossiping about a liege relative
 				trigger = {
-					local_var:chosen_topic ?= gossiping_about_liege_relative
+					scope:liege_relative ?= {
+						has_any_bad_relationship_with_root_trigger = yes
+					}
+				}
+				desc = harem_events.0016.rival_liege_relative.desc
+			}
+			triggered_desc = { # Gossiping about a liege relative
+				trigger = {
+					exists = scope:liege_relative
 				}
 				desc = harem_events.0016.liege_relative.desc
 			}
@@ -5197,9 +5211,21 @@ harem_events.0016 = {
 			}
 			triggered_desc = { # Gossiping about a high-ranking/favored evil consort
 				trigger = {
-					exists = scope:evil_consort
+					scope:evil_consort ?= {
+						is_high_ranking_consort_trigger = {
+							LIEGE = root
+						}
+					}
 				}
-				desc = harem_events.0016.evil_consort.desc
+				desc = harem_events.0016.evil_authority.desc
+			}
+			triggered_desc = { # Gossiping about a high-ranking/favored evil consort
+				trigger = {
+					scope:evil_consort ?= {
+						harem_politics_favored_consort_trigger = yes
+					}
+				}
+				desc = harem_events.0016.evil_favorite.desc
 			}
 		}
 		desc = harem_events.0016.end.desc
