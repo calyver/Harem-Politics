@@ -41544,6 +41544,225 @@ harem_politics.0053 = {
 		}
 	}
 }
+
+#############################################
+## A consort asks you to favor another one ##
+#############################################
+scripted_trigger harem_politics_0054_petitioner_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_adult = yes
+	harem_politics_favored_consort_trigger = yes
+	NOR = {
+		has_any_bad_relationship_with_root_trigger = yes
+	}
+	opinion = {
+		target = root
+		value > -10
+	}
+}
+scripted_trigger harem_politics_0054_beneficiary_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_available_healthy_adult = yes
+	this != $FAVORED_CONSORT$
+	harem_politics_unfavored_consort_trigger = yes
+	NOR = {
+		has_relation_rival = $FAVORED_CONSORT$
+		has_relation_nemesis = $FAVORED_CONSORT$
+		has_any_bad_relationship_with_root_trigger = yes
+	}
+	opinion = {
+		target = root
+		value > -20
+	}
+}
+scripted_trigger harem_politics_0054_can_fire_trigger = {
+	is_landed_or_landless_administrative = yes
+	is_available_healthy_adult = yes
+	any_consort = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		is_imprisoned = no
+		count >= 4
+	}
+	any_consort = {
+		harem_politics_0054_petitioner_trigger = yes
+		save_temporary_scope_as = temporary_favored_consort
+	}
+	any_consort = {
+		harem_politics_0054_beneficiary_trigger = { FAVORED_CONSORT = scope:temporary_favored_consort }
+	}
+	NOT = { has_character_flag = harem_politics_0054_recent_flag }
+}
+harem_politics.1054 = {
+	type = character_event
+	hidden = yes
+
+	trigger = {
+		harem_politics_0054_can_fire_trigger = yes
+	}
+
+	immediate = {
+		# Pick favored petitioner
+		random_consort = {
+			limit = {
+				harem_politics_0054_petitioner_trigger
+			}
+			weight = {
+				base = 10
+				modifier = { harem_politics_beloved_consort_trigger = yes add = 20 }
+				modifier = { has_character_modifier = favor_boost_modifier add = 10 }
+				modifier = { add = this.diplomacy }
+				modifier = { has_trait = gregarious add = 10 }
+				modifier = { has_character_modifier = scheming_consort_modifier add = 10 }
+			}
+			save_scope_as = favored_consort
+		}
+
+		# Pick unfavored beneficiary (not rival/nemesis of petitioner)
+		if = {
+			limit = { exists = scope:favored_consort }
+			random_consort = {
+				limit = {
+					harem_politics_0054_beneficiary_trigger = { FAVORED_CONSORT = scope:favored_consort }
+				}
+				weight = {
+					base = 10
+					modifier = { harem_politics_forgotten_consort_trigger = yes add = 20 }
+					modifier = { has_any_good_relationship_with_character_trigger = { CHARACTER = scope:favored_consort } add = 10 }
+					modifier = { has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:favored_consort } add = 10 }
+				}
+				save_scope_as = unfavored_consort
+			}
+		}
+
+		# Fire visible event only if both scopes are valid
+		if = {
+			limit = {
+				exists = scope:favored_consort
+				exists = scope:unfavored_consort
+				scope:favored_consort != scope:unfavored_consort
+			}
+			trigger_event = harem_politics.0054
+		}
+	}
+}
+
+harem_politics.0054 = {
+	type = character_event
+	title = harem_politics.0054.t
+	desc = harem_politics.0054.desc
+	theme = friendly
+	override_background = { reference = study }
+
+	right_portrait = {
+		character = root
+		animation = personality_rational
+	}
+	left_portrait = {
+		character = scope:favored_consort
+		animation = personality_honorable
+	}
+	lower_center_portrait = {
+		character = scope:unfavored_consort
+	}
+
+	trigger = {
+		harem_politics_0054_can_fire_trigger = yes
+		exists = scope:favored_consort
+		exists = scope:unfavored_consort
+		scope:favored_consort != scope:unfavored_consort
+	}
+
+	immediate = {
+		hidden_effect = {
+			calyver_improve_relationship_effect = {
+				CHARACTER = scope:favored_consort
+				TARGET = scope:unfavored_consort
+				REASON = consort_friendship_reason
+			}
+		}
+	}
+	# Option A: Grant medium favor
+	option = {
+		name = harem_politics.0054.a
+
+		scope:unfavored_consort = {
+			calyver_favor_medium_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 10
+			}
+			add_opinion = {
+				target = root
+				modifier = scope:favored_consort
+				opinion = 20
+			}
+		}
+		scope:favored_consort = {
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 15
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+
+	# Option B: Grant minor favor/token
+	option = {
+		name = harem_politics.0054.b
+
+		scope:unfavored_consort = {
+			calyver_favor_moderate_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 5
+			}
+			add_opinion = {
+				target = root
+				modifier = scope:favored_consort
+				opinion = 10
+			}
+		}
+		scope:favored_consort = {
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 10
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+
+	# Option C: Refuse, prefer favored consort
+	option = {
+		name = harem_politics.0054.c
+
+		scope:favored_consort = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = root
+				modifier = thankful_opinion
+				opinion = 5
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+
+	after = {
+		add_character_flag = {
+			flag = harem_politics_0054_recent_flag
+			years = 3
+		}
+	}
+}
 #########################
 ##Imprisoning a consort##
 #########################
