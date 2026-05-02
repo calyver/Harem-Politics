@@ -7166,194 +7166,197 @@ calyver_worsen_relationship_effect = {
 calyver_improve_relationship_effect = {
 	# CHARACTER = the character gaining the opinion
 	# TARGET = the character the opinion is being added to
-	if = {
-		limit = { 
-			NOT = { this = $TARGET$ }
-			is_alive = yes
-			$TARGET$ = { is_alive = yes }
-		}
-		#Nemesis -> Rival
+	$CHARACTER$ = {
 		if = {
-			limit = {
-				has_relation_nemesis = $TARGET$
+			limit = { 
+				NOT = { this = $TARGET$ }
+				is_alive = yes
+				$TARGET$ = { is_alive = yes }
 			}
-			remove_relation_nemesis = $TARGET$
-			hidden_effect = {
-				set_relation_rival = {
-					target = $TARGET$
-					reason = $REASON$
-				}
-			}
+			#Nemesis -> Rival
 			if = {
 				limit = {
-					$CHARACTER$ = { is_ai = yes }
+					has_relation_nemesis = $TARGET$
 				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
+				remove_relation_nemesis = $TARGET$
+				hidden_effect = {
+					set_relation_rival = {
+						target = $TARGET$
+						reason = $REASON$
+					}
+				}
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
+				}
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
 				}
 			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-		}
-		#Rival/Grudge -> Potential Rival
-		else_if = {
-			limit = {
-				OR = {
-					has_relation_rival = $TARGET$
-					has_relation_grudge = $TARGET$
-				}
-			}
-			if = {
+			#Rival/Grudge -> Potential Rival
+			else_if = {
 				limit = {
-					has_relation_grudge = $TARGET$
+					OR = {
+						has_relation_rival = $TARGET$
+						has_relation_grudge = $TARGET$
+					}
 				}
-				remove_relation_grudge = $TARGET$
+				if = {
+					limit = {
+						has_relation_grudge = $TARGET$
+					}
+					remove_relation_grudge = $TARGET$
+				}
+				else = {
+					remove_relation_rival = $TARGET$	
+				}
+				hidden_effect = { set_relation_potential_rival = $TARGET$ }
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
+				}
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
+				}
 			}
+			#Potential Rival -> Potential Friend
+			else_if = {
+				limit = {
+					has_relation_potential_rival = $TARGET$
+				}
+				remove_relation_potential_rival = $TARGET$
+				hidden_effect = { set_relation_potential_friend = $TARGET$ }
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
+				}
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
+				}
+			}
+			#Potential Friend -> Friend
+			else_if = {
+				limit = {
+					has_relation_potential_friend = $TARGET$
+				}
+				remove_relation_potential_friend = $TARGET$
+				set_relation_friend = { 
+					target = $TARGET$
+					reason = $REASON$ 
+				}
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 30
+					}
+				}
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 30
+					}
+				}
+			}
+			#Friend -> Best Friend
+			else_if = {
+				limit = {
+					has_relation_friend = $TARGET$
+					can_set_relation_best_friend_trigger = { CHARACTER = $TARGET$ }
+				}
+				set_relation_best_friend = { 
+					target = $TARGET$
+					reason = $REASON$  
+				}
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 50
+					}
+				}
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 50
+					}
+				}
+			}
+			#Nothing -> Potential Friend
 			else = {
-				remove_relation_rival = $TARGET$	
-			}
-			hidden_effect = { set_relation_potential_rival = $TARGET$ }
-			if = {
-				limit = {
-					$CHARACTER$ = { is_ai = yes }
+				set_relation_potential_friend = $TARGET$
+				if = {
+					limit = {
+						$CHARACTER$ = { is_ai = yes }
+					}
+					add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
 				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-		}
-		#Potential Rival -> Potential Friend
-		else_if = {
-			limit = {
-				has_relation_potential_rival = $TARGET$
-			}
-			remove_relation_potential_rival = $TARGET$
-			hidden_effect = { set_relation_potential_friend = $TARGET$ }
-			if = {
-				limit = {
-					$CHARACTER$ = { is_ai = yes }
-				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-		}
-		#Potential Friend -> Friend
-		else_if = {
-			limit = {
-				has_relation_potential_friend = $TARGET$
-			}
-			set_relation_friend = { 
-				target = $TARGET$
-				reason = $REASON$ 
-			}
-			if = {
-				limit = {
-					$CHARACTER$ = { is_ai = yes }
-				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 30
-				}
-			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 30
-				}
-			}
-		}
-		#Friend -> Best Friend
-		else_if = {
-			limit = {
-				has_relation_friend = $TARGET$
-				can_set_relation_best_friend_trigger = { CHARACTER = $TARGET$ }
-			}
-			set_relation_best_friend = { 
-				target = $TARGET$
-				reason = $REASON$  
-			}
-			if = {
-				limit = {
-					$CHARACTER$ = { is_ai = yes }
-				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 50
-				}
-			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 50
-				}
-			}
-		}
-		#Nothing -> Potential Friend
-		else = {
-			set_relation_potential_friend = $TARGET$
-			if = {
-				limit = {
-					$CHARACTER$ = { is_ai = yes }
-				}
-				add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
-				}
-			}
-			if = {
-				limit = { 
-					$TARGET$ = { is_ai = yes }
-				}
-				reverse_add_opinion = {
-					target = $TARGET$
-					modifier = friendliness_opinion
-					opinion = 15
+				if = {
+					limit = { 
+						$TARGET$ = { is_ai = yes }
+					}
+					reverse_add_opinion = {
+						target = $TARGET$
+						modifier = friendliness_opinion
+						opinion = 15
+					}
 				}
 			}
 		}
