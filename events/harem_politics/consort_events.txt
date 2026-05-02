@@ -20443,31 +20443,142 @@ consort_events.0037 = {
 		add_summoned_to_chambers_flag_effect = yes
 		had_sex_with_consort_effect = yes
 	}
-	
+
+	# Once more!
+	option = {
+		name = consort_events.0037.a
+		trigger = {
+			trigger = {
+				exists = local_var:fantastic_night_variable
+				NOR = {
+					has_trait = celibate
+					has_trait = devoted
+					has_trait = pregnant
+					has_trait = eunuch
+				}
+			}
+		}
+		had_sex_with_effect = {
+			CHARACTER = scope:recipient
+			PREGNANCY_CHANCE = pregnancy_chance
+		}
+		scope:recipient = {
+			calyver_favor_minor_gain_effect = yes
+			add_opinion = {
+				target = scope:actor
+				modifier = romance_opinion
+				opinion = 5
+			}
+		}
+		every_councillor = {
+			limit = {
+				NOT = {
+					is_close_or_extended_family_of = scope:recipient
+				}
+			}
+			custom = every_councillor
+			add_opinion = {
+				target = root
+				modifier = respect_opinion
+				opinion = -5
+			}
+		}
+		every_consort = {
+			limit = {
+				NOR = {
+					has_any_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+					has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+					AND = {
+						OR = {
+							has_opinion_modifier = {
+								modifier = forced_me_concubine_marriage_opinion
+								target = scope:actor
+							}
+							has_character_flag = abducted_non_believer
+							hp_accepts_harems = no
+						}
+						NOR = {
+							has_trait = ambitious
+							has_trait = greedy
+							has_trait = arrogant
+						}
+					}
+				}
+			}
+			custom = custom.every_consort
+			add_opinion = {
+				target = root
+				modifier = respect_opinion
+				opinion = -5
+			}
+		}
+		stress_impact = {
+			chaste = minor_stress_impact_gain
+		}
+		ai_chance = {
+			base = 1
+			ai_value_modifier = {
+				ai_energy = 0.2
+				ai_rationality = -0.2
+			}
+			modifier = {
+				has_trait = chaste
+				add = -25
+			}
+			modifier = {
+				has_trait = diligent
+				add = -15
+			}
+			modifier = {
+				has_trait = shy
+				add = -15
+			}
+			modifier = {
+				has_trait = lustful
+				add = 15
+			}
+			modifier = {
+				has_trait = deviant
+				add = 15
+			}
+			modifier = {
+				has_trait = lazy
+				add = 15
+			}
+			modifier = {
+				any_child = {
+					is_bastard_child_trigger = no
+					count < 3
+				}
+				add = 15
+			}
+		}
+	}
+
 	option = {
 		name = {
 			trigger = {
 				exists = local_var:fantastic_night_variable
 			}
-			text = consort_events.0037.fantastic.a
+			text = consort_events.0037.fantastic.b
 		}
 		name = {
 			trigger = {
 				exists = local_var:good_night_variable
 			}
-			text = consort_events.0037.good.a
+			text = consort_events.0037.good.b
 		}
 		name = {
 			trigger = {
 				exists = local_var:regular_night_variable
 			}
-			text = consort_events.0037.regular.a
+			text = consort_events.0037.regular.b
 		}
 		name = {
 			trigger = {
 				exists = local_var:boring_night_variable
 			}
-			text = consort_events.0037.boring.a
+			text = consort_events.0037.boring.b
 		}
 		if = {
 			limit = { has_character_flag = is_naked }
@@ -20483,6 +20594,23 @@ consort_events.0037 = {
 		}
 		ai_chance = {
 			base = 1
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { has_character_flag = is_naked }
+				remove_character_flag = is_naked
+			}
+			scope:recipient = {
+				if = {
+					limit = {
+						has_character_flag = is_naked
+					}
+					remove_character_flag = is_naked
+				}
+			}
 		}
 	}
 }
