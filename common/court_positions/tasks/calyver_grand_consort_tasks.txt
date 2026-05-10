@@ -21,7 +21,7 @@ keeper_of_the_harem_court_position_task_select_palace_beauties = {
 				}
 				add = {
 					value = monthly_court_position_task_cost
-					multiply = 3
+					multiply = 2
 					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
 					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
 				}
@@ -37,7 +37,7 @@ keeper_of_the_harem_court_position_task_select_palace_beauties = {
 				}
 				add = {
 					value = monthly_court_position_task_cost
-					multiply = 3
+					multiply = 2
 					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
 					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
 				}
@@ -72,6 +72,7 @@ keeper_of_the_harem_court_position_task_select_palace_beauties = {
 		scope:liege = {
 			if = {
 				limit = {
+					allowed_more_concubines = no
 					number_of_fertile_concubines < max_number_of_concubines
 					any_concubine = {
 						is_childless_aged_concubine_trigger = yes
@@ -152,19 +153,24 @@ keeper_of_the_harem_court_position_task_select_palace_beauties = {
 					allowed_more_concubines = yes
 				}
 				calyver_create_candidate_effect = yes
-				add_courtier = scope:bride
 				if = {
 					limit = {
-						is_character_interaction_valid = {
-							recipient = scope:bride
-							interaction = ai_make_concubine_interaction
-						}
+						exists = scope:bride
 					}
-					run_interaction = {
-						interaction = ai_make_concubine_interaction
-						actor = scope:liege
-						recipient = scope:bride
-						execute_threshold = accept
+					add_courtier = scope:bride
+					if = {
+						limit = {
+							is_character_interaction_valid = {
+								recipient = scope:bride
+								interaction = ai_make_concubine_interaction
+							}
+						}
+						run_interaction = {
+							interaction = ai_make_concubine_interaction
+							actor = scope:liege
+							recipient = scope:bride
+							execute_threshold = accept
+						}
 					}
 				}
 			}
@@ -172,20 +178,7 @@ keeper_of_the_harem_court_position_task_select_palace_beauties = {
 			random = {
 				chance = 0
 				modifier = {
-					any_consort = {
-						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
-						is_imprisoned = no
-						count >= 3
-					}
-					NOR = {
-						has_character_flag = chosen_night_companion
-						has_character_flag = summoned_to_chambers_flag
-						has_trait = eunuch
-						has_trait = celibate
-						has_trait = devoted
-					}
-					is_physically_able_adult = yes
-					is_at_war = no
+					harem_politics_0011_trigger = yes
 					add = 20
 				}
 				trigger_event = {
@@ -271,6 +264,11 @@ grand_consort_task_instill_virtues = {
 
 	on_start = {
 		custom_tooltip = grand_consort_task_instill_virtues_fallback_tt
+		add_character_flag = gc_instilling_virtues_flag
+	}
+
+	on_end = {
+		remove_character_flag = gc_instilling_virtues_flag
 	}
 
 	on_monthly = {

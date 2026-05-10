@@ -1220,9 +1220,9 @@ favor_ps_bonus = { #The PS will have 6 additional months
 	value = favor_minor_value_gain
 	multiply = 6
 }
-favor_gc_bonus = { #The GC will have 3 additional months
+favor_hc_bonus = { #HCs will have 2 additional months
 	value = favor_minor_value_gain
-	multiply = 3
+	multiply = 2
 }
 favor_ss_bonus = { #SSs will have 1 additional month
 	value = favor_minor_value_gain
@@ -1407,9 +1407,7 @@ favor_points_additions = {
 	#The PS
 	if = {
 		limit = {
-			scope:harem_liege.primary_spouse ?= { 	
-				this = root
-			}
+			scope:harem_liege.primary_spouse ?= root
 		}
 		add = {
 			#desc = favor_addition_ps
@@ -1426,7 +1424,21 @@ favor_points_additions = {
 		}
 		add = {
 			#desc = favor_addition_gc
-			value = 4
+			value = 2
+		}
+	}
+	if = {
+		limit = { 
+			root = { 	
+				is_high_consort_trigger = {
+					LIEGE = scope:harem_liege
+				}
+				is_demoted_consort_trigger = no
+			}
+		}
+		add = {
+			#desc = favor_addition_gc
+			value = 2
 		}
 	}
 	#Spouses
@@ -1437,7 +1449,9 @@ favor_points_additions = {
 				is_demoted_consort_trigger = no
 				NOR = {
 					this = scope:harem_liege.primary_spouse
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:harem_liege
+					}
 				}
 			}
 		}
@@ -1779,7 +1793,7 @@ favor_points_additions = {
 									religion = religion:islam_religion
 								}
 							}
-							is_valid_harem_member_trigger = {
+							is_active_harem_member_trigger = {
 								LIEGE = scope:harem_liege
 							}
 						}
@@ -1870,7 +1884,7 @@ favor_points_additions = {
 					scope:harem_liege = {
 						religion = religion:islam_religion
 						any_courtier = {
-							is_valid_harem_member_trigger = {
+							is_active_harem_member_trigger = {
 								LIEGE = scope:harem_liege
 							}
 							NOR = {
@@ -1898,7 +1912,7 @@ favor_points_additions = {
 					limit = {
 						scope:harem_liege = {
 							any_courtier = {
-								is_valid_harem_member_trigger = {
+								is_active_harem_member_trigger = {
 									LIEGE = scope:harem_liege
 								}
 								NOR = {
@@ -4389,11 +4403,10 @@ favor_points_subtractions = {
 						root = {
 							is_married = yes
 							NOR = {
-								has_court_position = grand_consort_court_position
-								AND = {
-									exists = scope:harem_liege.primary_spouse
-									this = scope:harem_liege.primary_spouse
+								is_high_consort_trigger = {
+									LIEGE = scope:harem_liege
 								}
+								scope:harem_liege.primary_spouse ?= root
 							}
 						}
 					}
@@ -4402,7 +4415,9 @@ favor_points_subtractions = {
 				if = { #Extra if root the GC
 					limit = { 
 						root = {
-							has_court_position = grand_consort_court_position
+							is_high_consort_trigger = {
+								LIEGE = scope:harem_liege
+							}
 						}
 					}
 					add = 2
@@ -5919,13 +5934,23 @@ initial_favor_valuation = {
 	if = {
 		limit = { 
 			root = { 	
-				has_court_position = grand_consort_court_position
+				is_high_consort_trigger = {
+					LIEGE = scope:harem_liege
+				}
 				is_demoted_consort_trigger = no
 			}
 		}
 		add = {
 			#desc = favor_addition_gc
-			value = favor_gc_bonus
+			value = favor_hc_bonus
+			if = {
+				limit = {
+					root = {
+						has_court_position = grand_consort_court_position
+					}
+				}
+			}
+			add = favor_ss_bonus
 		}
 	}
 	#Spouses
@@ -5936,7 +5961,9 @@ initial_favor_valuation = {
 				is_demoted_consort_trigger = no
 				NOR = {
 					this = scope:harem_liege.primary_spouse
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:harem_liege
+					}
 				}
 			}
 		}
@@ -7695,120 +7722,6 @@ create_duchy_title_value_harem_politics = {
 	multiply = 0.50
 }
 
-##Rank difference##
-consort_rank_difference_value = {
-	value = 0
-	if = { #The PS
-		limit = {
-			exists = scope:harem_liege.primary_spouse
-			this = scope:harem_liege.primary_spouse
-		}
-		if = { #Can recruit the GC?
-			limit = {
-				scope:target_consort = {
-					has_court_position = grand_consort_court_position
-				}
-			}
-			add = 1
-		}
-		if = { #The SS
-			limit = {
-				scope:target_consort = {
-					NOT = {	
-						has_court_position = grand_consort_court_position
-					}
-					is_spouse_of = scope:harem_liege
-				}
-			}
-			add = {
-				value = 1
-				if = {
-					limit = {
-						scope:harem_liege = {
-							can_employ_court_position_type = grand_consort_court_position
-						}
-					}
-					add = 1
-				}
-			}
-		}
-		if = { #Concubines
-			limit = {
-				scope:target_consort = {
-					NOT = {	
-						has_court_position = grand_consort_court_position
-					}
-					is_concubine_of = scope:harem_liege
-				}
-			}
-			add = {
-				value = 1
-				if = {
-					limit = {
-						scope:harem_liege = {
-							hp_accepts_polygamy = yes
-						}
-					}
-					add = 1
-				}
-				if = {
-					limit = {
-						scope:harem_liege = {
-							can_employ_court_position_type = grand_consort_court_position
-						}
-					}
-					add = 1
-				}
-			}
-		}
-	}
-	else_if = { #The GC
-		limit = {
-			has_court_position = grand_consort_court_position
-		}
-		if = { #SS
-			limit = {
-				scope:target_consort = {
-					is_spouse_of = scope:harem_liege
-					NOT = {
-						this = scope:harem_liege.primary_spouse
-					}
-				}
-			}
-			add = 1
-		}
-		if = { #Concubines
-			limit = {
-				scope:target_consort = {
-					is_concubine_of = scope:harem_liege
-				}
-			}
-			add = {
-				value = 1
-				if = {
-					limit = {
-						scope:harem_liege = {
-							hp_accepts_polygamy = yes
-						}
-					}
-					add = 1
-				}
-			}
-		}
-	}
-	else_if = { #SS
-		limit = {
-			is_spouse_of = scope:harem_liege
-			NOT = {
-				this = scope:harem_liege.primary_spouse
-			}
-			scope:target_consort = {
-				is_concubine_of = scope:harem_liege
-			}
-		}
-		add = 1
-	}
-}
 
 # head_of_the_harem_value = {
 # 	value = 0
@@ -7872,7 +7785,7 @@ head_of_the_harem_score_value = {
 	value = 1
 	if = {
 		limit = {
-			is_valid_harem_member_trigger = {
+			is_active_harem_member_trigger = {
 				LIEGE = scope:harem_liege
 			}
 		}
@@ -7934,13 +7847,21 @@ head_of_the_harem_score_value = {
 				}
 				add = 550
 			}
-			if = {
+			else_if = {
 				limit = {
 					has_court_position = grand_consort_court_position
 				}
 				add = 270
 			}
-			if = {
+			else_if = {
+				limit = {
+					is_high_consort_trigger = {
+						LIEGE = scope:harem_liege
+					}
+				}
+				add = 220
+			}
+			else_if = {
 				limit = {
 					is_married = yes
 				}
@@ -8175,7 +8096,15 @@ primary_spouse_score_value = {
 		}
 		add = 270
 	}
-	if = {
+	else_if = {
+		limit = {
+			is_high_consort_trigger = {
+				LIEGE = scope:harem_liege
+			}
+		}
+		add = 220
+	}
+	else_if = {
 		limit = {
 			is_married = yes
 		}

@@ -778,10 +778,7 @@ arrange_marriage_interaction = {
 				custom_tooltip = {
 					text = grand_wedding_already_promised_tt
 					NOR = {
-						AND = {
-							has_variable = promised_grand_wedding_marriage_countdown
-							var:promised_grand_wedding_marriage_countdown = { is_alive = yes }
-						}
+						var:promised_grand_wedding_marriage_countdown ?= { is_alive = yes }
 						has_variable = grand_wedding_promise_pending
 					}
 				}
@@ -849,8 +846,7 @@ arrange_marriage_interaction = {
 			}
 			trigger_if = {
 				limit = {
-					exists = scope:secondary_recipient.liege
-					scope:secondary_recipient.liege = {
+					scope:secondary_recipient.liege ?= {
 						diarch = scope:secondary_recipient
 						has_active_diarchy = yes
 					}
@@ -873,17 +869,15 @@ arrange_marriage_interaction = {
 		flag = matrilineal
 		localization = MATRILINEAL_OFFER
 		is_shown = {
-			OR = {
-				NOT = { exists = scope:secondary_actor }
-				NOT = { exists = scope:secondary_recipient }
-				scope:secondary_actor = { sex_opposite_of = scope:secondary_recipient }
+			NAND = {
+				scope:secondary_actor ?= { is_male = yes }
+				scope:secondary_recipient ?= { is_male = yes }
 			}
 		}
 		current_description = {
 			triggered_desc = {
 				trigger = {
-					exists = scope:secondary_actor
-					scope:secondary_actor = {
+					scope:secondary_actor ?= {
 						betrothed = scope:secondary_recipient
 						matrilinear_betrothal = yes
 					}
@@ -922,12 +916,16 @@ arrange_marriage_interaction = {
 					}
 				}
 			}
+			# so they can use grand wedding...
+			NAND = {
+				scope:secondary_actor ?= { is_female = yes }
+				scope:secondary_recipient ?= { is_female = yes }
+			}
 		}
 		starts_enabled = {
 			trigger_if = {
 				limit = {
-					exists = scope:secondary_actor
-					scope:secondary_actor = {
+					scope:secondary_actor ?= {
 						betrothed = scope:secondary_recipient
 					}
 				}
@@ -937,8 +935,7 @@ arrange_marriage_interaction = {
 			}
 			trigger_else_if = {
 				limit = {
-					exists = scope:secondary_actor
-					scope:actor = scope:secondary_actor
+					scope:secondary_actor ?= scope:actor
 					scope:actor = {
 						is_female = yes
 						is_ai = no
@@ -954,17 +951,19 @@ arrange_marriage_interaction = {
 						}
 						AND = {
 							this = scope:recipient
-							exists = scope:secondary_recipient
-							scope:secondary_recipient = {
+							scope:secondary_recipient ?= {
 								is_female = yes
 							}
 							faith = { has_doctrine = doctrine_gender_equal }
 						}
 						AND = {
-							exists = scope:secondary_actor
-							scope:actor = scope:secondary_actor
+							scope:secondary_actor ?= this
 							is_female = yes
 							is_ai = no
+						}
+						AND = {
+							scope:secondary_actor ?= { is_female = yes }
+							scope:secondary_recipient ?= { is_female = yes }
 						}
 					}
 				}
@@ -1313,28 +1312,40 @@ marry_off_interaction = {
 		#otherwise, populate with anyone eligible
 		else = {
 			scope:secondary_actor = {
-				every_opposite_sex_spouse_candidate = { add_to_list = characters }
 				if = {
-					limit = { allowed_to_marry_same_sex_trigger = yes }
-					every_same_sex_spouse_candidate = {
+					limit = {
+						culture = { has_cultural_parameter = reduced_marriage_acceptance_distant_realms }
+					}
+					every_opposite_sex_spouse_candidate = {
 						limit = {
-							scope:secondary_actor != this
+							top_liege.culture = scope:secondary_actor.top_liege.culture
 						}
 						add_to_list = characters
 					}
-				}
-			}
-			# Cleanup list if insular culture
-			if = {
-				limit = {
-					scope:secondary_actor.culture = { has_cultural_parameter = reduced_marriage_acceptance_distant_realms }
-				}
-				every_in_list = {
-					list = characters
-					limit = {
-						NOT = { top_liege.culture = scope:secondary_actor.top_liege.culture }
+					if = {
+						limit = { allowed_to_marry_same_sex_trigger = yes }
+						every_same_sex_spouse_candidate = {
+							limit = {
+								scope:secondary_actor != this
+								top_liege.culture = scope:secondary_actor.top_liege.culture
+							}
+							add_to_list = characters
+						}
 					}
-					remove_from_list = characters
+				}
+				else = {
+					every_opposite_sex_spouse_candidate = {
+						add_to_list = characters
+					}
+					if = {
+						limit = { allowed_to_marry_same_sex_trigger = yes }
+						every_same_sex_spouse_candidate = {
+							limit = {
+								scope:secondary_actor != this
+							}
+							add_to_list = characters
+						}
+					}
 				}
 			}
 		}
@@ -1656,6 +1667,12 @@ marry_off_interaction = {
 	send_option = {
 		flag = matrilineal
 		localization = "MATRILINEAL_OFFER"
+		is_shown = {
+			NAND = {
+				scope:secondary_actor ?= { is_male = yes }
+				scope:secondary_recipient ?= { is_male = yes }
+			}
+		}
 		starts_enabled = {
 			scope:actor = {
 				OR = {
@@ -1663,16 +1680,26 @@ marry_off_interaction = {
 						has_doctrine = doctrine_gender_female_dominated
 					}
 					AND = {
-						scope:secondary_actor = { is_female = yes }
+						scope:secondary_actor ?= { is_female = yes }
 						faith = { has_doctrine = doctrine_gender_equal }
 					}
 					AND = {
-						exists = scope:secondary_actor
-						scope:actor = scope:secondary_actor
+						scope:secondary_actor ?= this
 						is_female = yes
 						is_ai = no
 					}
+					AND = {
+						scope:secondary_actor ?= { is_female = yes }
+						scope:secondary_recipient ?= { is_female = yes }
+					}
 				}
+			}
+		}
+		# so they can use grand wedding...
+		can_be_changed = {
+			NAND = {
+				scope:secondary_actor ?= { is_female = yes }
+				scope:secondary_recipient ?= { is_female = yes }
 			}
 		}
 	}
@@ -1692,11 +1719,6 @@ marry_off_interaction = {
 		is_shown = { # Actor must have a government that uses influence
 			scope:actor = {
 				government_has_flag = government_has_influence
-				exists = top_liege
-			}
-			scope:recipient ?= {
-				government_has_flag = government_has_influence
-				top_liege ?= scope:actor.top_liege
 			}
 		}
 		is_valid = {
@@ -1883,10 +1905,6 @@ make_concubine_interaction = {
 			every_courtier = {
 				limit = {
 					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-						CHARACTER = scope:actor 
-						RECEIVER = scope:actor
-					}
 				}
 				add_to_list = characters
 			}
@@ -1976,6 +1994,7 @@ ai_make_concubine_interaction = {
 			}
 		}
 
+		# Harem Politics
 		modifier = { # Good genetic traits
 			add = 15
 			scope:recipient = {
@@ -2017,6 +2036,7 @@ ai_make_concubine_interaction = {
 			}
 		}
 
+		# Vanilla
 		modifier = {
 			add = 100
 			scope:recipient = {
@@ -2044,8 +2064,8 @@ ai_make_concubine_interaction = {
 				is_attracted_to_gender_of = scope:recipient
 				OR = { #If they're not in need of kids, or someone who they can have kids with
 					any_child = {
-						count >= 2
 						is_bastard_child_trigger = no
+						count >= 2
 					}
 					any_consort = {
 						can_have_children_with = { CHARACTER = scope:actor }
@@ -2087,6 +2107,7 @@ ai_make_concubine_interaction = {
 		evaluate_action_increasing_house_unity = {
 			VALUE = 100
 		}
+		# Harem Politics
 		modifier = { # Number of concubines
 			scope:actor = {
 				any_concubine = {
@@ -2094,8 +2115,9 @@ ai_make_concubine_interaction = {
 					count >= scope:actor.number_of_desired_concubines
 				}
 			}
-			factor = 0.7
+			factor = 0.5
 		}
+		# Vanilla
 		modifier = { # Incest Filtering: Hard NO!
 			factor = 0
 			scope:actor = {
@@ -2194,10 +2216,6 @@ find_concubine = {
 			every_courtier = {
 				limit = {
 					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-						CHARACTER = scope:actor 
-						RECEIVER = scope:actor
-					}
 				}
 				add_to_list = characters
 			}
@@ -2237,10 +2255,6 @@ find_concubine = {
 			}
 			scope:recipient = {
 				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-					CHARACTER = scope:actor 
-					RECEIVER = scope:actor
-				}
 				is_adult = yes
 				OR = {
 					is_imprisoned_by = scope:actor
@@ -2265,10 +2279,6 @@ find_concubine = {
 				OR = {
 					any_courtier = {
 						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-						can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-							CHARACTER = scope:actor 
-							RECEIVER = scope:actor
-						}
 					}
 					any_prisoner = {
 						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
@@ -2282,10 +2292,6 @@ find_concubine = {
 			}
 			scope:recipient = {
 				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-					CHARACTER = scope:actor 
-					RECEIVER = scope:actor
-				}
 			}
 		}
 	}
@@ -2322,7 +2328,7 @@ dismiss_concubine_interaction = {
 		scope:actor = {
 			custom_tooltip = {
 				NOT = {
-					var:family_widow_forbidden_divorce ?= scope:target
+					var:family_widow_forbidden_divorce ?= scope:recipient
 				}
 				text = BOUND_TO_FAMILY_WIDOW
 			}
@@ -2333,6 +2339,115 @@ dismiss_concubine_interaction = {
 
 	on_accept = {
 		calyver_dismiss_concubine_effect = yes
+	}
+	# Harem Politics
+	ai_targets = {
+		ai_recipients = courtiers
+	}
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 84
+		kingdom = 84
+		empire = 84
+		hegemony = 120
+	}
+	ai_will_do = {
+		base = 0
+
+		modifier = { # Number of concubines
+			add = -50
+			scope:actor = {
+				number_of_concubines < number_of_desired_concubines
+			}
+		}
+		modifier = { # Influential children
+			add = -25
+			scope:recipient = {
+				any_child = {
+					is_child_of = scope:actor
+					count > 0
+				}
+			}
+		}
+		modifier = { # Influential children
+			add = -25
+			scope:recipient = {
+				any_child = {
+					is_player_heir_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Rank
+			add = -25
+			scope:recipient = {
+				is_high_consort_trigger = {
+					LIEGE = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -25
+			scope:recipient = {
+				any_close_family_member = {
+					is_powerful_vassal_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -25
+			scope:recipient = {
+				any_close_family_member = {
+					is_councillor_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -15
+			scope:recipient = {
+				any_close_family_member = {
+					is_vassal_or_below_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -100
+			scope:recipient = {
+				any_close_family_member = {
+					is_liege_or_above_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Friends/lovers
+			add = -25
+			scope:recipient = {
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+		modifier = { # Best friends/soulmates
+			add = -50
+			scope:recipient = {
+				has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+
+		modifier = { # Rival
+			add = 50
+			scope:recipient = {
+				has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+		modifier = { # Nemesis
+			add = 50
+			scope:recipient = {
+				has_any_worst_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+
+		# Unity modifiers
+		evaluate_action_decreasing_house_unity = {
+			VALUE = 100
+		}
 	}
 }
 
@@ -2544,7 +2659,7 @@ divorce_character_interaction = {
 		scope:actor = {
 			custom_tooltip = {
 				NOT = {
-					var:family_widow_forbidden_divorce ?= scope:target
+					var:family_widow_forbidden_divorce ?= scope:recipient
 				}
 				text = BOUND_TO_FAMILY_WIDOW
 			}
@@ -2603,9 +2718,13 @@ divorce_character_interaction = {
 			scope:recipient = {
 				is_ai = yes
 				fertility < 0.1
-				any_close_family_member = {
-					is_liege_or_above_of = scope:actor
-					is_powerful_vassal_of = scope:actor
+				NOT = {
+					any_close_family_member = {
+						OR = {
+							is_liege_or_above_of = scope:actor
+							is_powerful_vassal_of = scope:actor
+						}
+					}
 				}
 			}
 		}
@@ -2615,6 +2734,127 @@ divorce_character_interaction = {
 			scope:actor = {
 				sex_same_as = scope:recipient
 				allowed_to_marry_same_sex_trigger = no
+			}
+		}
+
+		# Harem Politics
+		modifier = { # Number of spouses
+			add = -50
+			scope:actor = {
+				trigger_if = {
+					limit = {
+						primary_title.tier >= 5
+					}
+					any_spouse = {
+						count < 4
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 4
+					}
+					any_spouse = {
+						count < 3
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						primary_title.tier >= 3
+					}
+					any_spouse = {
+						count < 2
+					}
+				}
+				trigger_else = {
+					any_spouse = {
+						count < 1
+					}
+				}
+				NOT = {
+					has_government = landless_adventurer_government
+				}
+			}
+		}
+		modifier = { # Influential children
+			add = -25
+			scope:recipient = {
+				any_child = {
+					is_child_of = scope:actor
+					count > 0
+				}
+			}
+		}
+		modifier = { # Influential children
+			add = -25
+			scope:recipient = {
+				any_child = {
+					is_player_heir_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Rank
+			add = -25
+			scope:recipient = {
+				is_high_consort_trigger = {
+					LIEGE = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -25
+			scope:recipient = {
+				any_close_family_member = {
+					is_powerful_vassal_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -25
+			scope:recipient = {
+				any_close_family_member = {
+					is_councillor_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -15
+			scope:recipient = {
+				any_close_family_member = {
+					is_vassal_or_below_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Influential family
+			add = -100
+			scope:recipient = {
+				any_close_family_member = {
+					is_liege_or_above_of = scope:actor
+				}
+			}
+		}
+		modifier = { # Friends/lovers
+			add = -25
+			scope:recipient = {
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+		modifier = { # Best friends/soulmates
+			add = -50
+			scope:recipient = {
+				has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+
+		modifier = { # Rival
+			add = 25
+			scope:recipient = {
+				has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
+			}
+		}
+		modifier = { # Nemesis
+			add = 25
+			scope:recipient = {
+				has_any_worst_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
 			}
 		}
 
@@ -2637,7 +2877,6 @@ offer_concubine = {
 		ai_recipients = liege
 		ai_recipients = top_liege
 		ai_recipients = family
-		ai_recipients = peer_vassals
 		max = 5
 	}
 	ai_target_quick_trigger = {
@@ -2683,9 +2922,6 @@ offer_concubine = {
 
 	is_shown = {
 		scope:actor != scope:recipient
-		scope:actor = {
-			hp_accepts_concubinage = yes
-		}
 		scope:recipient = {
 			NOT = { government_has_flag = government_is_herder }
 			allowed_concubines = yes
@@ -3068,15 +3304,15 @@ offer_concubine = {
 						has_character_modifier = forgotten_consort_modifier
 						has_character_modifier = rejected_from_marriage_bed_modifier
 					}
-					OR = {
-						has_trait_with_flag = can_not_marry
-						has_trait_with_flag = illness
-						has_trait_flag = debilitating_illness
-						has_trait_with_flag = epidemic_disease
-						AND = {
-							is_female = yes
-							age >= define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
-						}
+					has_trait = chaste
+					has_trait_with_flag = age_related_ailment
+					has_trait_with_flag = can_not_marry
+					has_trait_with_flag = illness
+					has_trait_flag = debilitating_illness
+					has_trait_with_flag = epidemic_disease
+					AND = {
+						is_female = yes
+						age >= define:NChildbirth|MAX_FEMALE_REPRODUCTION_AGE
 					}
 				}
 			}
@@ -3147,9 +3383,7 @@ offer_concubine = {
 			scope:actor = {
 				is_powerful_vassal_of = scope:recipient
 			}
-			add = {
-				value = 50
-			}
+			add = 50
 			desc = CALYVER_AI_POWERFUL_VASSAL_REASON
 		}
 		modifier = {
@@ -3190,14 +3424,14 @@ offer_concubine = {
 
 		modifier = { # Basic Filtering - slightly modified
 			add = {
-				value = 10
+				value = 15
 				if = {
 					limit = {
 						scope:recipient = {
 							is_liege_or_above_of = scope:actor
 						}
 					}
-					add = 20
+					add = 15
 				}
 			}
 			scope:recipient = {
@@ -3212,11 +3446,25 @@ offer_concubine = {
 				}
 				fertility > 0.2
 				is_young_character = yes
+				trigger_if = {
+					limit = {				
+						scope:actor = {
+							government_allows = administrative
+							top_liege ?= scope:recipient
+							religion != religion:islam_religion
+						}
+					}
+					always = yes
+				}
+				trigger_else = {
+					NOT = {
+						is_of_major_interest_trigger = {
+							CHARACTER = scope:actor
+						}
+					}
+				}
 				NOR = {
 					is_councillor_of = scope:actor
-					is_of_major_interest_trigger = {
-						CHARACTER = scope:actor
-					}
 					is_concubine_of = scope:actor
 				}
 			}
@@ -3224,49 +3472,20 @@ offer_concubine = {
 
 		# Vanilla - slightly modified
 		modifier = { # If secondary_recipient is close to actor, a good character, or if actor should take them as concubine
-			add = {
-				value = -120
-				if = {
-					limit = {
-						scope:actor = {
-							religion != religion:islam_religion
-							is_close_or_extended_family_of = scope:secondary_recipient
-							trigger_if = {
-								limit = {
-									government_allows = administrative
-								}
-								OR = {	
-									top_liege ?= scope:recipient
-									trigger_if = {
-										limit = { tgp_realm_has_ceremonial_liege_trigger = yes }
-										scope:recipient = {tgp_is_ceremonial_liege_trigger = yes }
-									}
-								}
-							}
-							trigger_else = {
-								is_vassal_or_below_of = scope:recipient
-							}
-						}
-					}
-					add = {
-						value = 90
-						if = {
-							limit = {
-								scope:recipient = {
-									NOT = {
-										recipient_has_actor_relative_consort_trigger = yes
-									}
-								}
-							}
-							add = 30
-						}
-					}
-				}
-			}
+			add = -120
 			scope:secondary_recipient = {
 				OR = {
-					is_of_minor_interest_trigger = {
-						CHARACTER = scope:actor
+					AND = {
+						NOT = {
+							scope:actor = {
+								government_allows = administrative
+								top_liege ?= scope:recipient
+								religion != religion:islam_religion
+							}
+						}
+						is_of_minor_interest_trigger = {
+							CHARACTER = scope:actor
+						}
 					}
 					is_consort_of = scope:actor
 					AND = {
@@ -3337,98 +3556,24 @@ offer_concubine = {
 			scope:secondary_recipient = {
 				is_virgin_trigger = no
 			}
-			add = -15
+			add = -35
 		}
 
-		# Liege modifiers - Non-Administrative Realms
-		modifier = { # More likely to send concubines to liege or above in non-admin realms
+		modifier = { # More likely to send concubines to liege in non-admin realms
 			add = {
-				value = 20
-				if = {
-					limit = {
-						scope:actor.liege ?= scope:recipient
-					}
-					add = 10
-				}
+				value = 10
 				if = {
 					limit = {
 						scope:actor = {
 							is_powerful_vassal_of = scope:recipient
 						}
 					}
-					add = 10
+					add = 40
 				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -10
-				}
-				if = {
-					limit = {
-						scope:actor.house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							is_close_family_of = scope:secondary_recipient
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							recipient_has_actor_relative_consort_trigger = yes
-						}
-					}
-					add = -40
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							allowed_more_spouses = no
-						}
-					}
-					add = 10
-				}
-			}
-			scope:recipient = {
-				NOT = { government_allows = administrative }
 			}
 			scope:actor = {
+				is_vassal_of = scope:recipient
+				NOT = { government_allows = administrative }
 				trigger_if = {
 					limit = {
 						religion = religion:islam_religion
@@ -3442,309 +3587,300 @@ offer_concubine = {
 						}
 					}
 				}
-				NOR = { 
-					government_allows = administrative
-					has_character_flag = received_influence_offer_concubine_flag
+				trigger_else = {
+					is_close_family_of = scope:secondary_recipient
 				}
-				is_vassal_or_below_of = scope:recipient
+				NOT = {
+					is_close_family_of = scope:recipient
+				}
+				opinion = {
+					target = scope:recipient
+					value > -25
+				}
+			}
+			scope:recipient = {
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+					hp_accepts_polygamy = yes
+				}
 			}
 		}
 
-		modifier = { # More likely to send to top_liege in administrative realms (base bonus)
+		# Admin realms
+		modifier = { # More likely to send concubines to top liege in admin realms
 			add = {
-				value = 40
+				value = 10
 				if = {
 					limit = {
 						scope:actor = {
-							house ?= {
-								OR = {
-									is_powerful_family = yes
-									is_dominant_family = yes
-								}
-							}
+							is_powerful_vassal_of = scope:recipient
 						}
 					}
-					add = 10
+					add = 40
 				}
-				if = {
+			}
+			scope:actor = {
+				top_liege ?= scope:recipient
+				government_allows = administrative
+				trigger_if = {
 					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
+						religion = religion:islam_religion
 					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -20
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -15
-				}
-				if = {
-					limit = {
-						scope:actor.house ?= {
+					NOR = {
+						is_close_or_extended_family_of = scope:secondary_recipient
+						house ?= {
 							any_house_member = {
 								this = scope:secondary_recipient
 							}
 						}
 					}
-					add = 15
 				}
-				if = {
-					limit = {
-						scope:actor = {
-							is_close_family_of = scope:secondary_recipient
+				trigger_else = {
+					house ?= {
+						any_house_member = {
+							this = scope:secondary_recipient
 						}
 					}
-					add = 10
 				}
-				if = {
-					limit = {
-						scope:recipient = {
-							recipient_has_actor_relative_consort_trigger = yes
-						}
-					}
-					add = -40
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -20
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							allowed_more_spouses = no
-						}
-					}
-					add = 10
-				}
-			}
-			scope:recipient = {
-				government_allows = administrative
-				government_has_flag = government_has_influence
-			}
-			scope:actor = {
-				NOR = { 
-					has_character_flag = received_influence_offer_concubine_flag
+				NOR = {
 					house ?= {
 						any_house_member = {
 							this = scope:recipient
 						}
 					}
+					has_character_flag = received_influence_offer_concubine_flag
 				}
-				trigger_if = {
-					limit = {
-						religion = religion:islam_religion
-					}
-					NOR = {
-						is_close_or_extended_family_of = scope:secondary_recipient
-						house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-				}
-				government_allows = administrative
-				government_has_flag = government_has_influence
-				OR = {	
-					top_liege ?= scope:recipient
-					trigger_if = {
-						limit = { tgp_realm_has_ceremonial_liege_trigger = yes }
-						scope:recipient = {tgp_is_ceremonial_liege_trigger = yes }
-					}
-				}
-			}
-		}
-
-		modifier = { # More likely to send to fellow vassals in admin realms
-			add = {
-				value = 5
-				if = {
-					limit = {
-						scope:recipient.house ?= {
-							is_dominant_family = yes
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = ambitious
-						}
-					}
-					add = 5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = content
-						}
-					}
-					add = -10
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							has_trait = humble
-						}
-					}
-					add = -5
-				}
-				if = {
-					limit = {
-						scope:actor = {
-							OR = {
-								house ?= {
-									any_house_member = {
-										this = scope:secondary_recipient
-									}
-								}
-								is_extended_family_of = scope:secondary_recipient
-							}
-						}
-					}
-					add = -5
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							number_of_concubines >= number_of_desired_concubines
-						}
-					}
-					add = -10
+				opinion = {
+					target = scope:recipient
+					value > -25
 				}
 			}
 			scope:recipient = {
 				government_allows = administrative
-				government_has_flag = government_has_influence
-				is_independent_ruler = no
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+					hp_accepts_polygamy = yes
+				}
+			}
+		}
+
+		modifier = { # More likely to send concubines to fellow vassals in admin realms
+			add = 10
+			scope:actor = {
+				top_liege ?= {
+					this != scope:recipient
+				}
+				government_allows = administrative
+				NOR = {
+					is_close_or_extended_family_of = scope:secondary_recipient
+					house ?= {
+						any_house_member = {
+							this = scope:secondary_recipient
+						}
+					}
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+					has_character_flag = received_influence_offer_concubine_flag
+				}
+				opinion = {
+					target = scope:recipient
+					value > -10
+				}
+			}
+			scope:recipient = {
+				government_allows = administrative
+				top_liege ?= {
+					this != scope:actor
+					this = scope:actor.top_liege
+				}
 				house ?= {
 					OR = {
 						is_powerful_family = yes
 						is_dominant_family = yes
 					}
 				}
-				NOT = {
-					recipient_has_actor_relative_consort_trigger = yes
-				}
 			}
+		}
+
+		modifier = { # Powerful vassals are more likely at higher authority levels
 			scope:actor = {
 				trigger_if = {
 					limit = {
-						religion = religion:islam_religion
+						government_allows = administrative
 					}
-					NOR = {
-						is_close_or_extended_family_of = scope:secondary_recipient
-						house ?= {
-							any_house_member = {
-								this = scope:secondary_recipient
-							}
-						}
-					}
-				}
-				government_allows = administrative
-				government_has_flag = government_has_influence
-				is_independent_ruler = no #Avoid sending to vassals
-				top_liege ?= scope:recipient.top_liege
-				NOR = { 
-					has_character_flag = received_influence_offer_concubine_flag 
-					house ?= {
-						any_house_member = {
-							this = scope:recipient
-						}
+					top_liege ?= {
+						this = scope:recipient
+						government_allows = administrative
 					}
 					house ?= {
 						OR = {
 							is_powerful_family = yes
 							is_dominant_family = yes
 						}
+						any_house_member = {
+							this = scope:secondary_recipient
+						}
 					}
+				}
+				trigger_else = {
+					is_powerful_vassal_of = scope:recipient
 					is_close_family_of = scope:secondary_recipient
 				}
+				NOR = {
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+					has_character_flag = received_influence_offer_concubine_flag
+				}
 			}
+			scope:recipient = {
+				can_have_imperial_consorts_trigger = yes
+				OR = {
+					has_realm_law = crown_authority_1
+					has_realm_law = imperial_bureaucracy_1
+					has_realm_law = celestial_bureaucracy_1
+					has_realm_law = meritocratic_bureaucracy_1
+					has_realm_law = japanese_bureaucracy_1
+				}
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+				}
+			}
+			add = 10
+		}
+		modifier = { # Powerful vassals are more likely at higher authority levels
+			scope:actor = {
+				trigger_if = {
+					limit = {
+						government_allows = administrative
+					}
+					top_liege ?= {
+						this = scope:recipient
+						government_allows = administrative
+					}
+					house ?= {
+						OR = {
+							is_powerful_family = yes
+							is_dominant_family = yes
+						}
+						any_house_member = {
+							this = scope:secondary_recipient
+						}
+					}
+				}
+				trigger_else = {
+					is_powerful_vassal_of = scope:recipient
+					is_close_family_of = scope:secondary_recipient
+				}
+				NOR = {
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+					has_character_flag = received_influence_offer_concubine_flag
+				}
+			}
+			scope:recipient = {
+				can_have_imperial_consorts_trigger = yes
+				OR = {
+					has_realm_law = crown_authority_2
+					has_realm_law = imperial_bureaucracy_2
+					has_realm_law = celestial_bureaucracy_2
+					has_realm_law = meritocratic_bureaucracy_2
+					has_realm_law = japanese_bureaucracy_2
+				}
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+				}
+			}
+			add = 20
+		}
+		modifier = { # Powerful vassals are more likely at higher authority levels
+			scope:actor = {
+				trigger_if = {
+					limit = {
+						government_allows = administrative
+					}
+					top_liege ?= {
+						this = scope:recipient
+						government_allows = administrative
+					}
+					house ?= {
+						OR = {
+							is_powerful_family = yes
+							is_dominant_family = yes
+						}
+						any_house_member = {
+							this = scope:secondary_recipient
+						}
+					}
+				}
+				trigger_else = {
+					is_powerful_vassal_of = scope:recipient
+					is_close_family_of = scope:secondary_recipient
+				}
+				NOR = {
+					house ?= {
+						any_house_member = {
+							this = scope:recipient
+						}
+					}
+					has_character_flag = received_influence_offer_concubine_flag
+				}
+			}
+			scope:recipient = {
+				can_have_imperial_consorts_trigger = yes
+				OR = {
+					has_realm_law = crown_authority_3
+					has_realm_law = imperial_bureaucracy_3
+					has_realm_law = celestial_bureaucracy_3
+					has_realm_law = meritocratic_bureaucracy_3
+					has_realm_law = japanese_bureaucracy_3
+				}
+				NOR = {
+					any_consort = {
+						is_close_family_of = scope:actor
+					}
+				}
+			}
+			add = 30
 		}
 
-		modifier = { #More likely if the recipient is a child
+		modifier = { # More likely to the primary heir
 			scope:recipient = {
-				is_child_of = scope:actor
 				reverse_opinion = {
 					target = scope:actor
-					value > -11
+					value > 0
 				}
 				number_of_concubines < number_of_desired_concubines
+				is_primary_heir_of = scope:actor
 			}
-			add = {
-				value = 20
-				if = {
-					limit = {
-						scope:recipient = {
-							is_primary_heir_of = scope:actor
-						}
-					}
-					add = 20
-				}
-				if = {
-					limit = {
-						scope:actor.primary_title = {
-							place_in_line_of_succession = {
-								target = scope:recipient
-								value <= 3
-							}
-						}
-					}
-					add = 10
-				}
-				if = {
-					limit = {
-						scope:recipient = {
-							any_child = {
-								is_alive = yes
-								is_bastard_child_trigger = no
-								count < 2
-							}
-						}
-					}
-					add = 5
-				}
-			}
+			add = 25
 		}
 		modifier = { #More likely if the recipient is a relative
 			scope:recipient = {
-				NOT = { is_child_of = scope:actor }
 				is_close_family_of = scope:actor
 				reverse_opinion = {
 					target = scope:actor
-					value > -6
+					value > 0
 				}
 				number_of_concubines < number_of_desired_concubines
 			}
-			add = {
-				value = 5
-				if = {
-					limit = {
-						scope:recipient = {
-							is_primary_heir_of = scope:actor
-						}
-					}
-					add = 10
-				}
-			}
+			add = 25
 		}
 		modifier = { # Muslims would never offer a relative as concubine
 			factor = 0
@@ -3759,6 +3895,19 @@ offer_concubine = {
 					}
 				}
 			}
+		}
+		# Does not accept concubinage
+		modifier = {
+			scope:actor = {
+				hp_accepts_concubinage = no
+			}
+			factor = 0.25
+		}
+		modifier = {
+			scope:actor = {
+				hp_accepts_harems = no
+			}
+			factor = 0.5
 		}
 
 		# Vanilla
@@ -3778,14 +3927,11 @@ offer_concubine = {
 			}
 		}
 
-		modifier = { # Age considerations
+		modifier = { # Age considerations - slightly changed
 			factor = 0
-			scope:recipient = {
-				OR = {
-					age >= scope:secondary_recipient.age_plus_10
-					age <= scope:secondary_recipient.age_minus_10
-					scope:secondary_recipient.age >= 30 # Concubines are meant to be young...
-				}
+			OR = {
+				scope:secondary_recipient.age >= 30 # Concubines are meant to be young...
+				scope:secondary_recipient.age > scope:recipient.age_plus_5
 			}
 		}
 
@@ -4134,8 +4280,20 @@ demote_spouse_interaction = {
 			text = CULTURE_FORBIDS_DIVORCE
 		}
 		custom_tooltip = {
-			scope:actor = { NOT = { religion = religion:islam_religion } }
+			scope:actor.religion != religion:islam_religion
 			text = take_concubine_ex_spouse_faith
+		}
+
+		scope:actor = {			
+			# Independent kings and emperors can take ex-spouses as concubines
+			custom_tooltip = {
+				text = can_not_take_ex_spouse_as_concubine_tradition
+				trigger_if = {
+					limit = { culture = { has_cultural_parameter = dishu_system } }
+					can_have_imperial_consorts_trigger = yes
+					is_independent_ruler = yes
+				}
+			}
 		}
 		# custom_tooltip = {
 		# 	scope:recipient = {
@@ -4312,6 +4470,684 @@ demote_spouse_interaction = {
 		# Unity modifiers
 		evaluate_action_decreasing_house_unity = {
 			VALUE = 100
+		}
+	}
+}
+
+# Request a concubine
+request_concubine_interaction = {
+	category = interaction_category_diplomacy
+	common_interaction = yes
+	icon = request_concubine_interaction
+	interface_priority = 44
+
+	desc = request_concubine_interaction_desc
+
+	cost = {
+		prestige = {
+			value = 0
+			if = {
+				limit = {
+					NAND = {
+						scope:actor = {
+							government_has_flag = government_has_influence 
+							exists = house
+						}
+						scope:recipient = {
+							government_has_flag = government_has_influence 
+							is_vassal_or_below_of = scope:actor
+							house ?= {
+								house_head.top_liege ?= scope:actor.house.house_head.top_liege
+								this != scope:actor.house
+							}
+						}
+					}
+				}
+				add = {
+					value = medium_prestige_value
+				}
+			}
+		}
+		influence = {
+			value = 0
+			if = {
+				limit = { 
+					scope:actor = {
+						government_has_flag = government_has_influence 
+						exists = house
+					}
+					scope:recipient = {
+						government_has_flag = government_has_influence 
+						is_vassal_or_below_of = scope:actor
+						house ?= {
+							house_head.top_liege ?= scope:actor.house.house_head.top_liege
+							this != scope:actor.house
+						}
+					}
+				}
+				add = {
+					value = medium_influence_value
+				}
+			}
+		}
+	}
+
+	ai_targets = {
+		ai_recipients = vassals
+	}
+	ai_target_quick_trigger = {
+		adult = yes
+	}
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 0
+		kingdom = 60
+		empire = 60
+		hegemony = 48
+	}
+	cooldown_against_recipient = { years = 3 }
+
+	greeting = positive
+	notification_text = REQUEST_CONCUBINE_NOTIFICATION
+
+	needs_recipient_to_open = yes
+
+	populate_actor_list = {
+		scope:recipient = {
+			every_courtier = {
+				limit = {
+					is_physically_able_adult = yes
+					is_ruler = no
+					could_marry_character_trigger = { CHARACTER = scope:actor }
+					trigger_if = {
+						limit = { exists = betrothed }
+						betrothed = {
+							NOR = {
+								this = scope:actor
+								is_courtier_of = scope:actor
+								is_close_family_of = scope:actor
+							}
+						}
+					}
+					trigger_else = {
+						any_consort = { count = 0 }
+						allowed_more_spouses = yes
+					}
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = scope:actor 
+						RECEIVER = scope:actor
+					}
+				}
+				add_to_list = characters
+			}
+		}
+	}
+
+	is_shown = {
+		scope:actor = {
+			this != scope:recipient
+			allowed_concubines = yes
+			NOR = { # We expect scope:actor to Exact Tribute for this purpose when Merit- or Mandala-based instead
+				government_has_flag = government_is_mandala
+			}
+			can_have_imperial_consorts_trigger = yes
+			is_independent_ruler = yes
+		}
+		scope:recipient = {
+			trigger_if = {
+				limit = {
+					scope:actor = { government_allows = administrative }
+				}
+				is_vassal_or_below_of = scope:actor
+			}
+			trigger_else = {
+				is_vassal_of = scope:actor
+			}
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:actor = {
+			allowed_more_concubines = yes
+			is_physically_able_adult = yes
+		}
+		custom_tooltip = {
+			text = must_have_valid_concubine_tt
+			scope:recipient = {
+				any_courtier = {
+					is_physically_able_adult = yes
+					is_ruler = no
+					could_marry_character_trigger = { CHARACTER = scope:actor }
+					trigger_if = {
+						limit = { exists = betrothed }
+						betrothed = {
+							NOR = {
+								this = scope:actor
+								is_courtier_of = scope:actor
+								is_close_family_of = scope:actor
+							}
+						}
+					}
+					trigger_else = {
+						any_consort = { count = 0 }
+						allowed_more_spouses = yes
+					}
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = scope:actor 
+						RECEIVER = scope:actor
+					}
+				}
+			}
+		}
+	}
+
+	can_be_picked = {
+		is_adult = yes
+	}
+
+	can_send = {
+	}
+
+	auto_accept = no
+
+	# If you want the AI to set these options then it needs to be hooked into the code as well
+	send_option = {
+		is_valid = {
+			scope:actor = {
+				has_usable_hook = scope:recipient
+			}
+		}
+		flag = hook
+		localization = MARRIAGE_HOOK
+	}
+	send_option = {
+		flag = offer_hook
+		is_valid = {
+			NOT = {
+				scope:recipient = {
+					has_usable_hook = scope:actor
+				}
+			}
+		}
+		localization = purchase_land_interaction_offer_hook
+		current_description = purchase_land_interaction_offer_hook_desc
+	}
+	send_option = {
+		flag = offer_gold
+		is_valid = {
+			scope:actor.gold >= scope:actor.medium_gold_value
+		}
+		localization = OFFER_GIFT_GOLD
+		current_description = {
+			# Triggered desc so that we don't get a weird double tooltip.
+			triggered_desc = {
+				trigger = { scope:actor.gold >= scope:actor.medium_gold_value }
+				desc = OFFER_GIFT_GOLD_DESC
+			}
+		}
+	}
+	send_option = { # EP3 Influence
+		is_shown = { # Actor must have a government that uses influence
+			scope:actor = {
+				government_has_flag = government_has_influence
+			}
+			scope:recipient = {
+				government_has_flag = government_has_influence
+			}
+		}
+		is_valid = {
+			# Actor has enough influence
+			scope:actor = { influence >= medium_influence_value }
+			# Both characters are within the same top realm
+			custom_tooltip = {
+				text = not_same_realm_tt
+				scope:recipient.top_liege = scope:actor.top_liege
+			}
+		}
+		flag = influence_send_option
+		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
+	}
+	send_options_exclusive = no
+
+
+
+	ai_accept = {
+		base = -25
+		
+		modifier = {
+			add = 25
+			scope:recipient = {
+				has_dread_level_towards = {
+					target = scope:actor
+					level = 1
+				}
+			}
+			desc = INTIMIDATED_REASON
+		}
+		
+		modifier = {
+			add = 50
+			scope:recipient = {
+				has_dread_level_towards = {
+					target = scope:actor
+					level = 2
+				}
+			}
+			desc = COWED_REASON
+		}
+		
+		opinion_modifier = { # Opinion Factor
+			who = scope:recipient
+			opinion_target = scope:actor
+			multiplier = 0.5
+			desc = AI_OPINION_REASON
+		}
+
+		modifier = {
+			add = -25
+			scope:secondary_actor = {
+				OR = {
+					is_councillor = yes
+					has_any_court_position = yes
+				}
+			}
+			desc = AI_EMPLOYED_COURTIER_REASON
+		}
+		
+		modifier = {
+			add = -15
+			scope:secondary_actor = {
+				is_knight = yes
+			}
+			desc = AI_IS_KNIGHT_REASON
+		}
+		
+		modifier = {
+			add = -50
+			exists = scope:secondary_actor.inspiration
+			desc = AI_INSPIRED_REASON
+		}
+		
+		modifier = {
+			add = -15
+			scope:secondary_actor = {
+				is_close_or_extended_family_of = scope:recipient
+			}
+			desc = AI_FAMILY_REASON
+		}
+		
+		modifier = {
+			add = -50
+			scope:secondary_actor = {
+				has_relation_friend = scope:recipient
+			}
+			desc = AI_FRIEND_REASON
+		}
+		modifier = { # Harem Politics #
+			add = -50
+			scope:secondary_actor = {
+				has_relation_lover = scope:recipient
+			}
+			desc = AI_LOVER_REASON
+		}
+		modifier = {
+			add = 50
+			scope:recipient = {
+				has_relation_friend = scope:actor
+			}
+			desc = AI_ACTOR_FRIEND_REASON
+		}
+		
+		modifier = {
+			add = -50
+			scope:secondary_actor = {
+				is_child_of = scope:recipient
+			}
+			desc = AI_CHILD_REASON
+		}
+		
+		modifier = {
+			add = 1000
+			scope:secondary_actor = {
+				has_relation_rival = scope:recipient
+			}
+			desc = AI_RIVAL_REASON
+		}
+
+		# Harem Politics #
+		modifier = {
+			add = -100
+			scope:secondary_actor = {
+				NOT = {
+					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+						CHARACTER = scope:recipient
+						RECEIVER = scope:recipient
+					}
+				}
+			}
+			desc = AI_MUSLIM_REASON
+		}
+
+		# Ambitious characters want to send a concubine to their liege
+		modifier = {
+			add = 15
+			scope:recipient = {
+				has_trait = ambitious
+			}
+			desc = INTERACTION_AMBITIOUS
+		}
+		modifier = {
+			add = 10
+			scope:recipient = {
+				has_trait = greedy
+			}
+			desc = INTERACTION_GREEDY
+		}
+
+		# Crown Authority #
+		modifier = {
+			scope:actor = { has_realm_law = crown_authority_1 }
+			add = 25
+			desc = AI_CROWN_AUTHORITY_1_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = crown_authority_2 }
+			add = 50
+			desc = AI_CROWN_AUTHORITY_2_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = crown_authority_3 }
+			add = 75
+			desc = AI_CROWN_AUTHORITY_3_REASON
+		}
+
+		# Imperial Bureaucracy #
+		modifier = {
+			scope:actor = { has_realm_law = imperial_bureaucracy_1 }
+			add = 25
+			desc = AI_IMPERIAL_BUREAUCRACY_1_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = imperial_bureaucracy_2 }
+			add = 50
+			desc = AI_IMPERIAL_BUREAUCRACY_2_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = imperial_bureaucracy_3 }
+			add = 75
+			desc = AI_IMPERIAL_BUREAUCRACY_3_REASON
+		}
+
+		# Celestial Bureaucracy #
+		modifier = {
+			scope:actor = { has_realm_law = celestial_bureaucracy_1 }
+			add = 25
+			desc = AI_CELESTIAL_BUREAUCRACY_1_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = celestial_bureaucracy_2 }
+			add = 50
+			desc = AI_CELESTIAL_BUREAUCRACY_2_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = celestial_bureaucracy_3 }
+			add = 75
+			desc = AI_CELESTIAL_BUREAUCRACY_3_REASON
+		}
+
+		# Meritocratic Bureaucracy #
+		modifier = {
+			scope:actor = { has_realm_law = meritocratic_bureaucracy_1 }
+			add = 25
+			desc = AI_MERITOCRATIC_BUREAUCRACY_1_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = meritocratic_bureaucracy_2 }
+			add = 50
+			desc = AI_MERITOCRATIC_BUREAUCRACY_2_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = meritocratic_bureaucracy_3 }
+			add = 75
+			desc = AI_MERITOCRATIC_BUREAUCRACY_3_REASON
+		}
+
+		# Japanese Bureaucracy #
+		modifier = {
+			scope:actor = { has_realm_law = japanese_bureaucracy_1 }
+			add = 25
+			desc = AI_JAPANESE_BUREAUCRACY_1_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = japanese_bureaucracy_2 }
+			add = 50
+			desc = AI_JAPANESE_BUREAUCRACY_2_REASON
+		}
+		modifier = {
+			scope:actor = { has_realm_law = japanese_bureaucracy_3 }
+			add = 75
+			desc = AI_JAPANESE_BUREAUCRACY_3_REASON
+		}
+
+		# Option modifiers #
+		modifier = {
+			add = 100
+			scope:hook = yes
+			desc = YOU_HAVE_HOOK_REASON
+		}
+		modifier = {
+			add = 50
+			scope:offer_hook = yes
+			desc = PURCHASE_LAND_OFFER_HOOK_REASON
+		}
+		modifier = {
+			add = 50
+			scope:offer_gold = yes
+			desc = GOLD_REASON
+		}
+		modifier = {
+			add = 50
+			scope:influence_send_option = yes
+			desc = INFLUENCE_REASON
+		}
+
+		# Powerful vassals and dominant houses
+		modifier = {
+			add = -15
+			scope:recipient.house ?= {
+				is_powerful_family = yes
+				is_dominant_family = no
+				house_head.top_liege ?= scope:actor.house.house_head.top_liege
+			}
+			desc = POWERFUL_FAMILY_REASON
+		}
+		modifier = {
+			add = -15
+			scope:recipient = {
+				house ?= {
+					is_powerful_family = no
+					is_dominant_family = no
+				}
+				is_powerful_vassal_of = scope:actor
+			}
+			desc = POWERFUL_VASSAL_REASON
+		}
+		modifier = {
+			add = -30
+			scope:recipient.house ?= {
+				is_dominant_family = yes
+				house_head.top_liege ?= scope:actor.house.house_head.top_liege
+			}
+			desc = DOMINANT_HOUSE_REASON
+		}
+		modifier = { # You dismissed them
+			add = -75
+			desc = DISMISSED_CONCUBINE_HAREM_POLITICS
+			scope:recipient = {
+				trigger_if = {
+					limit = {
+						NOT = { is_close_family_of = scope:secondary_actor }
+					}
+					NOT = { is_close_family_of = scope:actor }
+				}
+			}
+			scope:secondary_actor = {
+				has_dismissed_opinion_trigger = { TARGET = scope:actor }
+			}
+		}
+		modifier = { # You dismissed them
+			add = -150
+			desc = DIVORCED_CONCUBINE_HAREM_POLITICS
+			scope:recipient = {
+				trigger_if = {
+					limit = {
+						NOT = { is_close_family_of = scope:secondary_actor }
+					}
+					NOT = { is_close_family_of = scope:actor }
+				}
+			}
+			scope:secondary_actor = {
+				has_divorced_opinion_trigger = { TARGET = scope:actor }
+			}
+		}
+	}
+
+	ai_potential = {
+		OR = {
+			has_trait = lustful
+			ai_honor <= 0
+			ai_rationality > 0
+		}
+		any_vassal = { }
+	}
+
+	ai_will_do = {
+		base = 0
+		# Harem Politics #
+
+		modifier = {
+			add = 25
+			scope:actor = {
+				number_of_concubines < number_of_desired_concubines
+			}
+		}
+		modifier = {
+			add = 50
+			scope:recipient = {
+				NOT = { government_allows = administrative }
+				is_close_family_of = scope:secondary_actor
+				is_powerful_vassal_of = scope:actor
+			}
+			scope:secondary_actor = {
+				is_bastard_child_trigger = no
+			}
+		}
+		modifier = {
+			add = 50
+			scope:actor = { government_allows = administrative }
+			scope:recipient = {
+				government_allows = administrative
+				is_close_family_of = scope:secondary_actor
+				OR = {
+					house ?= {
+						any_house_member = {
+							this = scope:secondary_actor
+						}
+						OR = {
+							is_powerful_family = yes
+							is_dominant_family = yes
+						}
+					}
+					is_powerful_vassal_of = scope:actor
+				}
+			}
+			scope:secondary_actor = {
+				is_bastard_child_trigger = no
+			}
+		}
+
+		modifier = { #Virginity is prized
+			add = -25
+			scope:secondary_actor = {
+				is_virgin_trigger = no
+			}
+		}
+		modifier = { #Virginity is prized
+			add = 10
+			scope:actor.culture = {
+				has_cultural_parameter = dishu_system
+			}
+			scope:secondary_actor = {
+				has_trait = di_child
+			}
+		}
+		modifier = { #Genetic traits
+			add = {
+				value = scope:secondary_actor.num_of_good_genetic_traits
+				multiply = 5
+			}
+			scope:secondary_actor.num_of_good_genetic_traits > 0
+		}
+		modifier = { #Genetic traits
+			add = {
+				value = scope:secondary_actor.num_of_bad_genetic_traits
+				multiply = -10
+			}
+			scope:secondary_actor.num_of_bad_genetic_traits > 0
+		}
+
+		modifier = { # Slightly modified #
+			factor = 0
+			scope:recipient = {
+				OR = {
+					has_relation_soulmate = scope:actor
+					has_relation_lover = scope:actor
+				}
+			}
+		}
+
+		modifier = {
+			factor = 0
+			scope:secondary_actor = {
+				OR = {
+					has_conventionally_ugly_trigger = yes
+					age > 30
+					is_visibly_fertile = no
+				}
+			}
+		}
+	}
+
+	on_send = {
+		scope:secondary_actor = { # to block the same character from being offered twice
+			add_character_flag = {
+				flag = has_been_offered_as_concubine
+				days = 5
+			}
+		}
+	}
+	
+	on_accept = {
+		request_concubine_interaction_on_accept_effect = yes
+	}
+
+	on_decline = {
+		scope:actor = {
+			send_interface_toast = {
+				type = event_toast_effect_bad
+				title = msg_concubine_demand_rejected_title
+				right_icon = scope:recipient
+				left_icon = scope:secondary_actor
+				custom_tooltip = msg_courtier_demand_rejected
+			}
+		}
+		scope:actor = {
+			add_opinion = {
+				target = scope:recipient
+				modifier = upset_opinion
+				opinion = -15
+			}
 		}
 	}
 }
