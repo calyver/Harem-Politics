@@ -89,10 +89,121 @@ harem_politics_punished_consort_trigger = {
 	}
 }
 
-hp_accepts_harems = {
+
+## Special consorts ##
+harem_politics_special_consort_trigger = {
 	OR = {
-		hp_accepts_polygamy = yes
-		hp_accepts_concubinage = yes
+		has_character_flag = flag_yanwan
+		has_character_flag = flag_nurbanu
+		has_character_flag = flag_hailan
+		has_character_flag = flag_mei
+	}
+}
+
+## Bad night event trigger ##
+harem_politics_accident_event_trigger = {
+	scope:recipient = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+		is_imprisoned = no
+		is_consort_of = scope:actor
+	}
+	any_consort = {
+		harem_politics_bad_night_jealous_consort_trigger = yes
+	}
+	NOT = {
+		any_court_position_holder = {
+			type = grand_consort_court_position
+			aptitude:grand_consort_court_position = 5
+			has_character_flag = gc_balancing_favor_flag
+		}
+	}
+}
+harem_politics_bad_night_jealous_consort_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+	is_ai = yes
+	is_physically_able = yes
+	location ?= scope:actor.location
+
+	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_evil_consort_trigger = yes
+	harem_politics_punished_consort_trigger = no
+	trigger_if = {
+		limit = {
+			scope:actor.religion = religion:islam_religion
+		}
+		scope:recipient = {
+			is_concubine_of = scope:actor
+		}
+	}
+
+	OR = {
+		has_trait = sadistic
+		has_trait = vengeful
+		has_trait = wrathful
+	}
+	NOR = {
+		this = scope:recipient
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = scope:actor
+		}
+		has_any_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+
+		has_trait = temperate
+		has_trait = calm
+		has_trait = craven
+		has_trait = shy
+
+		has_trait = pregnant
+
+		has_character_modifier = favor_boost_modifier
+	}
+	opinion = {
+		target = scope:recipient
+		value <= 0
+	}
+	ai_rationality < 0
+	ai_honor <= 20
+	save_temporary_scope_as = reference_consort
+	calyver_rank_is_superior_trigger = {
+		HAREM_LIEGE = scope:actor
+		AUTHORITY = scope:reference_consort
+		TARGET_CONSORT = scope:recipient
+	}
+}
+
+# A pregnant consort miscarries #
+harem_politics_miscarriage_event_trigger = {
+	scope:recipient = {
+		is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+		is_imprisoned = no
+		is_consort_of = scope:actor
+		has_character_flag = flag_new_consort
+	}
+	any_consort = {
+		harem_politics_bad_night_pregnant_consort_trigger = yes
+	}
+	NOR = {
+		any_court_position_holder = {
+			type = keeper_of_the_harem_court_position
+			aptitude:keeper_of_the_harem_court_position = 5
+		}
+		has_character_flag = had_pregnant_consort_miscarriage_event_flag
+	}
+}
+harem_politics_bad_night_pregnant_consort_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+	is_ai = yes
+	is_physically_able = yes
+	location ?= scope:actor.location
+
+	has_trait = pregnant
+	pregnancy_assumed_father ?= scope:actor
+	NOR = {
+		this = scope:recipient
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
 	}
 }
 
@@ -114,12 +225,12 @@ harem_politics_is_valid_authority_trigger = {
     # $LIEGE$ is the harem owner
 
     $AUTHORITY$ = { 
-		is_valid_harem_member_trigger = {
+		is_active_harem_member_trigger = {
 			LIEGE = $LIEGE$
 		}
 	}
     $TARGET$ = {
-		is_valid_harem_member_trigger = {
+		is_active_harem_member_trigger = {
 			LIEGE = $LIEGE$
 		}
 	}
@@ -129,22 +240,83 @@ harem_politics_is_valid_authority_trigger = {
 		# 2. If authority is primary spouse, target must be a consort
         limit = {
             $AUTHORITY$ = {
-				OR = {
-					NOT = {
-						is_consort_of = $LIEGE$
-					}
-					$LIEGE$.primary_spouse ?= { this = $AUTHORITY$ }
+				NOT = {
+					is_consort_of = $LIEGE$
 				}
             }
         }
-    	$TARGET$ = {
-			is_consort_of = $LIEGE$
+		trigger_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_parent_of = $LIEGE$
+				}
+			}
+			always = yes
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_grandparent_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_uncle_or_aunt_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_uncle_or_aunt_of = $LIEGE$
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$AUTHORITY$ = {
+					is_sibling_of = $LIEGE$
+				}
+			}
+			$TARGET$ = {
+				NOR = {
+					is_sibling_of = $LIEGE$
+					is_uncle_or_aunt_of = $LIEGE$
+					is_parent_of = $LIEGE$
+					is_grandparent_of = $LIEGE$
+				}
+			}
+		}
+		trigger_else = {
+			$TARGET$ = {
+				is_consort_of = $LIEGE$
+			}
 		}
     }
+	trigger_else_if = {
+		limit = {
+			$LIEGE$.primary_spouse ?= $AUTHORITY$
+		}
+		$TARGET$ = {
+			is_consort_of = $LIEGE$
+		}
+	}
     trigger_else_if = {
         # 3. If authority is Grand Consort, target must be a consort but not the PS
         limit = {
-            $AUTHORITY$ = { has_court_position = grand_consort_court_position }
+            $AUTHORITY$ = { 
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
+				}
+			}
         }
 		$TARGET$ = {
 			is_consort_of = $LIEGE$
@@ -152,8 +324,11 @@ harem_politics_is_valid_authority_trigger = {
 				limit = {
 					exists = $LIEGE$.primary_spouse
 				}
-				NOT = {
-					this = $LIEGE$.primary_spouse
+				this != $LIEGE$.primary_spouse
+			}
+			NOT = { # The Four Consorts technically rank the same
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
 				}
 			}
 		}
@@ -172,12 +347,231 @@ harem_politics_is_valid_authority_trigger = {
     }
 }
 
+harem_politics_ranks_the_same_as_target_trigger = {
+	# CHARACTER = is the character being checked
+	# TARGET = is the character being compared to
+	# LIEGE = is the harem owner
+
+	$CHARACTER$ = { 
+		is_active_harem_member_trigger = {
+			LIEGE = $LIEGE$
+		}
+		trigger_if = {
+			limit = {
+				exists = $LIEGE$.primary_spouse
+			}
+			this != $LIEGE$.primary_spouse
+		}
+	}
+    $TARGET$ = {
+		is_active_harem_member_trigger = {
+			LIEGE = $LIEGE$
+		}
+		NOR = {
+			is_child_of = $CHARACTER$
+			is_parent_of = $CHARACTER$
+			is_grandparent_of = $CHARACTER$
+			is_uncle_or_aunt_of = $CHARACTER$
+			is_nibling_of = $CHARACTER$
+			is_consort_of = $CHARACTER$
+		}
+		trigger_if = {
+			limit = {
+				exists = $LIEGE$.primary_spouse
+			}
+			this != $LIEGE$.primary_spouse
+		}
+	}
+
+	trigger_if = {
+		limit = {
+			$CHARACTER$ = {
+				NOT = {
+					is_consort_of = $LIEGE$
+				}
+			}
+		}
+		$TARGET$ = {
+			NOT = { is_consort_of = $LIEGE$ }
+		}
+		trigger_if = {
+			limit = {
+				$TARGET$ = {
+					is_parent_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_parent_of = $LIEGE$
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_grandparent_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_grandparent_of = $LIEGE$
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_uncle_or_aunt_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_uncle_or_aunt_of = $LIEGE$
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_sibling_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_sibling_of = $LIEGE$
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+	trigger_else = {
+		trigger_if = {
+			limit = {
+				$TARGET$ = {
+					is_high_consort_trigger = {
+						LIEGE = $LIEGE$
+					}
+				}
+			}
+			$CHARACTER$ = {
+				is_high_consort_trigger = {
+					LIEGE = $LIEGE$
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_spouse_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_spouse_of = $LIEGE$
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				$TARGET$ = {
+					is_concubine_of = $LIEGE$
+				}
+			}
+			$CHARACTER$ = {
+				is_concubine_of = $LIEGE$
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+}
+
+is_relevant_consort_trigger = {
+	OR = {
+		is_high_ranking_consort_trigger = {
+			LIEGE = $LIEGE$
+		}
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $LIEGE$ }
+		has_character_modifier = favor_boost_modifier
+		harem_politics_favored_consort_trigger = yes
+		harem_politics_beloved_consort_trigger = yes
+		has_trait = beauty_good_2
+		has_trait = beauty_good_3
+		any_child = {
+			is_child_of = $LIEGE$
+			is_primary_heir_of = $LIEGE$
+		}
+	}
+	harem_politics_forgotten_consort_trigger = no
+}
+#########################
+## Bride Show triggers ##
+#########################
+agrees_with_bride_show = {
+	OR = {
+		culture = { has_cultural_tradition = tradition_ep3_palace_politics }
+		culture = { has_cultural_tradition = tradition_legalistic }
+		hp_accepts_harems = yes
+	}
+}
+
+can_have_five_candidates_trigger = {
+	OR = {
+		highest_held_title_tier > tier_empire
+		any_vassal = {
+			count >= 30
+		}
+		AND = {
+			government_allows = administrative
+			any_vassal_or_below = {
+				count >= 30
+			}
+		}
+	}
+}
+can_have_four_candidates_trigger = {
+	OR = {
+		highest_held_title_tier >= tier_empire
+		any_vassal = {
+			count >= 9
+		}
+		AND = {
+			government_allows = administrative
+			any_vassal_or_below = {
+				count >= 9
+			}
+		}
+	}
+}
+
+######################
 ##Potential consorts##
-bride_show_viable_consort_trigger = {
-	is_healthy = yes
-	is_available = yes
-	age <= 23
+######################
+
+## Basic trigger - used for all the other triggers ##
+bride_show_beauty_important_parameters_trigger = {
 	NOR = {
+		has_character_modifier = malnourished_modifier
+		current_weight < -50
+		has_character_modifier = obese_modifier
+		current_weight > 50
+		has_trait = beauty_bad
+	}
+}
+bride_show_viable_consort_trigger = {
+	is_available_quick = {
+		ruler = no
+		hostage = no
+	}
+	is_available = yes
+	is_healthy = yes
+	has_any_disease_trigger = no
+	has_easily_mocked_physical_attribute_trigger = no
+	age <= 23
+	age >= 15
+	NOR = {
+		any_consort = {
+			count > 0
+		}
+		any_heir_title = {
+			place_in_line_of_succession = {
+				target = prev
+				value <= 2
+			}
+		}
 		#If you betrothed them already, why should they participate?
 		betrothed ?= { is_close_family_of = $OVERLORD$ }
 		has_council_position = councillor_court_chaplain
@@ -190,14 +584,9 @@ bride_show_viable_consort_trigger = {
 		has_trait = possessed_genetic
 		has_trait = lisping
 		has_trait = stuttering
-		has_trait = scaly
-		has_trait = clubfooted
-		has_trait = hunchbacked
+
 		has_trait = wheezing
-		has_trait = spindly
-		has_trait = one_eyed
-		has_trait = one_legged
-		has_trait = disfigured
+
 		has_trait = eunuch
 		has_trait = adulterer
 		has_trait = fornicator
@@ -210,51 +599,28 @@ bride_show_viable_consort_trigger = {
 		has_trait = excommunicated
 		has_trait = drunkard
 		has_trait = hashishiyah
-		has_trait = wounded
-		has_trait = sickly
+
 		has_trait = infirm
 		has_trait = incapable
-		has_trait = inbred
-		has_trait = maimed
-		has_trait = blind
-		has_trait = ill
-		has_trait = bubonic_plague
-		has_trait = cancer
-		has_trait = consumption
-		has_trait = great_pox
-		has_trait = gout_ridden
-		has_trait = leper
-		has_trait = lovers_pox
-		has_trait = pneumonic
-		has_trait = smallpox
-		has_trait = typhus
-		has_trait = dwarf
+
 		has_trait = physique_bad_3	#Weak candidates wouln't make it to the capital without getting sick.
-		
-		has_trait = dysentery
-		has_trait = ergotism
-		has_trait = measles
 
 		has_trait = pregnant
 	}
-	can_become_concubine_of_character_valid_trigger = { CHARACTER = $OVERLORD$ }
-	NOT = {
-		any_heir_title = {
-			place_in_line_of_succession = {
-				target = prev
-				value <= 2
-			}
-		}
+	can_take_as_concubine_character_trigger = { CHARACTER = $OVERLORD$ }
+	can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+		CHARACTER = $OVERLORD$
+		RECEIVER = $OVERLORD$
 	}
 }
-
+## Trigger for the bride show ##
 bride_show_viable_candidate_trigger = {
 	bride_show_viable_consort_trigger = {
 		OVERLORD = $OVERLORD$
 	}
 	trigger_if = { #If they aren't betrothed, you can arrange a marriage with them
 		limit = {
-			age = 15
+			is_adult = no
 		}
 		betrothed ?= {
 			NOT = {
@@ -266,7 +632,7 @@ bride_show_viable_candidate_trigger = {
 		}
 	}
 	trigger_else = {
-		age >= 16
+		is_adult = yes
 	}
 	trigger_if = { #Beauty parameters
 		limit = {
@@ -277,13 +643,7 @@ bride_show_viable_candidate_trigger = {
 				}
 			}
 		}
-		NOR = {
-			has_character_modifier = malnourished_modifier
-			current_weight < -50
-			has_character_modifier = obese_modifier
-			current_weight > 50
-			has_trait = beauty_bad
-		}
+		bride_show_beauty_important_parameters_trigger = yes
 	}
 	trigger_if = { #Intellectual parameters
 		limit = {
@@ -300,37 +660,104 @@ bride_show_viable_candidate_trigger = {
 	}
 }
 
-recruit_concubines_viable_candidate_trigger = {
+###########################
+## For Muslim concubines ##
+###########################
+
+## Basic trigger ##
+basic_viable_candidate_muslim_trigger = {
 	is_adult = yes
-	is_councillor = no
 	bride_show_viable_consort_trigger = {
 		OVERLORD = $OVERLORD$
 	}
 	NOR = {
-		religion = religion:islam_religion
-		has_trait = beauty_bad
-		has_character_flag = recently_abducted_concubine
 		any_close_family_member = {
 			highest_held_title_tier >= tier_county
 		}
-		any_consort = {
-			count >= 1
-		}
+		has_character_flag = has_been_offered_as_concubine
+		has_character_flag = recently_abducted_concubine
+	}
+	trigger_if = {
+		limit = { exists = court_owner }
+		NOT = { is_of_major_or_minor_interest_trigger = { CHARACTER = court_owner } }
+	}
+}
+
+## Trigger for dukes ##
+recruit_concubines_viable_candidate_trigger = {
+	basic_viable_candidate_muslim_trigger = {
+		OVERLORD = $OVERLORD$
 	}
 	trigger_if = {
 		limit = {
-			exists = court_owner
+			$OVERLORD$.religion = religion:islam_religion
 		}
-		court_owner = {
-			NOR = {
-				is_liege_or_above_of = $OVERLORD$
-				is_vassal_or_below_of = $OVERLORD$
-				is_tributary_of = $OVERLORD$
+		trigger_if = {
+			limit = {
+				religion = religion:islam_religion
+			}
+			has_character_flag = abducted_non_believer
+		}
+		trigger_else = {
+			religion != religion:islam_religion
+		}
+		trigger_if = {
+			limit = {
+				exists = court_owner
+			}
+			court_owner = {
+				NOR = {
+					religion = religion:islam_religion
+					is_liege_or_above_of = $OVERLORD$
+					is_vassal_or_below_of = $OVERLORD$
+					is_tributary_of = $OVERLORD$
+				}
 			}
 		}
 	}
 }
 
+## Trigger for kings and above ##
+min_personality_and_skills_trigger = {
+	OR = {
+		diplomacy >= average_skill_level
+		learning >= average_skill_level
+		trigger_if = {
+			limit = {
+				can_be_knight_trigger = { ARMY_OWNER = root }
+			}
+			prowess >= average_skill_level
+		}
+		has_trait = lifestyle_poet
+	}
+	NOT = {
+		has_trait = intellect_bad
+	}
+}
+royal_concubines_eligible_candidate_trigger = {
+	basic_viable_candidate_muslim_trigger = {
+		OVERLORD = $OVERLORD$
+	}
+	is_virgin_trigger = yes
+	# Beauty
+	trigger_if = {
+		limit = {
+			OR = {	
+				$OVERLORD$ = { has_variable = beauty_important }
+				court_owner ?= {
+					is_tributary_of = $OVERLORD$
+				}
+			}
+		}
+		bride_show_beauty_important_parameters_trigger = yes
+	}
+}
+
+##############
+## Counties ##
+#############
+
+## Trigger for dukes ##
 recruit_concubines_viable_county_trigger = {
 	OR = {
 		any_pool_character = {
@@ -339,17 +766,52 @@ recruit_concubines_viable_county_trigger = {
 				OVERLORD = $OVERLORD$
 			}
 		}
-		NOT = {
-			religion = religion:islam_religion
+		trigger_if = {
+			limit = {
+				$OVERLORD$.religion = religion:islam_religion
+			}
+			religion != religion:islam_religion
+			exists = county.holder
+			county.holder.top_liege ?= { religion != religion:islam_religion }
 		}
 	}
 }
 
-#Bride Show subject requirements#
+## Trigger for kings and above ##
+recruit_royal_concubines_viable_county_trigger = {
+	OR = {
+		any_pool_character = {
+			province = this
+			royal_concubines_eligible_candidate_trigger = {
+				OVERLORD = $OVERLORD$
+			}
+		}
+		AND = {
+			religion != religion:islam_religion
+			exists = county.holder
+			county.holder.top_liege ?= { religion != religion:islam_religion }
+		}
+	}
+}
+
+#####################################
+## Bride Show subject requirements ##
+#####################################
+# Base trigger #
 harem_politics_valid_bride_show_subject_trigger = {
 	OR = {
 		is_vassal_of = $OVERLORD$
 		is_tributary_of = $OVERLORD$
+		trigger_if = {
+			limit = {
+				is_vassal_or_below_of = $OVERLORD$
+			}
+			$OVERLORD$ = {
+				government_allows = administrative
+			}
+			government_allows = administrative
+			any_held_title = { is_noble_family_title = yes }
+		}
 	}
 	NOR = {	
 		is_at_war_with = $OVERLORD$
@@ -364,25 +826,9 @@ harem_politics_valid_bride_show_subject_trigger = {
 		capital_county = { has_county_modifier = isolate_capital_decision_modifier }
 	}
 	is_imprisoned = no
-	trigger_if = {
-		limit = {
-			$OVERLORD$ = {
-				government_allows = administrative
-			}
-			government_allows = administrative
-			is_vassal_of = $OVERLORD$
-		}
-		NOT = {
-			house ?= {
-				any_house_member = {
-					is_liege_or_above_of = $OVERLORD$
-				}
-			}
-		}
-	}
-	trigger_else = {
+	NOT = {
 		any_close_family_member = {
-			NOR = {
+			OR = {
 				is_liege_or_above_of = $OVERLORD$
 				any_tributary = {
 					this = $OVERLORD$
@@ -391,394 +837,180 @@ harem_politics_valid_bride_show_subject_trigger = {
 		}
 	}
 }
-harem_politics_minimum_valid_subject_requirements_trigger = {
-	harem_politics_valid_bride_show_subject_trigger = {
-		OVERLORD = $OVERLORD$
-	}
-	trigger_if = { #For a nomad's subjects, what matters it their obedience.
+harem_politics_valid_tributary_requirements_trigger = {
+	trigger_if = {
 		limit = {
-			$OVERLORD$ = {	
-				government_has_flag = government_is_nomadic
+			$OVERLORD$ = {
+				OR = {
+					highest_held_title_tier >= tier_hegemony 
+					government_has_flag = government_is_mandala
+				}
 			}
 		}
-		is_obedient_to = $OVERLORD$
+		NOT = { var:tribute_mission_grace ?= $OVERLORD$ }
 	}
-	trigger_else = { #Non-nomadic requirements
-		trigger_if = { #Tributary requirements
-			limit = {
-				NOT = {
-					is_vassal_of = $OVERLORD$
-				}
+	trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
+		limit = {
+			highest_held_title_tier = $OVERLORD$.highest_held_title_tier
+		}
+		OR = {
+			has_dread_level_towards = {
+				target = $OVERLORD$
+				level >= 1
 			}
-			trigger_if = { #Else, if they rank the same as their suzerain, they need to dread them
-				limit = {
-					highest_held_title_tier = $OVERLORD$.highest_held_title_tier
-				}
-				OR = {
-					has_dread_level_towards = {
-						target = $OVERLORD$
-						level >= 1
-					}
-					opinion = {
-						target = $OVERLORD$
-						value >= 15
-					}
-				}
-			}
-			trigger_else_if = { #Else, they need to dread them more
-				limit = {
-					highest_held_title_tier > $OVERLORD$.highest_held_title_tier
-				}
-				OR = {
-					has_dread_level_towards = {
-						target = $OVERLORD$
-						level >= 2
-					}
-					opinion = {
-						target = $OVERLORD$
-						value >= 30
-					}
-				}
-			}
-			trigger_else = { #Or lower tier than their suzerain
-				highest_held_title_tier < $OVERLORD$.highest_held_title_tier
-				opinion = {
-					target = $OVERLORD$
-					value >= -10
-				}
+			opinion = {
+				target = $OVERLORD$
+				value >= 15
 			}
 		}
-		trigger_else = { #Vassals are always valid
-			always = yes
+	}
+	trigger_else_if = { #Else, they need to dread them more
+		limit = {
+			highest_held_title_tier > $OVERLORD$.highest_held_title_tier
+		}
+		OR = {
+			has_dread_level_towards = {
+				target = $OVERLORD$
+				level >= 2
+			}
+			opinion = {
+				target = $OVERLORD$
+				value >= 30
+			}
+		}
+	}
+	trigger_else = { #Or lower tier than their suzerain
+		highest_held_title_tier < $OVERLORD$.highest_held_title_tier
+		opinion = {
+			target = $OVERLORD$
+			value >= -10
 		}
 	}
 }
 harem_politics_is_valid_bride_show_subject_trigger = {
-    harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+	harem_politics_valid_bride_show_subject_trigger = { OVERLORD = $OVERLORD$ }
+	# Nomadic rulers
 	trigger_if = {
 		limit = {
 			$OVERLORD$ = {
 				government_has_flag = government_is_nomadic
 			}
 		}
+		is_obedient_to = $OVERLORD$
+	}
+	# Vassals
+	trigger_else_if = {
+		limit = {
+			is_vassal_or_below_of = $OVERLORD$
+		}
+		# Admin rulers
 		trigger_if = {
 			limit = {
-				is_vassal_of = $OVERLORD$
-			}
-			is_obedient_to = $OVERLORD$
-		}
-		trigger_else = {
-			# Tributaries are always valid for nomadic rulers
-			always = yes
-		}
-	}
-    trigger_else_if = { # Dukes
-        limit = { $OVERLORD$ = { highest_held_title_tier = tier_duchy } }
-        trigger_if = { # Only sovereigns can host a bride show
-            limit = { 
-				$OVERLORD$ = { 
+				$OVERLORD$ = {
 					government_allows = administrative
 				}
 			}
-            $OVERLORD$ = {
+			$OVERLORD$ = {
 				is_governor = no
 				is_independent_ruler = yes
 			}
-        }
-        trigger_else_if = { # Feudal/Clan/Tribal Duke
-            limit = { 
-				$OVERLORD$ = { 
-					NOR = { 
-						government_allows = administrative 
-						government_has_flag = government_is_nomadic 
-					} 
-				} 
-			}
-            trigger_if = { # Low Authority
-                limit = { 
+			trigger_if = { # Low Imperial Bureaucracy
+				limit = { 
 					$OVERLORD$ = { 
-						OR = { 
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0 
-						}
+						has_realm_law = imperial_bureaucracy_0
 					} 
 				}
 				trigger_if = {
 					limit = {
-						is_vassal_of = $OVERLORD$
+						government_allows = administrative
 					}
-					is_powerful_vassal = no
+					house ?= {
+						is_dominant_family = no
+						is_powerful_family = no
+					}
 				}
-				trigger_else = { #Nothing else to check
-					always = yes
+				trigger_else = {
+					trigger_if = {
+						limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+						tier_difference = {
+							target = $OVERLORD$
+							value <= -2
+						}
+					}
+					NOT = { is_powerful_vassal_of = $OVERLORD$ }
 				}
-            }
-			trigger_else_if = { #Limited Authority+
+			}
+			trigger_else_if = { # Limited Imperial Bureaucracy
+				limit = { 
+					$OVERLORD$ = { 
+						has_realm_law = imperial_bureaucracy_1 
+					} 
+				}
+				trigger_if = {
+					limit = {
+						government_allows = administrative
+					}
+					house ?= {
+						is_dominant_family = no
+					}
+				}
+				trigger_else = {
+					trigger_if = { # Kings and above
+						limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+						NOT = { is_powerful_vassal_of = $OVERLORD$ }
+					}
+					trigger_else = {
+						always = yes
+					}
+				}
+			}
+			trigger_else = { # High Imperial Bureaucracy+
+				always = yes
+			}
+		}
+		# Feudal/Clan/Tribal/Others rulers
+		trigger_else = {
+			trigger_if = { # Low Authority
 				limit = {
 					$OVERLORD$ = {
-						NOR = {
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0
-						}
-					}
-				}
-				#Nothing else to check
-				always = yes
-			}
-			trigger_else = { #Nothing else to check
-				always = yes
-			}
-        }
-		trigger_else = { #Nothing else to check
-			always = no
-		}
-    }
-    trigger_else_if = { # Kings
-        limit = { $OVERLORD$ = { highest_held_title_tier = tier_kingdom } }
-        trigger_if = { # Administrative King
-            limit = { 
-				$OVERLORD$ = { 
-					government_allows = administrative 
-				} 
-			}
-			$OVERLORD$ = {
-				is_independent_ruler = yes
-			}
-            trigger_if = { # Low Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_0 
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					trigger_if = {
-						limit = { 
-							government_allows = administrative 
-						}
-						house ?= { 
-							is_dominant_family = no 
-							is_powerful_family = no
-						}
-					}
-					trigger_else = {
-						is_powerful_vassal = no
-						highest_held_title_tier <= tier_county
-					}
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else_if = { # Limited Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_1 
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					trigger_if = {
-						limit = { government_allows = administrative }
-						house ?= { 
-							is_dominant_family = no 
-						}
-					}
-					trigger_else = { is_powerful_vassal = no }
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else = { # High Imperial Bureaucracy+
-                #Nothing else to check
-				always = yes
-            }
-        }
-        trigger_else_if = { # Feudal/Clan/Tribal King
-            limit = { 
-				$OVERLORD$ = {
-					NOR = {
-						government_allows = administrative 
-						government_has_flag = government_is_nomadic 
-					}
-				} 
-			}
-            trigger_if = { # Low Authority
-                limit = { 
-					$OVERLORD$ = { 
 						OR = {
 							has_realm_law = crown_authority_0
 							has_realm_law = tribal_authority_0
 						}
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
 					}
-					is_powerful_vassal = no
-					highest_held_title_tier <= tier_county
 				}
-				trigger_else = { #Nothing else to check
-					always = yes
+				trigger_if = { # Kings and above
+					limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+					tier_difference = {
+						target = $OVERLORD$
+						value <= -2
+					}
 				}
-            }
-            trigger_else_if = { # Limited Authority
-                limit = { 
-					$OVERLORD$ = { 
+				NOT = { is_powerful_vassal_of = $OVERLORD$ }
+			}
+			trigger_else_if = { # Limited Authority
+				limit = {
+					$OVERLORD$ = {
 						OR = {
 							has_realm_law = crown_authority_1
 							has_realm_law = tribal_authority_1
 						}
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
 					}
-					is_powerful_vassal = no
 				}
-				trigger_else = { #Nothing else to check
+				trigger_if = { # Kings and above
+					limit = { $OVERLORD$ = { highest_held_title_tier > tier_duchy } }
+					NOT = { is_powerful_vassal_of = $OVERLORD$ }
+				}
+				trigger_else = {
 					always = yes
 				}
-            }
-            trigger_else = { always = yes }
-        }
-		trigger_else = { #Nothing else to check
-			always = no
-		}
-    }
-    trigger_else_if = { # Emperors
-        limit = { 
-			$OVERLORD$ = { 
-				highest_held_title_tier = tier_empire 
-			} 
-		}
-        trigger_if = { # Administrative Emperor
-            limit = { 
-				$OVERLORD$ = { 
-					government_allows = administrative 
-				} 
 			}
-            trigger_if = { # Low Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_0 
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					trigger_if = {
-						limit = {
-							government_allows = administrative
-						}
-						house ?= { 
-							is_dominant_family = no 
-							is_powerful_family = no
-						}
-					}
-					trigger_else = {
-						is_powerful_vassal = no
-						highest_held_title_tier <= tier_duchy
-					}
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else_if = { # Limited Imperial Bureaucracy
-                limit = { 
-					$OVERLORD$ = { 
-						has_realm_law = imperial_bureaucracy_1 
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					trigger_if = {
-						limit = {
-							government_allows = administrative
-						}
-						house ?= { 
-							is_dominant_family = no
-						}
-					}
-					trigger_else = {
-						is_powerful_vassal = no
-					}
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else = { # High Imperial Bureaucracy+
-                always = yes
-            }
-        }
-        trigger_else_if = { # Feudal/Clan/Tribal Emperor
-            limit = { 
-				$OVERLORD$ = { 
-					NOR = {
-						government_allows = administrative
-						government_has_flag = government_is_nomadic
-					}
-				} 
-			}
-            trigger_if = { # Low Authority
-                limit = { 
-					$OVERLORD$ = { 
-						OR = {
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0
-						}
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					is_powerful_vassal = no
-					highest_held_title_tier <= tier_duchy
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else_if = { # Limited Authority
-                limit = { 
-					$OVERLORD$ = { 
-						OR = {
-							has_realm_law = crown_authority_1
-							has_realm_law = tribal_authority_1
-						}
-					} 
-				}
-				trigger_if = {
-					limit = {
-						is_vassal_of = $OVERLORD$
-					}
-					is_powerful_vassal = no
-				}
-				trigger_else = { #Nothing else to check
-					always = yes
-				}
-            }
-            trigger_else = { always = yes }
-        }
-		trigger_else = { #Nothing else to check
-			always = no
+			trigger_else = { always = yes }
 		}
-    }
-	trigger_else = { #Nothing else to check
-		always = no
+	}
+	# Tributaries
+	trigger_else = {
+		harem_politics_valid_tributary_requirements_trigger = { OVERLORD = $OVERLORD$ }
 	}
 }
 
@@ -895,5 +1127,1065 @@ harem_politics_valid_event_county_trigger = {
 		NOT = {
 			religion = religion:islam_religion
 		}
+	}
+}
+
+## Recruit concubines requirements ##
+recruit_concubines_trigger = {
+	is_landed_or_landless_administrative = yes
+	hp_accepts_concubinage = yes
+	trigger_if = {
+		limit = {
+			religion = religion:islam_religion
+		}
+		OR = {
+			any_neighboring_and_across_water_top_liege_realm_owner = {
+				any_realm_province = {
+					religion != religion:islam_religion
+				}
+			}
+			any_realm_province = {
+				religion != religion:islam_religion
+			}
+		}
+	}
+	trigger_else = {
+		OR = {
+			AND = {
+				government_allows = administrative
+				is_independent_ruler = no
+			}
+			AND = {
+				tgp_realm_has_ceremonial_liege_trigger = yes
+				tgp_is_ceremonial_regent_trigger = yes
+			}
+		}
+	}
+	highest_held_title_tier >= tier_county
+	OR = { #Appropriate dominant sex
+		AND = {
+			is_male = no
+			OR = {
+				has_realm_law = female_only_law
+				has_realm_law = female_preference_law
+			}
+		}
+		AND = {
+			is_male = yes
+			OR = {
+				has_realm_law = male_only_law
+				has_realm_law = male_preference_law
+			}
+		}
+		has_realm_law = equal_law
+	}
+	trigger_if = {
+		limit = {
+			is_clergy = yes
+		}
+		faith = {
+			has_doctrine_parameter = clergy_can_marry
+		}
+	}
+}
+
+###################################
+## Harem Politics event triggers ##
+###################################
+# First event - choose consort #
+valid_harem_consort_trigger = {
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	is_healthy = yes
+	NOR = {
+		has_character_flag = visited_consort_flag 
+	}
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_events_choose_consort_trigger = {
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 3
+	}
+	is_landed_or_landless_administrative = yes
+	NOT = { has_character_flag = harem_event_0001_flag }
+}
+
+# Your consorts are performing #
+harem_politics_valid_harem_head_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_knight = no
+
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_forgotten_consort_trigger = no
+	
+	is_head_of_the_harem_trigger = {
+		LIEGE = root
+	}
+	
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+	}
+
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_valid_performer_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_knight = no
+
+	harem_politics_punished_consort_trigger = no
+	
+	has_character_flag = flag_new_consort
+	age <= 23
+
+	NOR = {
+		AND = {
+			exists = root.primary_spouse
+			this = root.primary_spouse
+		}
+		
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+
+		has_trait = clubfooted
+		has_trait = hunchbacked
+		has_trait = wheezing
+		has_trait = spindly
+		has_trait = one_eyed
+		has_trait = one_legged
+		has_trait = disfigured
+
+		has_trait = wounded
+
+		has_trait = infirm
+		has_trait = incapable
+
+		has_trait = maimed
+		has_trait = blind
+		has_trait = ill
+		has_trait = bubonic_plague
+		has_trait = cancer
+		has_trait = consumption
+		has_trait = great_pox
+		has_trait = gout_ridden
+		has_trait = leper
+		has_trait = lovers_pox
+		has_trait = pneumonic
+		has_trait = smallpox
+		has_trait = typhus
+		has_trait = physique_bad_3
+		
+		has_trait = dysentery
+		has_trait = ergotism
+		has_trait = measles
+
+		has_trait = pregnant
+
+	}
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0016_trigger = {
+	any_courtier = {
+		harem_politics_valid_harem_head_trigger = yes
+		save_temporary_scope_as = temporary_harem_head
+	}
+	any_concubine = {
+		harem_politics_valid_performer_trigger = yes
+		NOT = {
+			this = scope:temporary_harem_head
+		}
+		count >= 3
+	}
+	NOR = {
+		has_trait = eunuch
+		has_trait = celibate
+		has_character_flag = flag_performing_consorts_event
+		has_character_modifier = mourner_modifier
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+}
+
+# You find two consorts on a walk
+harem_politics_walking_consort_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_healthy = yes
+
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	hp_accepts_harems = yes
+
+	NOR = {
+		
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+
+		has_trait = shy
+
+		has_trait = pregnant		
+		has_trait = wounded
+		has_trait = ill
+		
+		has_relation_nemesis = root
+		has_relation_rival = root
+		has_relation_potential_rival = root
+	}
+	
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0020_trigger = {
+	any_consort = {
+		count >= 3
+	}
+	any_consort = {
+		harem_politics_walking_consort_trigger = yes
+		count >= 2
+	}
+	
+	NOR = {	
+		has_character_modifier = mourner_modifier
+		has_character_flag = had_walking_consorts_event_flag
+		has_trait = eunuch
+		has_trait = celibate
+		has_trait = devoted
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+}
+
+## Meeting Consort Ling through Consort Chun ##
+chun_fei_trigger = {
+	OR = {
+		is_married = yes
+		is_high_consort_trigger = {
+			LIEGE = root
+		}
+	}
+	any_child = {
+		is_physically_able_ai = yes
+		is_adult = no
+		is_courtier_of = root
+		is_child_of = root
+		age >= 9
+		OR = {
+			AND = {
+				is_travelling = yes
+				current_travel_plan = {
+					travel_plan_owner = root
+				}
+			}
+			AND = {
+				is_travelling = no
+				root = {
+					is_travelling = no
+				}
+			}
+		}
+		is_hostage = no
+		count >= 1
+	}
+	is_demoted_consort_trigger = no
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	harem_politics_forgotten_consort_trigger = no
+	NOR = {
+		has_any_illness = yes
+		has_trait = wounded
+
+	}
+	harem_politics_punished_consort_trigger = no
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0009_trigger = {
+	any_consort = {
+		chun_fei_trigger = yes
+	}
+	NOR = {
+		any_consort = {
+			has_character_flag = flag_yanwan
+		}
+		has_character_flag = met_yanwan_chun_fei_flag
+		has_character_modifier = mourner_modifier
+	}
+	allowed_more_concubines = yes
+	is_available_healthy_adult = yes
+	is_available_at_peace_adult = yes
+	has_royal_court = yes
+	# You can't be in debt
+	gold >= tiny_gold_value
+	trigger_if = {
+		limit = {
+			has_ep1_dlc_trigger = yes
+		}
+		trigger_if = {
+			limit = {
+				NOT = {
+					government_has_flag = government_is_tribal
+				}
+			}
+			amenity_level = {
+				target = court_servants
+				value >= 3
+			}
+		}
+		trigger_else = {
+			government_has_flag = government_is_tribal
+		}
+	}
+	harem_politics_valid_event_county_trigger = yes
+}
+
+## Meeting Consort Ling through Consort Jia ##
+jia_fei_trigger = {
+	OR = {
+		is_married = yes
+		is_high_consort_trigger = {
+			LIEGE = root
+		}
+	}
+	is_demoted_consort_trigger = no
+	harem_politics_evil_consort_trigger = yes
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	harem_politics_forgotten_consort_trigger = no
+	NOR = {
+		has_trait = ill
+		has_trait = wounded
+		has_trait = temperate
+		has_trait = calm
+	}
+	harem_politics_punished_consort_trigger = no
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0010_trigger = {
+	any_consort = {
+		jia_fei_trigger = yes
+	}
+	NOR = {
+		any_consort = {
+			has_character_flag = flag_yanwan
+		}
+		has_character_flag = met_yanwan_jia_fei_flag
+		has_character_modifier = mourner_modifier
+	}
+	allowed_more_concubines = yes
+	is_available_healthy_adult = yes
+	is_available_at_peace_adult = yes
+	has_royal_court = yes
+	# You can't be in debt
+	gold >= tiny_gold_value
+	trigger_if = {
+		limit = {
+			has_ep1_dlc_trigger = yes
+		}
+		trigger_if = {
+			limit = {
+				NOT = {
+					government_has_flag = government_is_tribal
+				}
+			}
+			amenity_level = {
+				target = court_servants
+				value >= 3
+			}
+		}
+		trigger_else = {
+			government_has_flag = government_is_tribal
+		}
+	}
+	harem_politics_valid_event_county_trigger = yes
+}
+
+## Yu disrespects Zhen Huan ##
+harem_politics_yu_daying_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_healthy = yes
+
+	harem_politics_evil_consort_trigger = yes
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	hp_accepts_harems = yes
+	
+	has_character_flag = flag_new_consort
+	age <= 23
+	
+	any_child = {
+		count = 0
+	}
+
+	NOR = {
+		AND = {	
+			exists = root.primary_spouse
+			this = root.primary_spouse
+		}
+		has_high_consort_position_trigger = yes
+		
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+		
+		has_trait = beauty_bad
+		
+		has_trait = calm
+		has_trait = craven
+		has_trait = shy
+		has_trait = temperate
+		has_trait = humble
+
+		has_trait = pregnant		
+		has_trait = wounded
+		has_trait = ill
+		
+		has_relation_nemesis = root
+		has_relation_rival = root
+		has_relation_potential_rival = root
+
+		any_close_or_extended_family_member = {
+			AND = {	
+				exists = root.primary_spouse
+				this = root.primary_spouse
+			}
+			is_powerful_vassal_of = root
+			is_councillor_of = root
+			is_parent_of = root
+			is_liege_or_above_of = root
+		}
+
+		has_strong_hook = root
+
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+	}
+	
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_wan_changzai_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = root
+	is_healthy = yes
+
+	is_demoted_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	harem_politics_favored_consort_trigger = no
+	hp_accepts_harems = yes
+	
+	has_character_flag = flag_new_consort
+	age <= 23
+	
+	any_child = {
+		count = 0
+	}
+	
+	NOR = {
+		AND = {	
+			exists = root.primary_spouse
+			this = root.primary_spouse
+		}
+		has_high_consort_position_trigger = yes
+
+		this = $YU_DAYING$
+		
+		has_relation_best_friend = $YU_DAYING$
+		has_relation_friend = $YU_DAYING$
+		has_relation_potential_friend = $YU_DAYING$
+		
+		has_relation_soulmate = $YU_DAYING$
+		has_relation_lover = $YU_DAYING$
+		has_relation_potential_lover = $YU_DAYING$
+		
+		has_trait = lunatic_1
+		has_trait = lunatic_genetic
+		has_trait = possessed_1
+		has_trait = possessed_genetic
+		
+		has_trait = beauty_bad
+
+		has_trait = pregnant		
+		has_trait = wounded
+		has_trait = ill
+
+		has_relation_best_friend = root
+		has_relation_friend = root
+		has_relation_potential_friend = root
+
+		has_relation_soulmate = root
+		has_relation_lover = root
+		has_relation_potential_lover = root
+		
+		has_relation_nemesis = root
+		has_relation_rival = root
+		has_relation_potential_rival = root
+
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+	}
+	
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0019_trigger = {
+	any_consort = {
+		count >= 4
+	}
+	OR = {
+		AND = {
+			hp_accepts_concubinage = yes
+			any_concubine = {
+				harem_politics_yu_daying_trigger = yes
+				save_temporary_scope_as = temporary_yu_daying
+			}
+			any_concubine = {
+				harem_politics_wan_changzai_trigger = { YU_DAYING = scope:temporary_yu_daying }
+			}
+		}
+		AND = {
+			hp_accepts_polygamy = yes
+			hp_accepts_concubinage = no
+			any_spouse = {
+				harem_politics_yu_daying_trigger = yes
+				save_temporary_scope_as = temporary_yu_daying
+			}
+			any_spouse = {
+				harem_politics_wan_changzai_trigger = { YU_DAYING = scope:temporary_yu_daying }
+			}
+		}
+	}
+	
+	NOR = {	
+		has_character_modifier = mourner_modifier
+		has_character_flag = had_yu_event_flag
+		any_court_position_holder = {
+			type = grand_consort_court_position
+			aptitude:grand_consort_court_position >= 4
+			has_character_flag = gc_balancing_favor_flag
+		}
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+}
+valid_consort_trigger = {
+	is_courtier_of = root
+	is_physically_able_ai_adult = yes
+	harem_politics_punished_consort_trigger = no
+	NOR = {
+		has_character_flag = flag_scolded_consort
+		has_trait = pregnant
+		has_trait = ill
+		has_trait = wounded
+		has_trait = eunuch
+		has_trait = celibate
+	}
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_0011_trigger = {
+	any_consort = {
+		valid_consort_trigger = yes
+		count >= 3
+	}
+	NOR = {
+		has_character_flag = chosen_night_companion
+		has_character_flag = summoned_to_chambers_flag
+		has_trait = eunuch
+		has_trait = celibate
+		has_trait = devoted
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_playable_character = yes
+}
+## You find Imperial Concubine Ying playing in the garden ##
+consort_events_ying_pin_trigger = {
+	is_physically_able_ai_adult = yes
+	is_healthy = yes
+
+	is_demoted_consort_trigger = no
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	
+	hp_accepts_harems = yes
+	
+	NOR = {
+		
+		has_any_bad_relationship_with_root_trigger = yes
+
+		has_opinion_modifier = {
+			target = root
+			modifier = forced_me_concubine_marriage_opinion
+		}
+		has_character_flag = had_harem_event_flag
+	}
+
+	opinion = {
+		target = root
+		value >= -15
+	}
+	
+	is_courtier_of = root
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan ={
+				travel_plan_owner = root
+			}
+		}
+		AND = {
+			is_travelling = no
+			root = {
+				is_travelling = no
+			}
+		}
+	}
+}
+is_valid_for_concubine_ying_harem_event_trigger = {
+	any_consort = {
+		consort_events_ying_pin_trigger = yes
+	}
+	
+	any_consort = {
+		is_courtier_of = root
+		count >= 3
+	}
+	
+	NOT = {	
+		has_character_modifier = mourner_modifier
+	}
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+}
+
+## Consort Hua scolds Lingron ##
+consort_events_hua_fei_trigger = {
+	valid_harem_consort_trigger = yes
+	is_high_ranking_consort_trigger = {
+		LIEGE = root
+	}
+	harem_politics_evil_consort_trigger = yes
+	harem_politics_forgotten_consort_trigger = no
+	NOR = {
+		has_trait = craven
+		has_trait = shy
+		has_trait = calm
+		has_trait = temperate
+	}
+}
+consort_events_lingron_trigger = {
+	valid_harem_consort_trigger = yes
+	harem_politics_favored_consort_trigger = no
+	NOR = {
+		has_trait = pregnant
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = root }
+		has_any_good_relationship_with_character_trigger = { CHARACTER = root }
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $HUA_FEI$ }
+		any_close_family_member = {
+			is_liege_or_above_of = root
+		}
+	}
+	save_temporary_scope_as = temporary_lingron
+	calyver_rank_is_superior_trigger = {
+		HAREM_LIEGE = $LIEGE$
+		AUTHORITY = $HUA_FEI$
+		TARGET_CONSORT = scope:temporary_lingron
+	}
+}
+harem_events_hua_fei_lingron_trigger = {
+	is_landed_or_landless_administrative = yes
+	is_physically_able_adult = yes
+	is_healthy = yes
+	any_consort = {
+		consort_events_hua_fei_trigger = yes
+		save_temporary_scope_as = temporary_hua_fei
+	}
+	any_concubine = {
+		consort_events_lingron_trigger = {
+			HUA_FEI = scope:temporary_hua_fei
+			LIEGE = $LIEGE$
+		}
+	}
+	NOR = {
+		has_character_flag = had_hua_fei_lingron_event_flag
+		any_court_position_holder = {
+			type = grand_consort_court_position
+			aptitude:keeper_of_the_harem_court_position = 5
+		}
+		any_court_position_holder = {
+			type = keeper_of_the_harem_court_position
+			aptitude:keeper_of_the_harem_court_position = 5
+		}
+	}
+}
+
+## An apothecary is teaching sex lessons ##
+valid_lustful_consort_trigger = {
+	valid_harem_consort_trigger = yes
+	OR = {
+		has_trait = lustful
+		has_trait = deviant
+	}
+	NOR = {
+		has_trait = pregnant
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = root
+		}
+		has_trait = craven
+		has_trait = calm
+		has_trait = compassionate
+		has_trait = forgiving
+		AND = {
+			has_trait = zealous
+			OR = {
+				faith = { trait_is_sin = lustful }
+				faith = { trait_is_sin = deviant }
+				trait_is_shunned_or_criminal_in_faith_trigger = {
+					FAITH = this.faith
+					TRAIT = trait:deviant
+					GENDER_CHARACTER = this
+				}
+			}
+			NOT = { has_trait = arbitrary }
+		}
+	}
+}
+valid_prudent_consort_trigger = {
+	valid_harem_consort_trigger = yes
+	NOR = {
+		has_trait = pregnant
+		has_trait = lustful
+		has_trait = craven
+		has_trait = deviant
+		has_trait = calm
+		has_trait = compassionate
+		has_trait = forgiving
+	}
+}
+harem_events_apothecary_sex_lessons_trigger = {
+	is_landed_or_landless_administrative = yes
+	is_physically_able_adult = yes
+	is_healthy = yes
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 4
+	}
+	any_consort = {
+		valid_prudent_consort_trigger = yes
+	}
+	any_consort = {
+		valid_lustful_consort_trigger = yes
+	}
+	NOT = {
+		has_character_flag = had_apothecary_sex_lessons_event_flag
+	}
+}
+
+## The Empress Dowager scolds you for not visiting her ##
+is_valid_for_visit_matriarch_decision_trigger = {
+	can_execute_decision = visit_matriarch_decision
+	any_ancestor = {
+		is_eligible_harem_member_trigger = {
+			LIEGE = root
+		}
+		trigger_if = {
+			limit = {
+				root = {
+					any_ancestor = {
+						is_grandparent_of = root
+						is_eligible_harem_member_trigger = {
+							LIEGE = root
+						}
+					}
+				}
+			}
+			is_grandparent_of = root
+		}
+		trigger_else = {
+			is_parent_of = root
+		}
+		NOR = { 
+			has_any_bad_relationship_with_root_trigger = yes
+			has_opinion_modifier = {
+				target = root
+				modifier = pleased_opinion
+			}
+			has_trait = forgiving
+			has_trait = compassionate
+			has_trait = calm
+			has_trait = humble
+		}
+	}
+	NOT = { has_character_flag = had_matriarch_requested_visit_event_flag }
+}
+
+## You overhear two consorts gossiping ##
+# General trigger
+harem_events_valid_gossiping_consort_trigger = {
+	valid_harem_consort_trigger = yes
+	NOT = {
+		has_any_bad_relationship_with_root_trigger = yes
+	}
+}
+# Two consorts gossip about you
+# An older consort gives information about you
+harem_events_is_valid_new_consort_trigger = {
+	harem_events_valid_gossiping_consort_trigger = yes
+	has_character_flag = flag_new_consort
+	NOR = {
+		has_trait = pregnant
+		any_child = {
+			even_if_dead = yes
+			is_child_of = root
+			count > 0
+		}
+	}
+}
+harem_events_is_valid_older_consort_trigger = {
+	valid_harem_consort_trigger = yes
+	NOR = {
+		this = $CONSORT$
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = $CONSORT$ }
+	}
+	OR = {
+		any_child = {
+			even_if_dead = yes
+			is_child_of = root
+			count > 0
+		}
+		NOT = {
+			has_character_flag = flag_new_consort
+		}
+	}
+}
+harem_events_gossiping_about_liege_consorts_trigger = {
+	is_playable_character = yes
+	is_physically_able_adult = yes
+	is_healthy = yes
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 4
+	}
+	any_consort = {
+		harem_events_is_valid_new_consort_trigger = yes
+		save_temporary_scope_as = temporary_consort
+	}
+	any_consort = {
+		harem_events_is_valid_older_consort_trigger = { CONSORT = scope:temporary_consort }
+	}
+	NOT = {
+		has_character_flag = had_gossiping_consorts_about_liege_event_flag
+	}
+}
+# An older consort spills the tea
+harem_events_is_valid_older_consort_15_trigger = {
+	harem_events_is_valid_older_consort_trigger = { CONSORT = $CONSORT$ }
+	save_temporary_scope_as = temporary_older_consort
+	OR = {
+		# A rivalry
+		any_relation = {
+			type = rival
+			is_consort_of = root
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		}
+		root = {
+			OR = {
+				any_consort = {
+					this != $CONSORT$
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					is_imprisoned = no
+					any_relation = {
+						type = rival
+						is_consort_of = root
+						this != $CONSORT$
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						is_imprisoned = no
+					}
+				}
+				any_courtier = {
+					is_eligible_harem_member_trigger = {
+						LIEGE = root
+					}
+					NOR = {
+						is_consort_of = root
+					}
+				}
+				employs_court_position = chief_eunuch_court_position
+				any_courtier = {
+					this != $CONSORT$
+					this != scope:temporary_older_consort
+					any_secret = {
+						NOT = { is_known_by = root }
+						is_blackmailable_secret_trigger = {
+							PARTICIPANT = prev
+							BLACKMAILER = root
+						}
+					}
+				}
+				any_consort = {
+					this != scope:temporary_older_consort
+					this != $CONSORT$
+					is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					is_imprisoned = no
+					NOT = { has_character_flag = flag_new_consort }
+					OR = {
+						is_high_ranking_consort_trigger = {
+							LIEGE = root
+						}
+						harem_politics_favored_consort_trigger = yes
+					}
+					harem_politics_evil_consort_trigger = yes
+				}
+			}
+		}
+	}
+}
+harem_events_gossiping_consorts_trigger = {
+	is_playable_character = yes
+	is_physically_able_adult = yes
+	is_healthy = yes
+	NOT = { has_character_flag = had_gossiping_consorts_event_flag }
+	any_consort = {
+		valid_harem_consort_trigger = yes
+		count >= 4
+	}
+	any_consort = {
+		harem_events_is_valid_new_consort_trigger = yes
+		save_temporary_scope_as = temporary_new_consort
+	}
+	any_consort = {
+		harem_events_is_valid_older_consort_15_trigger = { CONSORT = scope:temporary_new_consort }
 	}
 }

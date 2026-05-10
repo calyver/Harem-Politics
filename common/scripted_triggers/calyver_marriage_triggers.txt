@@ -18,7 +18,6 @@ make_concubine_is_valid_trigger = {
 		}
 	}
 	scope:recipient = {
-		is_busy_in_events_localised = yes
 		custom_tooltip = {
 			text = take_concubine_mourning
 			OR = {
@@ -73,7 +72,12 @@ make_concubine_is_valid_trigger = {
 }
 
 can_become_concubine_of_character_trigger = {
-	is_hostage = no
+	is_available_quick = {
+		adult = yes
+		ruler = no
+		advanced_ruler = no
+		hostage = no
+	}
 	trigger_if = {
 		limit = {
 			NOT = { is_imprisoned_by = $CHARACTER$ }
@@ -138,19 +142,26 @@ can_become_concubine_of_character_trigger = {
 		is_concubine_of = $CHARACTER$
 		has_character_flag = has_been_offered_as_concubine
 	}
-	is_ruler = no
-	is_playable_character = no
-	is_adult = yes
 	could_marry_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, recent divorce, allowed to marry, no illegal incest etc.
+	can_be_taken_as_muslim_concubine_trigger = { # Can a Muslim be taken as a concubine?
+		CHARACTER = $CHARACTER$
+		RECEIVER = $CHARACTER$
+	}
 }
 
 can_be_offered_as_concubine_to_character_trigger = {
+	is_available_quick = {
+		adult = yes
+		ruler = no
+		advanced_ruler = no
+	}
 	trigger_if = {
 		limit = {
 			NOT = { is_imprisoned_by = $GIVER$ }
 		}
 		is_married = no
 		is_betrothed = no
+		is_diarch = no
 		OR = {
 			is_concubine = no
 			is_concubine_of = $GIVER$
@@ -171,9 +182,6 @@ can_be_offered_as_concubine_to_character_trigger = {
 		is_concubine_of = $CHARACTER$
 		has_character_flag = has_been_offered_as_concubine
 	}
-	is_ruler = no
-	is_playable_character = no
-	is_adult = yes
 	NOT = {
 		is_theocratic_lessee = yes
 	}
@@ -184,37 +192,127 @@ can_be_offered_as_concubine_to_character_trigger = {
 	}
 }
 
-valid_marriage_legitimacy_rank_trigger = {
-	# ROOT = character being checked (either OTHER or their relative)
-	# RULER = character getting legitimacy
-	
-	is_landed = yes
-	OR = {
-		# Outranks RULER
-		tier_difference = {
-			target = $RULER$
-			value > 0
+could_marry_character_trigger = {
+	save_temporary_scope_as = can_marry_check
+	can_marry_common_trigger = yes
+	$CHARACTER$ = { can_marry_common_trigger = yes }
+	#Opposite genders if you don't have accepted same-sex marriage game rule enabled and your faith supports it
+	trigger_if = {
+		limit = {
+			$CHARACTER$ = { allowed_to_marry_same_sex_trigger = no }
 		}
-		# Same rank
-		tier_difference = {
-			target = $RULER$
-			value = 0
+		sex_opposite_of = $CHARACTER$
+	}
+	#Faith hostility & consanguinity
+	trigger_if = {
+		limit = { NOT = { is_courtier_of = $CHARACTER$ } } #If you're someone's courtier, your liege can marry you anyway
+		faith = {
+			faith_allows_marriage_consanguinity_trigger = {
+				CHARACTER_1 = scope:can_marry_check
+				CHARACTER_2 = $CHARACTER$
+			}
+			#faith_hostility_level = {
+			#	target = $CHARACTER$.faith
+			#	value < faith_hostility_prevents_marriage_level
+			#}
 		}
-		# Special case: King/Emperor for Emperor+ (including future hegemony)
-		AND = {
-			OR = {
-				highest_held_title_tier = tier_kingdom
-				highest_held_title_tier = tier_empire
+	}
+	trigger_if = {
+		limit = { $CHARACTER$ = { NOT = { is_courtier_of = scope:can_marry_check } } } #If you're someone's courtier, your liege can marry you anyway
+		$CHARACTER$.faith = {
+			faith_allows_marriage_consanguinity_trigger = {
+				CHARACTER_1 = scope:can_marry_check
+				CHARACTER_2 = $CHARACTER$
 			}
-			$RULER$ = {
-				highest_held_title_tier >= tier_empire
+			#faith_hostility_level = {
+			#	target = scope:can_marry_check.faith
+			#	value < faith_hostility_prevents_marriage_level
+			#}
+		}
+	}
+	# Cannot marry self
+	NOT = {
+		scope:can_marry_check = { is_spouse_of = $CHARACTER$ }
+	}
+}
+# Same as above, switching out could_marry_character_trigger for can_take_as_concubine_character_trigger, in order to better inform the player that they cannot take their ex-spouse as a concubine
+can_become_concubine_of_character_valid_trigger = {
+	is_available_quick = {
+		adult = yes
+		ruler = no
+		advanced_ruler = no
+	}
+	trigger_if = {
+		limit = {
+			NOT = { is_imprisoned_by = $CHARACTER$ }
+		}
+		is_married = no
+		is_betrothed = no
+		is_concubine = no
+		is_diarch = no
+		number_of_concubines = 0
+	}
+	trigger_if = {
+		limit = {
+			is_imprisoned_by = $CHARACTER$
+			is_married = yes
+		}
+		NOT = { is_spouse_of = $CHARACTER$ }
+	}
+	NOR = {
+		is_concubine_of = $CHARACTER$
+		has_character_flag = has_been_offered_as_concubine
+	}
+	can_take_as_concubine_character_trigger = { CHARACTER = $CHARACTER$ } #Gender, allowed to marry, no illegal incest etc.
+	has_any_disease_trigger = no
+	has_easily_mocked_physical_attribute_trigger = no
+	trigger_if = {
+		limit = {
+			host ?= {
+				this != $CHARACTER$
 			}
+		}
+		host = {
+			save_temporary_scope_as = consort_court_owner
+		}
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = scope:consort_court_owner
+			RECEIVER = $CHARACTER$
+		}
+	}
+	trigger_else = {
+		can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+			CHARACTER = $CHARACTER$ 
+			RECEIVER = $CHARACTER$
 		}
 	}
 }
 
+## Harem Politics triggers ##
+valid_marriage_legitimacy_rank_trigger = {
+	# ROOT = character being checked (either OTHER or their relative)
+	# RULER = character getting legitimacy
+
+	OR = {
+		AND = {
+			is_landed = yes
+			is_governor_or_admin_count = no
+		}
+		tgp_is_ceremonial_liege_trigger = yes
+	}
+	OR = {
+		# Outranks RULER or the same rank
+		tier_difference = {
+			target = $RULER$
+			value >= 0
+		}
+		# Special case: King/Emperor for Emperor+ (including future hegemony)
+		highest_held_title_tier >= tier_kingdom
+	}
+}
+
 can_be_taken_as_muslim_concubine_trigger = {
-	# CHARACTER = the actor, either taking the concubine or offering them
+	# CHARACTER = the actor, either taking the concubine or offering them. In other words, it evaluates whether the sender could take the concubine if their stance on concubinage was relevant
 	# RECEIVER = the character being offered the concubine, if they exist
 	custom_tooltip = {
 		text = take_muslim_concubine_trigger
@@ -236,9 +334,7 @@ can_be_taken_as_muslim_concubine_trigger = {
 						has_trait = cynical
 					}
 					trigger_else = {
-						NOT = {
-							religion = religion:islam_religion
-						}
+						religion != religion:islam_religion
 					}
 				}
 				has_character_flag = abducted_non_believer
@@ -261,18 +357,14 @@ can_be_taken_as_muslim_concubine_trigger = {
 							has_trait = cynical
 						}
 						trigger_else = {
-							NOT = {
-								religion = religion:islam_religion
-							}
+							religion != religion:islam_religion
 						}
 					}
 				}
 			}
 		}
 		trigger_else = {
-			NOT = {
-				religion = religion:islam_religion
-			}
+			religion != religion:islam_religion
 		}
 	}
 	# You cannot offer your children's parents
@@ -307,6 +399,29 @@ can_be_taken_as_muslim_concubine_trigger = {
 				$CHARACTER$.religion = religion:islam_religion
 			}
 			NOR = {
+				is_spouse_of = $CHARACTER$
+				has_divorced_opinion_trigger = {
+					TARGET = $CHARACTER$
+				}
+				any_former_spouse = {
+					this = $CHARACTER$
+				}
+			}
+		}
+	}
+	custom_tooltip = {
+		text = can_not_take_ex_spouse_as_concubine_tradition
+		trigger_if = {
+			limit = {
+				$CHARACTER$ = {
+					culture = { has_cultural_parameter = dishu_system }
+					NAND = { # Independent kings and emperors can take ex-spouses as concubines
+						can_have_imperial_consorts_trigger = yes
+						is_independent_ruler = yes
+					}
+				}
+			}
+			NOR = { # You cannot take an ex-spouse as a concubine
 				is_spouse_of = $CHARACTER$
 				has_divorced_opinion_trigger = {
 					TARGET = $CHARACTER$

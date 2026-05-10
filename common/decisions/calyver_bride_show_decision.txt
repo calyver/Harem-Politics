@@ -1,4 +1,5 @@
-﻿bride_show_decision = {
+﻿## Bride Show for most rulers ##
+bride_show_decision = {
 	title = {
 		first_valid = {
 			triggered_desc = {
@@ -103,8 +104,8 @@
 		}
 	}
 
-	decision_group_type = courtier
-	ai_check_interval = 36
+	#decision_group_type = courtier
+
 	sort_order = 120
 
 	confirm_text = bride_show_decision_confirm
@@ -114,8 +115,7 @@
 		OR = {
 			culture = { has_cultural_tradition = tradition_ep3_palace_politics }
 			culture = { has_cultural_tradition = tradition_legalistic }
-			hp_accepts_concubinage = yes
-			hp_accepts_polygamy = yes
+			hp_accepts_harems = yes
 		}
 		highest_held_title_tier >= tier_duchy
 		OR = { #Appropriate dominant sex
@@ -135,14 +135,23 @@
 			}
 			has_realm_law = equal_law
 		}
-		NOT = {
-			religion = religion:islam_religion
+		religion != religion:islam_religion
+		trigger_if = {
+			limit = {
+				government_allows = administrative
+			}
+			is_independent_ruler = yes
+		}
+		trigger_if = {
+			limit = { tgp_realm_has_ceremonial_liege_trigger = yes }
+			tgp_is_ceremonial_regent_trigger = no
 		}
 	}
 
 	is_valid = {
 		age >= 15
 		is_at_war = no
+		gold >= minor_gold_value
 
 		#Combinations: 3 non-republican, non-theocratic and non-herding subject who are not at war with their overlord.
 		#Either 3 vassals, 4 tributaries, or 2 vassals and 2 tributaries
@@ -154,26 +163,26 @@
 				text = bride_show_nomadic_ruler_subject_tooltip
 				OR = {
 					any_vassal = { #4 vassals
-						harem_politics_minimum_valid_subject_requirements_trigger = {
+						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = root
 						}
 						count >= 4
 					}
 					any_tributary = { #4 tributaries
-						harem_politics_minimum_valid_subject_requirements_trigger = {
+						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = root
 						}
 						count >= 4
 					}
 					AND = { #2 vassals and 2 tributaries
 						any_vassal = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 2
 						}
 						any_tributary = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 2
@@ -181,13 +190,13 @@
 					}
 					AND = { #3 vassals and 1 tributary
 						any_vassal = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 3
 						}
 						any_tributary = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 1
@@ -195,13 +204,13 @@
 					}
 					AND = { #1 vassal and 3 tributaries
 						any_vassal = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 1
 						}
 						any_tributary = {
-							harem_politics_minimum_valid_subject_requirements_trigger = {
+							harem_politics_is_valid_bride_show_subject_trigger = {
 								OVERLORD = root
 							}
 							count >= 3
@@ -210,46 +219,167 @@
 				}
 			}
 		}
-		trigger_else_if = { #Dukes
-			limit = {
-				highest_held_title_tier = tier_duchy
-			}
-			trigger_if = { #Only sovereigns can host a bride show
+		trigger_else_if = { # Admin rulers
+			limit = { government_allows = administrative }
+			trigger_if = {
 				limit = {
-					government_allows = administrative
+					has_realm_law = imperial_bureaucracy_0
 				}
-				is_governor = no
-				is_independent_ruler = yes
-			}
-			trigger_else_if = { # Feudal/Clan/Tribal Duke
-				limit = {
-					NOR = {
-						government_allows = administrative
-						government_has_flag = government_is_nomadic
+				OR = {
+					custom_tooltip = {
+						text = bride_show_admin_authority_0_vassal_tooltip
+						any_vassal_or_below = { #3 vassals
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 3
+						}
+					}
+					custom_tooltip = {
+						text = bride_show_feudal_tributary_tooltip
+						any_tributary = { #4 tributaries
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 4
+						}
+					}
+					AND = {
+						custom_tooltip = {
+							text = bride_show_admin_authority_0_vassal_subjects_tooltip
+							any_vassal_or_below = { #2 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_subject_tributary_tooltip
+							any_tributary = { #2 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
 					}
 				}
-				trigger_if = { #Low Authority
-					limit = {
-						OR = {
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0
+			}
+			trigger_else_if = {
+				limit = {
+					has_realm_law = imperial_bureaucracy_1
+				}
+				OR = {
+					custom_tooltip = {
+						text = bride_show_admin_authority_1_vassal_tooltip
+						any_vassal_or_below = { #3 vassals
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 3
 						}
+					}
+					custom_tooltip = {
+						text = bride_show_feudal_tributary_tooltip
+						any_tributary = { #4 tributaries
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 4
+						}
+					}
+					AND = {
+						custom_tooltip = {
+							text = bride_show_admin_authority_1_vassal_subjects_tooltip
+							any_vassal_or_below = { #2 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_subject_tributary_tooltip
+							any_tributary = { #2 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+					}
+				}
+			}
+			trigger_else = {
+				OR = {
+					custom_tooltip = {
+						text = bride_show_admin_authority_2_vassal_tooltip
+						any_vassal_or_below = { #3 vassals
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 3
+						}
+					}
+					custom_tooltip = {
+						text = bride_show_feudal_tributary_tooltip
+						any_tributary = { #4 tributaries
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 4
+						}
+					}
+					AND = {
+						custom_tooltip = {
+							text = bride_show_admin_authority_2_vassal_subjects_tooltip
+							any_vassal_or_below = { #2 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_subject_tributary_tooltip
+							any_tributary = { #2 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+					}
+				}
+			}
+		}
+		trigger_else = { # Feudal/Clan/Tribal rulers
+			trigger_if = { # Low authority
+				limit = {
+					OR = {
+						has_realm_law = crown_authority_0
+						has_realm_law = tribal_authority_0
+					}
+				}
+				trigger_if = {
+					limit = {
+						highest_held_title_tier = tier_duchy
 					}
 					OR = {
 						custom_tooltip = {
 							text = bride_show_feudal_authority_0_duke_vassal_tooltip
-							any_vassal = {
-								is_powerful_vassal = no
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 3
 							}
 						}
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 4
@@ -258,18 +388,17 @@
 						AND = {
 							custom_tooltip = {
 								text = bride_show_feudal_authority_0_duke_subject_vassal_tooltip
-								any_vassal = {
-									is_powerful_vassal = no
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
 								}
 							}
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
@@ -278,273 +407,24 @@
 						}
 					}
 				}
-				trigger_else = { #Limited Authority+
-					OR = {
-						custom_tooltip = {
-							text = bride_show_feudal_authority_1_duke_vassal_tooltip
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = {
-							custom_tooltip = {
-								text = bride_show_feudal_authority_1_duke_subject_vassal_tooltip
-								any_vassal = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-			}
-			trigger_else = {
-				always = no
-			}
-		}
-		trigger_else_if = { #Kings
-			limit = {
-				highest_held_title_tier = tier_kingdom
-			}
-			trigger_if = { #Only sovereigns can host a bride show
-				limit = {
-					government_allows = administrative
-				}
-				is_independent_ruler = yes
-				trigger_if = { #Low Imperial Bureaucracy
+				trigger_else_if = {
 					limit = {
-						has_realm_law = imperial_bureaucracy_0
-					}
-					OR = { #3 non-powerful vassals
-						custom_tooltip = {
-							text = bride_show_imperial_authority_0_king_vassal_tooltip
-							any_vassal = {
-								trigger_if = {
-									limit = {
-										government_allows = administrative
-									}
-									house ?= { 
-										is_dominant_family = no 
-										is_powerful_family = no
-									}
-								}
-								trigger_else = {
-									is_powerful_vassal = no
-									highest_held_title_tier <= tier_county
-								}
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_imperial_authority_0_king_subject_vassal_tooltip
-								any_vassal = {
-									trigger_if = {
-										limit = {
-											government_allows = administrative
-										}
-										house ?= { 
-											is_dominant_family = no 
-											is_powerful_family = no
-										}
-									}
-									trigger_else = {
-										is_powerful_vassal = no
-										highest_held_title_tier <= tier_county
-									}
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-				trigger_else_if = { #Limited Imperial Bureaucracy
-					limit = {
-						has_realm_law = imperial_bureaucracy_1
-					}
-					OR = { #3 non-influential vassals
-						custom_tooltip = {
-							text = bride_show_imperial_authority_1_king_vassal_tooltip
-							any_vassal = {
-								trigger_if = {
-									limit = {
-										government_allows = administrative
-									}
-									house ?= { 
-										is_dominant_family = no 
-									}
-								}
-								trigger_else = {
-									is_powerful_vassal = no
-								}
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_imperial_authority_1_king_subject_vassal_tooltip
-								any_vassal = {
-									trigger_if = {
-										limit = {
-											government_allows = administrative
-										}
-										house ?= { 
-											is_dominant_family = no 
-										}
-									}
-									trigger_else = {
-										is_powerful_vassal = no
-									}
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-				trigger_else = { #High Imperial Bureaucracy+
-					OR = { #3 vassals
-						custom_tooltip = {
-							text = bride_show_feudal_authority_1_duke_vassal_tooltip
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_feudal_authority_1_duke_subject_vassal_tooltip
-								any_vassal = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-			}
-			trigger_else_if = { # Feudal/Clan/Tribal King
-				limit = {
-					NOR = {
-						government_allows = administrative
-						government_has_flag = government_is_nomadic
-					}
-				}
-				trigger_if = { #Low Authority
-					limit = {
-						OR = {
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0
-						}
+						highest_held_title_tier = tier_kingdom
 					}
 					OR = {
 						custom_tooltip = {
 							text = bride_show_feudal_authority_0_king_vassal_tooltip
-							any_vassal = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_county
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 3
 							}
 						}
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 4
@@ -553,19 +433,17 @@
 						AND = {
 							custom_tooltip = {
 								text = bride_show_feudal_authority_0_king_subject_vassal_tooltip
-								any_vassal = {
-									is_powerful_vassal = no
-									highest_held_title_tier <= tier_county
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
 								}
 							}
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
@@ -574,322 +452,24 @@
 						}
 					}
 				}
-				trigger_else_if = { #Limited Authority
+				trigger_else_if = {
 					limit = {
-						OR = {
-							has_realm_law = crown_authority_1
-							has_realm_law = tribal_authority_1
-						}
-					}
-					OR = {
-						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_vassal_tooltip
-							any_vassal = {
-								is_powerful_vassal = no
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = {
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_vassal_tooltip
-								any_vassal = {
-									is_powerful_vassal = no
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-				trigger_else = { #High Authority+
-					OR = {
-						custom_tooltip = {
-							text = bride_show_feudal_authority_1_duke_vassal_tooltip
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = {
-							custom_tooltip = {
-								text = bride_show_feudal_authority_1_duke_subject_vassal_tooltip
-								any_vassal = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-			}
-			trigger_else = {
-				always = no
-			}
-		}
-		trigger_else_if = { #Emperors
-			limit = {
-				highest_held_title_tier = tier_empire
-			}
-			trigger_if = { #Administrative Emperor
-				limit = {
-					government_allows = administrative
-				}
-				trigger_if = { #Low Imperial Bureaucracy
-					limit = {
-						has_realm_law = imperial_bureaucracy_0
-					}
-					OR = { #3 non-powerful vassals
-						custom_tooltip = {
-							text = bride_show_imperial_authority_0_king_vassal_tooltip
-							any_vassal = {
-								trigger_if = {
-									limit = {
-										government_allows = administrative
-									}
-									house ?= { 
-										is_dominant_family = no 
-										is_powerful_family = no
-									}
-								}
-								trigger_else = {
-									is_powerful_vassal = no
-									highest_held_title_tier <= tier_duchy
-								}
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_imperial_authority_0_king_subject_vassal_tooltip
-								any_vassal = {
-									trigger_if = {
-										limit = {
-											government_allows = administrative
-										}
-										house ?= { 
-											is_dominant_family = no 
-											is_powerful_family = no
-										}
-									}
-									trigger_else = {
-										is_powerful_vassal = no
-										highest_held_title_tier <= tier_duchy
-									}
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-				trigger_else_if = { #Limited Imperial Bureaucracy
-					limit = {
-						has_realm_law = imperial_bureaucracy_1
-					}
-					OR = { #3 non-influential vassals
-						custom_tooltip = {
-							text = bride_show_imperial_authority_1_king_vassal_tooltip
-							any_vassal = {
-								trigger_if = {
-									limit = {
-										government_allows = administrative
-									}
-									house ?= { 
-										is_dominant_family = no
-									}
-								}
-								trigger_else = {
-									is_powerful_vassal = no
-								}
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_imperial_authority_1_king_subject_vassal_tooltip
-								any_vassal = {
-									trigger_if = {
-										limit = {
-											government_allows = administrative
-										}
-										house ?= { 
-											is_dominant_family = no 
-										}
-									}
-									trigger_else = {
-										is_powerful_vassal = no
-									}
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-				trigger_else = { #High Imperial Bureaucracy+
-					OR = { #3 vassals
-						custom_tooltip = {
-							text = bride_show_feudal_authority_1_duke_vassal_tooltip
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 3
-							}
-						}
-						custom_tooltip = { #4 tributaries
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
-									OVERLORD = root
-								}
-								count >= 4
-							}
-						}
-						AND = { #2 vassals and 2 tributaries
-							custom_tooltip = {
-								text = bride_show_feudal_authority_1_duke_subject_vassal_tooltip
-								any_vassal = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
-										OVERLORD = root
-									}
-									count >= 2
-								}
-							}
-						}
-					}
-				}
-			}
-			trigger_else_if = { # Feudal/Clan/Tribal Emperor
-				limit = {
-					NOR = {
-						government_allows = administrative
-						government_has_flag = government_is_nomadic
-					}
-				}
-				trigger_if = { #Low Authority
-					limit = {
-						OR = {
-							has_realm_law = crown_authority_0
-							has_realm_law = tribal_authority_0
-						}
+						highest_held_title_tier = tier_empire
 					}
 					OR = {
 						custom_tooltip = {
 							text = bride_show_feudal_authority_0_emperor_vassal_tooltip
-							any_vassal = {
-								is_powerful_vassal = no
-								highest_held_title_tier <= tier_duchy
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 3
 							}
 						}
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 4
@@ -898,19 +478,17 @@
 						AND = {
 							custom_tooltip = {
 								text = bride_show_feudal_authority_0_emperor_subject_vassal_tooltip
-								any_vassal = {
-									is_powerful_vassal = no
-									highest_held_title_tier <= tier_duchy
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
 								}
 							}
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
@@ -919,28 +497,74 @@
 						}
 					}
 				}
-				trigger_else_if = { #Limited Authority
+				trigger_else = {
+					OR = {
+						custom_tooltip = {
+							text = bride_show_feudal_authority_0_hegemon_vassal_tooltip
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 3
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 4
+							}
+						}
+						AND = {
+							custom_tooltip = {
+								text = bride_show_feudal_authority_0_hegemon_subject_vassal_tooltip
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+							custom_tooltip = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+						}
+					}
+				}
+			}
+			trigger_else_if = { # Limited authority
+				limit = {
+					OR = {
+						has_realm_law = crown_authority_1
+						has_realm_law = tribal_authority_1
+					}
+				}
+				trigger_if = {
 					limit = {
-						OR = {
-							has_realm_law = crown_authority_1
-							has_realm_law = tribal_authority_1
-						}
+						highest_held_title_tier = tier_duchy
 					}
 					OR = {
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_vassal_tooltip
-							any_vassal = {
-								is_powerful_vassal = no
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_high_authority_vassal_tooltip
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 3
 							}
 						}
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 4
@@ -948,19 +572,18 @@
 						}
 						AND = {
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_vassal_tooltip
-								any_vassal = {
-									is_powerful_vassal = no
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_high_authority_subject_vassal_tooltip
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
 								}
 							}
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
@@ -969,21 +592,24 @@
 						}
 					}
 				}
-				trigger_else = { #High Authority+
+				trigger_else_if = {
+					limit = {
+						highest_held_title_tier = tier_kingdom
+					}
 					OR = {
 						custom_tooltip = {
-							text = bride_show_feudal_authority_1_duke_vassal_tooltip
-							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_authority_1_vassal_tooltip
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 3
 							}
 						}
 						custom_tooltip = {
-							text = bride_show_feudal_authority_0_duke_tributary_tooltip
-							any_tributary = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
 								}
 								count >= 4
@@ -991,18 +617,105 @@
 						}
 						AND = {
 							custom_tooltip = {
-								text = bride_show_feudal_authority_1_duke_subject_vassal_tooltip
-								any_vassal = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_authority_1_subject_vassal_tooltip
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
 								}
 							}
 							custom_tooltip = {
-								text = bride_show_feudal_authority_0_duke_subject_tributary_tooltip
-								any_tributary = {
-									harem_politics_minimum_valid_subject_requirements_trigger = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+						}
+					}
+				}
+				trigger_else_if = {
+					limit = {
+						highest_held_title_tier = tier_empire
+					}
+					OR = {
+						custom_tooltip = {
+							text = bride_show_feudal_authority_1_vassal_tooltip
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 3
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 4
+							}
+						}
+						AND = {
+							custom_tooltip = {
+								text = bride_show_feudal_authority_1_subject_vassal_tooltip
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+							custom_tooltip = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+						}
+					}
+				}
+				trigger_else = {
+					OR = {
+						custom_tooltip = {
+							text = bride_show_feudal_authority_1_vassal_tooltip
+							any_vassal = { #3 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 3
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_tributary_tooltip
+							any_tributary = { #4 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 4
+							}
+						}
+						AND = {
+							custom_tooltip = {
+								text = bride_show_feudal_authority_1_subject_vassal_tooltip
+								any_vassal = { #2 vassals
+									harem_politics_is_valid_bride_show_subject_trigger = {
+										OVERLORD = root
+									}
+									count >= 2
+								}
+							}
+							custom_tooltip = {
+								text = bride_show_feudal_subject_tributary_tooltip
+								any_tributary = { #2 tributaries
+									harem_politics_is_valid_bride_show_subject_trigger = {
 										OVERLORD = root
 									}
 									count >= 2
@@ -1012,12 +725,48 @@
 					}
 				}
 			}
-			trigger_else = {
-				always = no
+			trigger_else = { # High authority+
+				OR = {
+					custom_tooltip = {
+						text = bride_show_feudal_high_authority_vassal_tooltip
+						any_vassal = { #3 vassals
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 3
+						}
+					}
+					custom_tooltip = {
+						text = bride_show_feudal_tributary_tooltip
+						any_tributary = { #4 tributaries
+							harem_politics_is_valid_bride_show_subject_trigger = {
+								OVERLORD = root
+							}
+							count >= 4
+						}
+					}
+					AND = {
+						custom_tooltip = {
+							text = bride_show_feudal_high_authority_subject_vassal_tooltip
+							any_vassal = { #2 vassals
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+						custom_tooltip = {
+							text = bride_show_feudal_subject_tributary_tooltip
+							any_tributary = { #2 tributaries
+								harem_politics_is_valid_bride_show_subject_trigger = {
+									OVERLORD = root
+								}
+								count >= 2
+							}
+						}
+					}
+				}
 			}
-		}
-		trigger_else = {
-			always = no
 		}
 	}
 	
@@ -1025,10 +774,6 @@
 		is_available = yes
 		NOT = {
 			has_trait = devoted
-		}
-		custom_tooltip = {
-			text = not_enough_gold_bride_show
-			gold >= minor_gold_value
 		}
 		custom_tooltip = {
 			text = mourning_bride_show
@@ -1046,7 +791,7 @@
 					SIZE = 1
 					INTENSITY = minor
 				}
-				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+				capital_county ?= { has_county_modifier = isolate_capital_decision_modifier }
 			}
 		}
 		custom_tooltip = {
@@ -1058,7 +803,7 @@
 	}
 	
 	
-	cooldown = { years = 4 }
+	cooldown = { years = 3 }
 	
 	cost = {
 		prestige = {
@@ -1078,7 +823,10 @@
 			# Add extra prestige cost if nomadic
 			if = {
 				limit = {
-					government_has_flag = government_is_nomadic
+					OR = {	
+						government_has_flag = government_is_nomadic
+						government_has_flag = government_is_tribal
+					}
 				}
 				add = medium_prestige_value
 			}
@@ -1089,13 +837,8 @@
 						limit = { government_has_flag = government_is_nomadic }
 						NOT = {
 							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
-								}
-								any_courtier = {
-									bride_show_viable_candidate_trigger = {
-										OVERLORD = root
-									} 
 								}
 								count >= 4
 							}
@@ -1104,13 +847,8 @@
 					trigger_else = {
 						NOT = {
 							any_vassal = {
-								harem_politics_minimum_valid_subject_requirements_trigger = {
+								harem_politics_is_valid_bride_show_subject_trigger = {
 									OVERLORD = root
-								}
-								any_courtier = {
-									bride_show_viable_candidate_trigger = {
-										OVERLORD = root
-									} 
 								}
 								count >= 3
 							}
@@ -1132,6 +870,18 @@
 						}
 						add = minor_influence_value
 					}
+					if = {
+						limit = {
+							highest_held_title_tier > tier_kingdom
+						}
+						add = minor_influence_value
+					}
+					if = {
+						limit = {
+							highest_held_title_tier > tier_empire
+						}
+						add = minor_influence_value
+					}
 				}
 			}
 		}
@@ -1140,12 +890,15 @@
 	effect = {
 		custom_tooltip = bride_show_effect_tooltip
 		custom_tooltip = bride_show_opinion_effect_tooltip
+		stress_impact = {
+			chaste = minor_stress_impact_gain
+		}
 		hidden_effect = {
 			save_scope_as = liege
 			# First check vassals
 			if = {
 				limit = {
-					any_vassal = {
+					any_vassal_or_below = {
 						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
 						}
@@ -1154,10 +907,9 @@
 								OVERLORD = scope:liege
 							} 
 						}
-						count >= 1
 					}
 				}
-				every_vassal = {
+				every_vassal_or_below = {
 					limit = {
 						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
@@ -1175,7 +927,7 @@
 			if = {
 				limit = {
 					any_tributary = {
-						harem_politics_minimum_valid_subject_requirements_trigger = {
+						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
 						}
 						any_courtier = {
@@ -1187,7 +939,7 @@
 				}
 				every_tributary = {
 					limit = {
-						harem_politics_minimum_valid_subject_requirements_trigger = {
+						harem_politics_is_valid_bride_show_subject_trigger = {
 							OVERLORD = scope:liege
 						}
 						any_courtier = {
@@ -1204,37 +956,37 @@
 				limit = {
 					government_has_flag = government_is_nomadic
 				}
-				if = { #Are they all vassals?
-					limit = {
+				if = {
+					limit = { # Are they all vassals?
 						any_in_list = {
 							list = bride_show_preliminary_list
-							is_vassal_of = scope:liege
+							is_vassal_or_below_of = scope:liege
 							count >= 4
 						}
-						any_in_list = {
-							list = bride_show_preliminary_list
-							NOT = {
-								is_vassal_of = scope:liege
-							}
-							count >= 1
-						}
 					}
-					#Then tributaries are optional
-					trigger_event = bride_show.1000
-				}
-				else = {
-					if = {
+					if = { # There are tributaries
 						limit = {
 							any_in_list = {
 								list = bride_show_preliminary_list
-								NOT = { is_vassal_of = scope:liege }
+								NOT = {
+									is_vassal_or_below_of = scope:liege
+								}
 								count >= 1
 							}
 						}
-						set_local_variable = {
-							name = bride_show_tributary_participation
-							value = yes
+						trigger_event = bride_show.1000
+					}
+					else = { # There are no tributaries
+						trigger_event = {
+							id = bride_show.0001
+							days = { 7 10 }
 						}
+					}
+				}
+				else = { # Else, tributaries are required
+					set_local_variable = {
+						name = bride_show_tributary_participation
+						value = yes
 					}
 					trigger_event = {
 						id = bride_show.0001
@@ -1242,38 +994,38 @@
 					}
 				}
 			}
-			else = { #Non-nomadic rulers
-				if = { #Are they all vassals?
-					limit = {
+			else = { #Other rulers
+				if = {
+					limit = { # Are they all vassals?
 						any_in_list = {
 							list = bride_show_preliminary_list
-							is_vassal_of = scope:liege
+							is_vassal_or_below_of = scope:liege
 							count >= 3
 						}
-						any_in_list = {
-							list = bride_show_preliminary_list
-							NOT = {
-								is_vassal_of = scope:liege
-							}
-							count >= 1
-						}
 					}
-					#Then tributaries are optional
-					trigger_event = bride_show.1000
-				}
-				else = {
-					if = {
+					if = { # There are tributaries
 						limit = {
 							any_in_list = {
 								list = bride_show_preliminary_list
-								NOT = { is_vassal_of = scope:liege }
+								NOT = {
+									is_vassal_or_below_of = scope:liege
+								}
 								count >= 1
 							}
 						}
-						set_local_variable = {
-							name = bride_show_tributary_participation
-							value = yes
+						trigger_event = bride_show.1000
+					}
+					else = { # There are no tributaries
+						trigger_event = {
+							id = bride_show.0001
+							days = { 7 10 }
 						}
+					}
+				}
+				else = { # Else, tributaries are required
+					set_local_variable = {
+						name = bride_show_tributary_participation
+						value = yes
 					}
 					trigger_event = {
 						id = bride_show.0001
@@ -1286,8 +1038,830 @@
 	
 	ai_potential = { always = yes }
 
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 48
+		kingdom = 36
+		empire = 36
+		hegemony = 36
+	}
+
 	ai_will_do = {
 		base = 0
+		ai_value_modifier = {
+			ai_boldness = 0.2
+		}
+		ai_value_modifier = {
+			ai_greed = 0.2
+		}
+		modifier = {
+			add = 15
+			has_trait = lustful
+		}
+		modifier = {
+			add = -25
+			has_trait = shy
+		}
+		modifier = {
+			add = -10
+			has_trait = craven
+		}
+		modifier = {
+			add = -50
+			has_trait = paranoid
+		}
+		modifier = {
+			add = -25
+			has_trait = chaste
+		}
+		modifier = {
+			add = -40
+			has_trait = eunuch
+		}
+		modifier = {
+			add = -40
+			has_trait = devoted
+		}
+		modifier = { #Sexuality
+			add = -40
+			has_trait = celibate
+		}
+		modifier = { #Sexuality
+			add = -30
+			has_sexuality = asexual
+		}
+		modifier = {
+			add = 60
+			hp_accepts_concubinage = yes
+			number_of_concubines < number_of_desired_concubines
+			NOT = {
+				any_courtier = {
+					can_have_children_with = { CHARACTER = root }
+					can_have_children = yes
+					can_become_concubine_of_character_trigger = { CHARACTER = root }
+				}
+			}
+		}
+		modifier = {
+			hp_accepts_polygamy = no
+			can_have_four_consorts_trigger = yes
+			any_consort = {
+				is_courtier_of = root
+				any_close_family_member = {
+					is_vassal_or_below_of = root
+				}
+				count < 4
+			}
+			add = 50
+		}
+		modifier = {
+			hp_accepts_polygamy = yes
+			NOT = { exists = betrothed }
+			trigger_if = {
+				limit = {
+					primary_title.tier >= 5
+				}
+				any_spouse = {
+					count < 4
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					primary_title.tier >= 4
+				}
+				any_spouse = {
+					count < 3
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					primary_title.tier >= 3
+				}
+				any_spouse = {
+					count < 2
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+			add = 30
+		}
+		modifier = {
+			add = 15
+			allowed_more_spouses = yes
+			is_betrothed = no
+		}
+		modifier = {
+			add = 15
+			allowed_more_concubines = yes
+		}
+		modifier = {
+			allowed_more_spouses = no
+			allowed_more_concubines = no
+			factor = 0
+		}
+	}
+}
+
+## Recruit concubines for Muslims and admin vassals ##
+basic_recruit_concubines_decision = {
+	title = recruit_concubines_decision_title
+	picture = {
+		reference = "gfx/interface/illustrations/decisions/decision_recruitment.dds"
+	}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					religion = religion:islam_religion
+				}
+				desc = recruit_concubines_decision_desc_muslim
+			}
+			desc = recruit_concubines_decision_desc
+		}
+	}
+	selection_tooltip = {
+		first_valid = {
+			triggered_desc = {
+			    trigger = {
+					is_female = yes
+					allowed_to_marry_same_sex_trigger = no
+					religion = religion:islam_religion
+			    }
+			    desc = recruit_concubines_selection_decision_tooltip_muslim_f
+			}
+			triggered_desc = {
+				trigger = {
+					is_female = no
+					allowed_to_marry_same_sex_trigger = no
+					religion = religion:islam_religion
+				}
+				desc = recruit_concubines_selection_decision_tooltip_muslim_m
+			}
+			triggered_desc = {
+				trigger = {
+					is_female = yes
+					allowed_to_marry_same_sex_trigger = no
+				}
+				desc = recruit_concubines_selection_decision_tooltip_f
+			}
+			triggered_desc = {
+				trigger = {
+					is_female = no
+					allowed_to_marry_same_sex_trigger = no
+				}
+				desc = recruit_concubines_selection_decision_tooltip_m
+			}
+			desc = recruit_concubines_selection_decision_tooltip
+		}
+	}
+
+	#decision_group_type = courtier
+
+	sort_order = 120
+
+	confirm_text = recruit_concubines_decision_confirm
+	
+	is_shown = {
+		recruit_concubines_trigger = yes
+		OR = {
+			# Admin vassals
+			AND = {
+				government_allows = administrative
+				is_independent_ruler = no
+			}
+			# Ceremonial regents
+			AND = {
+				tgp_realm_has_ceremonial_liege_trigger = yes
+				tgp_is_ceremonial_regent_trigger = yes
+			}
+			# Muslim rulers
+			highest_held_title_tier <= tier_duchy
+		}
+	}
+
+	is_valid = {
+		is_adult = yes
+		is_at_war = no
+	}
+
+	is_valid_showing_failures_only = {
+		is_available = yes
+		NOT = {
+			has_trait = devoted
+		}
+
+		custom_tooltip = {
+			text = contagious_disease_bride_show
+			has_epidemic_disease_trigger = no
+		}
+		custom_tooltip = {
+			text = epidemic_bride_show
+			NOR = {
+				realm_has_any_epidemic = {
+					SIZE = 1
+					INTENSITY = minor
+				}
+				capital_county ?= { has_county_modifier = isolate_capital_decision_modifier }
+			}
+		}
+		custom_tooltip = {
+			text = seclusion_bride_show
+			NOR = {
+				has_character_modifier = isolating_modifier
+			}
+		}
+		custom_tooltip = {
+			text = mourning_bride_show
+			NOT = { has_character_modifier = mourner_modifier }
+		}
+	}
+
+
+	cooldown = { years = 3 }
+	
+	cost = {
+		gold = medium_gold_value
+		prestige = minor_prestige_value
+	}
+
+	effect = {
+		custom_tooltip = recruit_concubines_effect_tooltip
+		hidden_effect = {
+			save_scope_as = liege
+			save_scope_as = harem_liege
+			save_scope_as = actor
+			# First check if there are available characters
+			if = {
+				limit = {
+					scope:liege.religion = religion:islam_religion
+				}
+				if = {
+					limit = {
+						any_neighboring_and_across_water_top_liege_realm_owner = {
+							any_realm_province = {
+								religion != religion:islam_religion
+							}
+						}
+					}
+					every_neighboring_and_across_water_top_liege_realm_owner = {
+						# Province check from neighboring realms
+						if = {
+							limit = {
+								any_realm_province = {
+									religion != religion:islam_religion
+									NOT = { is_in_list = pool_provinces }
+								}
+							}
+							ordered_realm_province = {
+								limit = {
+									religion != religion:islam_religion
+									NOT = { is_in_list = pool_provinces }
+								}
+								order_by = {
+									value = recruit_muslim_concubines_county_value
+								}
+								max = 2
+								min = 0
+								add_to_temporary_list = pool_provinces
+							}
+							if = {
+								limit = {
+									any_in_list = {
+										list = pool_provinces
+										any_pool_character = {
+											province = this
+											recruit_concubines_viable_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+										}
+										count > 0
+									}
+								}
+								every_in_list = {
+									list = pool_provinces
+	
+									every_pool_character = {
+										province = this
+										limit = {
+											recruit_concubines_viable_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+										}
+										add_to_list = pool_candidates
+									}
+								}
+							}
+						}
+					}
+				}
+				# Own realm check for Muslims
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_realm_province = {
+							religion != religion:islam_religion
+							NOT = { is_in_list = pool_provinces }
+						}
+					}
+					ordered_realm_province = {
+						limit = {
+							religion != religion:islam_religion
+							NOT = { is_in_list = pool_provinces }
+						}
+						order_by = {
+							value = recruit_muslim_concubines_county_value
+						}
+						max = 2
+						min = 0
+						add_to_temporary_list = pool_provinces
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = pool_provinces
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								count > 0
+							}
+						}
+						every_in_list = {
+							list = pool_provinces
+					
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+				# Check your liege's realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							any_realm_province = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+					}
+					every_liege_or_above = {
+						limit = {
+							any_realm_province = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+						ordered_realm_province = {
+							limit = {
+								religion != religion:islam_religion
+								NOT = { is_in_list = pool_provinces }
+							}
+							order_by = {
+								value = recruit_muslim_concubines_county_value
+							}
+							max = 2
+							min = 0
+							add_to_temporary_list = pool_provinces
+						}
+						if = {
+							limit = {
+								any_in_list = {
+									list = pool_provinces
+									any_pool_character = {
+										province = this
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+										NOT = { is_in_list = pool_candidates }
+									}
+									count > 0
+								}
+							}
+							every_in_list = {
+								list = pool_provinces
+						
+								every_pool_character = {
+									province = this
+									limit = {
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+										NOT = { is_in_list = pool_candidates }
+									}
+									add_to_list = pool_candidates
+								}
+							}
+						}
+					}
+				}
+				# AI vassals' courtiers check for Muslims
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_vassal_or_below = {
+							is_ai = yes
+							any_courtier_or_guest = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+					}
+					every_vassal_or_below = {
+						limit = {
+							is_ai = yes
+							any_courtier_or_guest = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+						ordered_courtier_or_guest = {
+							limit = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+							min = 0
+							max = 5
+							add_to_list = pool_candidates
+						}
+					}
+				}
+				# Fallback - check every province with eligible candidates
+				# Check your own realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_realm_province = {
+							NOT = { is_in_list = pool_provinces }
+							any_pool_character = {
+								province = this
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+					}
+					every_realm_province = {
+						limit = {
+							NOT = { is_in_list = pool_provinces }
+							any_pool_character = {
+								province = this
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+						}
+						every_pool_character = {
+							province = this
+							limit = {
+								recruit_concubines_viable_candidate_trigger = {
+									OVERLORD = scope:liege
+								}
+								NOT = { is_in_list = pool_candidates }
+							}
+							add_to_list = pool_candidates
+						}
+					}
+				}
+				# Check your liege's realm
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+					}
+					every_liege_or_above = {
+						limit = {
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+						every_realm_province = {
+							limit = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+				# Check neighboring realms
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_neighboring_and_across_water_top_liege_realm_owner = {
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+					}
+					every_neighboring_and_across_water_top_liege_realm_owner = {
+						limit = {
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+						}
+						every_realm_province = {
+							limit = {
+								NOT = { is_in_list = pool_provinces }
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+							}
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+			}
+			else = {
+				# First check own realm
+				if = {
+					limit = {
+						any_realm_province = {
+							NOT = { is_in_list = pool_provinces }
+						}
+					}
+					ordered_realm_province = {
+						limit = {
+							NOT = { is_in_list = pool_provinces }
+						}
+						order_by = {
+							value = 1
+							if = {
+								limit = {
+									faith = scope:liege.faith
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									culture = scope:liege.culture
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									any_pool_character = {
+										province = this
+										recruit_concubines_viable_candidate_trigger = {
+											OVERLORD = scope:liege
+										}
+									}
+								}
+								add = 20
+							}
+						}
+						max = 3
+						min = 0
+						add_to_temporary_list = pool_provinces
+					}
+					if = {
+						limit = {
+							any_in_list = {
+								list = pool_provinces
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								count > 0
+							}
+						}
+						every_in_list = {
+							list = pool_provinces
+
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+				# Then check liege's realm (if vassal)
+				if = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+						any_liege_or_above = {
+							any_realm_province = {
+								NOT = { is_in_list = pool_provinces }
+							}
+						}
+					}
+					every_liege_or_above = {
+						ordered_realm_province = {
+							limit = {
+								NOT = { is_in_list = pool_provinces }
+							}
+							order_by = {
+								value = 1
+								if = {
+									limit = {
+										faith = scope:liege.faith
+									}
+									add = 5
+								}
+								if = {
+									limit = {
+										any_pool_character = {
+											province = this
+											recruit_concubines_viable_candidate_trigger = {
+												OVERLORD = scope:liege
+											}
+											NOT = { is_in_list = pool_candidates }
+										}
+									}
+									add = 10
+								}
+							}
+							max = 2
+							min = 0
+							add_to_temporary_list = pool_provinces
+						}
+					}
+					# Add candidates from all collected provinces
+					if = {
+						limit = {
+							any_in_list = {
+								list = pool_provinces
+								any_pool_character = {
+									province = this
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								count > 0
+							}
+						}
+						every_in_list = {
+							list = pool_provinces
+
+							every_pool_character = {
+								province = this
+								limit = {
+									recruit_concubines_viable_candidate_trigger = {
+										OVERLORD = scope:liege
+									}
+									NOT = { is_in_list = pool_candidates }
+								}
+								add_to_list = pool_candidates
+							}
+						}
+					}
+				}
+			}
+			# Create additional candidates if needed
+			if = {
+				limit = {
+					any_in_list = {
+						list = pool_candidates
+						count >= 3
+					}
+				}
+				# Nothing
+			}
+			else = {
+				while = {
+					limit = {
+						any_in_list = {
+							list = pool_candidates
+							count < 3
+						}
+					}
+					calyver_create_candidate_effect = yes
+					scope:bride = {
+						add_to_list = pool_candidates
+					}
+					clear_saved_scope = bride
+				}
+			}
+			trigger_event = {
+				id = bride_show.2000
+				days = { 8 17 }
+			}
+		}
+	}
+	
+	ai_potential = { always = yes }
+
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 96
+		duchy = 48
+		kingdom = 36
+		empire = 36
+		hegemony = 36
+	}
+
+	ai_will_do = {
+		base = 20
 		ai_value_modifier = {
 			ai_boldness = 0.2
 		}
@@ -1332,186 +1906,95 @@
 		}
 		modifier = {
 			add = 60
-			hp_accepts_concubinage = yes
 			number_of_concubines < number_of_desired_concubines
 			NOT = {
 				any_courtier = {
+					can_have_children_with = { CHARACTER = root }
+					can_have_children = yes
 					can_become_concubine_of_character_valid_trigger = { CHARACTER = root }
-					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-						CHARACTER = root 
-						RECEIVER = root
+				}
+			}
+		}
+		modifier = {
+			add = 60
+			highest_held_title_tier = tier_county
+			allowed_more_spouses = no
+			NOR = {
+				any_consort = {
+					is_visibly_fertile = yes
+					sex_opposite_of = root
+				}
+				any_child = {
+					character_gender_can_inherit_from_trigger = {
+						CHARACTER = root
 					}
 				}
 			}
 		}
 		modifier = {
-			hp_accepts_polygamy = yes
-			trigger_if = {
-				limit = {
-					primary_title.tier >= 5
-				}
-				any_spouse = {
-					count < 4
-				}
-			}
-			trigger_else_if = {
-				limit = {
-					primary_title.tier >= 4
-				}
-				any_spouse = {
-					count < 3
-				}
-			}
-			trigger_else_if = {
-				limit = {
-					primary_title.tier >= 3
-				}
-				any_spouse = {
-					count < 2
-				}
-			}
-			trigger_else = {
-				always = no
-			}
-			add = 30
-		}
-		modifier = {
-			add = 15
-			is_married = no
-			is_betrothed = no
-		}
-		modifier = {
-			add = 20
-			hp_accepts_harems = yes
+			allowed_more_concubines = no
+			factor = 0.5
 		}
 	}
 }
 
-recruit_concubines_decision = {
-	title = {
-		first_valid = {
-			triggered_desc = { # Can only recruit male concubines
-				trigger = {
-					is_male = no
-					allowed_to_marry_same_sex_trigger = no
-				}
-				desc = recruit_male_concubines_decision_title
-			}
-			triggered_desc = { # Can only recruit female concubines
-				trigger = {
-					is_male = yes
-					allowed_to_marry_same_sex_trigger = no
-				}
-				desc = recruit_female_concubines_decision_title
-			}
-			# Can have concubines of both sexes
-			desc = recruit_concubines_decision_title
-		}
-	}
+## Recruit concubines for Muslim kings and above ##
+recruit_royal_concubines_decision = {
+	title = recruit_concubines_decision_title
 	picture = {
 		reference = "gfx/interface/illustrations/decisions/decision_recruitment.dds"
 	}
-	desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					is_female = no
-				}
-				desc = recruit_concubines_decision_desc_muslim_m
-			}
-			desc = recruit_concubines_decision_desc_muslim_f
-		}
-	}
+	desc = recruit_royal_concubines_decision_desc_muslim
 	selection_tooltip = {
 		first_valid = {
 			triggered_desc = {
 			    trigger = {
 					is_female = yes
+					allowed_to_marry_same_sex_trigger = no
 			    }
 			    desc = recruit_concubines_selection_decision_tooltip_muslim_f
 			}
-			desc = recruit_concubines_selection_decision_tooltip_muslim_m
+			triggered_desc = {
+				trigger = {
+					is_female = no
+					allowed_to_marry_same_sex_trigger = no
+			    }
+				desc = recruit_concubines_selection_decision_tooltip_muslim_m
+			}
+			desc = recruit_concubines_selection_decision_tooltip
 		}
 	}
 
-	decision_group_type = courtier
-	ai_check_interval = 36
+	#decision_group_type = courtier
+
 	sort_order = 120
 
 	confirm_text = recruit_concubines_decision_confirm
 	
 	is_shown = {
-		is_landed_or_landless_administrative = yes
-		hp_accepts_concubinage = yes
+		recruit_concubines_trigger = yes
 		religion = religion:islam_religion
-		OR = {
-			any_neighboring_and_across_water_top_liege_realm_owner = {
-				OR = {
-					any_realm_province = {
-						recruit_concubines_viable_county_trigger = {
-							OVERLORD = root
-						}
-					}
-					any_courtier_or_guest = {
-						recruit_concubines_viable_candidate_trigger = {
-							OVERLORD = root
-						}
-					}
-					any_vassal_or_below = {
-						any_courtier_or_guest = {
-							recruit_concubines_viable_candidate_trigger = {
-								OVERLORD = root
-							}
-						}
-					}
-					any_tributary = {
-						OR = {
-							any_courtier_or_guest = {
-								recruit_concubines_viable_candidate_trigger = {
-									OVERLORD = root
-								}
-							}
-							any_realm_province = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = root
-								}
-							}
-						}
-					}
-				}
+		highest_held_title_tier > tier_duchy
+		trigger_if = {
+			limit = {
+				government_allows = administrative
 			}
-			any_realm_province = {
-				recruit_concubines_viable_county_trigger = {
-					OVERLORD = root
-				}
-			}
+			is_independent_ruler = yes
 		}
-		highest_held_title_tier >= tier_county
-		OR = { #Appropriate dominant sex
-			AND = {
-				is_male = no
-				OR = {
-					has_realm_law = female_only_law
-					has_realm_law = female_preference_law
-				}
+		trigger_if = {
+			limit = {
+				tgp_realm_has_ceremonial_liege_trigger = yes
 			}
-			AND = {
-				is_male = yes
-				OR = {
-					has_realm_law = male_only_law
-					has_realm_law = male_preference_law
-				}
-			}
-			has_realm_law = equal_law
+			tgp_is_ceremonial_regent_trigger = no
 		}
 	}
 
 	is_valid = {
 		is_adult = yes
 		is_at_war = no
-		highest_held_title_tier >= tier_duchy
+		gold >= minor_gold_value
 	}
-	
+
 	is_valid_showing_failures_only = {
 		is_available = yes
 		NOT = {
@@ -1529,7 +2012,7 @@ recruit_concubines_decision = {
 					SIZE = 1
 					INTENSITY = minor
 				}
-				capital_county = { has_county_modifier = isolate_capital_decision_modifier }
+				capital_county ?= { has_county_modifier = isolate_capital_decision_modifier }
 			}
 		}
 		custom_tooltip = {
@@ -1545,278 +2028,76 @@ recruit_concubines_decision = {
 	}
 	
 	
-	cooldown = { years = 4 }
+	cooldown = { years = 3 }
 	
 	cost = {
-		gold = {
-			value = medium_gold_value
+		prestige = {
+			value = 0
+			if = {
+				limit = { 
+					NOT = { government_has_flag = government_has_influence } 
+				}
+				add = medium_prestige_value
+			}
+			# Add extra prestige cost if nomadic
 			if = {
 				limit = {
-					highest_held_title_tier > tier_duchy
+					government_has_flag = government_is_nomadic
 				}
-				add = minor_gold_value
+				add = minor_prestige_value
 			}
 		}
-		prestige = minor_prestige_value
+		influence = {
+			value = 0
+			if = {
+				limit = { 
+					government_has_flag = government_has_influence
+				}
+				add = medium_influence_value
+			}
+		}
 	}
 
 	effect = {
 		custom_tooltip = recruit_concubines_effect_tooltip
+		stress_impact = {
+			chaste = minor_stress_impact_gain
+		}
 		hidden_effect = {
 			save_scope_as = liege
 			save_scope_as = actor
-			# First check if there are available characters
-			if = {
-				limit = {
-					any_realm_province = {
-						recruit_concubines_viable_county_trigger = {
-							OVERLORD = scope:liege
-						}
-					}
-				}
-				every_realm_province = {
-					limit = {
-						recruit_concubines_viable_county_trigger = {
-							OVERLORD = scope:liege
-						}
-					}
-					add_to_temporary_list = pool_provinces
-				}
-			}
-			if = {
-				limit = {
-					any_neighboring_and_across_water_top_liege_realm_owner = {
-						OR = {
-							any_realm_province = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							any_courtier_or_guest = {
-								recruit_concubines_viable_candidate_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							any_vassal_or_below = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-							any_tributary = {
-								OR = {
-									any_courtier_or_guest = {
-										recruit_concubines_viable_candidate_trigger = {
-											OVERLORD = scope:liege
-										}
-									}
-									any_realm_province = {
-										recruit_concubines_viable_county_trigger = {
-											OVERLORD = scope:liege
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				every_neighboring_and_across_water_top_liege_realm_owner = {
-					# Province check
-					if = {
-						limit = {
-							any_realm_province = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-						}
-						every_realm_province = {
-							limit = {
-								recruit_concubines_viable_county_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							add_to_temporary_list = pool_provinces
-						}
-					}
-					# Courtier check
-					if = {
-						limit = {
-							any_courtier_or_guest = {
-								recruit_concubines_viable_candidate_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-						}
-						every_courtier_or_guest = {
-							limit = {
-								recruit_concubines_viable_candidate_trigger = {
-									OVERLORD = scope:liege
-								}
-							}
-							add_to_list = pool_candidates
-						}
-					}
-					# Vassal check
-					if = {
-						limit = {
-							any_vassal_or_below = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-						}
-						every_vassal_or_below = {
-							limit = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-							every_courtier_or_guest = {
-								limit = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-								add_to_list = pool_candidates
-							}
-						}
-					}
-					# Tributary check
-					if = {
-						limit = {
-							any_tributary = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-						}
-						every_tributary = {
-							limit = {
-								any_courtier_or_guest = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-							every_courtier_or_guest = {
-								limit = {
-									recruit_concubines_viable_candidate_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-								add_to_list = pool_candidates
-							}
-						}
-					}
-					if = {
-						limit = {
-							any_tributary = {
-								any_realm_province = {
-									recruit_concubines_viable_county_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-							}
-						}
-						every_tributary = {
-							every_realm_province = {
-								limit = {
-									recruit_concubines_viable_county_trigger = {
-										OVERLORD = scope:liege
-									}
-								}
-								add_to_temporary_list = pool_provinces
-							}
-						}
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_in_list = {
-						list = pool_provinces
-						any_pool_character = {
-							province = this
-							recruit_concubines_viable_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-						}
-						count > 0
-					}
-				}
-				every_in_list = {
-					list = pool_provinces
-		
-					every_pool_character = {
-						province = this
-						limit = {
-							recruit_concubines_viable_candidate_trigger = {
-								OVERLORD = scope:liege
-							}
-						}
-						add_to_list = pool_candidates
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_in_list = {
-						list = pool_candidates
-						count >= 3
-					}
-				}
-				# Nothing
-			}
-			else = {
-				hp_select_concubine_location_effect = yes
-				while = {
-					limit = {
-						any_in_list = {
-							list = pool_candidates
-							count < 3
-						}
-					}
-					calyver_create_candidate_effect = yes
-				}
-			}
 			trigger_event = {
-				id = bride_show.2000
-				days = { 7 10 }
+				id = bride_show.3000
+				days = { 5 9 }
 			}
 		}
 	}
 	
 	ai_potential = { always = yes }
 
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 0
+		kingdom = 36
+		empire = 36
+		hegemony = 36
+	}
+
 	ai_will_do = {
-		base = 0
-		modifier = {
-			add = 60
-			number_of_concubines < number_of_desired_concubines
-			NOT = {
-				any_courtier = {
-					can_become_concubine_of_character_valid_trigger = { CHARACTER = root }
-					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-						CHARACTER = root 
-						RECEIVER = root
-					}
-				}
-			}
+		base = 20
+		ai_value_modifier = {
+			ai_boldness = 0.2
+		}
+		ai_value_modifier = {
+			ai_greed = 0.2
 		}
 		modifier = {
 			add = 15
 			has_trait = lustful
 		}
 		modifier = {
-			add = -15
+			add = -25
 			has_trait = shy
 		}
 		modifier = {
@@ -1828,21 +2109,39 @@ recruit_concubines_decision = {
 			has_trait = paranoid
 		}
 		modifier = {
-			add = -15
+			add = -25
 			has_trait = chaste
 		}
+		modifier = {
+			add = -40
+			has_trait = eunuch
+		}
+		modifier = {
+			add = -40
+			has_trait = devoted
+		}
 		modifier = { #Sexuality
-			add = -20
+			add = -40
 			has_trait = celibate
 		}
 		modifier = { #Sexuality
-			add = -20
+			add = -30
 			has_sexuality = asexual
 		}
 		modifier = {
-			add = 10
-			is_married = no
-			is_betrothed = no
+			add = 60
+			number_of_concubines < number_of_desired_concubines
+			NOT = {
+				any_courtier = {
+					can_have_children_with = { CHARACTER = root }
+					can_have_children = yes
+					can_become_concubine_of_character_valid_trigger = { CHARACTER = root }
+				}
+			}
+		}
+		modifier = {
+			allowed_more_concubines = no
+			factor = 0
 		}
 	}
 }

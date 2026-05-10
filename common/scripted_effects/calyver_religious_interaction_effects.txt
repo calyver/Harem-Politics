@@ -22,6 +22,7 @@ convert_family_to_faith_effect = {
 				years = 10
 			}
 		}
+		## Vanilla ##
 		# Make crypto-religionists of them, if applicable
 		if = {
 			limit = {
@@ -29,21 +30,27 @@ convert_family_to_faith_effect = {
 				faith = scope:recipient.faith
 			}
 			scope:recipient.faith = { save_temporary_scope_as = old_faith }
-			set_character_faith = scope:actor.faith
+			if = {
+				limit = {
+					exists = scope:conversion_faith
+				}
+				set_character_faith = scope:conversion_faith
+			}
+			else = {
+				set_character_faith = scope:actor.faith
+			}
 			make_character_crypto_religionist_effect = { CRYPTO_RELIGION = scope:old_faith }
 			# Grab the character's recently added crypto secret
 			if = {
 				limit = {
-					any_secret = { secret_type = secret_crypto_religionist }
+					any_secret = { type = secret_crypto_religionist }
 					exists = secret_faith
 					# Ignore the crypto secret if it's not new
 					# This prevents the edge case of family members finding out about other family's different crypto faiths
 					secret_faith = scope:old_faith
 				}
 				random_secret = {
-					limit = {
-						secret_type = secret_crypto_religionist
-					}
+					type = secret_crypto_religionist
 					save_scope_as = crypto_religionist_secret
 				}
 			}
@@ -53,7 +60,7 @@ convert_family_to_faith_effect = {
 				if = {
 					limit = {
 						exists = scope:crypto_religionist_secret
-						NOT = { prev = this }
+						prev != this
 					}
 					scope:crypto_religionist_secret = {
 						reveal_to_without_events_effect = { CHARACTER = prev }
@@ -62,7 +69,15 @@ convert_family_to_faith_effect = {
 			}
 		}
 		else = {
-			set_character_faith = scope:actor.faith
+			if = {
+				limit = {
+					exists = scope:conversion_faith
+				}
+				set_character_faith = scope:conversion_faith
+			}
+			else = {
+				set_character_faith = scope:actor.faith
+			}
 		}
 		if = {
 			limit = {
@@ -76,9 +91,11 @@ convert_family_to_faith_effect = {
 			}
 		}
 	}
+
 	scope:recipient = {
 		bastard_to_wild_oat_conversion_interaction_effect = yes
 	}
+
 	# Struggle Catalysts.
 	if = {
 		limit = {
