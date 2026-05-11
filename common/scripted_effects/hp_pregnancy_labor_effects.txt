@@ -54,24 +54,17 @@ calyver_add_unstable_pregnancy_modifier_effect = {
 
 calyver_first_trimester_pregnancy_effects = {
 	# First, we determine whether there should be a miscarriage
-	random = {
-		chance = {
-			value = 10
-			# The midwife
-			if = {
-				limit = {
-					OR = {
-						any_court_position_holder = {
-							type = midwife_court_position
-							OR = {
-								has_any_bad_relationship_with_root_trigger = yes
-								AND = {
-									exists = scope:father
-									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
-								}
-							}
-						}
-						court_owner ?= {
+	if = {
+		limit = {
+			has_super_stable_pregnancy_trigger = no
+		}
+		random = {
+			chance = {
+				value = 10
+				# The midwife
+				if = {
+					limit = {
+						OR = {
 							any_court_position_holder = {
 								type = midwife_court_position
 								OR = {
@@ -82,194 +75,206 @@ calyver_first_trimester_pregnancy_effects = {
 									}
 								}
 							}
+							court_owner ?= {
+								any_court_position_holder = {
+									type = midwife_court_position
+									OR = {
+										has_any_bad_relationship_with_root_trigger = yes
+										AND = {
+											exists = scope:father
+											has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
+										}
+									}
+								}
+							}
 						}
 					}
+					add = 20
 				}
-				add = 20
-			}
-			if = {
-				limit = {
-					OR = {
-						any_court_position_holder = {
-							type = midwife_court_position
-							aptitude:midwife_court_position < 3
-						}
-						court_owner ?= {
+				if = {
+					limit = {
+						OR = {
 							any_court_position_holder = {
 								type = midwife_court_position
 								aptitude:midwife_court_position < 3
 							}
+							court_owner ?= {
+								any_court_position_holder = {
+									type = midwife_court_position
+									aptitude:midwife_court_position < 3
+								}
+							}
 						}
 					}
+					add = 10
 				}
-				add = 10
-			}
-			if = {
-				limit = {
-					OR = {
-						any_court_position_holder = {
-							type = midwife_court_position
-							aptitude:midwife_court_position < 2
-						}
-						court_owner ?= {
+				if = {
+					limit = {
+						OR = {
 							any_court_position_holder = {
 								type = midwife_court_position
 								aptitude:midwife_court_position < 2
 							}
+							court_owner ?= {
+								any_court_position_holder = {
+									type = midwife_court_position
+									aptitude:midwife_court_position < 2
+								}
+							}
 						}
 					}
+					add = 10
 				}
-				add = 10
-			}
-			# Health
-			if = {
-				limit = { health < fine_health }
-				add = 10
-			}
-			if = {
-				limit = { health < poor_health }
-				add = 10
-			}
-			# Mother's age
-			if = { # Too old, riskier
-				limit = { age >= 42 }
-				add = 25
-			}
-			if = { # Too young/old, riskier
-				limit = { 
-					OR = {
-						age <= 16
-						age >= 40
-					}
-					age < 42
+				# Health
+				if = {
+					limit = { health < fine_health }
+					add = 10
 				}
-				add = 20
-			}
-			if = { # Medium young/old, risky
-				limit = { 
-					OR = {
-						age = 17
-						age >= 37
-					}
-					age < 40
+				if = {
+					limit = { health < poor_health }
+					add = 10
 				}
-				add = 15
-			}
-			if = {
-				limit = { 
-					OR = {
-						AND = {
-							age >= 18
-							age < 21
+				# Mother's age
+				if = { # Too old, riskier
+					limit = { age >= 42 }
+					add = 25
+				}
+				if = { # Too young/old, riskier
+					limit = { 
+						OR = {
+							age <= 16
+							age >= 40
 						}
-						age >= 30
+						age < 42
 					}
-					age < 37
+					add = 20
 				}
-				add = 10
-			}
-			# Father's age
-			if = {
-				limit = {
-					scope:real_father ?= {
-						age > 45
+				if = { # Medium young/old, risky
+					limit = { 
+						OR = {
+							age = 17
+							age >= 37
+						}
+						age < 40
 					}
+					add = 15
 				}
-				add = 5
-			}
-			if = {
-				limit = {
-					scope:real_father ?= {
-						age >= 50
+				if = {
+					limit = { 
+						OR = {
+							AND = {
+								age >= 18
+								age < 21
+							}
+							age >= 30
+						}
+						age < 37
 					}
+					add = 10
 				}
-				add = 5
-			}
-			if = {
-				limit = {
-					scope:real_father ?= {
-						age >= 60
+				# Father's age
+				if = {
+					limit = {
+						scope:real_father ?= {
+							age > 45
+						}
 					}
+					add = 5
 				}
-				add = 5
-			}
-			# Maternal Depletion Syndrome
-			if = {
-				limit = {
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
+				if = {
+					limit = {
+						scope:real_father ?= {
+							age >= 50
+						}
 					}
+					add = 5
 				}
-				add = 20
-			}
-			if = {
-				limit = {
-					has_character_modifier = maternal_depletion_syndrome_modifier
-				}
-				add = 20
-			}
-			# First-timer
-			if = {
-				limit = {
-					any_child = {
-						even_if_dead = yes
-						count = 0
+				if = {
+					limit = {
+						scope:real_father ?= {
+							age >= 60
+						}
 					}
+					add = 5
 				}
-				add = 45
-			}
-			# Mother's stress level
-			if = {
-				limit = { stress_level = 1 }
-				add = 15
-			}
-			if = {
-				limit = { stress_level = 2 }
-				add = 30
-			}
-			if = {
-				limit = { stress_level = 3 }
-				add = 45
-			}
-			# Incest
-			if = {
-				limit = { parent_relatedness >= 0.125 }
-				add = 35
-			}
-			if = {
-				limit = { parent_relatedness >= 0.25 }
-				add = 45
-			}
-			## Vanilla ##
-			#More likely if you have sacred childbirth
-			if = {
-				limit = {
-					faith = {
-						has_doctrine_parameter = safer_childbirths_active
+				# Maternal Depletion Syndrome
+				if = {
+					limit = {
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
 					}
+					add = 20
 				}
-				factor = 0.5 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
-			}
-			#More likely if the Dynasty has the Kin legacy
-			if = {
-				limit = {
-					has_dynasty = yes
-					dynasty = {
-						has_dynasty_perk = kin_legacy_3
+				if = {
+					limit = {
+						has_character_modifier = maternal_depletion_syndrome_modifier
 					}
+					add = 20
 				}
-				factor = 0.5 # So too should constant care of pregnant/birthing mothers.
-			}
-			if = {
-				limit = {
-					has_unstable_pregnancy_trigger = yes
+				# First-timer
+				if = {
+					limit = {
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+					}
+					add = 45
 				}
-				factor = 1.15
+				# Mother's stress level
+				if = {
+					limit = { stress_level = 1 }
+					add = 15
+				}
+				if = {
+					limit = { stress_level = 2 }
+					add = 30
+				}
+				if = {
+					limit = { stress_level = 3 }
+					add = 45
+				}
+				# Incest
+				if = {
+					limit = { parent_relatedness >= 0.125 }
+					add = 35
+				}
+				if = {
+					limit = { parent_relatedness >= 0.25 }
+					add = 45
+				}
+				## Vanilla ##
+				#More likely if you have sacred childbirth
+				if = {
+					limit = {
+						faith = {
+							has_doctrine_parameter = safer_childbirths_active
+						}
+					}
+					factor = 0.5 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
+				}
+				#More likely if the Dynasty has the Kin legacy
+				if = {
+					limit = {
+						has_dynasty = yes
+						dynasty = {
+							has_dynasty_perk = kin_legacy_3
+						}
+					}
+					factor = 0.5 # So too should constant care of pregnant/birthing mothers.
+				}
+				if = {
+					limit = {
+						has_unstable_pregnancy_trigger = yes
+					}
+					factor = 1.15
+				}
 			}
+			# We will have a miscarriage
 		}
-		# We will have a miscarriage
 	}
 	#We will determine the stability
 	random_list = {
