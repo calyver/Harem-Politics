@@ -1,4 +1,11 @@
-﻿can_result_in_born_in_the_purple_birth_trigger = {
+﻿pregnancy_will_result_in_legitimate_child_trigger = {
+	house ?= scope:mother.house
+	NOR = {
+		has_trait = bastard
+		has_trait = bastard_founder
+	}
+}
+can_result_in_born_in_the_purple_birth_trigger = {
 	trigger_if = {
 		limit = {
 			has_ach_dlc_trigger = yes
@@ -27,6 +34,34 @@
 		}
 	}
 }
+can_result_in_legitimate_child_of_right_sex_trigger = {
+	can_result_in_born_in_the_purple_birth_trigger = yes
+	trigger_if = {
+		limit = {
+			scope:mother = {
+				OR = {
+					has_realm_law = male_only_law 
+					has_realm_law = male_preference_law
+				}
+			}
+		}
+		is_male = yes
+	}
+	trigger_else_if = {
+		limit = {
+			scope:mother = {
+				OR = {
+					has_realm_law = female_only_law 
+					has_realm_law = female_preference_law
+				}
+			}
+		}
+		is_female = yes
+	}
+	trigger_else = {
+		always = no
+	}
+}
 is_relevant_parent_for_high_stakes_pregnancy_trigger = {
 	is_playable_character = yes
 	is_lowborn = no
@@ -37,61 +72,40 @@ is_relevant_parent_for_high_stakes_pregnancy_trigger = {
 	OR = {
 		NOT = { # The first heir
 			any_child = {
-				house ?= scope:mother.house
-				NOR = {
-					has_trait = bastard
-					has_trait = bastard_founder
-				}
+				pregnancy_will_result_in_legitimate_child_trigger = yes
 				count > 0
 			}
 		}
 		NOT = { # The first heir of the right sex
 			any_child = {
-				house ?= scope:mother.house
-				NOR = {
-					has_trait = bastard
-					has_trait = bastard_founder
-				}
-				trigger_if = {
-					limit = {
-						scope:mother = {
-							OR = {
-								has_realm_law = male_only_law 
-								has_realm_law = male_preference_law
-							}
-						}
-					}
-					is_male = yes
-				}
-				trigger_else_if = {
-					limit = {
-						scope:mother = {
-							OR = {
-								has_realm_law = female_only_law 
-								has_realm_law = female_preference_law
-							}
-						}
-					}
-					is_female = yes
-				}
-				trigger_else = {
-					always = no
-				}
+				can_result_in_legitimate_child_of_right_sex_trigger = yes				
 			}
 		}
 		NOT = { # The first child of the prominent lineage
 			any_child = {
+				can_result_in_legitimate_child_of_right_sex_trigger = yes
 				# Must be of the right lineage
 				trigger_if = {
 					limit = {
-						is_dishu_parent_trigger = yes
+						OR = {
+							scope:mother = {
+								is_dishu_parent_trigger = yes
+							}
+							scope:father ?= {
+								is_dishu_parent_trigger = yes
+							}
+						}
 					}
 					has_trait = di_child
 				}
 				trigger_else_if = {
 					limit = {
-						scope:mother.culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
+						OR = {
+							scope:mother.culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
+							scope:father ?= { culture = { has_cultural_parameter = children_can_be_born_in_the_purple } }
+						}
 					}
+					has_trait = born_in_the_purple
 					OR = {
 						scope:mother = {
 							can_result_in_born_in_the_purple_birth_trigger = yes
@@ -155,7 +169,7 @@ is_high_stakes_pregnancy_trigger = {
 			is_relevant_parent_for_high_stakes_pregnancy_trigger = yes
 			scope:mother ?= {
 				OR = {
-					is_concubine_of = scope:scope:father
+					is_concubine_of = scope:father
 					AND = {
 						is_spouse_of = scope:father
 						matrilinear_marriage = no
