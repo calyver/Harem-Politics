@@ -1,0 +1,167 @@
+﻿can_result_in_born_in_the_purple_birth_trigger = {
+	trigger_if = {
+		limit = {
+			has_ach_dlc_trigger = yes
+			NOT = { has_game_rule = coronation_laws_off }
+		}
+		NOT = { has_realm_law = uncrowned } # Must be coronated
+	}
+	trigger_if = {
+		limit = {
+			is_diarch = yes
+		}
+		liege_has_co_emperorship_trigger = yes
+		liege = {
+			is_roman_emperor_trigger = yes
+			OR = {
+				capital_county = title:c_byzantion	#Must rule from the Bucoleon Palace.
+				capital_county = title:c_roma # ... or from Rome itself.
+			}
+		}
+	}
+	trigger_else = {
+		is_roman_emperor_trigger = yes
+		OR = {
+			capital_county = title:c_byzantion	#Must rule from the Bucoleon Palace.
+			capital_county = title:c_roma # ... or from Rome itself.
+		}
+	}
+}
+is_relevant_parent_for_high_stakes_pregnancy_trigger = {
+	is_playable_character = yes
+	is_lowborn = no
+	OR = {
+		scope:is_bastard = no
+		faith = { has_doctrine_parameter = bastards_none }
+	}
+	OR = {
+		NOT = { # The first heir
+			any_child = {
+				house ?= scope:mother.house
+				NOR = {
+					has_trait = bastard
+					has_trait = bastard_founder
+				}
+				count > 0
+			}
+		}
+		NOT = { # The first heir of the right sex
+			any_child = {
+				house ?= scope:mother.house
+				NOR = {
+					has_trait = bastard
+					has_trait = bastard_founder
+				}
+				trigger_if = {
+					limit = {
+						scope:mother = {
+							OR = {
+								has_realm_law = male_only_law 
+								has_realm_law = male_preference_law
+							}
+						}
+					}
+					is_male = yes
+				}
+				trigger_else_if = {
+					limit = {
+						scope:mother = {
+							OR = {
+								has_realm_law = female_only_law 
+								has_realm_law = female_preference_law
+							}
+						}
+					}
+					is_female = yes
+				}
+				trigger_else = {
+					always = no
+				}
+			}
+		}
+		NOT = { # The first child of the prominent lineage
+			any_child = {
+				# Must be of the right lineage
+				trigger_if = {
+					limit = {
+						is_dishu_parent_trigger = yes
+					}
+					has_trait = di_child
+				}
+				trigger_else_if = {
+					limit = {
+						scope:mother.culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
+					}
+					OR = {
+						scope:mother = {
+							can_result_in_born_in_the_purple_birth_trigger = yes
+						}
+						scope:father ?= {
+							can_result_in_born_in_the_purple_birth_trigger = yes
+						}
+					}
+					scope:mother = {
+						OR = {
+							AND = {	#Landless mothers must be actually at court to use the chamber.
+								is_ruler = no
+								exists = location # Security check
+								OR = {
+									location = title:c_byzantion.title_province
+									location = title:c_roma.title_province
+									# Be a bit more lenient with co-emperors.
+									AND = {
+										is_diarch = yes
+										liege_has_co_emperorship_trigger = yes
+									}
+									scope:father ?= {
+										is_diarch = yes
+										liege_has_co_emperorship_trigger = yes
+									}
+								}
+							}
+							AND = {	#Landed rulers can be assumed to make the journey, unless they have some extremely pressing reason not to.
+								is_ruler = yes
+								NOT = { is_at_war_with = scope:father }
+							}
+						}
+						is_imprisoned = no	#Cannot use the purple chamber from prison.
+						is_commanding_army = no	#Cannot use the purple chamber whilst commanding an army.
+					}
+				}
+			}
+		}
+	}
+}
+is_high_stakes_pregnancy_trigger = {
+	OR = {
+		scope:mother = {
+			is_relevant_parent_for_high_stakes_pregnancy_trigger = yes
+			OR = {
+				NOT = {
+					exists = scope:father
+				}
+				scope:father ?= {
+					OR = {
+						is_concubine_of = scope:mother
+						AND = {
+							is_spouse_of = scope:mother
+							matrilinear_marriage = yes
+						}
+					}
+				}
+			}
+		}
+		scope:father ?= {
+			is_relevant_parent_for_high_stakes_pregnancy_trigger = yes
+			scope:mother ?= {
+				OR = {
+					is_concubine_of = scope:scope:father
+					AND = {
+						is_spouse_of = scope:father
+						matrilinear_marriage = no
+					}
+				}
+			}
+		}
+	}
+}
