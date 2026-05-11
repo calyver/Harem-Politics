@@ -75,66 +75,62 @@ is_relevant_parent_for_high_stakes_pregnancy_trigger = {
 				can_result_in_legitimate_child_of_right_sex_trigger = yes				
 			}
 		}
-		NOT = { # The first child of the prominent lineage
+		NAND = { # The first di child
+			OR = {
+				scope:mother = {
+					is_dishu_parent_trigger = yes
+				}
+				scope:father ?= {
+					is_dishu_parent_trigger = yes
+				}
+			}
 			any_child = {
 				can_result_in_legitimate_child_of_right_sex_trigger = yes
 				# Must be of the right lineage
-				trigger_if = {
-					limit = {
-						OR = {
-							scope:mother = {
-								is_dishu_parent_trigger = yes
-							}
-							scope:father ?= {
-								is_dishu_parent_trigger = yes
-							}
-						}
-					}
-					has_trait = di_child
-				}
-				trigger_else_if = {
-					limit = {
-						OR = {
-							scope:mother.culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
-							scope:father ?= { culture = { has_cultural_parameter = children_can_be_born_in_the_purple } }
-						}
-					}
-					has_trait = born_in_the_purple
-					OR = {
-						scope:mother = {
-							can_result_in_born_in_the_purple_birth_trigger = yes
-						}
-						scope:father ?= {
-							can_result_in_born_in_the_purple_birth_trigger = yes
-						}
-					}
+				has_trait = di_child
+			}
+		}
+		NAND = { # The first child in the purple
+			OR = {
+				scope:mother.culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
+				scope:father ?= { culture = { has_cultural_parameter = children_can_be_born_in_the_purple } }
+			}
+			any_child = {
+				has_trait = born_in_the_purple
+				OR = {
 					scope:mother = {
-						OR = {
-							AND = {	#Landless mothers must be actually at court to use the chamber.
-								is_ruler = no
-								exists = location # Security check
-								OR = {
-									location = title:c_byzantion.title_province
-									location = title:c_roma.title_province
-									# Be a bit more lenient with co-emperors.
-									AND = {
-										is_diarch = yes
-										liege_has_co_emperorship_trigger = yes
-									}
-									scope:father ?= {
-										is_diarch = yes
-										liege_has_co_emperorship_trigger = yes
-									}
+						can_result_in_born_in_the_purple_birth_trigger = yes
+					}
+					scope:father ?= {
+						can_result_in_born_in_the_purple_birth_trigger = yes
+					}
+				}
+				scope:mother = {
+					OR = {
+						AND = {	#Landless mothers must be actually at court to use the chamber.
+							is_ruler = no
+							exists = location # Security check
+							OR = {
+								location = title:c_byzantion.title_province
+								location = title:c_roma.title_province
+								# Be a bit more lenient with co-emperors.
+								AND = {
+									is_diarch = yes
+									liege_has_co_emperorship_trigger = yes
+								}
+								scope:father ?= {
+									is_diarch = yes
+									liege_has_co_emperorship_trigger = yes
 								}
 							}
-							AND = {	#Landed rulers can be assumed to make the journey, unless they have some extremely pressing reason not to.
-								is_ruler = yes
-								NOT = { is_at_war_with = scope:father }
-							}
 						}
-						is_imprisoned = no	#Cannot use the purple chamber from prison.
-						is_commanding_army = no	#Cannot use the purple chamber whilst commanding an army.
+						AND = {	#Landed rulers can be assumed to make the journey, unless they have some extremely pressing reason not to.
+							is_ruler = yes
+							NOT = { is_at_war_with = scope:father }
+						}
 					}
+					is_imprisoned = no	#Cannot use the purple chamber from prison.
+					is_commanding_army = no	#Cannot use the purple chamber whilst commanding an army.
 				}
 			}
 		}
