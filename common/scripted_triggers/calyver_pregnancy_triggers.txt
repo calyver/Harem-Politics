@@ -47,16 +47,38 @@ is_preferred_heir_sex_trigger = {
 		always = yes
 	}
 }
-mother_high_stakes_pregnancy_logic_trigger = {
+high_stakes_pregnancy_logic_trigger = {
 	OR = {
-		# 1) First preferred-sex legitimate dynasty child
+		# First child
 		NOT = {
 			any_child = {
 				is_preferred_heir_sex_trigger = { PARENT = scope:mother }
 			}
 		}
+		# Dishu system
+		AND = {
+			scope:mother = { is_dishu_parent_trigger = yes }
+			exists = scope:father
+			scope:mother.primary_spouse ?= scope:father
 
-		# 2) Purple urgency
+			NOT = {
+				any_child = {
+					is_preferred_heir_sex_trigger = { PARENT = scope:mother }
+					has_trait = di_child
+				}
+			}
+		}
+	}
+}
+mother_high_stakes_pregnancy_logic_trigger = {
+	OR = {
+		scope:is_bastard = no
+		faith = { has_doctrine_parameter = bastards_none }
+	}
+	OR = {
+		high_stakes_pregnancy_logic_trigger = yes
+
+		# Born in the Purple
 		AND = {
 			OR = {
 				scope:mother = { can_result_in_born_in_the_purple_birth_trigger = yes }
@@ -90,33 +112,18 @@ mother_high_stakes_pregnancy_logic_trigger = {
 				}
 			}
 		}
-
-		# 3) Dishu urgency (official spouse pregnancy only)
-		AND = {
-			scope:mother = { is_dishu_parent_trigger = yes }
-			exists = scope:father
-			scope:mother.primary_spouse ?= scope:father
-
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:mother }
-					has_trait = di_child
-				}
-			}
-		}
 	}
 }
 
 father_high_stakes_pregnancy_logic_trigger = {
 	OR = {
-		# 1) First preferred-sex legitimate dynasty child
-		NOT = {
-			any_child = {
-				is_preferred_heir_sex_trigger = { PARENT = scope:father }
-			}
-		}
+		scope:is_bastard = no
+		faith = { has_doctrine_parameter = bastards_none }
+	}
+	OR = {
+		high_stakes_pregnancy_logic_trigger = yes
 
-		# 2) Purple urgency
+		# Born in the Purple
 		AND = {
 			OR = {
 				scope:mother = { can_result_in_born_in_the_purple_birth_trigger = yes }
@@ -147,20 +154,6 @@ father_high_stakes_pregnancy_logic_trigger = {
 				any_child = {
 					is_preferred_heir_sex_trigger = { PARENT = scope:father }
 					has_trait = born_in_the_purple
-				}
-			}
-		}
-
-		# 3) Dishu urgency (official spouse pregnancy only)
-		AND = {
-			scope:father = { is_dishu_parent_trigger = yes }
-			exists = scope:mother
-			scope:father.primary_spouse ?= scope:mother
-
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:father }
-					has_trait = di_child
 				}
 			}
 		}
