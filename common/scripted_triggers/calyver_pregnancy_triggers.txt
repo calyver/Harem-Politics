@@ -13,6 +13,7 @@
 		}
 	}
 }
+
 pregnancy_belongs_to_father_dynasty_trigger = {
 	OR = {
 		# Concubine-style relation where child belongs to father line
@@ -26,159 +27,180 @@ pregnancy_belongs_to_father_dynasty_trigger = {
 		}
 	}
 }
+
 pregnancy_will_result_in_legitimate_child_trigger = {
 	NOR = {
 		has_trait = bastard
 		has_trait = bastard_founder
 	}
 }
+
+# Prefer-heir sex for children of $PARENT$'s house and succession laws.
 is_preferred_heir_sex_trigger = {
 	pregnancy_will_result_in_legitimate_child_trigger = yes
 	house ?= $PARENT$.house
 	trigger_if = {
-		limit = { $PARENT$ = { OR = { has_realm_law = male_only_law has_realm_law = male_preference_law } } }
+		limit = {
+			$PARENT$ = {
+				OR = {
+					has_realm_law = male_only_law
+					has_realm_law = male_preference_law
+				}
+			}
+		}
 		is_male = yes
 	}
 	trigger_else_if = {
-		limit = { $PARENT$ = { OR = { has_realm_law = female_only_law has_realm_law = female_preference_law } } }
+		limit = {
+			$PARENT$ = {
+				OR = {
+					has_realm_law = female_only_law
+					has_realm_law = female_preference_law
+				}
+			}
+		}
 		is_female = yes
 	}
 	trigger_else = {
 		always = yes
 	}
 }
-high_stakes_pregnancy_logic_trigger = {
-	OR = {
-		# First child
-		NOT = {
-			any_child = {
-				is_preferred_heir_sex_trigger = { PARENT = $PARENT$ }
-			}
-		}	
-	}
-}
-mother_high_stakes_pregnancy_logic_trigger = {
+
+# Shared: pregnancy is not bastard-flagged OR faith ignores bastards.
+high_stakes_pregnancy_legitimacy_gate_trigger = {
 	OR = {
 		scope:is_bastard = no
 		faith = { has_doctrine_parameter = bastards_none }
 	}
-	OR = {
-		high_stakes_pregnancy_logic_trigger = { PARENT = scope:mother }
+}
 
-		# Born in the Purple
-		AND = {
-			OR = {
-				scope:mother = { can_result_in_born_in_the_purple_birth_trigger = yes }
-				scope:father ?= { can_result_in_born_in_the_purple_birth_trigger = yes }
-			}
+# Shared: no existing preferred-sex legitimate child in $PARENT$'s dynasty.
+high_stakes_pregnancy_missing_first_dynasty_heir_trigger = {
+	NOT = {
+		any_child = {
+			is_preferred_heir_sex_trigger = { PARENT = $PARENT$ }
+		}
+	}
+}
+
+# Shared: Purple-line urgency ($PARENT$ = ruler line whose laws filter existing heirs).
+purple_line_high_stakes_pregnancy_trigger = {
+	AND = {
+		OR = {
 			scope:mother = {
-				OR = {
-					AND = {
-						is_ruler = no
-						exists = location
-						OR = {
-							location = title:c_byzantion.title_province
-							location = title:c_roma.title_province
-							AND = { is_diarch = yes liege_has_co_emperorship_trigger = yes }
-							scope:father ?= { is_diarch = yes liege_has_co_emperorship_trigger = yes }
-						}
-					}
-					AND = {
-						is_ruler = yes
-						NOT = { is_at_war_with = scope:father }
-					}
-				}
-				is_imprisoned = no
-				is_commanding_army = no
+				can_result_in_born_in_the_purple_birth_trigger = yes
 			}
-			# No existing preferred-sex Purple child yet
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:mother }
-					has_trait = born_in_the_purple
-				}
+			scope:father ?= {
+				can_result_in_born_in_the_purple_birth_trigger = yes
 			}
 		}
-		# Dishu system
-		AND = {
-			is_dishu_parent_trigger = yes
-			exists = scope:father
-			primary_spouse ?= scope:father
-
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:mother }
-					has_trait = di_child
+		scope:mother = {
+			OR = {
+				AND = {
+					is_ruler = no
+					exists = location
+					OR = {
+						location = title:c_byzantion.title_province
+						location = title:c_roma.title_province
+						AND = {
+							is_diarch = yes
+							liege_has_co_emperorship_trigger = yes
+						}
+						scope:father ?= {
+							is_diarch = yes
+							liege_has_co_emperorship_trigger = yes
+						}
+					}
+				}
+				AND = {
+					is_ruler = yes
+					NOT = {
+						is_at_war_with = scope:father
+					}
 				}
 			}
+			is_imprisoned = no
+			is_commanding_army = no
+		}
+		NOT = {
+			any_child = {
+				is_preferred_heir_sex_trigger = {
+					PARENT = $PARENT$
+				}
+				has_trait = born_in_the_purple
+			}
+		}
+	}
+}
+
+# Shared: Dìshù urgency; $PARENT$ = Dishu ruler, $SPOUSE$ = official spouse (other parent).
+dishu_line_high_stakes_pregnancy_trigger = {
+	AND = {
+		$PARENT$ = {
+			is_dishu_parent_trigger = yes
+			primary_spouse ?= $SPOUSE$
+		}
+		NOT = {
+			any_child = {
+				is_preferred_heir_sex_trigger = {
+					PARENT = $PARENT$
+				}
+				has_trait = di_child
+			}
+		}
+	}
+}
+
+mother_high_stakes_pregnancy_logic_trigger = {
+	high_stakes_pregnancy_legitimacy_gate_trigger = yes
+	OR = {
+		high_stakes_pregnancy_missing_first_dynasty_heir_trigger = {
+			PARENT = scope:mother
+		}
+
+		purple_line_high_stakes_pregnancy_trigger = {
+			PARENT = scope:mother
+		}
+
+		dishu_line_high_stakes_pregnancy_trigger = {
+			PARENT = scope:mother
+			SPOUSE = scope:father
 		}
 	}
 }
 
 father_high_stakes_pregnancy_logic_trigger = {
+	high_stakes_pregnancy_legitimacy_gate_trigger = yes
 	OR = {
-		scope:is_bastard = no
-		faith = { has_doctrine_parameter = bastards_none }
-	}
-	OR = {
-		high_stakes_pregnancy_logic_trigger = { PARENT = scope:father }
-
-		# Born in the Purple
-		AND = {
-			OR = {
-				scope:mother = { can_result_in_born_in_the_purple_birth_trigger = yes }
-				scope:father ?= { can_result_in_born_in_the_purple_birth_trigger = yes }
-			}
-			scope:mother = {
-				OR = {
-					AND = {
-						is_ruler = no
-						exists = location
-						OR = {
-							location = title:c_byzantion.title_province
-							location = title:c_roma.title_province
-							AND = { is_diarch = yes liege_has_co_emperorship_trigger = yes }
-							scope:father ?= { is_diarch = yes liege_has_co_emperorship_trigger = yes }
-						}
-					}
-					AND = {
-						is_ruler = yes
-						NOT = { is_at_war_with = scope:father }
-					}
-				}
-				is_imprisoned = no
-				is_commanding_army = no
-			}
-
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:father }
-					has_trait = born_in_the_purple
-				}
-			}
+		high_stakes_pregnancy_missing_first_dynasty_heir_trigger = {
+			PARENT = scope:father
 		}
-		# Dishu system
-		AND = {
-			is_dishu_parent_trigger = yes
-			primary_spouse ?= scope:mother
 
-			NOT = {
-				any_child = {
-					is_preferred_heir_sex_trigger = { PARENT = scope:father }
-					has_trait = di_child
-				}
-			}
+		purple_line_high_stakes_pregnancy_trigger = {
+			PARENT = scope:father
+		}
+
+		dishu_line_high_stakes_pregnancy_trigger = {
+			PARENT = scope:father
+			SPOUSE = scope:mother
 		}
 	}
 }
+
 can_result_in_born_in_the_purple_birth_trigger = {
-	culture = { has_cultural_parameter = children_can_be_born_in_the_purple }
+	culture = {
+		has_cultural_parameter = children_can_be_born_in_the_purple
+	}
 	trigger_if = {
 		limit = {
 			has_ach_dlc_trigger = yes
-			NOT = { has_game_rule = coronation_laws_off }
+			NOT = {
+				has_game_rule = coronation_laws_off
+			}
 		}
-		NOT = { has_realm_law = uncrowned } # Must be coronated
+		NOT = {
+			has_realm_law = uncrowned
+		}
 	}
 	trigger_if = {
 		limit = {
@@ -188,22 +210,21 @@ can_result_in_born_in_the_purple_birth_trigger = {
 		liege = {
 			is_roman_emperor_trigger = yes
 			OR = {
-				capital_county = title:c_byzantion	#Must rule from the Bucoleon Palace.
-				capital_county = title:c_roma # ... or from Rome itself.
+				capital_county = title:c_byzantion
+				capital_county = title:c_roma
 			}
 		}
 	}
 	trigger_else = {
 		is_roman_emperor_trigger = yes
 		OR = {
-			capital_county = title:c_byzantion	#Must rule from the Bucoleon Palace.
-			capital_county = title:c_roma # ... or from Rome itself.
+			capital_county = title:c_byzantion
+			capital_county = title:c_roma
 		}
 	}
 }
-# -----------------------------------
+
 # FINAL COMPOSITE TRIGGER
-# -----------------------------------
 
 is_high_stakes_pregnancy_trigger = {
 	OR = {
