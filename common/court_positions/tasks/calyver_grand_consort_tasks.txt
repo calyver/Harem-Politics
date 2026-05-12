@@ -1,4 +1,204 @@
-﻿### Various Tasks ###
+﻿## Vanilla tasks ##
+keeper_of_the_harem_court_position_task_select_palace_beauties = {
+	court_position_types = { keeper_of_the_harem_court_position }
+
+	is_valid_showing_failures_only = { 
+		scope:liege = {
+			hp_accepts_concubinage = yes
+		}
+	}
+
+	# Monthly cost for the task
+	cost = {
+		round = no
+		gold = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = no
+					}
+				}
+				add = {
+					value = monthly_court_position_task_cost
+					multiply = 2
+					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
+					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
+				}
+			}
+		}
+		treasury = {
+			value = 0
+			if = {
+				limit = {
+					scope:liege = {
+						has_treasury = yes
+					}
+				}
+				add = {
+					value = monthly_court_position_task_cost
+					multiply = 2
+					desc = COURT_POSITION_TASK_COST_BREAKDOWN_BASE
+					format = "BASE_VALUE_FORMAT_DECIMALS_PLUS_NEGATIVE"
+				}
+			}
+		}
+	}
+
+	scaling_employer_modifiers = {
+		terrible = {
+			stress_loss_mult = 0.10
+			stress_gain_mult = -0.01
+		}
+		poor = {
+			stress_loss_mult = 0.12
+			stress_gain_mult = -0.02
+		}
+		average = {
+			stress_loss_mult = 0.15
+			stress_gain_mult = -0.03
+		}
+		good = {
+			stress_loss_mult = 0.20
+			stress_gain_mult = -0.05
+		}
+		excellent = {
+			stress_loss_mult = 0.25
+			stress_gain_mult = -0.08
+		}
+	}
+
+	on_monthly = {
+		scope:liege = {
+			if = {
+				limit = {
+					allowed_more_concubines = no
+					number_of_fertile_concubines < max_number_of_concubines
+					any_concubine = {
+						is_childless_aged_concubine_trigger = yes
+					}
+				}
+				random_concubine = {
+					limit = {
+						is_childless_aged_concubine_trigger = yes
+					}
+					weight = {
+						base = 10
+						modifier = {
+							is_lowborn = yes
+							add = 10
+						}
+						modifier = {
+							any_close_family_member = {
+								is_vassal_or_below_of = scope:liege
+							}
+							add = -6
+						}
+						modifier = {
+							any_close_family_member = {
+								OR = {
+									is_powerful_vassal_of = scope:liege
+									is_councillor_of = scope:liege
+								}
+							}
+							add = -3
+						}
+						modifier = {
+							any_close_family_member = {
+								is_liege_or_above_of = scope:liege
+							}
+							add = -10
+						}
+						modifier = {
+							any_close_family_member = {
+								is_tributary_of = scope:liege
+							}
+							add = -10
+						}
+						modifier = {
+							has_character_modifier = demoted_spouse_modifier
+							add = 5
+						}
+						modifier = {
+							has_character_modifier = demoted_primary_spouse_modifier
+							add = 10
+						}
+						modifier = {
+							has_character_modifier = unfavored_consort_modifier
+							add = 5
+						}
+						modifier = {
+							has_character_modifier = forgotten_consort_modifier
+							add = 10
+						}
+						modifier = {
+							has_relation_rival = scope:liege
+							add = 5
+						}
+						modifier = {
+							has_relation_nemesis = scope:liege
+							add = 10
+						}
+					}
+					save_scope_as = aging_concubine
+				}
+				remove_concubine = scope:aging_concubine
+				# See if I can "retire" them by turning them into monks/nuns
+				# scope:aging_concubine = {
+				# 	add_trait = devoted
+				# }
+			}
+			if = {
+				limit = {
+					allowed_more_concubines = yes
+				}
+				calyver_create_candidate_effect = yes
+				if = {
+					limit = {
+						exists = scope:bride
+					}
+					add_courtier = scope:bride
+					if = {
+						limit = {
+							is_character_interaction_valid = {
+								recipient = scope:bride
+								interaction = ai_make_concubine_interaction
+							}
+						}
+						run_interaction = {
+							interaction = ai_make_concubine_interaction
+							actor = scope:liege
+							recipient = scope:bride
+							execute_threshold = accept
+						}
+					}
+				}
+			}
+			# Chance of triggering an event for Night Services
+			random = {
+				chance = 0
+				modifier = {
+					harem_politics_0011_trigger = yes
+					add = 20
+				}
+				trigger_event = {
+					id = harem_politics.0011
+					days = { 14 31 }
+				}
+			}
+		}
+	}
+
+	on_start = {
+		custom_tooltip = keeper_of_the_harem_select_palace_beauties.tt
+	}
+
+	ai_will_do = {
+		value = 0 # we handle this somewhere else for the AI, instead
+	}
+}
+
+### Grand consort Tasks ###
 
 grand_consort_task_instill_virtues = {
 	court_position_types = { grand_consort_court_position }
@@ -64,6 +264,11 @@ grand_consort_task_instill_virtues = {
 
 	on_start = {
 		custom_tooltip = grand_consort_task_instill_virtues_fallback_tt
+		add_character_flag = gc_instilling_virtues_flag
+	}
+
+	on_end = {
+		remove_character_flag = gc_instilling_virtues_flag
 	}
 
 	on_monthly = {
@@ -71,7 +276,7 @@ grand_consort_task_instill_virtues = {
 		liege_or_court_owner = { save_scope_as = notification_character }
 		scope:notification_character = {
 			random_list = {
-				11 = { #Success
+				15 = { #Success
 					#Number of consorts
 					modifier = {
 						scope:notification_character = {
@@ -182,7 +387,7 @@ grand_consort_task_instill_virtues = {
 					#Poet trait
 					modifier = {
 						scope:grand_consort_position_holder = {
-							has_trait = poet
+							has_trait = lifestyle_poet
 						}
 						add = {
 							value = 1
@@ -385,108 +590,108 @@ grand_consort_task_instill_virtues = {
 												has_character_flag = had_positive_learning_flag
 											}
 											add_learning_skill = 1
-											if = {
-												limit = {
-													NOT = {
-														knows_language_of_culture = scope:notification_character.culture
-													}
-													learning >= 10
-												}
-												random = {
-													chance = 20
-													modifier = { # Learning
-														add = {
-															value = learning
-															multiply = 1.5
-														}
-													}
-													learn_language_of_culture = scope:notification_character.culture
-													set_local_variable = {
-														name = learned_language_of_culture
-														value = yes
-													}
-												}
-											}
-											if = {
-												limit = {
-													scope:notification_character.faith = {
-														NOT = {
-															this = scope:consort_1.faith
-														}
-														this = scope:grand_consort_position_holder.faith
-													}
-												}
-												random = {
-													chance = 20
-													modifier = { # Zeal
-														add = {
-															value = ai_zeal
-															multiply = -0.2
-														}
-													}
-													modifier = { # Greed
-														add = {
-															value = ai_greed
-															multiply = 0.1
-														}
-													}
-													modifier = { # Liege's zeal
-														add = {
-															value = scope:notification_character.ai_zeal
-															multiply = 0.1
-														}
-													}
-													modifier = { # Ambition
-														has_trait = ambitious
-														add = 10
-													}
-													modifier = { # Arrogance
-														has_trait = arrogant
-														add = 5
-													}
-													modifier = {
-														faith = {
-															faith_hostility_level = {
-																target = scope:notification_character.faith
-																value = faith_fully_accepted_level
-															}
-														}
-														add = 10
-													}
-													modifier = {
-														faith = {
-															faith_hostility_level = {
-																target = scope:notification_character.faith
-																value >= faith_astray_level
-															}
-														}
-														add = -5
-													}
-													modifier = {
-														faith = {
-															faith_hostility_level = {
-																target = scope:notification_character.faith
-																value >= faith_hostile_level
-															}
-														}
-														add = -5
-													}
-													modifier = {
-														faith = {
-															faith_hostility_level = {
-																target = scope:notification_character.faith
-																value >= faith_evil_level
-															}
-														}
-														add = -5
-													}
-													set_character_faith = scope:notification_character.faith
-													set_local_variable = {
-														name = converted_to_liege_faith
-														value = yes
-													}
-												}
-											}
+											# if = { # Learn their liege's language
+											# 	limit = {
+											# 		NOT = {
+											# 			knows_language_of_culture = scope:notification_character.culture
+											# 		}
+											# 		learning >= 10
+											# 	}
+											# 	random = {
+											# 		chance = 20
+											# 		modifier = { # Learning
+											# 			add = {
+											# 				value = learning
+											# 				multiply = 1.5
+											# 			}
+											# 		}
+											# 		learn_language_of_culture = scope:notification_character.culture
+											# 		set_local_variable = {
+											# 			name = learned_language_of_culture
+											# 			value = yes
+											# 		}
+											# 	}
+											# }
+											# if = { # Convert to liege's faith
+											# 	limit = {
+											# 		scope:notification_character.faith = {
+											# 			NOT = {
+											# 				this = scope:consort_1.faith
+											# 			}
+											# 			this = scope:grand_consort_position_holder.faith
+											# 		}
+											# 	}
+											# 	random = {
+											# 		chance = 20
+											# 		modifier = { # Zeal
+											# 			add = {
+											# 				value = ai_zeal
+											# 				multiply = -0.2
+											# 			}
+											# 		}
+											# 		modifier = { # Greed
+											# 			add = {
+											# 				value = ai_greed
+											# 				multiply = 0.1
+											# 			}
+											# 		}
+											# 		modifier = { # Liege's zeal
+											# 			add = {
+											# 				value = scope:notification_character.ai_zeal
+											# 				multiply = 0.1
+											# 			}
+											# 		}
+											# 		modifier = { # Ambition
+											# 			has_trait = ambitious
+											# 			add = 10
+											# 		}
+											# 		modifier = { # Arrogance
+											# 			has_trait = arrogant
+											# 			add = 5
+											# 		}
+											# 		modifier = {
+											# 			faith = {
+											# 				faith_hostility_level = {
+											# 					target = scope:notification_character.faith
+											# 					value = faith_fully_accepted_level
+											# 				}
+											# 			}
+											# 			add = 10
+											# 		}
+											# 		modifier = {
+											# 			faith = {
+											# 				faith_hostility_level = {
+											# 					target = scope:notification_character.faith
+											# 					value >= faith_astray_level
+											# 				}
+											# 			}
+											# 			add = -5
+											# 		}
+											# 		modifier = {
+											# 			faith = {
+											# 				faith_hostility_level = {
+											# 					target = scope:notification_character.faith
+											# 					value >= faith_hostile_level
+											# 				}
+											# 			}
+											# 			add = -5
+											# 		}
+											# 		modifier = {
+											# 			faith = {
+											# 				faith_hostility_level = {
+											# 					target = scope:notification_character.faith
+											# 					value >= faith_evil_level
+											# 				}
+											# 			}
+											# 			add = -5
+											# 		}
+											# 		set_character_faith = scope:notification_character.faith
+											# 		set_local_variable = {
+											# 			name = converted_to_liege_faith
+											# 			value = yes
+											# 		}
+											# 	}
+											# }
 											add_character_flag = {
 												flag = had_positive_learning_flag
 												years = 1
@@ -601,19 +806,19 @@ grand_consort_task_instill_virtues = {
 												}
 											}
 										}
-										5 = { #Become a poet
+										5 = { #Become a lifestyle_poet
 											trigger = {
 												OR = {
 													diplomacy >= high_skill_rating
 													learning >= high_skill_rating
 												}
 												NOR = {
-													has_trait = poet
+													has_trait = lifestyle_poet
 													has_trait = intellect_bad
 													scope:notification_character = {
 														any_consort = {
 															is_courtier_of = prev
-															has_trait = poet
+															has_trait = lifestyle_poet
 															count >= 2
 														}
 													}
@@ -622,7 +827,7 @@ grand_consort_task_instill_virtues = {
 											#Poet trait
 											modifier = {
 												scope:grand_consort_position_holder = {
-													has_trait = poet
+													has_trait = lifestyle_poet
 												}
 												add = 2
 											}
@@ -672,7 +877,7 @@ grand_consort_task_instill_virtues = {
 												add = 15
 												has_trait = intellect_good_3
 											}
-											add_trait = poet
+											add_trait = lifestyle_poet
 			
 											if = {
 												limit = {
@@ -699,14 +904,14 @@ grand_consort_task_instill_virtues = {
 						3 = {
 							trigger = {
 								NOR = {
-									has_trait = poet
+									has_trait = lifestyle_poet
 									has_trait = intellect_bad
 								}
 							}
 							#Poet trait
 							modifier = {
 								scope:grand_consort_position_holder = {
-									has_trait = poet
+									has_trait = lifestyle_poet
 								}
 								add = 2
 							}
@@ -757,7 +962,7 @@ grand_consort_task_instill_virtues = {
 								has_trait = intellect_good_3
 							}
 							hidden_effect = {
-								add_trait = poet
+								add_trait = lifestyle_poet
 								if = {
 									limit = {
 										is_ai = no
@@ -1094,7 +1299,7 @@ grand_consort_task_instill_virtues = {
 						}
 					}
 				}
-				85 = { #Nothing
+				80 = { #Nothing
 					#Number of consorts
 					modifier = {
 						scope:notification_character = {
@@ -1110,7 +1315,7 @@ grand_consort_task_instill_virtues = {
 					#Poet trait
 					modifier = {
 						scope:grand_consort_position_holder = {
-							has_trait = poet
+							has_trait = lifestyle_poet
 						}
 						add = {
 							value = -1
@@ -1150,7 +1355,7 @@ grand_consort_task_instill_virtues = {
 		liege_or_court_owner = { save_scope_as = notification_character }
 		scope:notification_character = {
 			random_list = {
-				8 = { #Impressing a neighboring ruler
+				10 = { #Impressing a neighboring ruler
 					trigger = {
 						any_neighboring_top_liege_realm_owner = {
 							harem_politics_grand_consort_task_valid_neighboring_ruler_trigger = {
@@ -1480,7 +1685,7 @@ grand_consort_task_instill_virtues = {
 						save_scope_as = ruler_scope
 					}
 				}
-				3 = { #Impressing a tributary
+				5 = { #Impressing a tributary
 					trigger = {
 						any_tributary = {
 							harem_politics_grand_consort_task_valid_tributary_trigger = {
@@ -1627,7 +1832,7 @@ grand_consort_task_instill_virtues = {
 						save_scope_as = ruler_scope
 					}
 				}
-				84 = { #Nothing
+				80 = { #Nothing
 
 				}
 			}

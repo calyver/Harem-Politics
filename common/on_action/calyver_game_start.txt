@@ -1,15 +1,18 @@
-﻿on_game_start_after_lobby = {
+﻿## Vanilla ##
+on_game_start_after_lobby = {
 	#Cannot be on_actions
 	first_valid_on_action = {
 		calyver_game_start_all_on_actions
 	}
 }
 
+## Harem Politics ##
 calyver_game_start_all_on_actions = {
 	on_actions = {
 		calyver_set_doctrines
 		calyver_consort_favor_valuation_on_action
 		calyver_mulsim_add_court_eunuchs_on_action
+		calyver_china_replace_court_machinations_on_action
 	}
 }
 
@@ -216,13 +219,118 @@ calyver_mulsim_add_court_eunuchs_on_action = {
 				culture_head ?= {
 					religion = religion:islam_religion
 				}
-				NOR = {
-					has_cultural_parameter = can_castrate_prisoners
+				NOT = {
 					has_cultural_parameter = can_appoint_chief_eunuch
-					has_cultural_parameter = family_castration
 				}
 			}
-			add_culture_tradition = tradition_court_eunuchs
+			add_culture_tradition = tradition_magnificent_courts
 		}		
+	}
+}
+
+calyver_china_replace_court_machinations_on_action = {
+	effect = {
+		every_culture_global = {
+			limit = {
+				has_cultural_tradition = tradition_tgp_court_machinations
+			}
+			remove_culture_tradition = tradition_tgp_court_machinations
+			add_culture_tradition = tradition_cosmic_order
+		}
+		character:han_3641 = {
+			if = {
+				limit = {
+					is_alive = yes
+					is_playable_character = yes
+				}
+				if = {
+					limit = {
+						character:han_3559 = {
+							is_alive = yes
+							NOT = { is_consort_of = prev }
+						}
+					}
+					if = {
+						limit = {
+							character:han_3559 = {
+								NOT = { is_courtier_of = prev }
+							}
+						}
+						add_courtier = character:han_3559
+					}
+					if = {
+						limit = {
+							is_character_interaction_valid = {
+								recipient = character:han_3559
+								interaction = ai_make_concubine_interaction
+							}
+						}
+						run_interaction = {
+							interaction = ai_make_concubine_interaction
+							actor = character:han_3641
+							recipient = character:han_3559
+							execute_threshold = accept
+						}
+					}
+					if = {
+						limit = {
+							can_appoint_char_to_court_position = {
+								CHAR = character:han_3559
+								COURT_POS = grand_consort_court_position
+							}
+						}
+						appoint_court_position = {
+							recipient = character:han_3559
+							court_position = grand_consort_court_position
+						}
+					}
+				}
+			}
+		}
+		character:han_8910 = {
+			if = {
+				limit = {
+					is_alive = yes
+					any_heir_title = {
+						count >= 1
+					}
+				}
+				if = {
+					limit = {
+						exists = primary_spouse
+						any_child = {
+							NOT = { is_child_of = prev.primary_spouse }
+						}
+					}
+					every_child = {
+						limit = {
+							NOT = { is_child_of = prev.primary_spouse }
+						}
+						add_trait = child_of_concubine_female
+					}
+				}
+			}
+		}
+		every_ruler = {
+			limit = {
+				is_dishu_parent_trigger = yes
+			}
+			save_temporary_scope_as = dishu_parent
+			every_child = {
+				limit = {
+					is_bastard_child_trigger = no
+					NOR = {
+						has_trait = di_child
+						has_trait = child_of_concubine
+					}
+					house ?= {
+						any_house_member = {
+							this = scope:dishu_parent
+						}
+					}
+				}
+				add_trait = di_child
+			}
+		}
 	}
 }

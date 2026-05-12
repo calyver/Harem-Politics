@@ -9,7 +9,7 @@ miscarriage_interaction = {
 
 	ignores_pending_interaction_block = yes
 
-	desc = miscarriage_interaction_desc #Check
+	desc = miscarriage_interaction_desc
 
 	is_shown = {
 		scope:actor = {
@@ -51,7 +51,6 @@ miscarriage_interaction = {
 	}
 
 	is_valid_showing_failures_only = {
-		scope:recipient = { is_busy_in_events_localised = yes }
 		scope:actor = {
 			is_imprisoned = no
 		}
@@ -110,23 +109,25 @@ miscarriage_interaction = {
 		}
 		modifier = { #New consorts are less likely to do so
 			add = -5
-			has_character_flag = flag_new_consort
+			scope:actor = { has_character_flag = flag_new_consort }
 		}
 		modifier = { #Evil consorts
 			add = 5
-			harem_politics_evil_consort_trigger = yes
+			scope:actor = { harem_politics_evil_consort_trigger = yes }
 		}
 		modifier = { #Rivals
 			add = 20
-			OR = {
-				has_relation_potential_rival = scope:recipient
-				has_relation_rival = scope:recipient
-				has_relation_nemesis = scope:recipient
+			scope:actor = {
+				OR = {
+					has_relation_potential_rival = scope:recipient
+					has_relation_rival = scope:recipient
+					has_relation_nemesis = scope:recipient
+				}
 			}
 		}
 		modifier = { #Scheming consorts
 			add = 5
-			has_character_modifier = scheming_consort_modifier
+			scope:actor = { has_character_modifier = scheming_consort_modifier }
 		}
 		opinion_modifier = { #Opinion
 			opinion_target = scope:recipient
@@ -140,10 +141,10 @@ miscarriage_interaction = {
 		}
 		modifier = { #The main spouse must protect their position
 			add = 10
-			is_married = yes
-			any_spouse = {
-				primary_spouse = {
-					this = scope:actor
+			scope:actor = {
+				is_married = yes
+				any_spouse = {
+					primary_spouse = scope:actor
 				}
 			}
 			scope:recipient = {
@@ -155,7 +156,9 @@ miscarriage_interaction = {
 							is_parent_of = scope:actor.primary_spouse
 						}
 					}
-					has_court_position = grand_consort_court_position
+					is_high_consort_trigger = {
+						LIEGE = scope:actor
+					}
 					AND = {
 						is_married = yes
 						any_spouse = {
@@ -169,7 +172,14 @@ miscarriage_interaction = {
 		}
 		modifier = { #The Grand Consort must protect their position
 			add = 15
-			has_court_position = grand_consort_court_position
+			scope:actor = {
+				OR = {
+					has_court_position = grand_consort_court_position
+					has_court_position = pure_consort_court_position
+					has_court_position = virtuous_consort_court_position
+					has_court_position = worthy_consort_court_position
+				}
+			}
 			scope:recipient = {
 				OR = {
 					any_close_family_member = { #Powerful consorts
@@ -205,41 +215,49 @@ miscarriage_interaction = {
 			}
 		}
 		modifier = { #Intrigue
-			add = 10
-			intrigue >= medium_skill_rating
+			add = {
+				value = scope:actor.intrigue
+			}
+			scope:actor.intrigue > medium_skill_rating
 		}
 		modifier = { #Intrigue
 			add = -15
-			intrigue < medium_skill_rating
+			scope:actor.intrigue < medium_skill_rating
 		}
 		modifier = { #Intrigue
 			add = -20
-			intrigue <= mediocre_skill_rating
+			scope:actor.intrigue <= mediocre_skill_rating
 		}
 		modifier = { #Craven consorts
 			add = -10
-			OR = {
-				has_trait = shy
-				has_trait = craven
+			scope:actor = {
+				OR = {
+					has_trait = shy
+					has_trait = craven
+				}
 			}
 		}
 		modifier = { #Lovers
 			factor = 0
-			OR = {
-				has_relation_friend = scope:recipient
-				has_relation_best_friend = scope:recipient
+			scope:actor = {
+				OR = {
+					has_relation_friend = scope:recipient
+					has_relation_best_friend = scope:recipient
 
-				has_relation_lover = scope:recipient
-				has_relation_soulmate = scope:recipient
+					has_relation_lover = scope:recipient
+					has_relation_soulmate = scope:recipient
+				}
 			}
 		}
 		modifier = { #Good consorts
 			factor = 0
-			OR = {
-				has_trait = compassionate
-				has_trait = forgiving
-				has_trait = honest
-				has_trait = just
+			scope:actor = {
+				OR = {
+					has_trait = compassionate
+					has_trait = forgiving
+					has_trait = honest
+					has_trait = just
+				}
 			}
 		}
 	}

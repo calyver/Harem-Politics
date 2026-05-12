@@ -1,9 +1,7 @@
 ﻿calyver_create_candidate_effect = {
 	if = {
 		limit = {
-			scope:liege = {
-				NOT = { religion = religion:islam_religion }
-			}
+			scope:liege.religion != religion:islam_religion
 		}
 		create_character = {
 			location = scope:liege.capital_province
@@ -12,14 +10,278 @@
 		}
 	}
 	else = {
+		hp_select_concubine_location_effect = yes
 		create_character = {
 			location = scope:concubine_location
 			template = potential_jarya_template
 			save_scope_as = bride
 		}
-		scope:bride = {
-			add_to_list = pool_candidates
+	}
+}
+
+#List and scopes
+bride_show_saved_candidate_effect = {
+	remove_from_list = $LIST$
+	add_to_list = presented_candidates_list
+	if = {
+		limit = { NOT = { exists = scope:candidate_1 } }
+		save_scope_as = candidate_1
+	}
+	else_if = {
+		limit = { NOT = { exists = scope:candidate_2 } }
+		save_scope_as = candidate_2
+	}
+	else_if = {
+		limit = { NOT = { exists = scope:candidate_3 } }
+		save_scope_as = candidate_3
+	}
+	else_if = {
+		limit = { NOT = { exists = scope:candidate_4 } }
+		save_scope_as = candidate_4
+	}
+	else = {
+		save_scope_as = candidate_5
+	}
+}
+
+# Final effects
+bride_show_ending_effect = {
+	hidden_effect = {
+		if = {
+			limit = {
+				any_in_list = {
+					list = created_candidates_list
+					has_character_flag = created_bride_flag
+					count >= 1
+				}
+			}
+			every_in_list = {
+				list = created_candidates_list
+				if = {
+					limit = {
+						has_character_flag = created_bride_flag
+					}
+					if = {
+						limit = {
+							NOT = {
+								exists = court_owner
+							}
+							has_character_flag = rejected_candidate_flag
+						}
+						death = {
+							death_reason = death_vanished
+						}
+					}
+					else = {
+						remove_character_flag = created_bride_flag
+					}
+				}
+			}
 		}
-		clear_saved_scope = bride
+		if = {
+			limit = {
+				any_in_list = {
+					list = presented_candidates_list
+					is_consort_of = root
+					count > 1
+				}
+			}
+			random_in_list = {
+				list = presented_candidates_list
+				limit = {
+					is_consort_of = root
+				}
+				save_scope_as = first_consort
+			}
+			random_in_list = {
+				list = presented_candidates_list
+				limit = {
+					this != scope:first_consort
+					is_consort_of = root
+				}
+				save_scope_as = second_consort
+			}
+			bride_show_relationship_effect = {
+				FIRST_CONSORT = scope:first_consort
+				SECOND_CONSORT = scope:second_consort
+			}
+		}
+		if = {
+			limit = {
+				any_in_list = {
+					list = presented_candidates_list
+					is_consort_of = root
+					count >= 3
+				}
+			}
+			random_in_list = {
+				list = presented_candidates_list
+				limit = {
+					is_consort_of = root
+				}
+				save_scope_as = third_consort
+			}
+			random_in_list = {
+				list = presented_candidates_list
+				limit = {
+					this != scope:third_consort
+					is_consort_of = root
+				}
+				save_scope_as = fourth_consort
+			}
+			bride_show_relationship_effect = {
+				FIRST_CONSORT = scope:third_consort
+				SECOND_CONSORT = scope:fourth_consort
+			}
+		}
+		if = {
+			limit = {
+				has_variable = beauty_important
+			}
+			remove_variable = beauty_important
+		}
+		if = {
+			limit = {
+				has_variable = family_background_important
+			}
+			remove_variable = family_background_important
+		}
+		if = {
+			limit = {
+				has_variable = personality_skills_important
+			}
+			remove_variable = personality_skills_important
+		}
+		random_list = {
+			50 = { # Choosing a night companion
+				trigger = {
+					NOR = {
+						has_character_flag = chosen_night_companion
+						has_character_flag = summoned_to_chambers_flag
+						has_character_modifier = mourner_modifier
+					}
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = lustful
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = deviant
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = rakish
+				}
+				modifier = { # Tier
+					add = 10
+					highest_held_title_tier >= tier_kingdom
+				}
+				modifier = { # Consorts
+					add = 10
+					any_consort = {
+						count >= 5
+					}
+				}
+				trigger_event = {
+					id = harem_politics.0011
+					days = { 7 20 }
+				}
+			}
+			50 = { #Nothing
+				modifier = { # Traits
+					add = 10
+					has_trait = chaste
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = celibate
+				}
+				modifier = { # Traits
+					add = 15
+					has_trait = shy
+				}
+			}
+			15 = { # Your consorts are performing
+				trigger = {
+					NOR = {
+						has_character_flag = flag_performing_consorts_event
+						has_character_modifier = mourner_modifier
+					}
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = lustful
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = deviant
+				}
+				modifier = { # Traits
+					add = 10
+					has_trait = rakish
+				}
+				modifier = { # Tier
+					add = 10
+					highest_held_title_tier >= tier_duchy
+				}
+				modifier = { # Consorts
+					add = 10
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						count >= 5
+					}
+				}
+				trigger_event = {
+					id = harem_politics.0016
+					days = { 7 20 }
+				}
+			}
+		}
+	}
+}
+
+bride_show_relationship_effect = {
+	$FIRST_CONSORT$ = {
+		random_list = {
+			1 = {
+				trigger = {
+					NOR = {
+						has_relation_friend = $FIRST_CONSORT$
+						has_relation_best_friend = $FIRST_CONSORT$
+					}
+				}
+				compatibility_modifier = {
+					who = $FIRST_CONSORT$
+					compatibility_target = $SECOND_CONSORT$
+					multiplier = 3
+					max = 50
+					min = -30
+				}
+				improve_relationship_effect = { 
+					TARGET = $SECOND_CONSORT$
+					REASON = consort_friendship_reason
+				}
+			}
+			1 = {
+				trigger = {
+					NOR = {
+						has_relation_rival = $FIRST_CONSORT$
+						has_relation_nemesis = $FIRST_CONSORT$
+					}
+				}
+				compatibility_modifier = {
+					who = $FIRST_CONSORT$
+					compatibility_target = $SECOND_CONSORT$
+					multiplier = -3
+					max = 50
+					min = -30
+				}
+				worsen_relationship_effect = {
+					TARGET = $SECOND_CONSORT$
+					REASON = consort_rival_reason
+				}
+			}
+		}
 	}
 }

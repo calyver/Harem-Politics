@@ -6,7 +6,7 @@
 		disputed_heritage
 	}
 	diplomacy = -1
-	
+
 	courtly_opinion = -5
 	zealot_opinion = -10
 
@@ -84,7 +84,7 @@ disputed_heritage = {
 
 	diplomacy = -1
 	legitimacy_loss_mult = 0.1
-	
+
 	courtly_opinion = -5
 	zealot_opinion = -5
 
@@ -117,20 +117,44 @@ child_of_concubine_female = {
 		legitimized_bastard
 		wild_oat
 	}
-	diplomacy = -1
-	
-	flag = initial_legitimacy_nerf
-	
+	culture_modifier = {
+		parameter = dishu_system
+		diplomacy = -1
+		legitimacy_gain_mult = -0.1
+	}
+
 	shown_in_ruler_designer = no
 	
-	name = trait_child_of_concubine
-	desc = {
+	name = {
+		first_valid = {
+			triggered_desc = { # Shu Child
+				trigger = {
+					exists = this
+					any_parent = {
+						culture = { has_cultural_parameter = dishu_system }
+					}
+				}
+				desc = trait_shu_child
+			}
+			desc = trait_child_of_concubine
+		}
+	}
+	desc = { # mother was a concubine (at time of birth)
 		first_valid = {
 			triggered_desc = {
 				trigger = {
 					NOT = { exists = this }
 				}
 				desc = trait_child_of_concubine_desc
+			}
+			triggered_desc = { # Born to an Imperial Concubine
+				trigger = {
+					any_parent = {
+						highest_held_title_tier >= tier_empire
+						can_have_imperial_consorts_trigger = yes
+					}
+				}
+				desc = trait_shu_child_imperial_female_concubine_desc
 			}
 			desc = trait_child_of_concubine_character_desc
 		}
@@ -149,20 +173,44 @@ child_of_concubine_male = {
 		legitimized_bastard
 		wild_oat
 	}
-	diplomacy = -1
-	
-	flag = initial_legitimacy_nerf
-	
+	culture_modifier = {
+		parameter = dishu_system
+		diplomacy = -1
+		legitimacy_gain_mult = -0.05
+	}
+
 	shown_in_ruler_designer = no
 	
-	name = trait_child_of_concubine
-	desc = {
+	name = {
+		first_valid = {
+			triggered_desc = { # Shu Child
+				trigger = {
+					exists = this
+					any_parent = {
+						culture = { has_cultural_parameter = dishu_system }
+					}
+				}
+				desc = trait_shu_child
+			}
+			desc = trait_child_of_concubine
+		}
+	}
+	desc = { # father was a concubine (at time of birth)
 		first_valid = {
 			triggered_desc = {
 				trigger = {
 					NOT = { exists = this }
 				}
 				desc = trait_child_of_male_concubine_desc
+			}
+			triggered_desc = { # Born to an Imperial Concubine (Male)
+				trigger = {
+					any_parent = {
+						highest_held_title_tier >= tier_empire
+						can_have_imperial_consorts_trigger = yes
+					}
+				}
+				desc = trait_shu_child_imperial_male_concubine_desc
 			}
 			desc = trait_child_of_male_concubine_character_desc
 		}
@@ -182,10 +230,10 @@ wild_oat = {
 	}
 	
 	diplomacy = -1
-	
+
 	courtly_opinion = -5
 	flag = initial_legitimacy_nerf
-	
+
 	ruler_designer_cost = 0
 
 	desc = {
@@ -214,7 +262,8 @@ bastard_founder = {
 	claim_inheritance_blocker = all
 	category = fame
 	diplomacy = -1
-	
+
+	courtly_opinion = -5
 	zealot_opinion = -10
 	legitimacy_gain_mult = -0.1
 
@@ -233,4 +282,61 @@ bastard_founder = {
 	}
 
 	ai_energy = 15
+}
+
+# Di Child
+di_child = {
+	category = fame
+	opposites = {
+		child_of_concubine
+	}
+	# Modifier that will be applied for characters with a culture with the specified parameter
+	culture_modifier = {
+		parameter = dishu_system
+		short_reign_duration_mult = -0.15
+		courtly_opinion = 5
+		zealot_opinion = 10
+		monthly_piety_gain_mult = 0.1
+	}
+	culture_succession_prio = dishu_system
+	
+	shown_in_ruler_designer = no
+
+	name = trait_di_child
+	
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					NOT = { exists = this }
+				}
+				desc = trait_di_child_desc
+			}
+			triggered_desc = {
+				trigger = {
+					any_parent = {
+						can_have_four_consorts_trigger = yes
+					}
+					is_male = yes
+				}
+				desc = trait_di_child_imperial_male_desc
+			}
+			triggered_desc = {
+				trigger = {
+					any_parent = {
+						can_have_four_consorts_trigger = yes
+					}
+					is_male = no
+				}
+				desc = trait_di_child_imperial_female_desc
+			}
+			triggered_desc = {
+				trigger = {
+					is_male = yes
+				}
+				desc = trait_di_child_male_desc
+			}
+			desc = trait_di_child_female_desc
+		}
+	}
 }
