@@ -7,6 +7,238 @@ namespace = pregnancy
 # This event is always called on pregnancy start. Determines if the pregnancy will continue smoothly, if it will continue with complications, or be terminated prematurely.
 #If either the birth goes smoothly, the mother grows sick, or the child grows sick, it will trigger the ordinary birth event (birth.0001). Otherwise a custom event will be triggered.
 
+pregnancy.0001 = {
+	hidden = yes
+	immediate = {
+		# Check first if pregnancy should be invalid
+		if = {
+			limit = { should_disallow_pregnancy_trigger = yes }
+			# End the pregnancy
+			end_pregnancy = yes
+			pregnancy_cleanup_effect = yes
+			# only check for genetic infertility if the pregnancy was otherwise valid
+			if = {
+				limit = {
+					NOR = {
+						has_game_rule = lmf_no_birth_fertility_modifiers
+						has_character_flag = lmf_no_children
+						scope:real_father = { has_character_flag = lmf_no_children }
+						has_relation_unfruitful_marriage = scope:real_father
+						realistic_pregnancy_system_prevents_pregnancy = yes
+					}
+				}
+				inactive_infertility_check_effect = yes
+			}
+		}
+		# Failing that, proceed
+		else = {
+			#PREGNANCY COMPLICATION CALCULATIONS & FLAG-SETTING
+			random_list = {
+				200 = { #All goes smoothly!
+					#Less likely if health is bad
+					modifier = {
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						health >= excellent_health
+						add = 10
+					}
+					modifier = {
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						health >= good_health
+						add = 5
+					}
+					modifier = {
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						health <= fine_health
+						add = -15
+					}
+					modifier = {
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						health <= poor_health
+						add = -20
+					}
+					modifier = {
+						has_game_rule = lmf_no_birth_fertility_modifiers
+						health <= fine_health
+						add = -10
+					}
+					modifier = {
+						has_game_rule = lmf_no_birth_fertility_modifiers
+						health <= poor_health
+						add = -15
+					}
+
+					#More kids means less risk of complications!
+					modifier = {
+						add = 5
+						any_child = {
+							even_if_dead = yes
+							count >= 2
+						}
+					}
+					modifier = {
+						add = 5
+						any_child = {
+							even_if_dead = yes
+							count >= 4
+						}
+					}
+					
+					#First pregnancy is the riskiest
+					modifier = {
+						add = -20
+						NOR = {
+							has_game_rule = lmf_no_birth_fertility_modifiers
+							any_child = {
+								even_if_dead = yes
+							}
+						}
+					}
+					
+					#Less likely the older the mother is
+					modifier = {
+						add = -5
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						age >= 30
+					}
+					modifier = {
+						add = -5
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						age >= 35
+					}
+					modifier = {
+						add = -10
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						age >= 40
+					}
+					
+					#Less likely when underweight
+					modifier = {
+						add = -10
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						current_weight < -50
+					}
+					modifier = {
+						add = 10
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						current_weight > 50
+					}
+					
+					#More likely if fecund
+					modifier = {
+						add = 25
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+						has_trait = fecund
+					}
+
+					#More likely if you have sacred childbirth
+					modifier = {
+						factor = 2 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
+						faith = {
+							has_doctrine_parameter = safer_childbirths_active
+						}
+					}
+					#More likely if the Dynasty has the Kin legacy
+					modifier = {
+						factor = 1.5 # So too should constant care of pregnant/birthing mothers.
+						has_dynasty = yes
+						dynasty = {
+							has_dynasty_perk = kin_legacy_3
+						}
+					}
+
+					add_character_flag = {
+						flag = birth_will_go_smoothly
+						days = 270
+					}
+				}
+				25 = { #Pregnancy ends prematurely
+					modifier = {
+						add = -15
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					trigger_event = {
+						id = pregnancy.2101
+						days = { 80 120 }
+					}
+				}
+				15 = { #Child dies during delivery (this triggers when the birth "should" have gone down, since we dont want to create the baby)
+					modifier = {
+						add = -12
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					trigger_event = {
+						id = birth.3001
+						days = { 180 200 }
+					}
+				}
+				3 = { #Mother dies
+					modifier = { #to keep players from dying excessively
+						add = -2
+						is_ai = no
+					}
+					modifier = {
+						add = -1
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					add_character_flag = { #Flags blocks other birth events
+						flag = birth_mother_will_die
+						days = 270
+					}
+				}
+				3 = { #Mother and child dies (this triggers when the birth "should" have gone down, since we dont want to create the baby)
+					modifier = { #to keep players from dying excessively
+						add = -2
+						is_ai = no
+					}
+					modifier = {
+						add = -1
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					trigger_event = {
+						id = birth.3021
+						days = { 180 200 }
+					}
+				}
+				20 = { #Sickly child (all other events happen as usual)
+					modifier = {
+						add = -10
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					modifier = {
+						factor = 0.5 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
+						faith = {
+							has_doctrine_parameter = healthier_children_active
+						}
+					}
+					add_character_flag = { #Flags blocks other birth events
+						flag = birth_child_will_become_sickly
+						days = 270
+					}
+				}
+				15 = { #Ill mother (all other events happen as usual)
+					modifier = { #to keep players from dying excessively
+						add = -5
+						is_ai = no
+						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
+					}
+					modifier = { #to keep players from dying excessively
+						add = -4
+						is_ai = no
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					modifier = {
+						add = -10
+						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					add_character_flag = { #Flags blocks other birth events
+						flag = birth_mother_will_become_ill
+						days = 270
+					}
+				}
+			}
+		}
+	}
+}
 # by Linnéa Thimrén
 pregnancy.0001 = {
 	hidden = yes
