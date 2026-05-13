@@ -34,7 +34,45 @@ pregnancy.0001 = {
 		else = {
 			#PREGNANCY COMPLICATION CALCULATIONS & FLAG-SETTING
 			random_list = {
-				200 = { #All goes smoothly!
+				100 = { #All goes smoothly!
+					# Harem Politics - health
+					# Physician
+					modifier = {
+						OR = {
+							court_owner ?= {
+								employs_court_position = court_physician_court_position
+								court_position:court_physician_court_position = {
+									NOR = {
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:mother }
+									}
+								}
+							}
+							AND = {
+								employs_court_position = court_physician_court_position
+								court_position:court_physician_court_position = {
+									NOR = {
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:mother }
+									}
+								}
+							}
+						}
+						add = 15
+					}
+					#Less likely if health is bad
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						health >= poor_health
+						add = -33
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = -50
+					}
+					# LMF
 					#Less likely if health is bad
 					modifier = {
 						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
@@ -129,6 +167,102 @@ pregnancy.0001 = {
 						NOT = { has_game_rule = lmf_no_birth_fertility_modifiers }
 						has_trait = fecund
 					}
+					## Harem Politics ##
+					# Mother's age
+					modifier = { # Too old, riskier
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						age >= 42
+						factor = 0.25
+					}
+					modifier = { # Too young/old, riskier
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						OR = {
+							age <= 16
+							age >= 40
+						}
+						age < 42
+						factor = 0.5
+					}
+					modifier = { # Medium young/old, risky
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						OR = {
+							age = 17
+							age >= 37
+						}
+						age < 40
+						factor = 0.67
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						OR = {
+							AND = {
+								age >= 18
+								age < 21
+							}
+							age >= 30
+						}
+						age < 37
+						factor = 0.84
+					}
+					# Father's age
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 45
+						}
+						factor = 0.85
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 50
+						}
+						factor = 0.75
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 60
+						}
+						factor = 0.75
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						factor = 0.75
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 1
+						factor = 0.9
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 2
+						factor = 0.8
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 3
+						factor = 0.7
+					}
+					# Incest
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.125
+						factor = 0.25
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.25
+						factor = 0.5
+					}
 
 					#More likely if you have sacred childbirth
 					modifier = {
@@ -151,20 +285,183 @@ pregnancy.0001 = {
 						days = 270
 					}
 				}
-				25 = { #Pregnancy ends prematurely
+				20 = { #Pregnancy ends prematurely
 					modifier = {
 						add = -15
 						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 1
+					}
+					# Father's age
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 45
+						}
+						add = 2
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 50
+						}
+						add = 4
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 60
+						}
+						add = 8
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 4
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 8
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 1
+						add = 2
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 2
+						add = 4
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 3
+						add = 8
+					}
+					# Malnourishment
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						has_character_modifier = malnourished_modifier
+						add = 8
+					}
+					# Incest
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.125
+						add = 8
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.25
+						add = 8
 					}
 					trigger_event = {
 						id = pregnancy.2101
 						days = { 80 120 }
 					}
 				}
-				15 = { #Child dies during delivery (this triggers when the birth "should" have gone down, since we dont want to create the baby)
+				5 = { #Child dies during delivery (this triggers when the birth "should" have gone down, since we dont want to create the baby)
 					modifier = {
-						add = -12
+						add = -2
 						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 1
+					}
+					# Father's age
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 45
+						}
+						add = 1
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 50
+						}
+						add = 1
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 2
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 1
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 1
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 2
+						add = 2
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 3
+						add = 3
+					}
+					# Malnourishment
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						has_character_modifier = malnourished_modifier
+						add = 1
+					}
+					# Incest
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.125
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.25
+						add = 1
 					}
 					trigger_event = {
 						id = birth.3001
@@ -180,6 +477,48 @@ pregnancy.0001 = {
 						add = -1
 						has_game_rule = lmf_no_birth_fertility_modifiers
 					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 1
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 1
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 1
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level >= 1
+						add = 1
+					}
+					# Obesity
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						has_character_modifier = obese_modifier
+						add = 1
+					}
 					add_character_flag = { #Flags blocks other birth events
 						flag = birth_mother_will_die
 						days = 270
@@ -194,15 +533,129 @@ pregnancy.0001 = {
 						add = -1
 						has_game_rule = lmf_no_birth_fertility_modifiers
 					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 1
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 1
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 1
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level >= 1
+						add = 1
+					}
 					trigger_event = {
 						id = birth.3021
 						days = { 180 200 }
 					}
 				}
-				20 = { #Sickly child (all other events happen as usual)
+				16 = { #Sickly child (all other events happen as usual)
 					modifier = {
 						add = -10
 						has_game_rule = lmf_no_birth_fertility_modifiers
+					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 1
+					}
+					# Father's age
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 50
+						}
+						add = 2
+					}
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						scope:real_father ?= {
+							age >= 60
+						}
+						add = 4
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 4
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 4
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 1
+						add = 2
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 2
+						add = 4
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 3
+						add = 8
+					}
+					# Malnourishment
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						has_character_modifier = malnourished_modifier
+						add = 8
+					}
+					# Incest
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.125
+						add = 8
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						parent_relatedness >= 0.25
+						add = 8
 					}
 					modifier = {
 						factor = 0.5 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
@@ -230,632 +683,62 @@ pregnancy.0001 = {
 						add = -10
 						has_game_rule = lmf_no_birth_fertility_modifiers
 					}
+					# Harem Politics
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < fine_health
+						add = 2
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						health < poor_health
+						add = 2
+					}
+					# Maternal Depletion Syndrome
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						any_child = {
+							is_alive = yes
+							age < 1
+							count > 0
+						}
+						add = 4
+					}
+					# First-timer
+					modifier = {
+						NOT = { has_game_rule = calyver_safe_pregnancy }
+						any_child = {
+							even_if_dead = yes
+							count = 0
+						}
+						add = 4
+					}
+					# Mother's stress level
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 1
+						add = 1
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 2
+						add = 2
+					}
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						stress_level = 3
+						add = 4
+					}
+					# Obesity
+					modifier = {
+						has_game_rule = calyver_dangerous_pregnancy
+						has_character_modifier = obese_modifier
+						add = 6
+					}
 					add_character_flag = { #Flags blocks other birth events
 						flag = birth_mother_will_become_ill
 						days = 270
 					}
-				}
-			}
-		}
-	}
-}
-# by Linnéa Thimrén
-pregnancy.0001 = {
-	hidden = yes
-	immediate = {
-		#PREGNANCY COMPLICATION CALCULATIONS & FLAG-SETTING
-		random_list = {
-			85 = { #All goes smoothly!
-				# Harem Politics - health
-				# Physician
-				modifier = {
-					OR = {
-						court_owner ?= {
-							employs_court_position = court_physician_court_position
-							court_position:court_physician_court_position = {
-								NOR = {
-									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
-									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:mother }
-								}
-							}
-						}
-						AND = {
-							employs_court_position = court_physician_court_position
-							court_position:court_physician_court_position = {
-								NOR = {
-									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:father }
-									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:mother }
-								}
-							}
-						}
-					}
-					add = 15
-				}
-				#Less likely if health is bad
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					health >= poor_health
-					add = -33
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = -50
-				}
-				## Vanilla ##
-				#More kids means less risk of complications!
-				modifier = {
-					add = 5
-					any_child = {
-						even_if_dead = yes
-						count >= 2
-					}
-				}
-				modifier = {
-					add = 5
-					any_child = {
-						even_if_dead = yes
-						count >= 4
-					}
-				}
-
-				## Harem Politics ##
-				# Mother's age
-				modifier = { # Too old, riskier
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					age >= 42
-					factor = 0.25
-				}
-				modifier = { # Too young/old, riskier
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					OR = {
-						age <= 16
-						age >= 40
-					}
-					age < 42
-					factor = 0.5
-				}
-				modifier = { # Medium young/old, risky
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					OR = {
-						age = 17
-						age >= 37
-					}
-					age < 40
-					factor = 0.67
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					OR = {
-						AND = {
-							age >= 18
-							age < 21
-						}
-						age >= 30
-					}
-					age < 37
-					factor = 0.84
-				}
-				# Father's age
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 45
-					}
-					factor = 0.85
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 50
-					}
-					factor = 0.75
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 60
-					}
-					factor = 0.75
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					factor = 0.75
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					factor = 0.5
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 1
-					factor = 0.9
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 2
-					factor = 0.8
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 3
-					factor = 0.7
-				}
-				# Incest
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.125
-					factor = 0.25
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.25
-					factor = 0.5
-				}
-				## Vanilla ##
-				#More likely if you have sacred childbirth
-				modifier = {
-					factor = 2 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
-					faith = {
-						has_doctrine_parameter = safer_childbirths_active
-					}
-				}
-				#More likely if the Dynasty has the Kin legacy
-				modifier = {
-					factor = 1.5 # So too should constant care of pregnant/birthing mothers.
-					has_dynasty = yes
-					dynasty = {
-						has_dynasty_perk = kin_legacy_3
-					}
-				}
-
-				add_character_flag = {
-					flag = birth_will_go_smoothly
-					days = 270
-				}
-			}
-			16 = { #Pregnancy ends prematurely
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 1
-				}
-				# Father's age
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 45
-					}
-					add = 2
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 50
-					}
-					add = 4
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 60
-					}
-					add = 8
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 4
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 8
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 1
-					add = 2
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 2
-					add = 4
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 3
-					add = 8
-				}
-				# Malnourishment
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					has_character_modifier = malnourished_modifier
-					add = 8
-				}
-				# Incest
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.125
-					add = 8
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.25
-					add = 8
-				}
-
-				trigger_event = {
-					id = pregnancy.2101
-					days = { 80 120 }
-				}
-			}
-			5 = { #Child dies during delivery (this triggers when the birth "should" have gone down, since we don't want to create the baby)
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 1
-				}
-				# Father's age
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 45
-					}
-					add = 1
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 50
-					}
-					add = 1
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 2
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 1
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 1
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 2
-					add = 2
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 3
-					add = 3
-				}
-				# Malnourishment
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					has_character_modifier = malnourished_modifier
-					add = 1
-				}
-				# Incest
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.125
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.25
-					add = 1
-				}
-
-				trigger_event = {
-					id = birth.3001
-					days = { 180 200 }
-				}
-			}
-			3 = { #Mother dies
-				modifier = { #to keep players from dying excessively
-					add = -2
-					is_ai = no
-				}
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 1
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 1
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 1
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level >= 1
-					add = 1
-				}
-				# Obesity
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					has_character_modifier = obese_modifier
-					add = 1
-				}
-
-				add_character_flag = { #Flags blocks other birth events
-					flag = birth_mother_will_die
-					days = 270
-				}
-			}
-			3 = { #Mother and child dies (this triggers when the birth "should" have gone down, since we don't want to create the baby)
-				modifier = { #to keep players from dying excessively
-					add = -2
-					is_ai = no
-				}
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 1
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 1
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 1
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level >= 1
-					add = 1
-				}
-
-				trigger_event = {
-					id = birth.3021
-					days = { 180 200 }
-				}
-			}
-			16 = { #Sickly child (all other events happen as usual)
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 1
-				}
-				# Father's age
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 50
-					}
-					add = 2
-				}
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					scope:real_father ?= {
-						age >= 60
-					}
-					add = 4
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 4
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 4
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 1
-					add = 2
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 2
-					add = 4
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 3
-					add = 8
-				}
-				# Malnourishment
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					has_character_modifier = malnourished_modifier
-					add = 8
-				}
-				# Incest
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.125
-					add = 8
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					parent_relatedness >= 0.25
-					add = 8
-				}
-				# Vanilla
-				modifier = {
-					factor = 0.5 # Religious doctrine focusing on providing a sanitary birthing chamber and supplies should have a substantial impact on birth complications.
-					faith = {
-						has_doctrine_parameter = healthier_children_active
-					}
-				}
-				add_character_flag = { #Flags blocks other birth events
-					flag = birth_child_will_become_sickly
-					days = 270
-				}
-			}
-			8 = { #Ill mother (all other events happen as usual)
-				modifier = { #to keep players from dying excessively
-					add = -4
-					is_ai = no
-				}
-				# Harem Politics
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < fine_health
-					add = 2
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					health < poor_health
-					add = 2
-				}
-				# Maternal Depletion Syndrome
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					any_child = {
-						is_alive = yes
-						age < 1
-						count > 0
-					}
-					add = 4
-				}
-				# First-timer
-				modifier = {
-					NOT = { has_game_rule = calyver_safe_pregnancy }
-					any_child = {
-						even_if_dead = yes
-						count = 0
-					}
-					add = 4
-				}
-				# Mother's stress level
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 1
-					add = 1
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 2
-					add = 2
-				}
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					stress_level = 3
-					add = 4
-				}
-				# Obesity
-				modifier = {
-					has_game_rule = calyver_dangerous_pregnancy
-					has_character_modifier = obese_modifier
-					add = 6
-				}
-
-				add_character_flag = { #Flags blocks other birth events
-					flag = birth_mother_will_become_ill
-					days = 270
 				}
 			}
 		}
