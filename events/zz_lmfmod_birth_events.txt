@@ -1,0 +1,2725 @@
+﻿namespace = lmf_birth
+
+###########################
+# SECLUDING UNWED MOTHERS #
+###########################
+
+scripted_effect seclusion_effect = {
+	random_list = {
+		20 = {
+			modifier = {
+				factor = 2
+				has_trait = ambitious
+			}
+			trigger = {
+				OR = {
+					has_trait = ambitious
+					NOR = {
+						has_trait = ambitious
+						has_trait = content
+					}
+				}
+			}
+			if = {
+				limit = { has_trait = ambitious }
+				remove_trait = ambitious
+			}
+			else = {
+				add_trait = content
+			}
+		}
+		20 = {
+			modifier = {
+				factor = 2
+				has_trait = arrogant
+			}
+			trigger = {
+				OR = {
+					has_trait = arrogant
+					NOR = {
+						has_trait = arrogant
+						has_trait = humble
+					}
+				}
+			}
+			if = {
+				limit = { has_trait = arrogant }
+				remove_trait = arrogant
+			}
+			else = {
+				add_trait = humble
+			}
+		}
+		60 = {
+			modifier = {
+				factor = 2
+				has_trait = lustful
+			}
+			trigger = {
+				OR = {
+					has_trait = lustful
+					NOR = {
+						has_trait = lustful
+						has_trait = chaste
+					}
+				}
+			}
+			if = {
+				limit = { has_trait = lustful }
+				remove_trait = lustful
+			}
+			else = {
+				add_trait = chaste
+			}
+		}
+		30 = {
+			trigger = {
+				NOR = {
+					has_trait = depressed_1
+					has_trait = depressed_genetic
+				}
+			}
+			modifier = {
+				factor = 2
+				has_personality_submissive_trigger = yes
+			}
+			add_trait = depressed_1
+		}
+		10 = {}
+	}
+}
+
+scripted_effect stray_bastard_effect = {
+	hidden_effect = {
+		random_list = {
+			25 = {
+				trigger = {
+					scope:family_title = {
+						NOT = { has_variable = stray_bastard }
+					}
+				}
+				modifier = {
+					add = 25
+					root = { is_ai = no }
+				}
+				if = {
+					limit = { exists = scope:child }
+					scope:child = { save_scope_as = bastard_baby }
+				}
+				scope:family_title = {
+					set_variable = { name = stray_bastard value = yes years = 20 }
+					trigger_event = { id = lmf_birth.1005 years = 18 }
+				}
+			}
+			75 = {
+				modifier = {
+					add = -25
+					root = { is_ai = no }
+				}
+			}
+		}
+	}
+	if = {
+		limit = { exists = scope:child }
+
+		# make a new mother rather than using the dummy female to avoid errors
+		create_character = {
+			location = scope:child.location
+			culture = scope:child.culture
+			faith = scope:child.faith
+			gender_female_chance = 100
+			dynasty = none
+			age = 36
+			save_scope_as = new_mother
+			after_creation = {
+				copy_inheritable_appearance_from = scope:child
+				death = { death_reason = death_disappearance }
+			}
+		}
+
+		scope:child = {
+			hidden_effect = { set_mother = scope:new_mother }
+			death = { death_reason = death_disappearance }
+		}
+	}
+}
+
+scripted_effect update_bastard_birth_status_effect = {
+	if = {
+		limit = {
+			scope:relative = { is_alive = yes }
+		}
+		scope:relative = {
+			add_prestige = medium_prestige_loss
+			if = {
+				limit = { is_consort_of = scope:baby_father }
+				scope:stray_bastard = { set_father = scope:baby_father }
+			}
+			else_if = {
+				limit = {
+					NOT = { has_trait = fornicator }
+					trait_is_shunned_or_criminal_in_my_or_lieges_faith_trigger = { TRAIT = trait:fornicator GENDER_CHARACTER = scope:relative }
+				}
+				add_trait_force_tooltip = fornicator
+				if = {
+					limit = {
+						NOR = {
+							is_imprisoned_by = root
+							is_at_war_with = root
+						}
+						OR = {
+							is_vassal_of = root
+							is_courtier_of = root
+						}
+					}
+					hidden_effect = {
+						consume_all_criminal_reasons_effect = {
+							LIEGE = root
+							CRIMINAL = scope:relative
+						}
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:baby_father
+				scope:baby_father = {
+					is_alive = yes
+					NOT = { is_consort_of = scope:relative }
+				}
+			}
+			hidden_effect = {
+				scope:relative = {
+					add_secret = {
+						type = secret_unmarried_illegitimate_child
+						target = scope:stray_bastard
+					}
+					if = {
+						limit = { exists = scope:suspected_father }
+						random_secret = {
+							type = secret_unmarried_illegitimate_child
+							limit = { secret_target = scope:stray_bastard }
+							root = {
+								add_character_flag = { flag = block_secret_unmarried_illegitimate_child_discovery_event days = 10 }
+							}
+							reveal_to = root
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+scripted_effect replace_bastard_inherited_traits = {
+	every_character_trait = {
+		limit = { is_inherited_trait_trigger = yes }
+		scope:stray_bastard = { remove_trait = prev }
+	}
+	scope:bastard_baby = {
+		every_character_trait = {
+			limit = { is_inherited_trait_trigger = yes }
+			scope:stray_bastard = { add_trait = prev }
+		}
+	}
+}
+
+# Spymaster informs liege of suspicion that their unmarried relative is pregnant
+lmf_birth.1001 = {
+	type = character_event
+	title = lmf_birth.1001.t
+	desc = {
+		desc = lmf_birth.1001.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:suspected_father }
+				desc = lmf_birth.1001.know
+			}
+			desc = lmf_birth.1001.secret
+		}
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:convent }
+				desc = lmf_birth.1001.convent
+			}
+			desc = lmf_birth.1001.end
+		}
+	}
+	theme = pregnancy
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:spymaster
+		animation = disapproval
+	}
+	right_portrait = {
+		character = scope:relative
+		animation = shame
+	}
+	lower_right_portrait = {
+		trigger = { exists = scope:suspected_father }
+		character = scope:suspected_father
+	}
+
+	immediate = {
+		play_music_cue = "mx_cue_succession"
+		hidden_effect = {
+			#first figure out where the pregnant mother can be secluded
+			top_liege = {
+				random_realm_province = {
+					limit = {
+						has_holding_type = church_holding
+						barony = {
+							holder ?= {
+								NOR = {
+									is_at_war_with = root
+									has_relation_rival = root
+									has_relation_rival = scope:relative
+								}
+							}
+							lessee ?= {
+								NOR = {
+									is_at_war_with = root
+									has_relation_rival = root
+									has_relation_rival = scope:relative
+								}
+							}
+						}
+						NOT = {
+							any_army_in_location = {
+								army_owner = {
+									is_at_war_with = root
+								}
+							}
+						}
+					}
+					weight = {
+						base = 1
+						modifier = {
+							add = 3
+							barony = {
+								lessee ?= {
+									 OR = {
+										 is_vassal_of = root
+										 is_courtier_of = root
+									 }
+								}
+							}
+						}
+						modifier = {
+							add = 1
+							barony = {
+								holder ?= { is_vassal_of = root }
+							}
+						}
+						modifier = {
+							add = 3
+							barony = {
+								lessee ?= {
+									opinion = { target = root value > 0 }
+									opinion = { target = scope:relative value > 0 }
+								}
+							}
+						}
+						modifier = {
+							add = 10
+							barony = {
+								lessee ?= { has_relation_friend = scope:relative }
+							}
+						}
+						modifier = {
+							add = 10
+							barony = {
+								lessee ?= { has_relation_friend = root }
+							}
+						}
+					}
+					save_scope_as = convent
+				}
+			}
+			#then check whether the liege should really already know who the real_father is
+			if = {
+				limit = {
+					exists = scope:baby_father
+					OR = {
+						any_known_secret = {
+							secret_owner = scope:relative
+							secret_type = secret_lover
+							secret_target = scope:baby_father
+						}
+						scope:relative = {
+							has_relation_lover = scope:baby_father
+							NOT = {
+								any_secret = {
+									type = secret_lover
+									secret_target = scope:baby_father
+								}
+							}
+						}
+					}
+					scope:baby_father = {
+						OR = {
+							is_courtier_of = root
+							is_pool_guest_of = root
+						}
+						NOT = { has_council_position = councillor_spymaster }
+					}
+				}
+				scope:baby_father = { save_scope_as = suspected_father }
+				root = {
+					add_opinion = {
+						target = scope:suspected_father
+						modifier = angry_opinion
+						opinion = -40
+					}
+				}
+			}
+			#then see if the liege's spymaster can figure out who the real_father might be
+			else_if = {
+				limit = {
+					exists = scope:baby_father
+					scope:baby_father = {
+						OR = {
+							is_courtier_of = root
+							is_pool_guest_of = root
+						}
+						NOT = { has_council_position = councillor_spymaster }
+					}
+					cp:councillor_spymaster = {
+						NOR = {
+							has_relation_friend = scope:baby_father
+							has_relation_best_friend = scope:baby_father
+						}
+					}
+				}
+				cp:councillor_spymaster = {
+					duel = {
+						skill = intrigue
+						target = scope:baby_father
+						30 = {
+							compare_modifier = {
+								value = scope:duel_value
+								multiplier = 3.5
+								min = -49
+							}
+							min = 5
+							scope:baby_father = { save_scope_as = suspected_father }
+							root = {
+								add_opinion = {
+									target = scope:suspected_father
+									modifier = angry_opinion
+									opinion = -20
+								}
+							}
+						}
+						70 = {
+							compare_modifier = {
+								value = scope:duel_value
+								multiplier = -3.5
+								min = -49
+							}
+							min = 5
+						}
+					}
+				}
+			}
+			add_opinion = {
+				target = scope:relative
+				modifier = ashamed_opinion
+				opinion = -20
+			}
+		}
+	}
+
+	option = {
+		name = lmf_birth.1001.a #Send her into seclusion - this never happened
+		trigger = { exists = scope:convent }
+		capital_county = { save_scope_as = family_title }
+		scope:relative = {
+			move_to_pool_at = scope:convent
+			add_trait = seclusion
+			if = {
+				limit = { exists = scope:suspected_father }
+				show_as_tooltip = {
+					remove_lover_or_soulmate_relation_effect = { CHARACTER = scope:suspected_father }
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = sent_into_seclusion_opinion
+			}
+			hidden_effect = {
+				trigger_event = {
+					id = lmf_birth.1002
+					days = { 160 179 }
+				}
+				add_trait_force_tooltip = pregnant
+				set_num_pregnancy_children = 1
+				set_variable = { name = last_visited_ruler value = root months = 12 }
+				add_character_flag = { flag = unmarried_bastard_pregnancy months = 9 }
+				set_known_bastard_on_pregnancy = yes
+				if = {
+					limit = {
+						exists = scope:baby_father
+						has_relation_lover = scope:baby_father
+					}
+					root = { save_scope_as = relative_liege }
+					scope:baby_father = { trigger_event = lmf_birth.1008 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_vengefulness = 1
+			}
+			min = 0
+		}
+	}
+	option = {
+		name = lmf_birth.1001.d #Shotgun wedding time
+		trigger = {
+			exists = scope:suspected_father
+			scope:suspected_father = {
+				can_marry_character_trigger = { CHARACTER = scope:relative }
+			}
+		}
+		add_prestige = minor_prestige_loss
+		scope:suspected_father = {
+			if = {
+				limit = {
+					OR = {
+						is_lowborn = yes
+						root = { is_ai = no }
+						scope:relative.faith = { has_doctrine = doctrine_gender_female_dominated }
+						scope:relative.faith = { has_doctrine = doctrine_gender_equal }
+						AND = {
+							scope:relative = { any_heir_title = {} }
+							NOR = {
+								has_game_rule = matrilineal_marriages_never
+								has_game_rule = matrilineal_marriages_female_and_equal
+							}
+						}
+					}
+				}
+				marry_matrilineal = scope:relative
+			}
+			else = {
+				marry = scope:relative
+			}
+		}
+		scope:relative = {
+			trigger_event = pregnancy.1001
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0.25
+				scope:suspected_father = { is_lowborn = yes }
+			}
+			opinion_modifier = {
+				who = root
+				opinion_target = scope:suspected_father
+				max = 50
+			}
+			ai_value_modifier = {
+				ai_honor = 0.5
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					has_relation_rival = scope:suspected_father
+					has_relation_nemesis = scope:suspected_father
+					scope:suspected_father = { is_close_or_extended_family_of = scope:relative }
+				}
+			}
+			min = 0
+		}
+	}
+	option = {
+		name = lmf_birth.1001.b #Banish her!
+		trigger = { NOT = { exists = scope:convent } }
+		scope:relative = {
+			banish = yes
+			add_opinion = { modifier = banished_me target = root }
+			add_character_flag = liege_refused_seclusion
+			trigger_event = pregnancy.2001
+		}
+		ai_chance = {
+			base = 0
+			ai_value_modifier = {
+				ai_vengefulness = 1
+			}
+			modifier = {
+				add = 20
+				has_trait = zealous
+			}
+			modifier = {
+				add = -20
+				has_trait = cynical
+			}
+			modifier = {
+				factor = 0
+				any_heir = { this = scope:relative }
+			}
+			min = 0
+		}
+	}
+	option = {
+		name = lmf_birth.1001.c #We shall deal with the consequences
+		if = {
+			limit = {
+				exists = player_heir
+				player_heir = { this = scope:relative }
+			}
+			dynasty = { add_dynasty_prestige = medium_dynasty_prestige_loss }
+			add_prestige = major_prestige_loss
+		}
+		else_if = {
+			limit = {
+				OR = {
+					any_heir = { this = scope:relative }
+					scope:relative = {
+						is_child_of = root
+						NOR = {
+							has_trait = bastard
+							has_trait = legitimized_bastard
+							has_trait = disputed_heritage
+						}
+					}
+				}
+			}
+			dynasty = { add_dynasty_prestige = minor_dynasty_prestige_loss }
+			add_prestige = medium_prestige_loss
+		}
+		else = {
+			dynasty = { add_dynasty_prestige = miniscule_dynasty_prestige_loss }
+			add_prestige = minor_prestige_loss
+		}
+		scope:relative = {
+			add_prestige = major_prestige_loss
+			add_character_flag = liege_refused_seclusion
+			trigger_event = pregnancy.2001
+			if = {
+				limit = { exists = scope:suspected_father }
+				random_secret = {
+					type = secret_lover
+					limit = {
+						secret_target = scope:suspected_father
+						NOT = { is_known_by = root }
+					}
+					reveal_to = root
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 2
+				#as opposed to criminal
+				trait_is_shunned_in_faith_trigger = { TRAIT = trait:fornicator FAITH = root.faith GENDER_CHARACTER = scope:relative }
+			}
+			ai_value_modifier = {
+				ai_compassion = 1
+			}
+			modifier = {
+				factor = 2
+				faith = { has_doctrine_parameter = bastards_none }
+			}
+			modifier = {
+				factor = 2
+				OR = {
+					has_trait = fornicator
+					has_trait = adulterer
+				}
+			}
+			modifier = {
+				factor = 0.1
+				any_heir = { this = scope:relative }
+			}
+			min = 1
+		}
+	}
+}
+
+# Bounce event to check if secluded mother is still eligible
+lmf_birth.1002 = {
+	hidden = yes
+
+	trigger = {
+		has_trait = seclusion
+		is_alive = yes
+	}
+
+	immediate = {
+		location = { save_scope_as = birthplace }
+		#increased chance of death in seclusion
+		random = {
+			chance = 10
+			add_character_flag = birth_mother_will_die
+		}
+		#first check if things should proceed normally
+		if = {
+			limit = {
+				is_pregnant = yes
+				is_hostage = no
+				is_imprisoned = no
+				is_ruler = no
+				any_close_or_extended_family_member = { is_playable_character = yes }
+			}
+			random_close_or_extended_family_member = {
+				limit = {
+					is_playable_character = yes
+					reverse_has_opinion_modifier = {
+						modifier = sent_into_seclusion_opinion
+						target = root
+					}
+				}
+				alternative_limit = {
+					any_held_title = { this = scope:family_title }
+				}
+				alternative_limit = {
+					is_close_family_of = root
+					is_playable_character = yes
+				}
+				alternative_limit = {
+					is_extended_family_of = root
+					is_playable_character = yes
+				}
+				if = {
+					limit = {
+						root = { has_character_flag = birth_mother_will_die }
+					}
+					trigger_event = lmf_birth.1003
+				}
+				else = {
+					trigger_event = lmf_birth.1004
+				}
+			}
+		}
+		#then check if the mother is simply no longer pregnant
+		else_if = {
+			limit = {
+				NOT = { is_pregnant = yes }
+				is_hostage = no
+				is_imprisoned = no
+				is_ruler = no
+				any_close_or_extended_family_member = { is_playable_character = yes }
+			}
+			random_close_or_extended_family_member = {
+				limit = {
+					is_playable_character = yes
+					reverse_has_opinion_modifier = {
+						modifier = sent_into_seclusion_opinion
+						target = root
+					}
+				}
+				alternative_limit = {
+					any_held_title = { this = scope:family_title }
+				}
+				alternative_limit = {
+					is_close_family_of = root
+					is_playable_character = yes
+				}
+				alternative_limit = {
+					is_extended_family_of = root
+					is_playable_character = yes
+				}
+				trigger_event = lmf_birth.1007
+			}
+		}
+		#failing all else, simply remove the trait
+		else = {
+			remove_trait = seclusion
+		}
+	}
+}
+
+# The secluded mother died during childbirth, but the child might yet live
+lmf_birth.1003 = {
+	type = character_event
+	title = lmf_birth.1003.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_child_dies }
+				desc = lmf_birth.1003.dead
+			}
+			desc = lmf_birth.1003.alive
+		}
+	}
+	theme = death
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:relative
+		animation = shame
+	}
+	lower_right_portrait ?= scope:child
+
+	immediate = {
+		play_music_cue = mx_cue_death
+		hidden_effect = {
+			add_character_flag = bp1_yearly_2020_suppress_death_events
+			scope:relative = {
+				contract_disease_effect = { DISEASE = ill TREATMENT_EVENT = no }
+				end_pregnancy = yes
+				pregnancy_cleanup_effect = yes
+			}
+			random_list = {
+				25 = {
+					add_character_flag = bastard_child_dies
+				}
+				75 = {
+					create_character = {
+						age = 0
+						location = scope:relative.location
+						dynasty = none
+						random_traits = yes
+						faith = scope:relative.faith
+						culture = scope:relative.culture
+						gender_female_chance = root_faith_dominant_gender_adjusted_female_chance
+						mother = scope:relative
+						real_father ?= scope:baby_father
+						save_scope_as = child
+						after_creation = {
+							if = {
+								limit = {
+									faith = { has_doctrine_parameter = bastards_none }
+								}
+								add_trait = wild_oat
+							}
+							else = {
+								add_trait = bastard
+							}
+							set_house = scope:relative.house
+							#chance to name the child after a relative
+							random = {
+								chance = 50
+								scope:relative = {
+									random_close_or_extended_family_member = {
+										even_if_dead = yes
+										limit = {
+											#after an older living relative or a dead one
+											OR = {
+												age > scope:relative.age
+												is_alive = no
+											}
+											NOT = { is_child_of = scope:relative }
+											sex_same_as = scope:child
+											trigger_if = {
+												limit = { is_alive = yes }
+												reverse_opinion = { target = scope:relative value >= 20 }
+											}
+										}
+										weight = {
+											modifier = {
+												reverse_opinion = { target = scope:relative value >= 40 }
+												factor = 5
+											}
+											modifier = {
+												reverse_opinion = { target = scope:relative value >= 60 }
+												factor = 3
+											}
+											modifier = {
+												is_playable_character = yes
+												factor = 2
+											}
+											modifier = { #Honor the dead
+												is_alive = no
+												factor = 2
+											}
+											modifier = {
+												factor = 0.5
+												NOT = { culture = scope:relative.culture }
+											}
+										}
+										scope:child = {
+											change_first_name = { template_character = prev }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = lmf_birth.1003.a #I never want to hear from it again
+		trigger = { NOT = { has_character_flag = bastard_child_dies } }
+		custom_tooltip = lmf_birth.1003.a.tt
+		scope:relative = {
+			death = {
+				death_reason = death_childbirth
+			}
+		}
+		hidden_effect = { stray_bastard_effect = yes }
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_vengefulness = 1
+			}
+		}
+	}
+	option = {
+		name = lmf_birth.1003.b #Bring the bastard here to be raised
+		trigger = { NOT = { has_character_flag = bastard_child_dies } }
+		custom_tooltip = lmf_birth.1003.b.tt
+		if = {
+			limit = {
+				player_heir = { this = scope:relative }
+			}
+			add_prestige = major_prestige_loss
+		}
+		else_if = {
+			limit = {
+				OR = {
+					any_heir = { this = scope:relative }
+					scope:relative = {
+						is_child_of = root
+						NOR = {
+							has_trait = bastard
+							has_trait = legitimized_bastard
+							has_trait = disputed_heritage
+						}
+					}
+				}
+			}
+			add_prestige = medium_prestige_loss
+		}
+		else = {
+			add_prestige = minor_prestige_loss
+		}
+		add_courtier = scope:child
+		scope:relative = {
+			death = {
+				death_reason = death_childbirth
+			}
+		}
+		if = {
+			limit = { is_ai = no }
+			trigger_event = birth.9004
+		}
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_compassion = 1
+			}
+		}
+	}
+	option = {
+		name = lmf_birth.1003.c #God watch over them both
+		trigger = { has_character_flag = bastard_child_dies }
+		remove_character_flag = bastard_child_dies
+		scope:relative = {
+			death = {
+				death_reason = death_childbirth
+			}
+		}
+	}
+}
+
+# Everything went as planned - do we bring the mother home?
+lmf_birth.1004 = {
+	type = character_event
+	title = lmf_birth.1004.t
+	desc = lmf_birth.1004.desc
+
+	theme = pregnancy
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:relative
+		animation = shame
+	}
+
+	immediate = {
+		hidden_effect = {
+			scope:relative = {
+				end_pregnancy = yes
+				pregnancy_cleanup_effect = yes
+				random = {
+					chance = 20
+					contract_disease_effect = { DISEASE = ill TREATMENT_EVENT = no }
+				}
+			}
+			stray_bastard_effect = yes
+		}
+	}
+
+	option = {
+		name = lmf_birth.1004.a #Bring her home
+		scope:relative = {
+			remove_trait = seclusion
+			seclusion_effect = yes
+		}
+		add_courtier = scope:relative
+		scope:relative = {
+			hidden_effect = {
+				trigger_event = { id = health.3100 days = 10 }
+			}
+		}
+		ai_chance = {
+			base = 80
+			modifier = {
+				factor = 2
+				OR = {
+					has_trait = fornicator
+					has_trait = adulterer
+				}
+			}
+			ai_value_modifier = {
+				ai_compassion = 0.5
+			}
+		}
+	}
+	option = {
+		name = lmf_birth.1004.b #Leave her there
+		scope:relative = {
+			remove_trait = seclusion
+			hidden_effect = { seclusion_effect = yes }
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -20
+			}
+			if = {
+				limit = {
+					NOR = {
+						has_trait = devoted
+						has_trait = septon
+						has_trait = silent_sister
+						has_trait = order_member
+						has_trait = excommunicated
+						has_trait = broke_vows
+						is_witch_trigger = yes
+						has_character_flag = holy_order_member_requested_return_home
+						exists = var:hostage_travelling_to_warden
+						exists = var:ward_travelling_to_guardian
+						exists = var:guardian_travelling_to_ward
+						ai_zeal <= -50
+						AND = {
+							exists = liege
+							NOT = { liege = root }
+						}
+					}
+					faith = { has_doctrine_parameter = take_vows_active }
+					is_ruler = no
+					is_hostage = no
+
+					#Do they have the "wrong" marriage type?
+					NOR = {
+						any_spouse = {
+							is_male = yes
+							patrilinear_marriage = yes
+						}
+						AND = {
+							exists = betrothed
+							betrothed = {
+								is_male = yes
+								patrilinear_betrothal = yes
+							}
+						}
+					}
+				}
+				add_trait = devoted
+				add_piety_level = 1
+			}
+			if = {
+				limit = { host ?= root }
+				host = {
+					remove_courtier_or_guest = scope:relative
+					every_courtier = {
+						limit = { has_relation_guardian = scope:relative }
+						save_scope_as = ward
+						remove_guardian_effect = {
+							GUARDIAN = scope:recipient
+							WARD = scope:ward
+							RETURN_WARD = yes
+							HIDE_OPINION = no
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 20
+			ai_value_modifier = {
+				ai_vengefulness = 0.5
+			}
+			modifier = {
+				factor = 0.1
+				any_heir = { this = scope:relative }
+			}
+			min = 0
+		}
+	}
+}
+
+# The lost bastard might resurface 18 years later
+lmf_birth.1005 = {
+	scope = none
+	hidden = yes
+
+	trigger = {
+		exists = scope:relative
+		exists = scope:family_title
+		scope:family_title = {
+			has_variable = stray_bastard
+			exists = holder
+			holder = {
+				OR = {
+					scope:relative = this
+					scope:baby_father ?= this
+					is_close_or_extended_family_of = scope:relative
+					dynasty = scope:relative.dynasty
+				}
+			}
+		}
+	}
+
+	immediate = {
+		scope:family_title = {
+			remove_variable = stray_bastard
+			holder = {
+				trigger_event = lmf_birth.1006
+			}
+		}
+	}
+}
+
+lmf_birth.1006 = {
+	type = character_event
+	title = lmf_birth.1006.t
+	desc = {
+		desc = lmf_birth.1006.opening
+		first_valid = {
+			triggered_desc = {
+				trigger = { root = scope:relative }
+				desc = lmf_birth.1006.mother
+			}
+			triggered_desc = {
+				trigger = { is_close_or_extended_family_of = scope:relative }
+				desc = lmf_birth.1006.family
+			}
+			desc = lmf_birth.1006.other
+		}
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_knight }
+				desc = lmf_birth.1006.knight
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_physician }
+				desc = lmf_birth.1006.physician
+			}
+			triggered_desc = {
+				trigger = {
+					has_character_flag = bastard_monk
+					scope:stray_bastard = { is_female = no }
+				}
+				desc = lmf_birth.1006.monk
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_monk }
+				desc = lmf_birth.1006.nun
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_rogue }
+				desc = lmf_birth.1006.rogue
+			}
+			triggered_desc = {
+				trigger = { has_character_flag = bastard_beauty }
+				desc = lmf_birth.1006.beauty
+			}
+		}
+		desc = lmf_birth.1006.end
+	}
+	theme = dynasty
+
+	right_portrait = {
+		character = scope:stray_bastard
+		triggered_animation = {
+			trigger = { scope:stray_bastard = { has_personality_dominant_trigger = yes } }
+			animation = personality_bold
+		}
+		triggered_animation = {
+			trigger = { scope:stray_bastard = { has_personality_benevolent_trigger = yes } }
+			animation = personality_compassionate
+		}
+		triggered_animation = {
+			trigger = { scope:stray_bastard = { has_personality_malicious_trigger = yes } }
+			animation = personality_vengeful
+		}
+		triggered_animation = {
+			trigger = { scope:stray_bastard = { has_personality_introverted_trigger = yes } }
+			animation = stress
+		}
+		animation = idle
+	}
+	lower_right_portrait = {
+		trigger = {
+			NOT = { root = scope:relative }
+		}
+		character = scope:relative
+	}
+	override_background = { reference = market }
+
+	immediate = {
+		hidden_effect = {
+			if = {
+				limit = { exists = scope:bastard_baby }
+				random_list = {
+					3 = {
+						modifier = {
+							add = -3
+							scope:bastard_baby = {
+								OR = {
+									has_trait = physique_bad
+									has_trait = hunchbacked
+									has_trait = spindly
+									has_trait = bleeder
+								}
+							}
+						}
+						modifier = {
+							add = 2
+							scope:bastard_baby = {
+								has_trait = physique_good
+							}
+						}
+						modifier = {
+							add = -2
+							scope:bastard_baby = { is_female = yes }
+						}
+						min = 0
+						add_character_flag = bastard_knight
+						create_character = {
+							template = stray_bastard_knight
+							dynasty = none
+							gender = scope:bastard_baby
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										NOT = {
+											can_be_combatant_based_on_gender_trigger = { ARMY_OWNER = root }
+										}
+									}
+									add_character_modifier = ignores_gender_army_rules
+								}
+								add_character_flag = wear_armor
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+								replace_bastard_inherited_traits = yes
+								copy_inheritable_appearance_from = scope:bastard_baby
+								change_first_name = { template_character = scope:bastard_baby }
+							}
+						}
+					}
+					1 = {
+						modifier = {
+							add = -1
+							scope:bastard_baby = {
+								OR = {
+									has_trait = intellect_bad
+									has_trait = inbred
+								}
+							}
+						}
+						modifier = {
+							add = 2
+							scope:bastard_baby = {
+								has_trait = intellect_good
+							}
+						}
+						add_character_flag = bastard_physician
+						create_character = {
+							template = stray_bastard_physician
+							dynasty = none
+							gender = scope:bastard_baby
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+								replace_bastard_inherited_traits = yes
+								copy_inheritable_appearance_from = scope:bastard_baby
+								change_first_name = { template_character = scope:bastard_baby }
+							}
+						}
+					}
+					1 = {
+						modifier = {
+							add = -1
+							scope:bastard_baby = {
+								OR = {
+									has_trait = intellect_bad
+									has_trait = inbred
+								}
+							}
+						}
+						modifier = {
+							add = 2
+							scope:bastard_baby = {
+								has_trait = intellect_good
+							}
+						}
+						add_character_flag = bastard_monk
+						create_character = {
+							template = stray_bastard_monk
+							dynasty = none
+							gender = scope:bastard_baby
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+								replace_bastard_inherited_traits = yes
+								copy_inheritable_appearance_from = scope:bastard_baby
+								change_first_name = { template_character = scope:bastard_baby }
+							}
+						}
+					}
+					1 = {
+						add_character_flag = bastard_rogue
+						create_character = {
+							template = stray_bastard_rogue
+							dynasty = none
+							gender = scope:bastard_baby
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+								replace_bastard_inherited_traits = yes
+								copy_inheritable_appearance_from = scope:bastard_baby
+								change_first_name = { template_character = scope:bastard_baby }
+							}
+						}
+					}
+					1 = {
+						trigger = {
+							scope:bastard_baby = {
+								is_female = yes
+								has_trait = beauty_good
+							}
+						}
+						modifier = {
+							add = -1
+							scope:bastard_baby = {
+								is_malformed_trigger = yes
+							}
+						}
+						add_character_flag = bastard_beauty
+						create_character = {
+							template = stray_bastard_beauty
+							dynasty = none
+							gender = female
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+								replace_bastard_inherited_traits = yes
+								copy_inheritable_appearance_from = scope:bastard_baby
+								change_first_name = { template_character = scope:bastard_baby }
+							}
+						}
+					}
+				}
+			}
+			else = {
+				random_list = {
+					3 = {
+						add_character_flag = bastard_knight
+						create_character = {
+							template = stray_bastard_knight
+							dynasty = none
+							gender_female_chance = root_soldier_female_chance
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								add_character_flag = wear_armor
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+							}
+						}
+					}
+					1 = {
+						add_character_flag = bastard_physician
+						create_character = {
+							template = stray_bastard_physician
+							dynasty = none
+							gender_female_chance = 50
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+							}
+						}
+					}
+					1 = {
+						add_character_flag = bastard_monk
+						create_character = {
+							template = stray_bastard_monk
+							dynasty = none
+							gender_female_chance = root_faith_clergy_gender_female_chance
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+							}
+						}
+					}
+					1 = {
+						add_character_flag = bastard_rogue
+						create_character = {
+							template = stray_bastard_rogue
+							dynasty = none
+							gender_female_chance = 50
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+							}
+						}
+					}
+					1 = {
+						add_character_flag = bastard_beauty
+						create_character = {
+							template = stray_bastard_beauty
+							dynasty = none
+							gender = female
+							location = root.location
+							mother = scope:relative
+							real_father ?= scope:baby_father
+							save_scope_as = stray_bastard
+							after_creation = {
+								if = {
+									limit = {
+										faith = { has_doctrine_parameter = bastards_none }
+									}
+									add_trait = wild_oat
+								}
+								else = {
+									add_trait = bastard
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = lmf_birth.1006.a #Recruit them
+		if = {
+			limit = {
+				NOT = { root = scope:relative }
+			}
+			add_prestige = medium_prestige_loss
+		}
+		stress_impact = {
+			arrogant = minor_stress_impact_gain
+			zealous = minor_stress_impact_gain
+			paranoid = medium_stress_impact_gain
+		}
+		add_courtier = scope:stray_bastard
+		scope:stray_bastard = {
+			set_house = scope:relative.house
+			add_opinion = {
+				target = root
+				opinion = 50
+				modifier = grateful_opinion
+			}
+		}
+		update_bastard_birth_status_effect = yes
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 3
+				OR = {
+					root = scope:relative
+					root = scope:baby_father
+				}
+			}
+			modifier = {
+				factor = 2
+				NOT = {
+					any_child = {
+						is_alive = yes
+						count > 0
+					}
+				}
+			}
+			ai_value_modifier = {
+				ai_honor = 1
+			}
+			modifier = {
+				add = 10
+				has_trait = generous
+			}
+			modifier = {
+				add = -10
+				has_trait = arrogant
+			}
+			modifier = {
+				add = -20
+				has_trait = paranoid
+			}
+			modifier = {
+				add = -20
+				has_trait = zealous
+			}
+			min = 0
+		}
+	}
+	option = {
+		name = lmf_birth.1006.b #Leave them where they are
+		if = {
+			limit = {
+				NOT = { root = scope:relative }
+			}
+			add_prestige = minor_prestige_loss
+		}
+		update_bastard_birth_status_effect = yes
+		ai_chance = {
+			base = 25
+		}
+	}
+	option = {
+		name = lmf_birth.1006.c #Silence them permanently
+		stress_impact = {
+			base = minor_stress_impact_loss
+			compassionate = minor_stress_impact_gain
+			forgiving = miniscule_stress_impact_gain
+			just = medium_stress_impact_gain
+		}
+		add_death_event_blocker_effect = { DEAD = scope:stray_bastard }
+		scope:stray_bastard = {
+			death = { death_reason = death_disappearance }
+		}
+		ai_chance = {
+			base = 0
+			ai_value_modifier = {
+				ai_compassion = -0.5
+			}
+			modifier = {
+				add = 20
+				has_trait = paranoid
+			}
+			min = 0
+		}
+	}
+
+	after = {
+		scope:stray_bastard = {
+			remove_character_flag ?= wear_armor
+		}
+		remove_character_flag ?= bastard_knight
+		remove_character_flag ?= bastard_physician
+		remove_character_flag ?= bastard_monk
+		remove_character_flag ?= bastard_rogue
+		remove_character_flag ?= bastard_beauty
+	}
+}
+
+# The baby was somehow lost during the seclusion
+lmf_birth.1007 = {
+	type = character_event
+	title = lmf_birth.1007.t
+	desc = lmf_birth.1007.desc
+
+	theme = pregnancy
+	override_background = { reference = bedchamber }
+	left_portrait = {
+		character = scope:relative
+		animation = shame
+	}
+	
+	trigger = {
+		scope:relative = {
+			is_alive = yes
+			is_ruler = no
+			is_courtier = no
+			is_hostage = no
+			is_imprisoned = no
+		}
+	}
+	
+	option = {
+		name = lmf_birth.1004.a #Bring her home
+		scope:relative = {
+			seclusion_effect = yes
+			remove_trait = seclusion
+		}
+		add_courtier = scope:relative
+		ai_chance = {
+			base = 80
+			modifier = {
+				factor = 2
+				OR = {
+					has_trait = fornicator
+					has_trait = adulterer
+				}
+			}
+			ai_value_modifier = {
+				ai_compassion = 0.5
+			}
+		}
+	}
+	option = {
+		name = lmf_birth.1004.b #Leave her there
+		scope:relative = {
+			hidden_effect = {
+				seclusion_effect = yes
+				remove_trait = seclusion
+			}
+			add_opinion = {
+				target = root
+				modifier = disappointed_opinion
+				opinion = -20
+			}
+			hidden_effect = {
+				random_list = {
+					10 = {
+						trigger = {
+							NOR = {
+								has_trait = devoted
+								has_trait = order_member
+								has_trait = septon
+								has_trait = silent_sister
+							}
+							faith = { has_doctrine_parameter = take_vows_active }
+							can_take_religious_vows_trigger = yes
+						}
+						ai_value_modifier = {
+							ai_zeal = 1
+							min = -10
+						}
+						root = {
+							send_interface_message = {
+								type = event_generic_neutral
+								title =  lmf_interaction.0002.took_vows.tt
+								right_icon = scope:relative
+								scope:relative = {
+									add_trait = devoted
+									add_piety_level = 1
+								}
+							}
+						}
+					}
+					1 = {}
+				}
+			}
+		}
+		ai_chance = {
+			base = 20
+			ai_value_modifier = {
+				ai_vengefulness = 0.5
+			}
+			modifier = {
+				factor = 0.1
+				any_heir = { this = scope:relative }
+			}
+			min = 0
+		}
+	}
+}
+
+# Lover informed that relative is being sent into seclusion
+lmf_birth.1008 = {
+	type = character_event
+	title = lmf_birth.1008.t
+	desc = {
+		desc = lmf_birth.1008.desc.start
+		triggered_desc = {
+			trigger = {
+				any_secret = {
+					type = secret_lover
+					secret_target = scope:relative
+				}
+			}
+			desc = lmf_birth.1008.desc.secret
+		}
+		desc = lmf_birth.1008.desc.end
+	}
+	theme = pregnancy
+
+	left_portrait = {
+		character = scope:relative
+		animation = shame
+	}
+	override_background = { reference = bedchamber }
+
+	option = {
+		name = lmf_birth.1008.a #There's nothing I can do about it
+		lover_breakup_effect = {
+			BREAKER = scope:relative
+			LOVER = root
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 100
+				might_agree_to_marriage = no
+			}
+			modifier = {
+				add = 50
+				exists = liege
+				liege = scope:relative_liege
+			}
+			modifier = {
+				add = 50
+				is_married = yes
+			}
+		}
+	}
+	option = {
+		trigger = { is_playable_character = yes }
+		name = lmf_birth.1008.b #Have her brought to my court
+
+		if = {
+			limit = {
+				any_secret = {
+					type = secret_lover
+					secret_target = scope:relative
+				}
+			}
+			stress_impact = {
+				base = medium_stress_gain
+				honest = minor_stress_impact_loss
+				just = minor_stress_impact_loss
+				deceitful = medium_stress_impact_gain
+				craven = minor_stress_impact_gain
+				shy = minor_stress_impact_gain
+			}
+		}
+		else = {
+			stress_impact = {
+				base = minor_stress_gain
+				just = minor_stress_impact_loss
+				brave = minor_stress_impact_loss
+				craven = minor_stress_impact_gain
+				shy = minor_stress_impact_gain
+			}
+		}
+		add_courtier = scope:relative
+		random_secret = {
+			type = secret_lover
+			limit = { secret_target = scope:relative }
+			expose_secret = root
+		}
+		hidden_effect = {
+			scope:relative = {
+				remove_trait = seclusion
+				if = {
+					limit = { has_trait = will_not_wed }
+					remove_trait = will_not_wed
+					hidden_effect = {
+						random_owned_story = {
+							type = lmf_will_not_wed_story_cycle
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		scope:relative_liege = {
+			show_as_tooltip = {
+				add_opinion = {
+					target = root
+					modifier = abducted_close_family_crime
+				}
+				if = {
+					limit = {
+						can_set_relation_rival_trigger = { CHARACTER = root }
+						OR = {
+							ai_vengefulness > 0
+							has_relation_potential_rival = root
+						}
+					}
+					set_relation_rival = {
+						target = root
+						reason = rival_took_secluded_family
+						involved_character = scope:relative
+					}
+				}
+			}
+			trigger_event = lmf_birth.1009
+		}
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = 0.5
+				ai_compassion = 0.5
+			}
+			modifier = {
+				add = -50
+				target_is_liege_or_above = scope:relative_liege
+			}
+			modifier = {
+				add = -50
+				is_married = yes
+				NOT = { has_relation_soulmate = scope:relative }
+			}
+		}
+	}
+	option = {
+		trigger = {
+			is_playable_character = yes
+			can_marry_trigger = yes
+			scope:relative = { is_married = no }
+			NOR = {
+				is_close_family_of = scope:relative
+				has_opinion_modifier = {
+					modifier = divorced_me_opinion
+					target = scope:relative
+				}
+			}
+		}
+		name = lmf_birth.1008.c #Rescue and marry her
+
+		stress_impact = {
+			base = medium_stress_gain
+			just = medium_stress_impact_loss
+			brave = minor_stress_impact_loss
+			craven = minor_stress_impact_gain
+			shy = minor_stress_impact_gain
+		}
+		add_courtier = scope:relative
+		scope:relative = {
+			remove_religious_traits_effect = yes
+			hidden_effect = {
+				remove_trait = seclusion
+				if = {
+					limit = { has_trait = will_not_wed }
+					remove_trait = will_not_wed
+					hidden_effect = {
+						random_owned_story = {
+							type = lmf_will_not_wed_story_cycle
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		marry = scope:relative
+		scope:relative_liege = {
+			show_as_tooltip = {
+				elope_success_opinion_rivalry_effect = { CHARACTER = root }
+				elope_success_opinion_rivalry_effect = { CHARACTER = scope:relative }
+			}
+			trigger_event = lmf_birth.1009
+		}
+
+		ai_chance = {
+			base = 50
+			ai_value_modifier = {
+				ai_boldness = 0.5
+				ai_honor = 0.5
+			}
+			modifier = {
+				add = -50
+				target_is_liege_or_above = scope:relative_liege
+			}
+			modifier = {
+				add = 50
+				has_relation_soulmate = scope:relative
+			}
+		}
+	}
+}
+
+# Liege informed that relative has been abducted
+lmf_birth.1009 = {
+	type = character_event
+	title = lmf_birth.1009.t
+	desc = {
+		desc = lmf_birth.1009.desc.start
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:relative = { is_spouse_of = scope:baby_father } }
+				desc = lmf_birth.1009.desc.elope
+			}
+			desc = lmf_birth.1009.desc.abduct
+		}
+	}
+	theme = intrigue
+
+	left_portrait = {
+		character = scope:relative
+		animation = admiration
+		outfit_tags = { travel_cloak }
+	}
+	right_portrait = {
+		character = scope:baby_father
+		animation = personality_bold
+		outfit_tags = { travel_cloak }
+	}
+	override_background = { reference = wilderness }
+
+	option = {
+		trigger = {
+			scope:relative = {
+				NOT = { is_spouse_of = scope:baby_father }
+			}
+		}
+		name = lmf_birth.1009.a #Abduction
+		add_prestige = major_prestige_loss
+		add_opinion = {
+			target = scope:baby_father
+			modifier = abducted_close_family_crime
+		}
+		if = {
+			limit = {
+				can_set_relation_rival_trigger = { CHARACTER = scope:baby_father }
+				OR = {
+					ai_vengefulness > 0
+					has_relation_potential_rival = scope:baby_father
+				}
+			}
+			set_relation_rival = {
+				target = scope:baby_father
+				reason = rival_took_secluded_family
+				involved_character = scope:relative
+			}
+		}
+		else_if = {
+			limit = {
+				can_set_relation_potential_rival_trigger = { CHARACTER = scope:baby_father }
+			}
+			hidden_effect = { set_relation_potential_rival = scope:baby_father }
+		}
+	}
+	option = {
+		trigger = {
+			scope:relative = { is_spouse_of = scope:baby_father }
+		}
+		name = lmf_birth.1009.a #Elopement
+		add_prestige = major_prestige_loss
+		elope_success_opinion_rivalry_effect = { CHARACTER = scope:baby_father }
+		elope_success_opinion_rivalry_effect = { CHARACTER = scope:relative }
+	}
+}
+
+
+######################################
+# REDUCED FERTILITY AFTER CHILDBIRTH #
+######################################
+
+scripted_effect birth_complications_effect = {
+	if = {
+		limit = { exists = scope:will_become_depressed }
+		add_trait_force_tooltip = depressed_1
+		hidden_effect = {
+			force_character_skill_recalculation = yes
+			trigger_event = {
+				id = lmf_birth.1102
+				days = { 90 365 }
+			}
+		}
+	}
+	if = {
+		limit = { exists = scope:will_become_infertile }
+		add_character_modifier = no_more_children_modifier
+		hidden_effect = {
+			if = {
+				limit = { has_character_flag = lmf_no_children }
+				remove_character_flag = lmf_no_children
+			}
+			if = {
+				limit = { has_character_modifier = reduced_sex_drive_modifier }
+				remove_character_modifier = reduced_sex_drive_modifier
+			}
+			if = {
+				limit = { has_character_modifier = compromised_fertility_modifier }
+				remove_character_modifier = compromised_fertility_modifier
+			}
+			force_character_skill_recalculation = yes
+		}
+	}
+	if = {
+		limit = { exists = scope:will_become_less_fertile_long }
+		add_character_modifier = {
+			modifier = compromised_fertility_modifier
+			years = 3
+		}
+		hidden_effect = {
+			if = {
+				limit = { has_character_flag = lmf_no_children }
+				remove_character_flag = lmf_no_children
+			}
+			add_character_flag = { flag = lmf_no_children months = 15 }
+			if = {
+				limit = { has_character_modifier = reduced_sex_drive_modifier }
+				remove_character_modifier = reduced_sex_drive_modifier
+			}
+			force_character_skill_recalculation = yes
+		}
+	}
+	if = {
+		limit = { exists = scope:will_become_less_fertile_short }
+		add_character_modifier = {
+			modifier = reduced_sex_drive_modifier
+			months = 18
+		}
+		hidden_effect = {
+			if = {
+				limit = { has_character_flag = lmf_no_children }
+				remove_character_flag = lmf_no_children
+			}
+			add_character_flag = { flag = lmf_no_children months = 9 }
+			force_character_skill_recalculation = yes
+		}
+	}
+	if = {
+		limit = { exists = scope:will_lose_fecund }
+		add_character_modifier = no_longer_fecund_modifier
+		hidden_effect = {
+			force_character_skill_recalculation = yes
+		}
+	}
+}
+
+# Mother possibly experiences complications
+lmf_birth.1100 = {
+	hidden = yes
+
+	trigger = {
+		is_alive = yes
+		is_pregnant = no
+		# game rule can prevent this from being applied to the player or their family
+		NAND = {
+			OR = {
+				has_game_rule = lmf_all_birth_fertility_modifiers_ai_only
+				has_game_rule = lmf_reduce_birth_fertility_modifiers_ai_only
+			}
+			OR = {
+				is_ai = no
+				any_consort = { is_ai = no }
+				any_close_family_member = {
+					is_ai = no
+					is_close_family_of = root
+				}
+				any_consort = {
+					any_close_family_member = {
+						is_ai = no
+						is_close_family_of = prev
+					}
+				}
+			}
+		}
+		OR = {
+			# they lost the baby in childbirth
+			has_variable = had_miscarriage
+			# they are 25 or older
+			age > 24
+			# this was their first child
+			any_child = {
+				even_if_dead = yes
+				count = 1
+			}
+			# they have 4+ children
+			any_child = {
+				even_if_dead = yes
+				count > 3
+			}
+		}
+	}
+
+	immediate = {
+		# chance of temporary melancholia
+		if = {
+			limit = {
+				NOR = {
+					has_trait = depressed
+					exists = scope:skip_depression_check
+					has_game_rule = lmf_reduce_birth_fertility_modifiers
+					has_game_rule = lmf_reduce_birth_fertility_modifiers_ai_only
+				}
+			}
+			random = {
+				chance = 20
+				modifier = {
+					add = 15
+					is_pool_character = yes
+				}
+				modifier = {
+					add = 20
+					has_any_illness = yes
+				}
+				modifier = {
+					add = 30
+					OR = {
+						any_child = {
+							age < 1
+							has_any_illness = yes
+						}
+						any_child = {
+							even_if_dead = yes
+							is_alive = no
+							age < 1
+							time_since_death = { months < 2 }
+						}
+						exists = scope:pregnancy_ended
+					}
+				}
+				ai_value_modifier = {
+					ai_rationality = -0.5
+					ai_energy = -0.2
+					max = 50
+					min = -25
+				}
+				modifier = {
+					OR = {
+						is_ai = no
+						any_consort = { is_ai = no }
+					}
+					factor = 0.5
+				}
+				modifier = {
+					dynasty ?= { has_dynasty_perk = kin_legacy_3 }
+					factor = 0.5
+				}
+				min = 0
+				max = 100
+				save_scope_value_as = {
+					name = will_become_depressed
+					value = yes
+				}
+			}
+		}
+
+		# chance of reduced fertility after age 25 or 4+ children
+		if = {
+			limit = {
+				OR = {
+					age > 24
+					any_child = {
+						even_if_dead = yes
+						count > 3
+					}
+				}
+			}
+			random_list = {
+				5 = {
+					trigger = {
+						NOR = {
+							AND = {
+								has_trait = fecund
+								NOT = { has_character_modifier = no_longer_fecund_modifier }
+							}
+							has_trait = infertile
+							has_trait = impotent
+							has_character_modifier = no_more_children_modifier
+						}
+					}
+					modifier = {
+						add = 10
+						has_variable = had_miscarriage
+					}
+					modifier = {
+						add = 3
+						age >= 35
+					}
+					modifier = {
+						add = 5
+						age >= 40
+					}
+					modifier = {
+						add = 10
+						has_character_modifier = compromised_fertility_modifier
+					}
+					modifier = {
+						add = 5
+						has_character_modifier = reduced_sex_drive_modifier
+					}
+					save_scope_value_as = {
+						name = will_become_infertile
+						value = yes
+					}
+				}
+				20 = {
+					trigger = {
+						NOR = {
+							AND = {
+								has_trait = fecund
+								NOT = { has_character_modifier = no_longer_fecund_modifier }
+							}
+							has_trait = infertile
+							has_trait = impotent
+							has_character_modifier = no_more_children_modifier
+							has_character_modifier = compromised_fertility_modifier
+						}
+					}
+					modifier = {
+						add = 10
+						has_variable = had_miscarriage
+					}
+					modifier = {
+						add = 20
+						has_character_modifier = reduced_sex_drive_modifier
+					}
+					save_scope_value_as = {
+						name = will_become_less_fertile_long
+						value = yes
+					}
+				}
+				35 = {
+					trigger = {
+						NOR = {
+							AND = {
+								has_trait = fecund
+								NOT = { has_character_modifier = no_longer_fecund_modifier }
+							}
+							has_trait = infertile
+							has_trait = impotent
+							has_character_modifier = no_more_children_modifier
+							has_character_modifier = compromised_fertility_modifier
+							has_character_modifier = reduced_sex_drive_modifier
+						}
+					}
+					save_scope_value_as = {
+						name = will_become_less_fertile_short
+						value = yes
+					}
+				}
+				25 = {
+					trigger = {
+						has_trait = fecund
+						NOT = { has_character_modifier = no_longer_fecund_modifier }
+					}
+					save_scope_value_as = {
+						name = will_lose_fecund
+						value = yes
+					}
+				}
+				60 = {
+					modifier = {
+						add = 40
+						OR = {
+							has_game_rule = lmf_reduce_birth_fertility_modifiers
+							has_game_rule = lmf_reduce_birth_fertility_modifiers_ai_only
+						}
+					}
+					modifier = {
+						add = -20
+						has_variable = had_miscarriage
+					}
+					modifier = {
+						add = -10
+						OR = {
+							has_trait = depressed
+							exists = scope:will_become_depressed
+						}
+					}
+					modifier = {
+						add = 20
+						health >= excellent_health
+					}
+					modifier = {
+						add = 10
+						health >= good_health
+					}
+					modifier = {
+						add = -10
+						health <= fine_health
+					}
+					modifier = {
+						add = -20
+						health <= poor_health
+					}
+					modifier = {
+						add = 10
+						age <= 25
+					}
+					modifier = {
+						add = -3
+						age >= 30
+					}
+					modifier = {
+						add = -5
+						age >= 35
+					}
+					modifier = {
+						add = -5
+						age >= 40
+					}
+					modifier = {
+						add = -5
+						any_child = {
+							even_if_dead = yes
+							count > 2
+						}
+					}
+					modifier = {
+						add = -5
+						any_child = {
+							even_if_dead = yes
+							count > 3
+						}
+					}
+					modifier = {
+						add = -10
+						any_child = {
+							even_if_dead = yes
+							count > 4
+						}
+					}
+					modifier = {
+						add = 5
+						court_physician_available_trigger = yes
+					}
+					modifier = {
+						add = 10
+						court_physician_available_trigger = yes
+						any_court_position_holder = {
+							type = court_physician_court_position
+							learning >= high_skill_rating
+						}
+					}
+					modifier = {
+						add = 10
+						OR = {
+							is_ai = no
+							any_consort = { is_ai = no }
+						}
+					}
+					modifier = {
+						add = 20
+						faith = { has_doctrine_parameter = safer_childbirths_active }
+					}
+					modifier = {
+						add = 10
+						dynasty ?= { has_dynasty_perk = kin_legacy_3 }
+					}
+				}
+			}
+		}
+
+		# notification event
+		if = {
+			limit = {
+				OR = {
+					exists = scope:will_become_depressed
+					exists = scope:will_become_infertile
+					exists = scope:will_become_less_fertile_long
+					exists = scope:will_become_less_fertile_short
+					exists = scope:will_lose_fecund
+				}
+			}
+			trigger_event = lmf_birth.1101
+		}
+	}
+}
+
+# Mother informed of issues
+lmf_birth.1101 = {
+	type = character_event
+	title = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:will_become_depressed }
+				desc = lmf_birth.1101.depressed.t
+			}
+			desc = lmf_birth.1101.t
+		}
+	}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					exists = scope:will_become_depressed
+					NOT = {
+						any_child = { age < 1 }
+					}
+				}
+				desc = lmf_birth.1101.depressed.death.opening
+			}
+			triggered_desc = {
+				trigger = {
+					exists = scope:will_become_depressed
+					any_child = {
+						age < 1
+						has_any_illness = yes
+					}
+				}
+				desc = lmf_birth.1101.depressed.sick.child.opening
+			}
+			triggered_desc = {
+				trigger = {
+					exists = scope:will_become_depressed
+					has_any_illness = yes
+				}
+				desc = lmf_birth.1101.depressed.sick.opening
+			}
+			triggered_desc = {
+				trigger = {
+					exists = scope:will_become_depressed
+				}
+				desc = lmf_birth.1101.depressed.opening
+			}
+			desc = lmf_birth.1101.opening
+		}
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:will_become_infertile }
+				desc = lmf_birth.1101.end.infertile
+			}
+			triggered_desc = {
+				trigger = { exists = scope:will_become_less_fertile_long }
+				desc = lmf_birth.1101.end.infertile.long
+			}
+			triggered_desc = {
+				trigger = { age >= 35 }
+				desc = lmf_birth.1101.end.age
+			}
+			desc = lmf_birth.1101.end
+		}
+	}
+	theme = healthcare
+	override_background = { reference = bedchamber }
+
+	right_portrait = {
+		character = root
+		triggered_animation = {
+			trigger = { exists = scope:will_become_depressed }
+			animation = sadness
+		}
+		animation = worry
+		outfit_tags = { nightgown }
+	}
+	left_portrait = {
+		trigger = { exists = scope:court_physician }
+		character = scope:court_physician
+	}
+
+	immediate = {
+		if = {
+			limit = { court_physician_available_trigger = yes }
+			save_court_physician_as_effect = { SCOPE_NAME = court_physician }
+		}
+	}
+
+	option = {
+		name = {
+			trigger = { exists = scope:will_become_infertile }
+			text = lmf_birth.1101.a
+		}
+		name = {
+			trigger = { NOT = { exists = scope:will_become_infertile } }
+			text = lmf_birth.1101.b
+		}
+		every_consort = {
+			limit = { is_ai = no }
+			send_interface_message = {
+				type = event_generic_bad
+				title =  lmf_birth.1101.tt
+				right_icon = root
+				root = {
+					show_as_tooltip = { birth_complications_effect = yes }
+				}
+			}
+		}
+		birth_complications_effect = yes
+	}
+}
+
+# Depression clears
+lmf_birth.1102 = {
+	hidden = yes
+
+	trigger = {
+		is_alive = yes
+		has_trait = depressed_1
+	}
+
+	immediate = {
+		every_consort = {
+			limit = { is_ai = no }
+			send_interface_message = {
+				type = event_generic_good
+				title =  lmf_birth.1102.husband.tt
+				right_icon = root
+				root = {
+					remove_trait_force_tooltip = depressed_1
+				}
+			}
+		}
+		send_interface_message = {
+			type = event_generic_good
+			title =  lmf_birth.1102.tt
+			right_icon = root
+			remove_trait_force_tooltip = depressed_1
+		}
+	}
+}
+
+
+#######################
+# GENETIC INFERTILITY #
+#######################
+
+# bounce event for infertile trait reveal
+lmf_birth.1200 = {
+	type = character_event
+	title = lmf_birth.1200.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { is_female = yes }
+				desc = lmf_birth.1200.begin.female
+			}
+			desc = lmf_birth.1200.begin.male
+		}
+		desc = lmf_birth.1200.end
+	}
+	theme = family
+	
+	left_portrait = {
+		character = root
+		animation = worry
+		outfit_tags = { nightgown }
+	}
+	override_background = { reference = bedchamber }
+	
+	trigger = {
+		has_inactive_trait = infertile
+	}
+	
+	option = {
+		name = lmf_birth.1200.a
+		save_scope_as = infertile_spouse
+		if = {
+			limit = {
+				any_player = {
+					this != root
+					OR = {
+						is_consort_of = root
+						is_close_family_of = root
+						any_close_family_member = {
+							is_consort_of = root
+							is_close_family_of = prev
+						}
+					}
+				}
+			}
+			every_player = {
+				limit = {
+					this != root
+					OR = {
+						is_consort_of = root
+						is_close_family_of = root
+						any_close_family_member = {
+							is_consort_of = root
+							is_close_family_of = prev
+						}
+					}
+				}
+				save_scope_as = informed
+				send_interface_message = {
+					type = event_generic_bad_with_text
+					title =  lmf_birth.1200.tt.title
+					desc = lmf_birth.1200.tt.desc
+					right_icon = scope:infertile_spouse
+				}
+			}
+		}
+		make_trait_active = infertile
+		remove_variable = passed_checks
+		primary_spouse = {
+			add_opinion = {
+				target = root
+				modifier = surprised_by_infertility_opinion
+			}
+		}
+	}
+}
+
+
+####################################
+# LIEGE'S SPYMASTER SUSPECTS       #
+# UNWED RELATIVE IS PREGNANT       #
+####################################
+
+lmf_birth.2000 = {
+	hidden = yes
+
+	trigger = {
+		is_pregnant = yes # Fix to prevent pipeline failures on account of set_num_pregnancy_children being used on an unpregnant character
+		NOR = {
+			# If we are married or have concubines (or are a concubine) this event is not valid, as there is a (assumed) father.
+			any_consort = { count > 0 }
+			# Same for if a former spouse/concubine got us pregant.
+			OR = {	
+				any_former_spouse = {
+					even_if_dead = yes
+					this = scope:father
+					this = scope:real_father
+					trigger_if = {
+						limit = {
+							is_alive = yes
+						}
+						NOT = { any_consort = { this = root } }
+					}
+				}
+				any_former_concubinist = {
+					even_if_dead = yes
+					this = scope:father
+					this = scope:real_father
+					trigger_if = {
+						limit = {
+							is_alive = yes
+						}
+						NOT = { any_consort = { this = root } }
+					}
+				}
+				any_former_concubine = {
+					even_if_dead = yes
+					this = scope:father
+					this = scope:real_father
+					trigger_if = {
+						limit = {
+							is_alive = yes
+						}
+						NOT = { any_consort = { this = root } }
+					}
+				}
+			}
+			# Landed liege is a close relative who suspects the pregnancy
+		}
+		is_ruler = no
+		NOR = {
+			has_trait = fornicator
+			has_character_flag = liege_refused_seclusion
+		}
+		exists = liege
+		trait_is_shunned_or_criminal_in_my_or_lieges_faith_trigger = { TRAIT = trait:fornicator GENDER_CHARACTER = scope:mother }
+		scope:mother.liege = {
+			is_landed = yes
+			is_close_family_of = scope:mother
+			NOT = { scope:real_father = this }
+			exists = cp:councillor_spymaster
+			cp:councillor_spymaster.intrigue > scope:mother.intrigue
+		}
+		should_disallow_pregnancy_trigger = no
+	}
+	
+	immediate = {
+		scope:mother = { save_scope_as = relative }
+		scope:real_father ?= { save_scope_as = baby_father }
+		liege = {
+			cp:councillor_spymaster = { save_scope_as = spymaster }
+			trigger_event = lmf_birth.1001
+		}
+	}
+}
+
+##########################
+# REALISTIC BIRTH EVENTS #
+##########################
+
+# set event pregnancy flag
+lmf_birth.2100 = {
+	type = character_event
+	hidden = yes
+	
+	trigger = {
+		is_pregnant = yes
+	}
+	
+	immediate = {
+		add_character_flag = { flag = allow_event_pregnancy days = 61 }
+	}
+}
+
