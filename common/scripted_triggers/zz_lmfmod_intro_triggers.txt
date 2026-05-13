@@ -1,0 +1,54 @@
+﻿could_be_introduced_character_trigger = {
+	save_temporary_scope_as = can_be_introduced_check
+	can_be_introduced_common_trigger = yes
+	$CHARACTER$ = { can_be_introduced_common_trigger = yes }
+	sex_opposite_of = $CHARACTER$
+	#Have you recently divorced this character?
+	NOT = {
+		has_demoted_or_divorced_opinion_trigger = {
+			TARGET = $CHARACTER$
+		}
+	}
+	#Faith hostility & consanguinity
+	trigger_if = {
+		limit = { NOT = { is_courtier_of = $CHARACTER$ } } #If you're someone's courtier, your liege can marry you anyway
+		faith = {
+			faith_allows_marriage_consanguinity_trigger = {
+				CHARACTER_1 = scope:can_be_introduced_check
+				CHARACTER_2 = $CHARACTER$
+			}
+		}
+	}
+	trigger_if = {
+		limit = { $CHARACTER$ = { NOT = { is_courtier_of = scope:can_be_introduced_check } } } #If you're someone's courtier, your liege can marry you anyway
+		$CHARACTER$.faith = {
+			faith_allows_marriage_consanguinity_trigger = {
+				CHARACTER_1 = scope:can_be_introduced_check
+				CHARACTER_2 = $CHARACTER$
+			}
+		}
+	}
+	trigger_if = {
+		limit = {
+			any_close_or_extended_family_member = {
+				any_spouse = { this = $CHARACTER$ }
+			}
+		}
+		faith = { has_doctrine = doctrine_consanguinity_unrestricted }
+		$CHARACTER$ = {
+			faith = { has_doctrine = doctrine_consanguinity_unrestricted }
+			NOT = {
+				any_spouse = {
+					is_close_or_extended_family_of = scope:can_be_introduced_check
+					NOT = {
+						faith = { has_doctrine = doctrine_consanguinity_unrestricted }
+					}
+				}
+			}
+		}
+	}
+	# Cannot marry self
+	NOT = {
+		scope:can_be_introduced_check = { is_spouse_of = $CHARACTER$ }
+	}
+}
