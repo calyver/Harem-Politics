@@ -598,6 +598,89 @@ marriage_interaction_on_accept_effect = {
 		}
 	}
 	calyver_marriage_harem_politics_effect = yes
+
+	### LMF betrothal status
+	if = {
+		limit = {
+			exists = global_var:lmf_is_loaded
+		}
+		if = {
+			limit = {
+				OR = {
+					scope:secondary_actor = { is_adult = no }
+					scope:secondary_recipient = { is_adult = no }
+				}
+			}
+			scope:secondary_actor = {
+				if = {
+					limit = {
+						OR = {
+							is_ruler = yes
+							any_heir_title = {
+								trigger_if = {
+									limit = { has_title_law_flag = elective_succession_law }
+									exists = holder
+								}
+								trigger_else = {
+									holder ?= {
+										NOR = {
+											has_government = mercenary_government
+											has_government = republic_government
+											has_government = theocracy_government
+											has_government = holy_order_government
+										}
+									}
+								}
+								count > 0
+							}
+						}
+					}
+					set_variable = { name = betrothal_ruler_or_heir value = scope:secondary_recipient }
+				}
+			}
+			scope:secondary_recipient = {
+				if = {
+					limit = {
+						OR = {
+							is_ruler = yes
+							any_heir_title = {
+								trigger_if = {
+									limit = { has_title_law_flag = elective_succession_law }
+									exists = holder
+								}
+								trigger_else = {
+									holder ?= {
+										NOR = {
+											has_government = mercenary_government
+											has_government = republic_government
+											has_government = theocracy_government
+											has_government = holy_order_government
+										}
+									}
+								}
+								count > 0
+							}
+						}
+					}
+					set_variable = { name = betrothal_ruler_or_heir value = scope:secondary_actor }
+				}
+			}
+		}
+		else = {
+			scope:secondary_actor = {
+				if = {
+					limit = { exists = var:betrothal_ruler_or_heir }
+					remove_variable = betrothal_ruler_or_heir
+				}
+			}
+			scope:secondary_recipient = {
+				if = {
+					limit = { exists = var:betrothal_ruler_or_heir }
+					remove_variable = betrothal_ruler_or_heir
+				}
+			}
+		}
+	}
 }
 
 ## Harem Politics ##
