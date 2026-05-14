@@ -23551,41 +23551,10 @@ consort_events.0045 = {
 ########################################################################
 ##Hidden events - A consort murders another consort - simpler version ##
 ########################################################################
-scripted_trigger is_valid_victim_lower_rank_kill_trigger = {
-	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-	is_physically_able_ai_adult = yes
-	# Lower rank: regular concubine of liege
-	is_regular_concubine_of = { LIEGE = root }
-	harem_politics_favored_consort_trigger = no
-	OR = {
-		any_relation = {
-			type = rival
-			is_consort_of = root
-			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-			harem_politics_evil_consort_trigger = yes
-		}
-		any_relation = {
-			type = nemesis
-			is_consort_of = root
-			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-			harem_politics_evil_consort_trigger = yes
-		}
-		has_trait = beauty_good_2
-		has_trait = beauty_good_3
-	}
-	NOT = {
-		has_trait = pregnant
-	}
-}
-
 scripted_trigger is_valid_murderer_lower_rank_kill_trigger = {
-	this != $VICTIM$
 	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 	is_physically_able_ai_adult = yes
 	harem_politics_evil_consort_trigger = yes
-	NOT = {
-		has_any_good_relationship_with_character_trigger = { CHARACTER = $VICTIM$ }
-	}
 	trigger_if = {
 		limit = {
 			OR = {
@@ -23597,6 +23566,23 @@ scripted_trigger is_valid_murderer_lower_rank_kill_trigger = {
 	}
 	trigger_else = {
 		intrigue >= mediocre_skill_rating
+	}
+}
+scripted_trigger is_valid_victim_lower_rank_kill_trigger = {
+	this != $MURDERER$
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_physically_able_ai_adult = yes
+	# Lower rank: regular concubine of liege
+	is_regular_concubine_of = { LIEGE = root }
+	harem_politics_favored_consort_trigger = no
+	NOR = {
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $MURDERER$ }
+		has_trait = pregnant
+	}
+	OR = {
+		has_any_best_good_relationship_with_character_trigger = { CHARACTER = $MURDERER$ }
+		has_trait = beauty_good_2
+		has_trait = beauty_good_3
 	}
 }
 
@@ -23612,15 +23598,15 @@ consort_events.0043 = {
 			count >= 6
 		}
 		any_concubine = {
-			is_valid_victim_lower_rank_kill_trigger = yes
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 			count > 2
 		}
-		any_concubine = {
-			is_valid_victim_lower_rank_kill_trigger = yes
-			save_temporary_scope_as = temp_victim
-		}
 		any_consort = {
-			is_valid_murderer_lower_rank_kill_trigger = { VICTIM = scope:temp_victim }
+			is_valid_murderer_lower_rank_kill_trigger = yes
+			save_temporary_scope_as = temp_murderer
+		}
+		any_concubine = {
+			is_valid_victim_lower_rank_kill_trigger = { MURDERER = scope:temp_murderer }
 		}
 
 		NOT = {
@@ -23723,88 +23709,88 @@ consort_events.0043 = {
 	immediate = {
 		save_scope_as = partner
 
-		# Pick murderer (weighted toward high-ranking consorts)
-		random_concubine = {
+		# Pick the murderer
+		random_consort = {
 			limit = {
-				is_valid_victim_lower_rank_kill_trigger = yes
+				is_valid_murderer_lower_rank_kill_trigger = yes
 			}
 			weight = {
 				base = 10
 				modifier = {
-					any_relation = {
-						type = rival
-						is_consort_of = root
-						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+					is_high_ranking_consort_trigger = {
+						LIEGE = scope:partner
 					}
-					add = 25
+					add = 30
+				}
+				modifier = {
+					harem_politics_favored_consort_trigger = yes
+					add = 15
+				}
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 10
 				}
 				modifier = {
 					any_relation = {
 						type = nemesis
-						is_consort_of = root
 						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						is_regular_concubine_of = { LIEGE = root }
 					}
-					add = 50
-				}
-				modifier = {
-					has_trait = beauty_good_3
 					add = 30
 				}
 				modifier = {
-					add = this.diplomacy
+					any_relation = {
+						type = rival
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+						is_regular_concubine_of = { LIEGE = root }
+					}
+					add = 15
 				}
 				modifier = {
-					intrigue < mediocre_skill_rating
-					add = {
-						value = mediocre_skill_rating
-						subtract = this.intrigue
-						multiply = 2
-					}
+					add = this.intrigue
 				}
 			}
-			save_scope_as = murder_victim
+			save_scope_as = murderer
 		}
 		if = {
 			limit = {
-				exists = scope:murder_victim
+				exists = scope:murderer
 			}
-			random_consort = {
+			random_concubine = {
 				limit = {
-					is_valid_murderer_lower_rank_kill_trigger = { VICTIM = scope:murder_victim }
+					is_valid_victim_lower_rank_kill_trigger = { MURDERER = scope:murderer }
 				}
 				weight = {
 					base = 10
 					modifier = {
-						is_high_ranking_consort_trigger = {
-							LIEGE = scope:partner
+						has_relation_nemesis = scope:murderer
+						add = 50
+					}
+					modifier = {
+						has_relation_rival = scope:murderer
+						add = 25
+					}
+					modifier = {
+						has_trait = beauty_good_3
+						add = 30
+					}
+					modifier = {
+						add = this.diplomacy
+					}
+					modifier = {
+						intrigue < mediocre_skill_rating
+						add = {
+							value = mediocre_skill_rating
+							subtract = this.intrigue
+							multiply = 2
 						}
-						add = 30
-					}
-					modifier = {
-						harem_politics_favored_consort_trigger = yes
-						add = 15
-					}
-					modifier = {
-						harem_politics_beloved_consort_trigger = yes
-						add = 10
-					}
-					modifier = {
-						has_relation_nemesis = scope:murder_victim
-						add = 30
-					}
-					modifier = {
-						has_relation_rival = scope:murder_victim
-						add = 15
-					}
-					modifier = {
-						add = this.intrigue
 					}
 				}
-				save_scope_as = murderer
+				save_scope_as = murder_victim
 			}
 			if = {
 				limit = {
-					exists = scope:murderer
+					exists = scope:murder_victim
 				}
 				scope:murder_victim = {
 					#Killed by murder
