@@ -22456,6 +22456,26 @@ consort_events.0041 = {
 	hidden = yes
 	
 	trigger = {
+		is_playable_character = yes
+		trigger_if = {
+			limit = {
+				OR = {
+					is_ai = no
+					highest_held_title_tier >= tier_empire
+				}
+			}
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				count >= 4
+			}
+		}
+		trigger_else = {
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				count >= 6
+			}
+		}
+		
 		any_consort = {
 			is_valid_target_consort_trigger = yes
 			save_temporary_scope_as = temporary_target_consort
@@ -22465,16 +22485,11 @@ consort_events.0041 = {
 				CONSORT = scope:temporary_target_consort
 			}
 		}
-		any_consort = {
-			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
-			count >= 4
-		}
-		is_landed_or_landless_administrative = yes
 		NOT = {
 			has_character_flag = had_murder_consort_flag
 		}
 	}
-	
+
 	weight_multiplier = {
 		base = 1
 		modifier = {
@@ -22595,7 +22610,7 @@ consort_events.0041 = {
 			add = -0.15
 		}
 	}
-	
+
 	immediate = {
 		save_scope_as = partner
 		random_consort = {
@@ -22606,7 +22621,39 @@ consort_events.0041 = {
 				base = 10
 				modifier = {
 					scope:partner.primary_spouse ?= this
+					add = 15
+				}
+				modifier = {
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
 					add = 10
+				}
+				modifier = {
+					is_high_consort_trigger = {
+						LIEGE = scope:partner
+					}
+					scope:partner = {
+						trigger_if = {
+							limit = {
+								can_have_four_consorts_trigger = yes
+							}
+							any_consort = {
+								is_high_consort_trigger = {
+									LIEGE = scope:partner
+								}
+								count = 4
+							}
+						}
+						trigger_else = {
+							employs_court_position = grand_consort_court_position
+						}
+					}
+					add = 10
+				}
+				modifier = {
+					is_spouse_of = scope:partner
+					add = 5
 				}
 				modifier = {
 					harem_politics_favored_consort_trigger = yes
@@ -22656,7 +22703,7 @@ consort_events.0041 = {
 				weight = {
 					base = 10
 					modifier = {
-						add = intrigue
+						add = this.intrigue
 					}
 					modifier = { # Vengefulness
 						add = {
@@ -22687,6 +22734,15 @@ consort_events.0041 = {
 						OR = {
 							has_relation_rival = scope:target_consort
 							has_relation_nemesis = scope:target_consort
+						}
+						add = 10
+					}
+					modifier = {
+						scope:target_consort = {
+							is_relevant_consort_trigger = { LIEGE = scope:partner }
+						}
+						is_regular_concubine_of = {
+							LIEGE = scope:partner
 						}
 						add = 10
 					}
