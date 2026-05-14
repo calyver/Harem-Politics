@@ -23547,6 +23547,260 @@ consort_events.0045 = {
 	after = {
 	}
 }
+
+########################################################################
+##Hidden events - A consort murders another consort - simpler version ##
+########################################################################
+scripted_trigger is_valid_murderer_lower_rank_kill_trigger = {
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_physically_able_ai_adult = yes
+	harem_politics_evil_consort_trigger = yes
+	# Must outrank a regular concubine victim (see victim trigger)
+	OR = {
+		is_high_ranking_consort_trigger = { LIEGE = root }
+		harem_politics_favored_consort_trigger = yes
+	}
+	trigger_if = {
+		limit = {
+			is_high_ranking_consort_trigger = { LIEGE = root }
+		}
+		intrigue >= low_skill_rating
+	}
+	trigger_else = {
+		intrigue >= mediocre_skill_rating
+	}
+}
+
+scripted_trigger is_valid_victim_lower_rank_kill_trigger = {
+	this != $MURDERER$
+	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	is_physically_able_ai_adult = yes
+	# Lower rank: regular concubine of liege
+	is_regular_concubine_of = { LIEGE = root }
+	harem_politics_favored_consort_trigger = no
+	OR = {
+		has_any_bad_relationship_with_character_trigger = { CHARACTER = $MURDERER$ }
+		has_trait = beauty_good_2
+		has_trait = beauty_good_3
+	}
+}
+
+consort_events.0043 = {
+	hidden = yes
+
+	trigger = {
+		is_playable_character = yes
+
+		# At least 6 favor-system consorts
+		any_consort = {
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+			count >= 6
+		}
+		any_consort = {
+			is_valid_murderer_lower_rank_kill_trigger = yes
+			save_scope_as = temp_murderer
+		}
+		# At least 3 lower-ranked consorts
+		any_concubine = {
+			is_valid_victim_lower_rank_kill_trigger = { MURDERER = scope:temp_murderer }
+			count > 2
+		}
+
+		NOT = {
+			has_character_flag = had_lower_rank_mystery_kill_consort_flag
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		modifier = {
+			add = 0.1
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				count >= 8
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+				count >= 12
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_yanwan
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				has_character_flag = flag_nurbanu
+			}
+		}
+		modifier = {
+			add = 0.05
+			any_consort = {
+				has_character_flag = flag_mei
+			}
+		}
+		modifier = {
+			add = 0.1
+			any_consort = {
+				harem_politics_special_consort_trigger = yes
+			}
+		}
+		modifier = {
+			add = 0.15
+			highest_held_title_tier >= tier_kingdom
+		}
+		# Grand Consort / Keeper blocks mirror 0041 (shortened set)
+		modifier = {
+			employs_court_position = grand_consort_court_position
+			any_court_position_holder = {
+				type = grand_consort_court_position
+				aptitude:grand_consort_court_position >= 3
+				opinion = {
+					target = root
+					value >= -10
+				}
+			}
+			add = -0.15
+		}
+		modifier = {
+			employs_court_position = keeper_of_the_harem_court_position
+			has_character_flag = keeper_of_the_harem_maintaining_decorum
+			add = -0.1
+		}
+	}
+
+	immediate = {
+		save_scope_as = partner
+
+		# Pick murderer (weighted toward high-ranking consorts)
+		random_consort = {
+			limit = {
+				is_valid_murderer_lower_rank_kill_trigger = yes
+			}
+			weight = {
+				base = 10
+				modifier = {
+					is_high_ranking_consort_trigger = {
+						LIEGE = scope:partner
+					}
+					add = 30
+				}
+				modifier = {
+					harem_politics_favored_consort_trigger = yes
+					add = 15
+				}
+				modifier = {
+					harem_politics_beloved_consort_trigger = yes
+					add = 10
+				}
+				modifier = {
+					add = this.intrigue
+				}
+			}
+			save_scope_as = murderer
+		}
+
+		if = {
+			limit = {
+				exists = scope:murderer
+				any_concubine = {
+					is_valid_victim_lower_rank_kill_trigger = { MURDERER = scope:murderer }
+				}
+			}
+
+			random_consort = {
+				limit = {
+					is_valid_victim_lower_rank_kill_trigger = { MURDERER = scope:murderer }
+				}
+				weight = {
+					base = 10
+					modifier = {
+						has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:murderer }
+						add = 25
+					}
+					modifier = {
+						has_trait = beauty_good_3
+						add = 15
+					}
+					modifier = {
+						has_trait = pregnant
+						add = -9
+					}
+				}
+				save_scope_as = murder_victim
+			}
+
+			if = {
+				limit = {
+					exists = scope:murder_victim
+				}
+				scope:murder_victim = {
+					#Killed by murder
+					death = {
+						killer = scope:murderer
+						death_reason = death_mysterious
+					}
+				}
+				scope:murderer = {
+					add_secret = {
+						type = secret_murder
+						target = scope:murder_victim
+					}
+				}
+				if = {
+					limit = {
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+							count < 6
+						}
+					}
+					add_character_flag = {
+						flag = had_lower_rank_mystery_kill_consort_flag
+						years = 3
+					}
+				}
+				else_if = {
+					limit = {
+						any_consort = {
+							is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+							count < 9
+						}
+					}
+					add_character_flag = {
+						flag = had_lower_rank_mystery_kill_consort_flag
+						years = 2
+					}
+				}
+				else = {
+					add_character_flag = {
+						flag = had_lower_rank_mystery_kill_consort_flag
+						years = 1
+					}
+				}
+
+				if = {
+					limit = {
+						debug_only = yes
+					}
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = success_hidden_event_t
+						right_icon = scope:murder_victim
+						left_icon = scope:murderer
+						custom_tooltip = successful_hidden_event_desc
+					}
+				}
+			}
+		}
+	}
+}
+
 #############################
 ## Elevate to High Consort ##
 #############################
