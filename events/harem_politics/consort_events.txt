@@ -23528,14 +23528,30 @@ consort_events.0045 = {
 ##Hidden events - A consort murders another consort - simpler version ##
 ########################################################################
 scripted_trigger is_valid_murderer_lower_rank_kill_trigger = {
-	is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+	OR = {
+		AND = {
+			is_consort_of = root
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
+		}
+		is_eligible_harem_member_trigger = {
+			LIEGE = root
+		}
+	}
 	is_physically_able_ai_adult = yes
 	harem_politics_evil_consort_trigger = yes
 	trigger_if = {
 		limit = {
 			OR = {
-				is_high_ranking_consort_trigger = { LIEGE = root }
-				harem_politics_favored_consort_trigger = yes
+				AND = {
+					is_consort_of = root
+					OR = {
+						is_high_ranking_consort_trigger = { LIEGE = root }
+						harem_politics_favored_consort_trigger = yes
+					}
+				}
+				NOT = {
+					is_consort_of = root
+				}
 			}
 		}
 		intrigue >= low_skill_rating
@@ -23567,8 +23583,15 @@ scripted_trigger is_valid_victim_lower_rank_kill_trigger = {
 	}
 	OR = {
 		has_any_bad_relationship_with_character_trigger = { CHARACTER = $MURDERER$ }
-		has_trait = beauty_good_2
-		has_trait = beauty_good_3
+		trigger_if = {
+			limit = {
+				$MURDERER$ = { is_consort_of = root }
+			}
+			OR = {
+				has_trait = beauty_good_2
+				has_trait = beauty_good_3
+			}
+		}
 	}
 	save_temporary_scope_as = temporary_consort
 	NOT = {
@@ -23596,7 +23619,7 @@ consort_events.0046 = {
 			is_valid_for_favor_system_trigger = { HAREM_LIEGE = root }
 			count > 2
 		}
-		any_consort = {
+		any_courtier = {
 			is_valid_murderer_lower_rank_kill_trigger = yes
 			save_temporary_scope_as = temp_murderer
 		}
