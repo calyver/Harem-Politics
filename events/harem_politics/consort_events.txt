@@ -9248,10 +9248,17 @@ scripted_trigger is_valid_consort_friend_trigger = {
 		is_consort_of = root
 		count < 3
 	}
-	any_relation = {
-		type = best_friend
-		is_consort_of = root
-		count < 2
+	NAND = {
+		any_relation = {
+			type = friend
+			is_consort_of = root
+			count >= 2
+		}
+		any_relation = {
+			type = best_friend
+			is_consort_of = root
+			count >= 1
+		}
 	}
 }
 consort_events.0008 = {
@@ -9497,122 +9504,158 @@ consort_events.0008 = {
 		if = {
 			limit = {
 				exists = scope:consort_friend
-				any_consort = {
-					NOR = {
-						this = scope:consort_friend
-						has_court_position = chief_eunuch_court_position
-						has_court_position = lady_in_waiting_court_position
-						has_court_position = keeper_of_the_harem_court_position
-						has_relation_best_friend = scope:consort_friend
-					}
-					is_valid_consort_friend_trigger = yes
-				}
+				
 			}
-			
-			random_consort = {
+			if = {
 				limit = {
-					NOR = {
-						this = scope:consort_friend
-						has_court_position = chief_eunuch_court_position
-						has_court_position = lady_in_waiting_court_position
-						has_court_position = keeper_of_the_harem_court_position
-						has_relation_best_friend = scope:consort_friend
-					}
-					is_valid_consort_friend_trigger = yes
-				}
-				weight = {
-					base = 50
-					opinion_modifier = { #Opinion
-						opinion_target = scope:consort_friend
-						multiplier = 0.5
-					}
-
-					compatibility_modifier = { #Trait compatibility
-						compatibility_target = scope:consort_friend
-						multiplier = 0.5
-					}
-
-					modifier = {
-						scope:partner.primary_spouse ?= this
-						add = 20
-					}
-					modifier = {
-						is_high_consort_trigger = {
-							LIEGE = scope:partner
+					scope:consort_friend = {
+						any_relation = {
+							type = rival
+							is_consort_of = root
+							NOR = {
+								this = scope:consort_friend
+								has_court_position = chief_eunuch_court_position
+								has_court_position = lady_in_waiting_court_position
+								has_court_position = keeper_of_the_harem_court_position
+								has_relation_best_friend = scope:consort_friend
+							}
+							count >= 2
 						}
-						add = 20
-					}
-					modifier = {
-						OR = {
-							has_relation_best_friend = scope:partner
-							has_relation_soulmate = scope:partner
-						}
-						add = 20
-					}
-					modifier = {
-						OR = {
-							has_relation_friend = scope:partner
-							has_relation_lover = scope:partner
-						}
-						add = 10
-					}
-					modifier = {
-						has_character_modifier = favor_boost_modifier
-						add = 20
-					}
-					modifier = {
-						harem_politics_favored_consort_trigger = yes
-						add = 10
-					}
-					modifier = {
-						harem_politics_beloved_consort_trigger = yes
-						add = 10
-					}
-					modifier = {
-						has_trait = beauty_good_1
-						add = 5
-					}
-					modifier = {
-						has_trait = beauty_good_2
-						add = 10
-					}
-					modifier = {
-						has_trait = beauty_good_3
-						add = 20
-					}
-					modifier = {
-						any_child = {
-							is_child_of = scope:partner
-							is_primary_heir_of = scope:partner
-						}
-						add = 20
-					}
-
-
-					modifier = {
-						has_relation_potential_friend = scope:consort_friend
-						add = 20
-					}
-
-					modifier = { #Traits
-						has_trait = gregarious
-						add = 25
-					}
-					modifier = { #Traits
-						has_trait = shy
-						add = -25
-					}
-					modifier = { #Traits
-						has_trait = craven
-						add = -15
-					}
-					modifier = { #Traits
-						has_trait = paranoid
-						add = -25
 					}
 				}
-				save_scope_as = valid_target_consort
+				random_consort = {
+					limit = {
+						has_relation_rival = scope:consort_friend
+						NOR = {
+							this = scope:consort_friend
+							has_court_position = chief_eunuch_court_position
+							has_court_position = lady_in_waiting_court_position
+							has_court_position = keeper_of_the_harem_court_position
+							has_relation_best_friend = scope:consort_friend
+						}
+					}
+					save_scope_as = valid_target_consort
+				}
 			}
+			else_if = {
+				limit = {
+					any_consort = {
+						NOR = {
+							this = scope:consort_friend
+							has_court_position = chief_eunuch_court_position
+							has_court_position = lady_in_waiting_court_position
+							has_court_position = keeper_of_the_harem_court_position
+							has_relation_best_friend = scope:consort_friend
+						}
+						is_valid_consort_friend_trigger = yes
+					}
+				}
+				random_consort = {
+					limit = {
+						NOR = {
+							this = scope:consort_friend
+							has_court_position = chief_eunuch_court_position
+							has_court_position = lady_in_waiting_court_position
+							has_court_position = keeper_of_the_harem_court_position
+							has_relation_best_friend = scope:consort_friend
+						}
+						is_valid_consort_friend_trigger = yes
+					}
+					weight = {
+						base = 50
+						opinion_modifier = { #Opinion
+							opinion_target = scope:consort_friend
+							multiplier = 0.5
+						}
+	
+						compatibility_modifier = { #Trait compatibility
+							compatibility_target = scope:consort_friend
+							multiplier = 0.5
+						}
+	
+						modifier = {
+							scope:partner.primary_spouse ?= this
+							add = 20
+						}
+						modifier = {
+							is_high_consort_trigger = {
+								LIEGE = scope:partner
+							}
+							add = 20
+						}
+						modifier = {
+							OR = {
+								has_relation_best_friend = scope:partner
+								has_relation_soulmate = scope:partner
+							}
+							add = 20
+						}
+						modifier = {
+							OR = {
+								has_relation_friend = scope:partner
+								has_relation_lover = scope:partner
+							}
+							add = 10
+						}
+						modifier = {
+							has_character_modifier = favor_boost_modifier
+							add = 20
+						}
+						modifier = {
+							harem_politics_favored_consort_trigger = yes
+							add = 10
+						}
+						modifier = {
+							harem_politics_beloved_consort_trigger = yes
+							add = 10
+						}
+						modifier = {
+							has_trait = beauty_good_1
+							add = 5
+						}
+						modifier = {
+							has_trait = beauty_good_2
+							add = 10
+						}
+						modifier = {
+							has_trait = beauty_good_3
+							add = 20
+						}
+						modifier = {
+							any_child = {
+								is_child_of = scope:partner
+								is_primary_heir_of = scope:partner
+							}
+							add = 20
+						}
+	
+	
+						modifier = {
+							has_relation_potential_friend = scope:consort_friend
+							add = 20
+						}
+	
+						modifier = { #Traits
+							has_trait = gregarious
+							add = 25
+						}
+						modifier = { #Traits
+							has_trait = shy
+							add = -25
+						}
+						modifier = { #Traits
+							has_trait = craven
+							add = -15
+						}
+						modifier = { #Traits
+							has_trait = paranoid
+							add = -25
+						}
+					}
+					save_scope_as = valid_target_consort
+				}
+			}
+
 			if = {
 				limit = {
 					exists = scope:consort_friend
