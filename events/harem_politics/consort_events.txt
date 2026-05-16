@@ -9241,6 +9241,16 @@ consort_events.0007 = {
 }
 
 ##Two consorts become friends##
+scripted_trigger is_excluded_consort_social_pair_for_root_trigger = {
+	is_valid_generic_consort_trigger = yes
+	OR = {
+		this = $CHARACTER$
+		has_court_position = chief_eunuch_court_position
+		has_court_position = lady_in_waiting_court_position
+		has_court_position = keeper_of_the_harem_court_position
+		has_relation_$RELATION$ = $CHARACTER$
+	}
+}
 scripted_trigger is_valid_consort_friend_trigger = {
 	is_valid_generic_consort_trigger = yes
 	any_relation = {
@@ -9503,7 +9513,6 @@ consort_events.0008 = {
 		if = {
 			limit = {
 				exists = scope:consort_friend
-				
 			}
 			if = {
 				limit = {
@@ -9511,27 +9520,15 @@ consort_events.0008 = {
 						any_relation = {
 							type = friend
 							is_consort_of = root
-							NOR = {
-								this = scope:consort_friend
-								has_court_position = chief_eunuch_court_position
-								has_court_position = lady_in_waiting_court_position
-								has_court_position = keeper_of_the_harem_court_position
-								has_relation_best_friend = scope:consort_friend
-							}
+							is_excluded_consort_social_pair_for_root_trigger = { RELATION = best_friend CHARACTER = scope:consort_friend }
 							count >= 2
 						}
 					}
 				}
 				random_consort = {
 					limit = {
-						has_relation_rival = scope:consort_friend
-						NOR = {
-							this = scope:consort_friend
-							has_court_position = chief_eunuch_court_position
-							has_court_position = lady_in_waiting_court_position
-							has_court_position = keeper_of_the_harem_court_position
-							has_relation_best_friend = scope:consort_friend
-						}
+						has_relation_friend = scope:consort_friend
+						is_excluded_consort_social_pair_for_root_trigger = { RELATION = best_friend CHARACTER = scope:consort_friend }
 					}
 					save_scope_as = valid_target_consort
 				}
