@@ -855,20 +855,8 @@ scripted_trigger target_consort_trigger = {
 	}
 	
 	OR = {
-		AND = {
-			exists = $PARTNER$.primary_spouse
-			this = $PARTNER$.primary_spouse
-		}
-		is_high_consort_trigger = {
-			LIEGE = $PARTNER$
-		}
+		is_high_ranking_consort_trigger = { LIEGE = $PARTNER$ }
 		harem_politics_favored_consort_trigger = yes
-		AND = {
-			root = {
-				is_concubine = yes
-			}
-			is_married = yes
-		}
 		has_relation_lover = $PARTNER$
 		has_relation_soulmate = $PARTNER$
 	}
@@ -23147,7 +23135,7 @@ consort_events.0043 = {
 						}
 						is_attracted_to_gender_of = scope:actor
 						hp_accepts_harems = no
-						has_any_bad_relationship_with_root_trigger = yes
+						has_any_moderate_bad_relationship_with_character_trigger = { CHARACTER = scope:actor }
 						has_any_good_relationship_with_character_trigger = {
 							CHARACTER = scope:consort
 						}
@@ -23993,6 +23981,30 @@ consort_events.0046 = {
 #####################################################################
 ## Hidden events - Cancel obsolete murder schemes vs harem members ##
 #####################################################################
+scripted_trigger is_valid_murder_scheme_target_victim_trigger = {
+	this != $CONSORT$
+	OR = {
+		AND = {
+			is_consort_of = root
+			is_valid_murder_scheme_target_consort_0041_trigger = yes
+		}
+		AND = {
+			is_child_of = root
+			OR = {
+				this = root.player_heir
+				any_parent = {
+					has_any_moderate_bad_relationship_with_character_trigger = { CHARACTER = $CONSORT$ }
+				}
+			}
+			NOT = {
+				is_child_of = $CONSORT$
+			}
+		}
+	}
+	NOT = {
+		has_any_good_relationship_with_character_trigger = { CHARACTER = $CONSORT$ }
+	}
+}
 consort_events.0047 = {
 	hidden = yes
 
