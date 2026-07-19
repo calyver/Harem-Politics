@@ -1,7 +1,10 @@
 ﻿marriage_interaction_on_accept_effect = {
 	#Use hook
 	if = {
-		limit = { always = scope:hook }
+		limit = {
+			exists = scope:hook
+			always = scope:hook
+		}
 		scope:actor = {
 			use_hook = scope:recipient
 		}
@@ -42,20 +45,56 @@
 				limit = {
 					is_valid_for_legitimacy_change = yes
 					NOT = { has_variable = lowborn_legitimacy_cooldown }
-					OR = {
-						NOT = { exists = primary_spouse }
-						primary_spouse ?= scope:secondary_recipient
-					}
 				}
 				if = {
 					limit = { is_ai = no }
-					send_interface_toast = {
-						type = event_toast_effect_good
-						title = married_lowborn_toast
-						left_icon = scope:actor
-						add_legitimacy = {
-							value = medium_legitimacy_loss
-							multiply = scope:actor.primary_title.tier
+					if = {
+						limit = {
+							OR = {
+								NOT = { exists = primary_spouse }
+								primary_spouse ?= scope:secondary_recipient
+								AND = {
+									primary_spouse ?= { 
+										this != scope:secondary_recipient 
+									}
+									NOR = {
+										government_has_flag = government_is_tribal
+										government_has_flag = government_is_nomadic
+									}
+								}
+							}
+						}
+						send_interface_toast = {
+							type = event_toast_effect_good
+							title = married_lowborn_toast
+							left_icon = scope:actor
+							if = { #Marrying a lowborn PS will always decrease legitimacy
+								limit = {
+									OR = {
+										NOT = { exists = primary_spouse }
+										primary_spouse ?= scope:secondary_recipient
+									}
+								}
+								add_legitimacy = {
+									value = medium_legitimacy_loss
+									multiply = scope:actor.primary_title.tier
+								}
+							}
+							else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
+								limit = {
+									primary_spouse ?= { 
+										this != scope:secondary_recipient 
+									}
+									NOR = {
+										government_has_flag = government_is_tribal
+										government_has_flag = government_is_nomadic
+									}
+								}
+								add_legitimacy = {
+									value = -5
+									multiply = scope:actor.primary_title.tier
+								}
+							}
 						}
 					}
 				}
@@ -64,7 +103,15 @@
 						type = event_toast_effect_good
 						title = married_lowborn_toast
 						left_icon = scope:actor
-						add_legitimacy = { value = minor_legitimacy_loss }
+						if = { #Marrying a lowborn PS will always decrease legitimacy
+							limit = {
+								OR = {
+									NOT = { exists = primary_spouse }
+									primary_spouse ?= scope:secondary_recipient
+								}
+							}
+							add_legitimacy = { value = minor_legitimacy_loss }
+						}
 					}
 					hidden_effect = {
 						set_variable = {
@@ -93,20 +140,56 @@
 				limit = {
 					is_valid_for_legitimacy_change = yes
 					NOT = { has_variable = lowborn_legitimacy_cooldown }
-					OR = {
-						NOT = { exists = primary_spouse }
-						primary_spouse ?= scope:secondary_actor
-					}
 				}
 				if = {
 					limit = { is_ai = no }
-					send_interface_toast = {
-						type = event_toast_effect_good
-						title = married_lowborn_toast
-						left_icon = scope:actor
-						add_legitimacy = {
-							value = medium_legitimacy_loss
-							multiply = scope:actor.primary_title.tier
+					if = {
+						limit = {
+							OR = {
+								NOT = { exists = primary_spouse }
+								primary_spouse ?= scope:secondary_actor
+								AND = {
+									primary_spouse ?= { 
+										this != scope:secondary_actor 
+									}
+									NOR = {
+										government_has_flag = government_is_tribal
+										government_has_flag = government_is_nomadic
+									}
+								}
+							}
+						}
+						send_interface_toast = {
+							type = event_toast_effect_good
+							title = married_lowborn_toast
+							left_icon = scope:actor
+							if = { #Marrying a lowborn PS will always decrease legitimacy
+								limit = {
+									OR = {
+										NOT = { exists = primary_spouse }
+										primary_spouse ?= scope:secondary_actor
+									}
+								}
+								add_legitimacy = {
+									value = medium_legitimacy_loss
+									multiply = scope:actor.primary_title.tier
+								}
+							}
+							else_if = { #Else, only non-tribal, non-nomad rulers will lose legitimacy for marrying a lowborn secondary spouse
+								limit = {
+									primary_spouse ?= { 
+										this != scope:secondary_actor 
+									}
+									NOR = {
+										government_has_flag = government_is_tribal
+										government_has_flag = government_is_nomadic
+									}
+								}
+								add_legitimacy = {
+									value = -5
+									multiply = scope:actor.primary_title.tier
+								}
+							}
 						}
 					}
 				}
@@ -115,7 +198,15 @@
 						type = event_toast_effect_good
 						title = married_lowborn_toast
 						left_icon = scope:actor
-						add_legitimacy = { value = minor_legitimacy_loss }
+						if = { #Marrying a lowborn PS will always decrease legitimacy
+							limit = {
+								OR = {
+									NOT = { exists = primary_spouse }
+									primary_spouse ?= scope:secondary_actor
+								}
+							}
+							add_legitimacy = { value = minor_legitimacy_loss }
+						}
 					}
 					hidden_effect = {
 						set_variable = {
@@ -132,8 +223,49 @@
 					is_valid_for_nomadic_legitimacy_change = yes
 					scope:recipient = { government_has_flag = government_is_nomadic }
 					mpo_lower_nomad_authority_trigger = { CHARACTER = scope:recipient } # Only if recipient has higher Dominance than you
+					#They were not previously consorts
+					scope:secondary_actor = {
+						NOR = {
+							any_former_spouse = {
+								this = scope:secondary_recipient
+							}
+							any_former_concubinist = {
+								this = scope:secondary_recipient
+							}
+						}
+					}
+					scope:secondary_recipient = {
+						NOR = {
+							any_former_spouse = {
+								this = scope:secondary_actor
+							}
+							any_former_concubinist = {
+								this = scope:secondary_actor
+							}
+						}
+					}
 				}
 				add_legitimacy = medium_legitimacy_gain
+			}
+
+			# Check for legitimacy gain from marrying into a higher rank
+			if = {
+				limit = {
+					scope:actor = scope:secondary_actor
+				}
+				marriage_legitimacy_rank_effect = {
+					RULER = scope:secondary_actor
+					OTHER = scope:secondary_recipient
+				}
+			}
+			else_if = {
+				limit = {
+					scope:actor = scope:secondary_recipient
+				}
+				marriage_legitimacy_rank_effect = {
+					RULER = scope:secondary_recipient
+					OTHER = scope:secondary_actor
+				}
 			}
 		}
 	}
@@ -166,6 +298,27 @@
 				}
 				landless_adventurer_government = {
 					scope:secondary_recipient = { change_government = landless_adventurer_government }
+				}
+				celestial_government = {
+					scope:secondary_recipient = { change_government = celestial_government }
+				}
+				mandala_government = {
+					scope:secondary_recipient = { change_government = mandala_government }
+				}
+				steppe_admin_government = {
+					scope:secondary_recipient = { change_government = steppe_admin_government }
+				}
+				meritocratic_government = {
+					scope:secondary_recipient = { change_government = meritocratic_government }
+				}
+				wanua_government = {
+					scope:secondary_recipient = { change_government = wanua_government }
+				}
+				japan_administrative_government = {
+					scope:secondary_recipient = { change_government = japan_administrative_government }
+				}
+				japan_feudal_government = {
+					scope:secondary_recipient = { change_government = japan_feudal_government }
 				}
 			}
 		}
@@ -201,6 +354,7 @@
 	# A Grand Wedding was promised
 	if = {
 		limit = {
+			exists = scope:grand_wedding_promise
 			scope:grand_wedding_promise = yes
 		}
 		set_grand_wedding_betrothal_variables = {
@@ -259,22 +413,15 @@
 				every_consort = {
 					# If the spouse themselves does not believe in polygamy...
 					limit = {
-						NOR = {
-							culture = { has_cultural_tradition = tradition_polygamous }
-							faith = { has_doctrine = doctrine_polygamy }
-							faith = { has_doctrine = doctrine_concubines }
-						}
+						hp_accepts_harems = no
 					}
 
 					#... then family members who also do not believe in polygamy aren't happy about having a relative forced into polygamous union with you.
 					every_close_family_member = {
 						if = {
 							limit = { 
-								NOR = {
-									culture = { has_cultural_tradition = tradition_polygamous }
-									faith = { has_doctrine = doctrine_polygamy }
-									faith = { has_doctrine = doctrine_concubines }
-								}
+								hp_accepts_harems = no
+								NOT = { faith = { has_doctrine = tenet_polyamory } }
 							}
 							add_opinion = {
 								target = scope:secondary_actor
@@ -447,6 +594,86 @@
 		}
 		scope:actor = {
 			add_piety = medium_piety_gain
+		}
+	}
+	calyver_marriage_harem_politics_effect = yes
+
+	### LMF betrothal status
+	if = {
+		limit = {
+			NOT = { has_game_rule = lmf_no_betrothal_objection }
+			OR = {
+				scope:secondary_actor = { is_adult = no }
+				scope:secondary_recipient = { is_adult = no }
+			}
+		}
+		scope:secondary_actor = {
+			if = {
+				limit = {
+					OR = {
+						is_ruler = yes
+						any_heir_title = {
+							trigger_if = {
+								limit = { has_title_law_flag = elective_succession_law }
+								exists = holder
+							}
+							trigger_else = {
+								holder ?= {
+									NOR = {
+										has_government = mercenary_government
+										has_government = republic_government
+										has_government = theocracy_government
+										has_government = holy_order_government
+									}
+								}
+							}
+							count > 0
+						}
+					}
+				}
+				set_variable = { name = betrothal_ruler_or_heir value = scope:secondary_recipient }
+			}
+		}
+		scope:secondary_recipient = {
+			if = {
+				limit = {
+					OR = {
+						is_ruler = yes
+						any_heir_title = {
+							trigger_if = {
+								limit = { has_title_law_flag = elective_succession_law }
+								exists = holder
+							}
+							trigger_else = {
+								holder ?= {
+									NOR = {
+										has_government = mercenary_government
+										has_government = republic_government
+										has_government = theocracy_government
+										has_government = holy_order_government
+									}
+								}
+							}
+							count > 0
+						}
+					}
+				}
+				set_variable = { name = betrothal_ruler_or_heir value = scope:secondary_actor }
+			}
+		}
+	}
+	else = {
+		scope:secondary_actor = {
+			if = {
+				limit = { exists = var:betrothal_ruler_or_heir }
+				remove_variable = betrothal_ruler_or_heir
+			}
+		}
+		scope:secondary_recipient = {
+			if = {
+				limit = { exists = var:betrothal_ruler_or_heir }
+				remove_variable = betrothal_ruler_or_heir
+			}
 		}
 	}
 }
