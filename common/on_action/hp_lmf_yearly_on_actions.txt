@@ -1,0 +1,170 @@
+﻿random_yearly_playable_pulse = {
+	trigger = {
+		basic_is_valid_for_yearly_events_trigger = yes
+	}
+	random_on_action = {
+		chance_of_no_event = {
+			value = 0
+			if = {
+				limit = {
+					is_ai = yes
+					highest_held_title_tier >= tier_kingdom
+				}
+				add = 30 # No need to waste performance here
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					highest_held_title_tier >= tier_duchy
+				}
+				add = 70 # No need to waste performance here
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+				}
+				add = 95 # AI counts aren't particularly important
+			}
+		}
+		6 = on_yearly_events
+		5 = fp1_yearly_events
+		4 = fp2_yearly_events
+		4 = fp3_yearly_events
+		#2 = bp1_yearly_events # Retired on purpose; contents are all in on_yearly_events
+		6 = ep3_yearly_events_admin
+		6 = tgp_japan_yearly_events
+		6 = tgp_china_yearly_events
+		3 = tgp_mandala_yearly_events
+		6 = ongoing_house_feud_events
+		10 = mpo_yearly_events_nomads
+	}
+	effect = {
+		# Special Holy Seeds drops
+		if = {
+			limit = {
+				has_dlc_feature = legends
+				OR = {
+					has_trait = theologian
+					has_trait = sayyid
+				}
+				NOR = {
+					has_game_rule = historical_legends_only
+					has_personal_legend_seed = holy
+				}
+			}
+			random = {
+				chance = 15
+				send_interface_toast = {
+					type = msg_legend_seed_created
+					title = holy_seed_toast_traits
+					left_icon = root
+					create_legend_seed = {
+						type = holy
+						quality = famed
+						chronicle = saintly_life
+						properties = {
+							religion = root.religion
+						}
+					}
+				}
+			}
+		}
+		# Commander Trait Leveling for AI
+		if = {
+			limit = {
+				is_ai = yes
+				OR = {
+					has_commander_trait_trigger = yes
+					any_knight = {
+						has_commander_trait_trigger = yes
+					}
+				}
+			}
+			commander_trait_lvling_ai_effect = yes
+			every_knight = {
+				limit = {
+					is_ai = yes
+					has_commander_trait_trigger = yes
+				}
+				commander_trait_lvling_ai_effect = yes
+			}
+		}
+		if = {
+			limit = { has_tgp_dlc_trigger = yes }
+			develop_celestial_tributaries = yes
+		}
+		# Fallback for AI budgeting (primarily handled in `tgp_china_ministry.0100`)
+		if = {
+			limit = {
+				is_ai = yes
+				is_independent_ruler = yes
+				has_treasury = yes
+				OR = {
+					 # In big treasury debt
+					treasury <= -200
+					 # We're due a budget
+					treasury_years_since_budget_enact_date > 3
+					# We have a lot of new budget capacity
+					character_treasury_new_budget_capacity > {
+						value = character_treasury_budget_capacity
+						multiply = 2.0
+					}
+				}
+				can_afford_enact_treasury_budget_costs = yes
+			}
+			enact_treasury_budgets = yes
+		}
+	}
+	on_actions = {
+		delay = { days = { 45 75 } }
+		on_yearly_common_events
+		delay = { days = { 50 80 } }
+		on_yearly_invisible_events
+		delay = { days = { 85 165 } }
+		bishop_ongoing
+		delay = { days = { 166 185 } }
+		wet_nurse_pulse
+		delay = { days = { 51 180 } }
+		childhood_ongoing
+		delay = { days = { 51 180 } }
+		hunt_sighting_on_action
+		delay = { days = { 181 240 } }
+		bp2_child_pulse
+		delay = { days = { 181 240 } }
+		bp2_adult_followups
+		delay = { days = { 291 310 } }
+		court_scholar_ongoing
+		delay = { days = { 25 44 } }
+		clan_events_on_action
+		delay = { days = { 14 310 } }
+		ep3_akolouthos_on_action
+		delay = { days = { 25 44 } }
+		mpo_migration_contract
+		delay = { days = { 1 180 } }
+		mpo_migration_contract
+		delay = { days = { 181 360 } }
+		mpo_de_jure_shift
+		delay = { days = { 1 30 } }
+		# on_yearly_tutorial_events # TODO[Ruler Objectives]: Make generally available once ready for it
+
+		# Compatch#
+		# Harem Politics #
+		calyver_random_yearly_playable_events
+
+		# Love Marriage Family #
+		delay = { days = { 7 14 } }
+		on_lmf_pregnancy_check
+		delay = { days = { 15 60 } }
+		on_lmf_family_dinner_event
+		delay = { days = { 30 180 } }
+		on_lmf_ai_intro_check
+		delay = { days = { 30 180 } }
+		on_lmf_yearly_courtier_scheme_check
+		delay = { days = { 1 180 } }
+		on_lmf_yearly_courtier_marriage_check
+		delay = { days = { 1 180 } }
+		on_lmf_tutor_check
+		delay = { days = { 30 180 } }
+		on_lmf_spouse_check
+	}
+}
