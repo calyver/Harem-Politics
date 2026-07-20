@@ -992,10 +992,8 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			}
 			else = { add = -20 }
 		}
-		scope:actor = { government_has_flag = government_is_landless_adventurer }
-		scope:recipient = {
-			NOT = { government_has_flag = government_is_landless_adventurer }
-		}
+		scope:actor = { is_landless_adventurer = yes }
+		scope:recipient = { is_landless_adventurer = no }
 		desc = distrust_laamps_for_marriage_tt
 	}	
 
@@ -1950,7 +1948,16 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		scope:secondary_actor = { has_dynasty = yes }
 		scope:recipient.dynasty = scope:secondary_recipient.dynasty
-		scope:secondary_recipient.age <= 25 # Over the age of desperation, prestige is less of an issue
+		OR = {
+			AND = {
+				scope:secondary_recipient = { is_female = yes }
+				scope:secondary_recipient.age <= define:NAI|MARRIAGE_FEMALE_DESPERATION_AGE # Over the age of desperation, prestige is less of an issue
+			}
+			AND = {
+				scope:secondary_recipient = { is_male = yes }
+				scope:secondary_recipient.age <= define:NAI|MARRIAGE_MALE_DESPERATION_AGE # Over the age of desperation, prestige is less of an issue
+			}
+		}
 		NOR = {
 			scope:secondary_actor.dynasty = scope:recipient.dynasty
 			scope:secondary_actor.dynasty = { dynasty_prestige_level = 1 }
@@ -2786,7 +2793,6 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		}
 	}
 
-	## Vanilla ##
 	modifier = { # Same-sex marriage not supported in recipient's faith
 		add = -1000
 		desc = SAME_SEX_MARRIAGE_FAITH_REASON
@@ -4304,13 +4310,44 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = { # Secondary recipient is above the age of 20, growing desperate
 		trigger = {
 			scope:secondary_recipient = {
-				effective_age > 20
+				OR = {
+					AND = {
+						NOT = { exists = global_var:darkages_is_loaded }
+						effective_age > 20
+					}
+					AND = {
+						exists = global_var:darkages_is_loaded
+						effective_age > define:NAI|MARRIAGE_FEMALE_DESPERATION_AGE
+						is_female = yes
+					}
+					AND = {
+						exists = global_var:darkages_is_loaded
+						effective_age > define:NAI|MARRIAGE_MALE_DESPERATION_AGE
+						is_male = yes
+					}
+				}
 				cares_about_quality_candidates_trigger = { CHARACTER = scope:recipient }
 			}
 		}
 		add = {
 			value = scope:secondary_recipient.effective_age
-			subtract = 20
+			subtract = {
+				value = 20
+				if = {
+					limit = {
+						exists = global_var:darkages_is_loaded
+						scope:secondary_recipient = { is_female = yes }
+					}
+					value = define:NAI|MARRIAGE_FEMALE_DESPERATION_AGE
+				}
+				if = {
+					limit = {
+						exists = global_var:darkages_is_loaded
+						scope:secondary_recipient = { is_male = yes }
+					}
+					value = define:NAI|MARRIAGE_MALE_DESPERATION_AGE
+				}
+			}
 			max = 25
 			# I'm a female ruler who needs a child right away
 			if = {
@@ -4385,13 +4422,44 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		trigger = {
 			scope:actor = { is_ai = yes } #Players can do what they want
 			scope:secondary_actor = {
-				effective_age > 20
+				OR = {
+					AND = {
+						NOT = { exists = global_var:darkages_is_loaded }
+						effective_age > 20
+					}
+					AND = {
+						exists = global_var:darkages_is_loaded
+						effective_age > define:NAI|MARRIAGE_FEMALE_DESPERATION_AGE
+						is_female = yes
+					}
+					AND = {
+						exists = global_var:darkages_is_loaded
+						effective_age > define:NAI|MARRIAGE_MALE_DESPERATION_AGE
+						is_male = yes
+					}
+				}
 				cares_about_quality_candidates_trigger = { CHARACTER = scope:actor }
 			}
 		}
 		add = {
 			value = scope:secondary_actor.effective_age
-			subtract = 20
+			subtract = {
+				value = 20
+				if = {
+					limit = {
+						exists = global_var:darkages_is_loaded
+						scope:secondary_actor = { is_female = yes }
+					}
+					value = define:NAI|MARRIAGE_FEMALE_DESPERATION_AGE
+				}
+				if = {
+					limit = {
+						exists = global_var:darkages_is_loaded
+						scope:secondary_actor = { is_male = yes }
+					}
+					value = define:NAI|MARRIAGE_MALE_DESPERATION_AGE
+				}
+			}
 			max = 25
 			# I'm a female ruler who needs a child right away
 			if = {
@@ -5344,6 +5412,90 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 				add = -50
 			}
 		}
+	}
+	
+	###################
+	#	DARK AGES
+	###################
+	
+	modifier = {
+		desc = "darkages_difficult_marriage_modifier_lvl1"
+		exists = global_var:darkages_is_loaded
+		scope:actor = {
+			is_ai = no
+		}
+		scope:secondary_actor = {
+			NOR = {
+				is_close_family_of = scope:actor
+				this = scope:actor
+			}
+			highest_skill_value < 12
+		}
+		scope:secondary_recipient = {
+			highest_skill_value >= 12
+			highest_skill_value < 15
+		}
+		add = -20
+	}
+
+	modifier = {
+		desc = "darkages_difficult_marriage_modifier_lvl2"
+		exists = global_var:darkages_is_loaded
+		scope:actor = {
+			is_ai = no
+		}
+		scope:secondary_actor = {
+			NOR = {
+				is_close_family_of = scope:actor
+				this = scope:actor
+			}
+			highest_skill_value < 15
+		}
+		scope:secondary_recipient = {
+			highest_skill_value >= 15
+			highest_skill_value < 18
+		}
+		add = -40
+	}	
+	
+	modifier = {
+		desc = "darkages_difficult_marriage_modifier_lvl3"
+		exists = global_var:darkages_is_loaded
+		scope:actor = {
+			is_ai = no
+		}
+		scope:secondary_actor = {
+			NOR = {
+				is_close_family_of = scope:actor
+				this = scope:actor
+			}
+			highest_skill_value < 18
+		}
+		scope:secondary_recipient = {
+			highest_skill_value >= 18
+			highest_skill_value < 21
+		}
+		add = -60
+	}
+
+	modifier = {
+		desc = "darkages_difficult_marriage_modifier_lvl4"
+		exists = global_var:darkages_is_loaded
+		scope:actor = {
+			is_ai = no
+		}
+		scope:secondary_actor = {
+			NOR = {
+				is_close_family_of = scope:actor
+				this = scope:actor
+			}
+			highest_skill_value < 21
+		}
+		scope:secondary_recipient = {
+			highest_skill_value >= 21
+
+		}
+		add = -80
 	}
 	
 	# Admin family attribute bonus
