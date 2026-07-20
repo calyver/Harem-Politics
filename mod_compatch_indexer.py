@@ -11,7 +11,7 @@ VANILLA_PATH = r"C:\Program Files (x86)\Steam\steamapps\common\Crusader Kings II
 # 2. Update the Love Marriage Family mod folder path
 LMF_PATH = r"C:\Program Files (x86)\Steam\steamapps\workshop\content\1158310\3037969445"
 
-# 3. Specific inline keys/strings you want to track anywhere in the code
+# 3. Specific inline keys/strings you want to track anywhere in the LMF code
 SPECIFIC_TRACKED_KEYS = [
     "divorced_me_opinion",
     "spouse_made_secondary_opinion",
@@ -167,13 +167,11 @@ def scan_specific_keys(file_path, tab_name, tracked_keys):
     try:
         with open(file_path, "r", encoding="utf-8-sig") as f:
             for line_no, line in enumerate(f, 1):
-                # Clean comments out to avoid false positives inside # comments
                 clean_line = line.split("#")[0]
                 if not clean_line.strip():
                     continue
                 
                 for key in tracked_keys:
-                    # Uses word boundaries (\b) so it won't match variations accidentally
                     if re.search(r'\b' + re.escape(key) + r'\b', clean_line):
                         found_instances.append({
                             "Target Key": key,
@@ -254,12 +252,13 @@ def build_mod_database(mod_path):
             df.to_excel(writer, sheet_name=tab_name, index=False)
             print(f"Created tab '{tab_name}' with {len(df)} entries.")
 
-    # --- NEW: SCAN FOR SPECIFIC INLINE KEYS ---
-    print("\nScanning for specific inline key occurrences...")
+    # --- NEW: SCAN FOR SPECIFIC INLINE KEYS IN LMF ---
+    print("\nScanning Love Marriage Family (LMF) for specific inline key occurrences...")
     specific_rows = []
 
     for tab_name in TARGET_TABS:
-        tab_path = os.path.join(mod_path, tab_name)
+        # Changed this from mod_path to LMF_PATH
+        tab_path = os.path.join(LMF_PATH, tab_name)
         if not os.path.exists(tab_path):
             continue
 
@@ -293,9 +292,9 @@ def build_mod_database(mod_path):
     if specific_rows:
         df_specific = pd.DataFrame(specific_rows)
         df_specific.to_excel(writer, sheet_name="Inline References", index=False)
-        print(f"Created tab 'Inline References' with {len(df_specific)} specific hits.")
+        print(f"Created tab 'Inline References' with {len(df_specific)} specific hits in LMF.")
     else:
-        print("No specific inline keys found.")
+        print("No specific inline keys found in LMF.")
 
     writer.close()
     print(f"\nDone! Compatch database saved to: {output_file}")
