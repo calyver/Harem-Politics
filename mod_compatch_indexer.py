@@ -11,6 +11,17 @@ VANILLA_PATH = r"C:\Program Files (x86)\Steam\steamapps\common\Crusader Kings II
 # 2. Update the Love Marriage Family mod folder path
 LMF_PATH = r"C:\Program Files (x86)\Steam\steamapps\workshop\content\1158310\3037969445"
 
+# 3. Specific inline keys/strings you want to track anywhere in the code
+SPECIFIC_TRACKED_KEYS = [
+    "divorced_me_opinion",
+    "spouse_made_secondary_opinion",
+    "set_me_aside_opinion",
+    "child_of_concubine_female",
+    "child_of_concubine_male",
+    "child_of_concubine"
+    # Add any other specific lines or variables you need to replace here
+]
+
 
 def get_grade(lines):
     """Assigns a complexity grade based on the line count of a code block."""
@@ -149,6 +160,32 @@ def parse_keys_and_lines(file_path):
     return root_keys
 
 
+def scan_specific_keys(file_path, tab_name, tracked_keys):
+    """Scans a file line-by-line for specific sub-keys/opinions regardless of depth."""
+    found_instances = []
+    
+    try:
+        with open(file_path, "r", encoding="utf-8-sig") as f:
+            for line_no, line in enumerate(f, 1):
+                # Clean comments out to avoid false positives inside # comments
+                clean_line = line.split("#")[0]
+                if not clean_line.strip():
+                    continue
+                
+                for key in tracked_keys:
+                    # Uses word boundaries (\b) so it won't match variations accidentally
+                    if re.search(r'\b' + re.escape(key) + r'\b', clean_line):
+                        found_instances.append({
+                            "Target Key": key,
+                            "Line Number": line_no,
+                            "Line Snippet": line.strip()
+                        })
+    except Exception:
+        pass
+        
+    return found_instances
+
+
 def build_mod_database(mod_path):
     output_file = os.path.join(mod_path, "mod_compatch_database.xlsx")
     writer = pd.ExcelWriter(output_file, engine="openpyxl")
@@ -216,6 +253,49 @@ def build_mod_database(mod_path):
             df = pd.DataFrame(data_rows)
             df.to_excel(writer, sheet_name=tab_name, index=False)
             print(f"Created tab '{tab_name}' with {len(df)} entries.")
+
+    # --- NEW: SCAN FOR SPECIFIC INLINE KEYS ---
+    print("\nScanning for specific inline key occurrences...")
+    specific_rows = []
+
+    for tab_name in TARGET_TABS:
+        tab_path = os.path.join(mod_path, tab_name)
+        if not os.path.exists(tab_path):
+            continue
+
+        for root, _, files in os.walk(tab_path):
+            for file in files:
+                if file.endswith((".txt", ".yml")):
+                    full_file_path = os.path.join(root, file)
+                    relative_path = os.path.relpath(root, tab_path)
+
+                    if relative_path == ".": subfolders = []
+                    else: subfolders = relative_path.replace("\\", "/").split("/")
+
+                    sub1 = subfolders[0] if len(subfolders) > 0 else "[No sub-folder found]"
+                    sub2 = subfolders[1] if len(subfolders) > 1 else "[No sub-folder found]"
+                    sub3 = subfolders[2] if len(subfolders) > 2 else "[No sub-folder found]"
+
+                    hits = scan_specific_keys(full_file_path, tab_name, SPECIFIC_TRACKED_KEYS)
+                    for hit in hits:
+                        specific_rows.append({
+                            "Target Key": hit["Target Key"],
+                            "Root Tab": tab_name,
+                            "Subfolder Level 1": sub1,
+                            "Subfolder Level 2": sub2,
+                            "Subfolder Level 3": sub3,
+                            "File Name": file,
+                            "Line Number": hit["Line Number"],
+                            "Code Line": hit["Line Snippet"],
+                            "Status": ""
+                        })
+
+    if specific_rows:
+        df_specific = pd.DataFrame(specific_rows)
+        df_specific.to_excel(writer, sheet_name="Inline References", index=False)
+        print(f"Created tab 'Inline References' with {len(df_specific)} specific hits.")
+    else:
+        print("No specific inline keys found.")
 
     writer.close()
     print(f"\nDone! Compatch database saved to: {output_file}")
