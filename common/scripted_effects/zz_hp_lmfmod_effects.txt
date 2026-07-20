@@ -1,0 +1,154 @@
+﻿court_scheme_marriage_effect = {
+	# No longer concubine
+	if = {
+		limit = {
+			scope:owner = { is_concubine = yes }
+		}
+		scope:owner = {
+			random_consort = {
+				limit = {
+					any_concubine = { this = scope:owner }
+				}
+				remove_concubine = scope:owner
+			}
+		}
+	}
+	if = {
+		limit = {
+			scope:target = { is_concubine = yes }
+		}
+		scope:target = {
+			random_consort = {
+				limit = {
+					any_concubine = { this = scope:target }
+				}
+				remove_concubine = scope:target
+			}
+		}
+	}
+
+	# Break betrothal
+	scope:owner = {
+		if = {
+			limit = { is_betrothed = yes }
+			if = {
+				limit = {
+					NOT = { betrothed = scope:target }
+				}
+				reverse_add_opinion = {
+					modifier = broke_betrothal_opinion
+					target = betrothed
+				}
+				break_betrothal = betrothed
+			}
+			if = {
+				limit = {
+					has_been_promised_grand_wedding = yes
+				}
+				break_grand_wedding_betrothal_effect = yes
+			}
+		}
+	}
+	scope:target = {
+		if = {
+			limit = { is_betrothed = yes }
+			if = {
+				limit = {
+					NOT = { betrothed = scope:owner }
+				}
+				reverse_add_opinion = {
+					modifier = broke_betrothal_opinion
+					target = betrothed
+				}
+				break_betrothal = betrothed
+			}
+			if = {
+				limit = {
+					has_been_promised_grand_wedding = yes
+				}
+				break_grand_wedding_betrothal_effect = yes
+			}
+		}
+	}
+
+	# Apply any relevant opinion penalties for relatives of spouse.
+	if = { # Polygamy
+		limit = {
+			any_consort = {
+				count >= 1
+			}
+		}
+		every_consort = {
+			# If the spouse themselves does not believe in polygamy...
+			limit = {
+				NOR = {
+					culture = { has_cultural_tradition = tradition_polygamous }
+					faith = { has_doctrine = doctrine_polygamy }
+					faith = { has_doctrine = doctrine_concubines }
+				}
+			}
+
+			#... then family members who also do not believe in polygamy aren't happy about having a relative forced into polygamous union with you.
+			every_close_family_member = {
+				limit = { is_close_family_of = prev }
+				if = {
+					limit = {
+						NOR = {
+							culture = { has_cultural_tradition = tradition_polygamous }
+							faith = { has_doctrine = doctrine_polygamy }
+							faith = { has_doctrine = doctrine_concubines }
+						}
+					}
+					add_opinion = {
+						target = scope:owner
+						modifier = relative_in_blasphemous_union_opinion
+					}
+				}
+			}
+
+			# NOTE: Spouse's own opinions handled in the 'on_marriage' code on_action inside of marriage_concubinage.txt, and are not included here.
+		}
+	}
+	scope:target = {
+		if = { #Same-sex relations
+			limit = {
+				allowed_to_marry_same_sex_trigger = no
+				sex_same_as = scope:owner
+			}
+			every_close_family_member = {
+				limit = { is_close_family_of = scope:target }
+				if = {
+					limit = {
+						allowed_to_marry_same_sex_trigger = no
+					}
+					add_opinion = {
+						target = scope:owner
+						modifier = relative_in_blasphemous_union_opinion
+					}
+				}
+			}
+		}
+	}
+
+	#If your spouse councillor had boosted the chance of marriage, remove modifier
+	if = {
+		limit = {
+			scope:owner = {
+				has_character_modifier = heir_easier_to_marry_off_modifier
+			}
+		}
+		scope:owner = {
+			remove_character_modifier = heir_easier_to_marry_off_modifier
+		}
+	}
+	if = {
+		limit = {
+			scope:target = {
+				has_character_modifier = heir_easier_to_marry_off_modifier
+			}
+		}
+		scope:target = {
+			remove_character_modifier = heir_easier_to_marry_off_modifier
+		}
+	}
+}
