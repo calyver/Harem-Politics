@@ -41,6 +41,7 @@
 			if = {
 				limit = {
 					is_valid_for_legitimacy_change = yes
+					NOT = { rite = { rite_has_parameter = piety_from_marrying_lowborn_active } }
 					NOT = { has_variable = lowborn_legitimacy_cooldown }
 					OR = {
 						NOT = { exists = primary_spouse }
@@ -75,6 +76,18 @@
 				}
 			}
 		}
+		else_if = { # If they're not a lowborn AND you and the recipient are both Nomad we may give you some Legitimacy
+			limit = {
+				this = scope:secondary_actor # We check that you're marrying them yourself
+				scope:secondary_recipient = { is_lowborn = no }
+				is_valid_for_nomadic_legitimacy_change = yes
+				scope:recipient = { government_has_flag = government_is_nomadic }
+				mpo_lower_nomad_authority_trigger = { CHARACTER = scope:recipient } # Only if recipient has higher Dominance than you
+			}
+			add_legitimacy = medium_legitimacy_gain
+		}
+	}
+	scope:recipient = {
 		if = {
 			limit = {
 				this = scope:secondary_recipient # We check that you're marrying them yourself
@@ -85,13 +98,14 @@
 			show_as_tooltip = {
 				vassals_dislike_marry_lowborn_effect = {
 					SPOUSE = scope:secondary_actor
-					RULER = scope:actor
+					RULER = scope:recipient
 				}
 			}
 			#Legitimacy loss for marrying a lowborn
 			if = {
 				limit = {
 					is_valid_for_legitimacy_change = yes
+					NOT = { rite = { rite_has_parameter = piety_from_marrying_lowborn_active } }
 					NOT = { has_variable = lowborn_legitimacy_cooldown }
 					OR = {
 						NOT = { exists = primary_spouse }
@@ -103,10 +117,10 @@
 					send_interface_toast = {
 						type = event_toast_effect_good
 						title = married_lowborn_toast
-						left_icon = scope:actor
+						left_icon = scope:recipient
 						add_legitimacy = {
 							value = medium_legitimacy_loss
-							multiply = scope:actor.primary_title.tier
+							multiply = scope:recipient.primary_title.tier
 						}
 					}
 				}
@@ -114,7 +128,7 @@
 					send_interface_toast = {
 						type = event_toast_effect_good
 						title = married_lowborn_toast
-						left_icon = scope:actor
+						left_icon = scope:recipient
 						add_legitimacy = { value = minor_legitimacy_loss }
 					}
 					hidden_effect = {
@@ -126,15 +140,15 @@
 				}
 			}
 		}
-		else = { # If they're not a lowborn AND you and the recipient are both Nomad we may give you some Legitimacy
-			if = {
-				limit = {
-					is_valid_for_nomadic_legitimacy_change = yes
-					scope:recipient = { government_has_flag = government_is_nomadic }
-					mpo_lower_nomad_authority_trigger = { CHARACTER = scope:recipient } # Only if recipient has higher Dominance than you
-				}
-				add_legitimacy = medium_legitimacy_gain
+		else_if = { # If they're not a lowborn AND you and the recipient are both Nomad we may give you some Legitimacy
+			limit = {
+				this = scope:secondary_recipient # We check that you're marrying them yourself
+				scope:secondary_actor = { is_lowborn = no }
+				is_valid_for_nomadic_legitimacy_change = yes
+				scope:actor = { government_has_flag = government_is_nomadic }
+				mpo_lower_nomad_authority_trigger = { CHARACTER = scope:actor } # Only if recipient has higher Dominance than you
 			}
+			add_legitimacy = medium_legitimacy_gain
 		}
 	}
 	
@@ -261,8 +275,8 @@
 					limit = {
 						NOR = {
 							culture = { has_cultural_tradition = tradition_polygamous }
-							faith = { has_doctrine = doctrine_polygamy }
-							faith = { has_doctrine = doctrine_concubines }
+							rite = { rite_has_doctrine = doctrine_polygamy }
+							rite = { rite_has_doctrine = doctrine_concubines }
 						}
 					}
 
@@ -272,8 +286,8 @@
 							limit = { 
 								NOR = {
 									culture = { has_cultural_tradition = tradition_polygamous }
-									faith = { has_doctrine = doctrine_polygamy }
-									faith = { has_doctrine = doctrine_concubines }
+									rite = { rite_has_doctrine = doctrine_polygamy }
+									rite = { rite_has_doctrine = doctrine_concubines }
 								}
 							}
 							add_opinion = {
@@ -400,30 +414,14 @@
 	}
 
 	# Struggle parameters
-
-	#interfaith wedding costs piety
-	if = {
-		limit = {
-			scope:secondary_actor = {
-				faith != scope:secondary_recipient.faith
-			}
-			scope:actor ={
-				any_character_struggle = {
-					has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_costs_piety
-				}
-			}
-		}
-		scope:actor = {
-			add_piety = major_piety_loss
-		}
-	}
 	#interfaith wedding provides piety
 	if = {
 		limit = {
+			scope:actor = scope:secondary_actor
 			scope:secondary_actor = {
 				faith != scope:secondary_recipient.faith
 			}
-			scope:actor ={
+			scope:actor = {
 				any_character_struggle = {
 					has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_gives_piety
 				}
@@ -438,11 +436,12 @@
 	#Khurramites and Mazdakists gain piety from marrying lowborn
 	if = {
 		limit = {
+			scope:actor = scope:secondary_actor
 			scope:secondary_recipient = {
 				is_lowborn = yes 
 			}
-			scope:actor.faith = {
-				has_doctrine = tenet_communal_possessions 
+			scope:actor.rite = {
+				rite_has_parameter = piety_from_marrying_lowborn_active
 			}
 		}
 		scope:actor = {
@@ -464,7 +463,7 @@ concubine_on_accept_effect = {
 			}
 			release_from_prison = yes
 			add_opinion = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				modifier = forced_me_concubine_marriage_opinion
 			}
 
@@ -472,19 +471,19 @@ concubine_on_accept_effect = {
 			every_close_family_member = {
 				if = {
 					limit = { 
-						this != scope:actor # Don't hate yourself.
+						this != scope:puppet_or_actor # Don't hate yourself.
 					}
 					add_opinion = {
-						target = scope:actor
+						target = scope:puppet_or_actor
 						modifier = forced_family_concubine_marriage_opinion
 					}
 					hidden_effect = {
 						send_interface_message = {
 							type = msg_family_became_concubine
 							title = msg_close_family_member_taken_as_concubine_title
-							right_icon = scope:actor
+							right_icon = scope:puppet_or_actor
 							left_icon = scope:secondary_actor
-							show_as_tooltip = { scope:actor = { make_concubine = scope:secondary_actor } }
+							show_as_tooltip = { scope:puppet_or_actor = { make_concubine = scope:secondary_actor } }
 						}
 					}
 
@@ -492,8 +491,8 @@ concubine_on_accept_effect = {
 					if = {
 						limit = { 
 							OR = {
-								NOT = { faith = { has_doctrine = doctrine_concubines } }
-								NOT = { faith = { has_doctrine = tenet_polyamory } }
+								NOT = { rite = { rite_has_doctrine = doctrine_concubines } }
+								NOT = { rite = { rite_has_tenet = tenet_polyamory } }
 								AND = {
 									allowed_to_marry_same_sex_trigger = no
 									scope:recipient = { sex_same_as = scope:secondary_actor }
@@ -501,7 +500,7 @@ concubine_on_accept_effect = {
 							}
 						}
 						add_opinion = {
-							target = scope:actor
+							target = scope:puppet_or_actor
 							modifier = relative_in_blasphemous_union_opinion
 						}
 					}
@@ -522,7 +521,7 @@ concubine_on_accept_effect = {
 				every_spouse = {
 					show_as_tooltip = {
 						add_opinion = {
-							target = scope:actor
+							target = scope:puppet_or_actor
 							modifier = forced_spouse_concubine_marriage_opinion
 						}
 						divorce = scope:recipient # no additional opinion hit, no scripted effect
@@ -583,6 +582,19 @@ concubine_on_accept_effect = {
 
 #This effect has some small differences to the previous one since this one involves one extra person (the one you give a concubine to)
 concubine_offer_on_accept_effect = {
+	if = {
+		limit = {
+			scope:recipient = {
+				has_opinion_modifier = {
+					target = scope:actor
+					modifier = offer_concubine_opinion
+				}
+			}
+			scope:actor = { is_ai = no }
+		}
+		custom_tooltip = ALREADY_OFFERED_CONCUBINE_WARNING
+	}
+
 	scope:secondary_recipient = {
 		trigger_event = marriage_interaction.0040
 		if = {
@@ -624,8 +636,8 @@ concubine_offer_on_accept_effect = {
 					if = {
 						limit = { 
 							OR = {
-								NOT = { faith = { has_doctrine = doctrine_concubines } }
-								NOT = { faith = { has_doctrine = tenet_polyamory } }
+								NOT = { rite = { rite_has_doctrine = doctrine_concubines } }
+								NOT = { rite = { rite_has_tenet = tenet_polyamory } }
 								AND = {
 									allowed_to_marry_same_sex_trigger = no
 									scope:recipient = { sex_same_as = scope:secondary_recipient }
@@ -830,7 +842,7 @@ concubine_offer_on_accept_effect = {
 						}
 						add_opinion = {
 							target = scope:actor
-							modifier = grateful_opinion
+							modifier = offer_concubine_opinion
 							opinion = 40
 						}
 					}
@@ -854,14 +866,14 @@ concubine_offer_on_accept_effect = {
 						}
 						add_opinion = {
 							target = scope:actor
-							modifier = grateful_opinion
+							modifier = offer_concubine_opinion
 							opinion = 30
 						}
 					}
 					else = {
 						add_opinion = {
 							target = scope:actor
-							modifier = grateful_opinion
+							modifier = offer_concubine_opinion
 							opinion = 20
 						}
 					}
@@ -873,6 +885,19 @@ concubine_offer_on_accept_effect = {
 
 #This effect has some small differences AGAIN to the previous one since this one has some roles reversed
 demand_concubine_interaction_on_accept_effect = {
+	if = {
+		limit = {
+			scope:actor = {
+				has_opinion_modifier = {
+					target = scope:recipient
+					modifier = offer_concubine_opinion
+				}
+			}
+			scope:recipient = { is_ai = no }
+		}
+		custom_tooltip = ALREADY_OFFERED_CONCUBINE_WARNING
+	}
+
 	scope:secondary_actor = {
 		trigger_event = marriage_interaction.0040
 		if = {
@@ -915,8 +940,8 @@ demand_concubine_interaction_on_accept_effect = {
 				if = {
 					limit = { 
 						OR = {
-							NOT = { faith = { has_doctrine = doctrine_concubines } }
-							NOT = { faith = { has_doctrine = tenet_polyamory } }
+							NOT = { rite = { rite_has_doctrine = doctrine_concubines } }
+							NOT = { rite = { rite_has_tenet = tenet_polyamory } }
 							AND = {
 								allowed_to_marry_same_sex_trigger = no
 								scope:recipient = { sex_same_as = scope:secondary_actor }
@@ -1041,7 +1066,7 @@ demand_concubine_interaction_on_accept_effect = {
 					}
 					add_opinion = {
 						target = scope:recipient
-						modifier = grateful_opinion
+						modifier = offer_concubine_opinion
 						opinion = 40
 					}
 				}
@@ -1065,14 +1090,14 @@ demand_concubine_interaction_on_accept_effect = {
 					}
 					add_opinion = {
 						target = scope:recipient
-						modifier = grateful_opinion
+						modifier = offer_concubine_opinion
 						opinion = 30
 					}
 				}
 				else = {
 					add_opinion = {
 						target = scope:recipient
-						modifier = grateful_opinion
+						modifier = offer_concubine_opinion
 						opinion = 20
 					}
 				}
@@ -1092,38 +1117,44 @@ divorce_effect = {
 			divorce = $DIVORCEE$
 		}
 		
-		reverse_add_opinion = {
-			modifier = divorced_me_opinion
-			target = $DIVORCEE$
+		if = {
+			limit = {
+				NOT = { amicable_infertile_divorce_trigger = { DIVORCEE = $DIVORCEE$ } }
+			}
+			reverse_add_opinion = {
+				modifier = divorced_me_opinion
+				target = $DIVORCEE$
+			}
 		}
 	}
 	# Opinion hit
-	$DIVORCEE$ = {
-		every_close_or_extended_family_member = {
-			limit = { NOT = { this = $DIVORCER$ } } # don't hate yourself just because of some incest
-			custom = all_family_members
-			add_opinion = {
-				modifier = divorced_close_kin
-				target = $DIVORCER$
+	if = {
+		limit = {
+			$DIVORCER$ = {
+				NOT = { amicable_infertile_divorce_trigger = { DIVORCEE = $DIVORCEE$ } }
+			}
+		}
+		$DIVORCEE$ = {
+			every_close_or_extended_family_member = {
+				limit = { NOT = { this = $DIVORCER$ } } # don't hate yourself just because of some incest
+				custom = all_family_members
+				add_opinion = {
+					modifier = divorced_close_kin
+					target = $DIVORCER$
+				}
 			}
 		}
 	}
 
-	if = {
-		limit = {
-			$DIVORCER$ = {
-				has_character_modifier = rejected_from_marriage_bed_modifier
+	hidden_effect = {
+		if = {
+			limit = {
+				$DIVORCER$ = {
+					any_relation = { type = wedding_very_bad_fertility this = $DIVORCEE$ }
+				}
 			}
+			$DIVORCER$ = { remove_relation_wedding_very_bad_fertility = $DIVORCEE$ }
 		}
-		$DIVORCER$ = { remove_character_modifier = rejected_from_marriage_bed_modifier }
-	}
-	if = {
-		limit = {
-			$DIVORCEE$ = {
-				has_character_modifier = rejected_from_marriage_bed_modifier
-			}
-		}
-		$DIVORCEE$ = { remove_character_modifier = rejected_from_marriage_bed_modifier }
 	}
 	
 	if = {
@@ -1169,18 +1200,10 @@ less_verbose_divorce_effect = {
 		if = {
 			limit = {
 				$DIVORCER$ = {
-					has_character_modifier = rejected_from_marriage_bed_modifier
+					any_relation = { type = wedding_very_bad_fertility this = $DIVORCEE$ }
 				}
 			}
-			$DIVORCER$ = { remove_character_modifier = rejected_from_marriage_bed_modifier }
-		}
-		if = {
-			limit = {
-				$DIVORCEE$ = {
-					has_character_modifier = rejected_from_marriage_bed_modifier
-				}
-			}
-			$DIVORCEE$ = { remove_character_modifier = rejected_from_marriage_bed_modifier }
+			$DIVORCER$ = { remove_relation_wedding_very_bad_fertility = $DIVORCEE$ }
 		}
 	}
 	
@@ -1281,6 +1304,7 @@ send_divorce_notifications_effect = {
 # BETROTHED = the other person in the betrothal
 # scope:reason = flag:timeout, flag:death, flag:faith, or flag:script
 send_break_betrothal_notifications_effect = {
+	$BETROTHED$ = { save_scope_as = rejected_betrothed }
 	$CHARACTER$ = {
 		if = {
 			limit = {
@@ -1291,13 +1315,17 @@ send_break_betrothal_notifications_effect = {
 				flag:script = {
 					send_interface_message = {
 						type = msg_break_betrothal
+						title = msg_break_betrothal
 						left_icon = $BETROTHED$
+						custom_tooltip = break_betrothal_hook_toast_desc_self
 					}
 				}
 				flag:faith = {
 					send_interface_message = {
 						type = msg_betrothal_invalidated
+						title = msg_betrothal_invalidated
 						left_icon = $BETROTHED$
+						desc = msg_betrothal_invalidated_desc
 					}
 				}
 				# flag:death is hanlded by normal death management events
@@ -1325,15 +1353,19 @@ send_break_betrothal_notifications_effect = {
 							flag:script = {
 								send_interface_message = {
 									type = msg_break_betrothal_player_heir
+									title = msg_break_betrothal_player_heir
 									left_icon = $CHARACTER$
 									right_icon = $BETROTHED$
+									custom_tooltip = break_betrothal_hook_toast_desc
 								}
 							}
 							flag:faith = {
 								send_interface_message = {
 									type = msg_betrothal_invalidated_player_heir
+									title = msg_betrothal_invalidated_player_heir
 									left_icon = $CHARACTER$
 									right_icon = $BETROTHED$
+									custom_tooltip = break_betrothal_hook_toast_desc
 								}
 							}
 							# flag:death is hanlded by normal death management events
@@ -1369,12 +1401,12 @@ update_active_consort_opinion_effect = {
 			# Characters who do not believe in concubinage, but are forced into it, have the harshest opinion penalties.
 			limit = {
 				is_concubine_of = $PARTNER$
-				NOT = { faith = { has_doctrine = doctrine_concubines }}
+				NOT = { rite = { rite_has_doctrine = doctrine_concubines }}
 				NOT = { culture = { has_cultural_tradition = tradition_concubines } }
 			}
 			if = {
 				# Harshest opinion penalty if they are a concubine but believe in monogamy
-				limit = { faith = { has_doctrine = doctrine_monogamy }}
+				limit = { rite = { rite_has_doctrine = doctrine_monogamy }}
 				add_opinion = {
 					target = $PARTNER$
 					modifier = concubine_with_monogamous_faith_opinion
@@ -1385,7 +1417,7 @@ update_active_consort_opinion_effect = {
 				limit = {
 					OR = {
 						culture = { has_cultural_tradition = tradition_polygamous }
-						faith = { has_doctrine = doctrine_polygamy }
+						rite = { rite_has_doctrine = doctrine_polygamy }
 					}
 				}
 				add_opinion = {
@@ -1399,8 +1431,8 @@ update_active_consort_opinion_effect = {
 			limit = {
 				is_spouse_of = $PARTNER$
 				$PARTNER$ = { any_consort = { count >= 2 }}
-				NOT = { faith = { has_doctrine = doctrine_concubines }}
-				NOT = { faith = { has_doctrine = tenet_polyamory }}
+				NOT = { rite = { rite_has_doctrine = doctrine_concubines }}
+				NOT = { rite = { rite_has_tenet = tenet_polyamory }}
 				NOT = { culture = { has_cultural_tradition = tradition_concubines } }
 			}
 			if = {
@@ -1421,7 +1453,7 @@ update_active_consort_opinion_effect = {
 				limit = {
 					NOR = { 
 						culture = { has_cultural_tradition = tradition_polygamous }
-						faith = { has_doctrine = doctrine_polygamy }
+						rite = { rite_has_doctrine = doctrine_polygamy }
 					}
 				}
 				add_opinion = {
@@ -1462,7 +1494,7 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith has changed to permit us being a concubine.
-				faith = { has_doctrine = doctrine_concubines }
+				rite = { rite_has_doctrine = doctrine_concubines }
 			}
 		}
 		remove_opinion = {
@@ -1491,7 +1523,7 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith has changed to permit us being a concubine.
-				faith = { has_doctrine = doctrine_concubines }
+				rite = { rite_has_doctrine = doctrine_concubines }
 			}
 		}
 		remove_opinion = {
@@ -1528,8 +1560,8 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith has changed to permit the relationship.
-				faith = { has_doctrine = doctrine_concubines }
-				faith = { has_doctrine = tenet_polyamory }
+				rite = { rite_has_doctrine = doctrine_concubines }
+				rite = { rite_has_tenet = tenet_polyamory }
 			}
 		}
 		remove_opinion = {
@@ -1566,10 +1598,10 @@ downgrade_invalid_consort_opinions_effect = {
 				}
 
 				# Or, our Faith has changed to permit the relationship.
-				faith = { has_doctrine = doctrine_concubines }
+				rite = { rite_has_doctrine = doctrine_concubines }
 				culture = { has_cultural_tradition = tradition_polygamous }
-				faith = { has_doctrine = doctrine_polygamy }
-				faith = { has_doctrine = tenet_polyamory }
+				rite = { rite_has_doctrine = doctrine_polygamy }
+				rite = { rite_has_tenet = tenet_polyamory }
 			}
 		}
 		remove_opinion = {
@@ -1641,6 +1673,10 @@ break_grand_wedding_betrothal_effect = {
 		}
 		else = { save_scope_as = rejected_betrothal_owner } #The betrothed accepted the wedding for themselves
 	}
+	# remove promise
+	scope:rejected_betrothed.var:promised_grand_wedding_by = {
+		clean_grand_wedding_betrothal_variables = yes
+	}
 	# First of all, the betrothal is broken
 	scope:rejecting_betrothed = { break_betrothal = scope:rejected_betrothed }
 	# If an alliance was connected to this, the alliance is broken
@@ -1685,7 +1721,10 @@ break_grand_wedding_betrothal_effect = {
 				}
 			}
 			if = {
-				limit = { this != scope:rejected_betrothal_owner }
+				limit = {
+					this != scope:rejected_betrothal_owner
+					scope:rejected_betrothal_owner != scope:actor
+				}
 				scope:rejected_betrothal_owner = {
 					add_opinion = {
 						target = scope:actor
@@ -1706,11 +1745,12 @@ break_grand_wedding_betrothal_effect = {
 	}
 	# Regular Break Betrothal has a standard loss of prestige, but we need more
 	add_prestige_level = -1
+
 	if = {
 		limit = {
 			OR = {
-				scope:rejected_betrothed = { highest_held_title_tier = tier_empire }
-				scope:rejected_betrothal_owner = { highest_held_title_tier = tier_empire }
+				scope:rejected_betrothed = { highest_held_title_tier >= tier_empire }
+				scope:rejected_betrothal_owner = { highest_held_title_tier >= tier_empire }
 			}
 		}
 		add_prestige = monumental_prestige_loss
@@ -1756,55 +1796,58 @@ break_grand_wedding_betrothal_effect = {
 		add_prestige = minor_prestige_loss
 	}
 	else = { add_prestige = miniscule_prestige_loss }
+
 	# Start a Feud, if possible!
 	if = {
 		limit = {
-			has_dlc_feature = friends_and_foes
 			exists = scope:rejected_betrothal_owner.house.house_head
 			exists = scope:rejecting_betrothed.house.house_head
 			scope:rejected_betrothal_owner.house != scope:rejecting_betrothed.house
 		}
 		scope:rejected_betrothal_owner.house.house_head = {
-			if = { 
-				limit = { this = scope:rejected_betrothed } # Rejected betrothed is also House Head
-				house_feud_start_effect = {
-					# Feuding House Head
-					ACTOR = scope:rejected_betrothal_owner.house.house_head
-					# Target House Head
-					TARGET = scope:rejecting_betrothed.house.house_head
-					# Feud Reason
-					REASON = head_broke_gw_betrothal
-					# House Member attacker if relevant 
-					ATTACKER = scope:rejecting_betrothed
-					# House Member victim if relevant
-					VICTIM = scope:rejected_betrothed
+			if = {
+				limit = { has_dlc_feature = friends_and_foes }
+				if = { 
+					limit = { this = scope:rejected_betrothed } # Rejected betrothed is also House Head
+					house_feud_start_effect = {
+						# Feuding House Head
+						ACTOR = scope:rejected_betrothal_owner.house.house_head
+						# Target House Head
+						TARGET = scope:rejecting_betrothed.house.house_head
+						# Feud Reason
+						REASON = head_broke_gw_betrothal
+						# House Member attacker if relevant 
+						ATTACKER = scope:rejecting_betrothed
+						# House Member victim if relevant
+						VICTIM = scope:rejected_betrothed
+					}
+				}
+				else = {
+					house_feud_start_effect = {
+						# Feuding House Head
+						ACTOR = scope:rejected_betrothal_owner.house.house_head
+						# Target House Head
+						TARGET = scope:rejecting_betrothed.house.house_head
+						# Feud Reason
+						REASON = family_broke_gw_betrothal
+						# House Member attacker if relevant 
+						ATTACKER = scope:rejecting_betrothed
+						# House Member victim if relevant
+						VICTIM = scope:rejected_betrothed
+					}
 				}
 			}
 			else = {
-				house_feud_start_effect = {
-					# Feuding House Head
-					ACTOR = scope:rejected_betrothal_owner.house.house_head
-					# Target House Head
-					TARGET = scope:rejecting_betrothed.house.house_head
-					# Feud Reason
-					REASON = family_broke_gw_betrothal
-					# House Member attacker if relevant 
-					ATTACKER = scope:rejecting_betrothed
-					# House Member victim if relevant
-					VICTIM = scope:rejected_betrothed
+				scope:rejected_betrothal_owner.house = {
+					change_house_relation_effect = {
+						HOUSE = scope:rejecting_betrothed.house
+						VALUE = house_relation_damage_medium_value
+						REASON = broke_grand_wedding_promise
+						CHAR = scope:rejecting_betrothed
+						TARGET_CHAR = scope:rejected_betrothed
+						TITLE = scope:dummy_gender
+					}
 				}
-			}
-		}
-	}
-	else = {
-		scope:rejected_betrothal_owner.house.house_head = {
-			change_house_relation_effect = {
-				HOUSE = scope:rejecting_betrothed.house
-				VALUE = house_relation_damage_medium_value
-				REASON = broke_grand_wedding_promise
-				CHAR = scope:rejecting_betrothed
-				TARGET_CHAR = scope:rejected_betrothed
-				TITLE = scope:dummy_gender
 			}
 		}
 	}
@@ -1825,15 +1868,5 @@ break_grand_wedding_betrothal_effect = {
 				}
 			}
 		}
-	}
-	# Finally, the promise is wiped off
-	scope:rejecting_betrothed = {
-		var:promised_grand_wedding_by = {
-			remove_variable = promised_grand_wedding_marriage_countdown
-		}
-		remove_variable = promised_grand_wedding_by
-	}
-	scope:rejected_betrothed = {
-		remove_variable = promised_grand_wedding_by
 	}
 }
