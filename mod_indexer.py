@@ -1,14 +1,20 @@
 import os
 import re
+import shutil
 import pandas as pd
 
 # --- CONFIGURATION ---
-TARGET_TABS = ["common", "events", "localization"]
+TARGET_TABS = ["common", "events", "gui", "localization"]
+TARGET_TABS_INLINE = ["common", "events"] 
+EXCLUDED_FOLDERS = ["culture/cultures", "religion/religion_types", "religion/rite_types"]
 
-# Update with your actual Vanilla CK3 game folder path
+# 1. Your CK3 game folder
 VANILLA_PATH = r"C:\Program Files (x86)\Steam\steamapps\common\Crusader Kings III\game"
 
-# Add the specific inline keys/variables you need to find in Vanilla here
+# 2. Where the script should create the replicated vanilla folders and paste the files
+VANILLA_OUTPUT_DIR = r"E:\Documents\Steve\Harem politics\Vanilla"
+
+# 3. Specific keys you want to locate deep inside Vanilla files (Inline References)
 SPECIFIC_TRACKED_KEYS = [
     "divorced_me_opinion",
     "spouse_made_secondary_opinion",
@@ -32,7 +38,8 @@ def get_grade(lines):
     else: return 4
 
 def get_fast_vanilla_keys(file_path):
-    keys = set()
+    """Returns a dict mapping root keys to their source file path."""
+    keys = {}
     is_loc_file = file_path.endswith(".yml")
     bracket_count = 0
     
@@ -46,7 +53,7 @@ def get_fast_vanilla_keys(file_path):
                     if bracket_count == 0 and ":" in clean_line:
                         potential_key = clean_line.split(":")[0].strip()
                         if re.match(r"^[a-zA-Z0-9_\-\:\.]+$", potential_key):
-                            keys.add(potential_key)
+                            keys[potential_key] = file_path
                     continue
                     
                 open_brackets = clean_line.count("{")
@@ -55,7 +62,7 @@ def get_fast_vanilla_keys(file_path):
                 if bracket_count == 0 and "=" in clean_line:
                     potential_key = clean_line.split("=")[0].strip()
                     if re.match(r"^[a-zA-Z0-9_\-\:\.]+$", potential_key) and potential_key.lower() != "namespace":
-                        keys.add(potential_key)
+                        keys[potential_key] = file_path
                         
                 bracket_count += open_brackets
                 bracket_count -= close_brackets
@@ -64,27 +71,29 @@ def get_fast_vanilla_keys(file_path):
     return keys
 
 def build_vanilla_cache(vanilla_path):
-    vanilla_cache = {tab: set() for tab in TARGET_TABS}
+    """Builds a memory map of Key -> Vanilla File Path."""
+    cache = {tab: {} for tab in TARGET_TABS}
     if not os.path.exists(vanilla_path):
-        return vanilla_cache
+        print("⚠️ Vanilla path not found! Skipping mapping.")
+        return cache
         
-    print("Pre-scanning Vanilla files... (Optimized for English & Core tabs)")
+    print("Pre-scanning Vanilla files... (Optimized for Core tabs)")
     for tab_name in TARGET_TABS:
         tab_path = os.path.join(vanilla_path, tab_name)
         if not os.path.exists(tab_path): continue
         
         for root, _, files in os.walk(tab_path):
             if tab_name == "localization":
-                relative_parts = os.path.relpath(root, tab_path).replace("\\", "/").split("/")
-                if len(relative_parts) == 0 or relative_parts[0] == "." or relative_parts[0].lower() != "english":
+                rel = os.path.relpath(root, tab_path).replace("\\", "/").split("/")
+                if len(rel) == 0 or rel[0] == "." or rel[0].lower() != "english":
                     continue
             for file in files:
-                if file.endswith((".txt", ".yml")):
+                if file.endswith((".txt", ".yml", ".gui")):
                     full_file_path = os.path.join(root, file)
-                    vanilla_cache[tab_name].update(get_fast_vanilla_keys(full_file_path))
-    return vanilla_cache
+                    cache[tab_name].update(get_fast_vanilla_keys(full_file_path))
+    return cache
 
-def parse_keys_and_lines(file_path):
+def parse_mod_keys(file_path):
     root_keys = []
     is_loc_file = file_path.endswith(".yml")
     bracket_count = 0
@@ -132,54 +141,27 @@ def parse_keys_and_lines(file_path):
         pass
     return root_keys
 
-def scan_specific_keys(file_path, tracked_keys):
-    """Scans a file line-by-line for specific keys and maps them to their root block."""
-    found_instances = []
-    bracket_count = 0
-    current_root_key = None
+def get_subfolders(relative_path):
+    """Pads directory paths up to 4 levels."""
+    if relative_path == "." or relative_path == "":
+        dirs = []
+    else:
+        dirs = relative_path.replace("\\", "/").split("/")
     
-    try:
-        with open(file_path, "r", encoding="utf-8-sig") as f:
-            for line_no, line in enumerate(f, 1):
-                clean_line = line.split("#")[0]
-                stripped_line = clean_line.strip()
-                if not stripped_line: continue
-                
-                # Identify Root Key Block
-                open_brackets = stripped_line.count("{")
-                close_brackets = stripped_line.count("}")
-                
-                if bracket_count == 0 and current_root_key is None:
-                    if "=" in stripped_line:
-                        potential_key = stripped_line.split("=")[0].strip()
-                        if re.match(r"^[a-zA-Z0-9_\-\:\.]+$", potential_key) and potential_key.lower() != "namespace":
-                            current_root_key = potential_key
-
-                # Check for tracked targets using regex word boundaries
-                for key in tracked_keys:
-                    if re.search(r'\b' + re.escape(key) + r'\b', clean_line):
-                        found_instances.append({
-                            "Target Key": key,
-                            "Root Code Key": current_root_key if current_root_key else "[Global/Unknown]",
-                            "Line Number": line_no,
-                            "Code Line": line.strip() 
-                        })
-
-                # Adjust brackets after scanning
-                bracket_count += open_brackets
-                bracket_count -= close_brackets
-                if bracket_count == 0 and current_root_key is not None:
-                    current_root_key = None
-    except Exception:
-        pass
-    return found_instances
+    s1 = dirs[0] if len(dirs) > 0 else "[No sub-folder found]"
+    s2 = dirs[1] if len(dirs) > 1 else "[No sub-folder found]"
+    s3 = dirs[2] if len(dirs) > 2 else "[No sub-folder found]"
+    s4 = dirs[3] if len(dirs) > 3 else "[No sub-folder found]"
+    return s1, s2, s3, s4
 
 def build_mod_database(mod_path):
-    output_file = os.path.join(mod_path, "mod_file_database_final.xlsx")
+    output_file = os.path.join(mod_path, "mod_update_tracker.xlsx")
     writer = pd.ExcelWriter(output_file, engine="openpyxl")
     
     vanilla_cache = build_vanilla_cache(VANILLA_PATH)
-    print("\nScanning mod files and generating main database...")
+    copied_files = set() 
+    
+    print("\nScanning your mod files and processing overlaps...")
     
     for tab_name in TARGET_TABS:
         tab_path = os.path.join(mod_path, tab_name)
@@ -188,44 +170,43 @@ def build_mod_database(mod_path):
         data_rows = []
         for root, _, files in os.walk(tab_path):
             for file in files:
-                if file.endswith((".txt", ".yml")):
+                if file.endswith((".txt", ".yml", ".gui")):
                     full_file_path = os.path.join(root, file)
                     relative_path = os.path.relpath(root, tab_path)
+                    s1, s2, s3, s4 = get_subfolders(relative_path)
                     
-                    if relative_path == ".": subfolders = []
-                    else: subfolders = relative_path.replace("\\", "/").split("/")
-                    
-                    sub1 = subfolders[0] if len(subfolders) > 0 else "[No sub-folder found]"
-                    sub2 = subfolders[1] if len(subfolders) > 1 else "[No sub-folder found]"
-                    sub3 = subfolders[2] if len(subfolders) > 2 else "[No sub-folder found]"
-                    
-                    parsed_data = parse_keys_and_lines(full_file_path)
-                    
+                    parsed_data = parse_mod_keys(full_file_path)
                     if parsed_data:
                         for item in parsed_data:
-                            is_vanilla = item["key"] in vanilla_cache[tab_name]
+                            v_path = vanilla_cache[tab_name].get(item["key"])
+                            is_vanilla = v_path is not None
+                            
+                            if is_vanilla and v_path not in copied_files:
+                                rel_v_path = os.path.relpath(v_path, VANILLA_PATH)
+                                target_dest = os.path.join(VANILLA_OUTPUT_DIR, rel_v_path)
+                                os.makedirs(os.path.dirname(target_dest), exist_ok=True)
+                                shutil.copy2(v_path, target_dest)
+                                copied_files.add(v_path)
+                            
                             data_rows.append({
-                                "Subfolder Level 1": sub1,
-                                "Subfolder Level 2": sub2,
-                                "Subfolder Level 3": sub3,
+                                "Subfolder Level 1": s1, "Subfolder Level 2": s2,
+                                "Subfolder Level 3": s3, "Subfolder Level 4": s4,
                                 "File Name": file,
                                 "Root Code Key": item["key"],
-                                "Classification": "Vanilla" if is_vanilla else "Mod",
+                                "Classification": "Vanilla" if is_vanilla else "Mod Exclusive",
+                                "Vanilla Conflict": "Conflict / Match" if is_vanilla else "", 
                                 "Line Count": item["lines"],
-                                "Grade (0-4)": item["grade"],
-                                "Status": "" 
+                                "Difficulty Grade": item["grade"],
+                                "Status": "", "Notes/Observations": "" 
                             })
                     else:
                         data_rows.append({
-                            "Subfolder Level 1": sub1,
-                            "Subfolder Level 2": sub2,
-                            "Subfolder Level 3": sub3,
-                            "File Name": file,
-                            "Root Code Key": "[No root keys found]",
-                            "Classification": "",
-                            "Line Count": "N/A",
-                            "Grade (0-4)": "N/A",
-                            "Status": "" 
+                            "Subfolder Level 1": s1, "Subfolder Level 2": s2,
+                            "Subfolder Level 3": s3, "Subfolder Level 4": s4,
+                            "File Name": file, "Root Code Key": "[No root keys found]",
+                            "Classification": "", "Vanilla Conflict": "",
+                            "Line Count": "N/A", "Difficulty Grade": "N/A",
+                            "Status": "", "Notes/Observations": "" 
                         })
 
         if data_rows:
@@ -233,13 +214,9 @@ def build_mod_database(mod_path):
             df.to_excel(writer, sheet_name=tab_name, index=False)
             print(f"Created tab '{tab_name}' with {len(df)} entries.")
 
-    # --- NEW: SCAN VANILLA FOR INLINE REFERENCES ---
-    print("\nScanning Vanilla for specific inline key occurrences...")
-    specific_rows = []
-    
-    # Restrict the inline scan specifically to common and events per your request
-    TARGET_TABS_INLINE = ["common", "events"] 
-    EXCLUDED_FOLDERS = ["culture/cultures", "religion/religion_types", "religion/rite_types"]
+    # --- INLINE VANILLA SCANNER (No file copying) ---
+    print("\nScanning Vanilla for specific inline references...")
+    inline_rows = []
 
     for tab_name in TARGET_TABS_INLINE:
         tab_path = os.path.join(VANILLA_PATH, tab_name)
@@ -248,7 +225,6 @@ def build_mod_database(mod_path):
         for root, _, files in os.walk(tab_path):
             relative_path = os.path.relpath(root, tab_path).replace("\\", "/")
             
-            # Exclusion check: skip if we are in one of the forbidden folders
             if tab_name == "common":
                 skip_folder = False
                 for excl in EXCLUDED_FOLDERS:
@@ -257,45 +233,55 @@ def build_mod_database(mod_path):
                         break
                 if skip_folder:
                     continue
-
+                    
             for file in files:
-                if file.endswith(".txt"):
+                if file.endswith((".txt", ".yml", ".gui")):
                     full_file_path = os.path.join(root, file)
+                    s1, s2, s3, s4 = get_subfolders(relative_path)
 
-                    if relative_path == "." or relative_path == "": 
-                        subfolders = []
-                    else: 
-                        subfolders = relative_path.split("/")
+                    bracket_count = 0
+                    current_root_key = None
+                    
+                    try:
+                        with open(full_file_path, "r", encoding="utf-8-sig") as f:
+                            for line_no, line in enumerate(f, 1):
+                                clean_line = line.split("#")[0]
+                                stripped = clean_line.strip()
+                                if not stripped: continue
+                                
+                                open_b = stripped.count("{")
+                                close_b = stripped.count("}")
+                                
+                                if bracket_count == 0 and current_root_key is None and "=" in stripped:
+                                    potential = stripped.split("=")[0].strip()
+                                    if re.match(r"^[a-zA-Z0-9_\-\:\.]+$", potential) and potential.lower() != "namespace":
+                                        current_root_key = potential
 
-                    sub1 = subfolders[0] if len(subfolders) > 0 else "[No sub-folder found]"
-                    sub2 = subfolders[1] if len(subfolders) > 1 else "[No sub-folder found]"
-                    sub3 = subfolders[2] if len(subfolders) > 2 else "[No sub-folder found]"
+                                for key in SPECIFIC_TRACKED_KEYS:
+                                    if re.search(r'\b' + re.escape(key) + r'\b', clean_line):
+                                        inline_rows.append({
+                                            "Target Key": key, "Root Tab": tab_name,
+                                            "Subfolder Level 1": s1, "Subfolder Level 2": s2,
+                                            "Subfolder Level 3": s3, "Subfolder Level 4": s4,
+                                            "File Name": file,
+                                            "Root Key": current_root_key if current_root_key else "[Global]",
+                                            "Line Number": line_no, "Code Line": line.strip(),
+                                            "Status": "", "Notes/Comments/Observation": ""
+                                        })
 
-                    hits = scan_specific_keys(full_file_path, SPECIFIC_TRACKED_KEYS)
-                    for hit in hits:
-                        specific_rows.append({
-                            "Target Key": hit["Target Key"],
-                            "Root Tab": tab_name,
-                            "Subfolder Level 1": sub1,
-                            "Subfolder Level 2": sub2,
-                            "Subfolder Level 3": sub3,
-                            "File Name": file,
-                            "Root Code Key": hit["Root Code Key"],
-                            "Line Number": hit["Line Number"],
-                            "Code Line": hit["Code Line"],
-                            "Status": "",
-                            "Notes": ""
-                        })
+                                bracket_count += open_b
+                                bracket_count -= close_b
+                                if bracket_count == 0: current_root_key = None
+                    except Exception:
+                        pass
 
-    if specific_rows:
-        df_specific = pd.DataFrame(specific_rows)
-        df_specific.to_excel(writer, sheet_name="Inline References", index=False)
-        print(f"Created tab 'Inline References' with {len(df_specific)} specific hits in Vanilla.")
-    else:
-        print("No specific inline keys found in Vanilla.")
+    if inline_rows:
+        df_inline = pd.DataFrame(inline_rows)
+        df_inline.to_excel(writer, sheet_name="Inline References", index=False)
+        print(f"Created tab 'Inline References' with {len(df_inline)} hits.")
 
     writer.close()
-    print(f"\nDone! Final database saved to: {output_file}")
+    print(f"\nDone! Database saved. Unique vanilla files copied to: {VANILLA_OUTPUT_DIR}")
 
 
 if __name__ == "__main__":
