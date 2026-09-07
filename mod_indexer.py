@@ -214,7 +214,7 @@ def build_mod_database(mod_path):
             df.to_excel(writer, sheet_name=tab_name, index=False)
             print(f"Created tab '{tab_name}' with {len(df)} entries.")
 
-    # --- INLINE VANILLA SCANNER (No file copying) ---
+    # --- INLINE VANILLA SCANNER (Now with File Copying) ---
     print("\nScanning Vanilla for specific inline references...")
     inline_rows = []
 
@@ -259,6 +259,15 @@ def build_mod_database(mod_path):
 
                                 for key in SPECIFIC_TRACKED_KEYS:
                                     if re.search(r'\b' + re.escape(key) + r'\b', clean_line):
+                                        
+                                        # File auto-copy logic for inline hits
+                                        if full_file_path not in copied_files:
+                                            rel_v_path = os.path.relpath(full_file_path, VANILLA_PATH)
+                                            target_dest = os.path.join(VANILLA_OUTPUT_DIR, rel_v_path)
+                                            os.makedirs(os.path.dirname(target_dest), exist_ok=True)
+                                            shutil.copy2(full_file_path, target_dest)
+                                            copied_files.add(full_file_path)
+
                                         inline_rows.append({
                                             "Target Key": key, "Root Tab": tab_name,
                                             "Subfolder Level 1": s1, "Subfolder Level 2": s2,
