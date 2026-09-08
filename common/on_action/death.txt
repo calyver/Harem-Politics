@@ -2035,11 +2035,10 @@ on_death = {
 				}
 			}
 		}
-		#TODO_PAM revisit once we have made the DLC's proper make saint mechanics and unified the conditions under which one can be canonized
-		#May need to adjust or remove
 		#Beatify dead order founders
 		if = {
 			limit = {
+				has_pam_dlc_trigger = yes
 				has_variable = founding_monastic
 				rite = {
 					OR = {
@@ -2061,6 +2060,7 @@ on_death = {
 					}
 				}
 			}
+			pam_pick_founder_burial_province_effect = yes
 			#Want to send notifications to players that are patron, founder or family members
 			if = {
 				limit = {
@@ -2110,7 +2110,7 @@ on_death = {
 				dynasty = {
 					every_dynasty_member = {
 						limit = {
-							is_ai = no	
+							is_ai = no
 						}
 						add_to_list = dead_monastic_notified
 					}
@@ -2125,13 +2125,32 @@ on_death = {
 					left_icon = root
 					right_icon = root.primary_title
 					show_as_tooltip = {
-						root = {
-							add_trait = saint
+						if = {
+							limit = { exists = scope:consecration_province }
+							pam_canonize_saint_effect = {
+								CANONIZER = root
+								CANDIDATE = root
+								CONSECRATION_PROVINCE = scope:consecration_province
+							}
+						}
+						else = {
+							root = { add_trait = saint }
 						}
 					}
 				}
 			}
-			add_trait = saint
+			if = {
+				limit = { exists = scope:consecration_province }
+				pam_canonize_saint_effect = {
+					CANONIZER = root
+					CANDIDATE = root
+					CONSECRATION_PROVINCE = scope:consecration_province
+				}
+			}
+			# Every burial site in the faith is taken; beatify anyway rather than drop the founder
+			else = {
+				add_trait = saint
+			}
 		}
 		#PAM - Holy Myron: the herb-gathering chaplain dies en route; inform whoever sent them
 		if = {
@@ -2143,6 +2162,21 @@ on_death = {
 			save_scope_as = myron_chaplain
 			var:pam_holy_myron_liege = {
 				trigger_event = pam_holy_myron.0020
+			}
+		}
+		# CE3 achievement: Where There's a Will — the succession demander killed the cleric
+		if = {
+			limit = {
+				exists = var:ce3_will_demander
+				exists = scope:killer
+				scope:killer = var:ce3_will_demander
+				var:ce3_will_demander = { is_alive = yes }
+			}
+			var:ce3_will_demander = {
+				set_variable = {
+					name = ce3_will_victim
+					value = root
+				}
 			}
 		}
 		#If you are a Christian ruler who does not take pam_decision_last_rites their will have their legitimacy and vassal opinion lowered
@@ -2192,26 +2226,101 @@ on_death = {
 				trigger_situation_catalyst = catalyst_clergy_hor_short_reign
 			}
 		}
+
+		#Piety loss when someone kills them, but not in battle, and not if execution already applied it
 		if = {
 			limit = {
-				pam_clergy_court_chaplain_murdered_catalyst_trigger = yes
-				situation:the_christian_church ?= {
-					situation_top_has_catalyst = catalyst_clergy_court_chaplain_murdered
+				exists = scope:killer
+				scope:killer != root
+				scope:killer = { is_alive = yes }
+				NOT = { has_character_flag = clerical_kill_consequences_applied_on_execution }
+				NAND = {
+					is_in_army = yes
+					scope:killer = { is_in_army = yes }
 				}
 			}
-			situation:the_christian_church = {
-				trigger_situation_catalyst = catalyst_clergy_court_chaplain_murdered
+			scope:killer = {
+				clerical_kill_piety_effect = {
+					VICTIM = root
+					KILLER = scope:killer
+				}
 			}
 		}
+
+		# Only the highest-ranking office contributes a kill catalyst
 		if = {
 			limit = {
 				pam_the_christian_church_head_of_faith_murdered_catalyst_trigger = yes
-				situation:the_christian_church ?= {
-					situation_top_has_catalyst = catalyst_the_christian_church_head_of_faith_murdered
+			}
+			if = {
+				limit = {
+					situation:the_christian_church ?= {
+						situation_top_has_catalyst = catalyst_the_christian_church_head_of_faith_murdered
+					}
+				}
+				situation:the_christian_church = {
+					trigger_situation_catalyst = catalyst_the_christian_church_head_of_faith_murdered
 				}
 			}
-			situation:the_christian_church = {
-				trigger_situation_catalyst = catalyst_the_christian_church_head_of_faith_murdered
+		}
+		else_if = {
+			limit = {
+				pam_clergy_cardinal_murdered_catalyst_trigger = yes
+			}
+			if = {
+				limit = {
+					situation:the_christian_church ?= {
+						situation_top_has_catalyst = catalyst_clergy_cardinal_murdered
+					}
+				}
+				situation:the_christian_church = {
+					trigger_situation_catalyst = catalyst_clergy_cardinal_murdered
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				pam_clergy_head_of_rite_murdered_catalyst_trigger = yes
+			}
+			if = {
+				limit = {
+					situation:the_christian_church ?= {
+						situation_top_has_catalyst = catalyst_clergy_head_of_rite_murdered
+					}
+				}
+				situation:the_christian_church = {
+					trigger_situation_catalyst = catalyst_clergy_head_of_rite_murdered
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				pam_clergy_archbishop_murdered_catalyst_trigger = yes
+			}
+			if = {
+				limit = {
+					situation:the_christian_church ?= {
+						situation_top_has_catalyst = catalyst_clergy_archbishop_murdered
+					}
+				}
+				situation:the_christian_church = {
+					trigger_situation_catalyst = catalyst_clergy_archbishop_murdered
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				pam_clergy_court_chaplain_murdered_catalyst_trigger = yes
+			}
+			if = {
+				limit = {
+					situation:the_christian_church ?= {
+						situation_top_has_catalyst = catalyst_clergy_court_chaplain_murdered
+					}
+				}
+				situation:the_christian_church = {
+					trigger_situation_catalyst = catalyst_clergy_court_chaplain_murdered
+				}
 			}
 		}
 		if = { # Murder of a schism-rite head by the opposing rite feeds Great Schism progress

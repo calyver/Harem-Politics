@@ -67,6 +67,7 @@ not_non_catholic_standard_christian_faith_trigger = {
 	NOR = {
 		this = faith:orthodox
 		this = faith:miaphysitism
+		this = faith:armenian_apostolic
 		this = faith:iconoclast
 	}
 }
@@ -75,6 +76,7 @@ not_non_orthodox_standard_christian_faith_trigger = {
 	NOR = {
 		this = faith:catholic
 		this = faith:miaphysitism
+		this = faith:armenian_apostolic
 	}
 }
 
@@ -83,7 +85,7 @@ not_non_coptic_standard_christian_faith_trigger = {
 		this = faith:catholic
 		this = faith:orthodox
 		this = faith:iconoclast
-		this = faith:miaphysitism
+		this = faith:armenian_apostolic
 	}
 }
 
@@ -849,12 +851,14 @@ faiths_are_in_orthodox_christianity_group = {
 faiths_are_in_eastern_christianity_group = {
 	OR = {
 		$FAITH_1$ = faith:miaphysitism
+		$FAITH_1$ = faith:armenian_apostolic
 		$FAITH_1$ = faith:nestorian
 		$FAITH_1$ = faith:messalian
 		$FAITH_1$ = faith:paulician
 	}
 	OR = {
 		$FAITH_2$ = faith:miaphysitism
+		$FAITH_2$ = faith:armenian_apostolic
 		$FAITH_2$ = faith:nestorian
 		$FAITH_2$ = faith:messalian
 		$FAITH_2$ = faith:paulician
@@ -957,11 +961,11 @@ refusing_conversion_is_crime_trigger = {
 	OR = {
 		has_title = title:e_minister_of_rites
 		faith = {
-			trigger_if = { # Only apply imprisonment reason if actor's faith is not the state faith
+			trigger_if = { # Only apply imprisonment reason if actor's rite is not the state rite
 				limit = {
 					$CHARACTER$ = {
 						top_liege = { government_allows = state_faith }
-						faith = $CHARACTER$.top_liege.primary_title.state_faith
+						rite = $CHARACTER$.top_liege.primary_title.state_rite
 					}
 				}
 				always = no
@@ -1438,6 +1442,16 @@ num_realm_holy_sites_faithful_holders = {
 
 ### Head of Faith
 can_create_temporal_head_of_faith_title_trigger = {
+	trigger_if = {
+		limit = {
+			this = faith:christian_faith
+			exists = situation:the_christian_church
+		}
+		custom_tooltip = {
+			text = pam_great_schism_decision_taken
+			has_global_variable = pam_great_schism_decision_taken
+		}
+	}
 	num_realm_holy_sites_faithful_holders = {
 		COUNT = holy_sites_to_create_temporal_head_of_faith
 		CHARACTER = root
@@ -1464,6 +1478,16 @@ can_create_temporal_head_of_faith_title_trigger = {
 }
 
 can_create_spiritual_head_of_faith_title_trigger = {
+	trigger_if = {
+		limit = {
+			this = faith:christian_faith
+			exists = situation:the_christian_church
+		}
+		custom_tooltip = {
+			text = pam_great_schism_decision_taken
+			has_global_variable = pam_great_schism_decision_taken
+		}
+	}
 	num_realm_holy_sites_faithful_holders = {
 		COUNT = holy_sites_to_create_spiritual_head_of_faith
 		CHARACTER = root
@@ -2306,8 +2330,7 @@ character_considered_morally_dubious_trigger = {
 			}
 			piety_level < 1
 		}
-		#TODO_PAM_JC better account for heresy here once we know how to check for that
-		#for now, those with evil faiths are automatically considered morally dubious (hostility still uses judge faith from rite link)
+		#A rite the judge holds at evil-level hostility makes its adherents dubious outright, judged rite-to-rite rather than faith-to-faith.
 		trigger_else = {
 			$RITE$ = {
 				save_temporary_scope_as = moral_dubious_judge_rite
@@ -2323,13 +2346,21 @@ character_considered_morally_dubious_trigger = {
 			}
 		}
 
-		#SIN TRAITS
-		#TODO_PAM_JC add trigger for magnitude of sins and virtues, which is a new PAM thing
-		num_sinful_traits = 2
+		#SIN TRAITS - counted by the judging rite's reckoning, not the judged character's own
+		num_sinful_traits = {
+			target = $RITE$
+			value >= 2
+		}
 		#Sins outweigh virtue
 		AND = {
-			num_sinful_traits = 1
-			num_virtuous_traits = 0
+			num_sinful_traits = {
+				target = $RITE$
+				value >= 1
+			}
+			num_virtuous_traits = {
+				target = $RITE$
+				value = 0
+			}
 		}
 
 		#SHUNNED TRAITS
@@ -2823,6 +2854,14 @@ rite_growth_founder_is_archbishop_trigger = {
 	}
 }
 
+# Character scope. Holds a see with enough counties for a spawned rite to have somewhere to spread.
+rite_growth_holds_sizable_clerical_region_trigger = {
+	any_held_title = {
+		has_clerical_region = yes
+		clerical_region_size >= rite_growth_min_clerical_region_size
+	}
+}
+
 # Character scope. True if this character lies in scope:founder's spread area:
 # Archbishop founder: same clerical region, OR within squared_distance_small.
 # Secular founder: vassal-or-below of founder, OR within squared_distance_small.
@@ -2966,7 +3005,10 @@ rite_growth_founder_is_meaningful_relation_trigger = {
 can_edit_rite_trigger = {
 	is_adult = yes
 	is_at_war = no
-
+	custom_tooltip = {
+		text = ecumenical_council_already_ongoing_tt
+		NOT = { faith = { has_variable = ecumenical_council_ongoing } }
+	}
 	trigger_if = {
 		limit = {
 			is_clergy = no
@@ -3032,7 +3074,7 @@ can_edit_rite_trigger = {
 			# Empire Faith Gate: easier reformation path
 			trigger_if = {
 				limit = {
-					has_game_rule = empire_faith_gate_on
+					empire_faith_gate_enabled_trigger = yes
 				}
 				custom_tooltip = {
 					text = empire_faith_gate_reformation_piety_level
@@ -3145,7 +3187,7 @@ can_create_rite_trigger = {
 			# Empire Faith Gate: easier reformation path
 			trigger_if = {
 				limit = {
-					has_game_rule = empire_faith_gate_on
+					empire_faith_gate_enabled_trigger = yes
 				}
 				custom_tooltip = {
 					text = empire_faith_gate_reformation_piety_level

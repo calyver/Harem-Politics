@@ -269,7 +269,7 @@ designate_theocratic_heir_interaction = {
 	ai_will_do = {
 		base = 50
 
-		modifier = { # Traits in common TODO_PAM Condense these three modifiers into one after TIT-70194 is done
+		modifier = { # Traits in common
 			add = 25
 			scope:puppet_or_actor = {
 				number_of_personality_traits_in_common = {
@@ -879,6 +879,8 @@ influence_clerical_candidacy_interaction = {
 
 	target_type = title
 	target_source = actor
+	# Head of Faith and Head of Rite titles are not clerical regions, so they are contested through
+	# influence_head_of_faith_candidacy_interaction instead
 	target_filter = faith_clerical_regions
 
 	custom_character_sort = { candidate_score }
@@ -915,6 +917,7 @@ influence_clerical_candidacy_interaction = {
 				}
 			}
 		}
+		pam_clerical_self_candidacy_restriction_trigger = yes
 	}
 
 	can_be_picked_title = {
@@ -927,6 +930,7 @@ influence_clerical_candidacy_interaction = {
 				}
 			}
 		}
+		pam_clerical_self_candidacy_restriction_trigger = yes
 		influence_clerical_candidacy_reach_trigger = yes
 	}
 
@@ -1224,6 +1228,406 @@ influence_clerical_candidacy_interaction = {
 				}
 			}
 		}
+
+		# Christian Situation Catalysts
+		if = {
+			limit = {
+				scope:actor = {
+					NOR = {
+						government_has_flag = government_is_ecclesiastical
+						this = faith.main_rite.head_of_rite
+					}
+				}
+				situation:the_christian_church ?= {
+					situation_top_has_catalyst = catalyst_secular_influenced_clerical_candidacy
+				}
+			}
+			situation:the_christian_church = {
+				trigger_situation_catalyst = catalyst_secular_influenced_clerical_candidacy
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= scope:secondary_recipient
+				scope:actor = {
+					government_has_flag = government_is_ecclesiastical
+				}
+				situation:the_christian_church ?= {
+					situation_top_has_catalyst = catalyst_clergy_influenced_own_candidacy
+				}
+			}
+			situation:the_christian_church = {
+				trigger_situation_catalyst = catalyst_clergy_influenced_own_candidacy
+			}
+		}
+	}
+}
+
+# PLAYER ONLY - Head of Faith and Head of Rite titles are not clerical regions, so they need their own picker
+influence_head_of_faith_candidacy_interaction = {
+	icon = support_candidacy
+	category = interaction_category_religion
+	interface_priority = 50
+
+	desc = influence_head_of_faith_candidacy_interaction_desc
+
+	target_type = title
+	target_source = actor
+	target_filter = religious_head_titles
+
+	custom_character_sort = { candidate_score }
+
+	is_available = {
+		has_pam_dlc_trigger = yes
+		faith ?= { has_doctrine_parameter = has_clerical_regions }
+		# Mirrors the religious_head_titles filter, so a faith whose head titles are all filled by conclave or inheritance hides the interaction instead of opening an empty picker
+		faith ?= {
+			OR = {
+				religious_head_title ?= { pam_head_of_faith_candidacy_valid_title_trigger = yes }
+				any_faith_rite = {
+					head_of_rite ?= {
+						is_ruler = yes
+						primary_title ?= { pam_head_of_faith_candidacy_valid_title_trigger = yes }
+					}
+				}
+			}
+		}
+	}
+
+	is_shown = {
+		scope:secondary_recipient ?= {
+			this != faith.main_rite.head_of_rite
+			faith ?= scope:actor.faith
+			is_clerical_appointment_valid_base_trigger = {
+				CANDIDATE = scope:secondary_recipient
+				TOP_LIEGE = scope:actor
+			}
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:recipient = {
+			is_adult = yes
+		}
+		trigger_if = {
+			limit = {
+				exists = scope:target
+			}
+			influence_head_of_faith_candidacy_target_trigger = yes
+			scope:secondary_recipient = {
+				is_clerical_appointment_valid_trigger = {
+					TITLE = scope:target
+					CANDIDATE = scope:secondary_recipient
+					TOP_LIEGE = scope:actor
+				}
+			}
+		}
+		pam_clerical_self_candidacy_restriction_trigger = yes
+	}
+
+	can_be_picked_title = {
+		trigger_if = {
+			limit = { exists = scope:secondary_recipient }
+			custom_tooltip = {
+				text = influence_clerical_candidacy_interaction_already_holds_title_tt
+				scope:target = {
+					holder != scope:secondary_recipient
+				}
+			}
+		}
+		influence_head_of_faith_candidacy_target_trigger = yes
+		pam_clerical_self_candidacy_restriction_trigger = yes
+	}
+
+	has_valid_target_showing_failures_only = {
+		exists = scope:target
+		exists = scope:recipient
+		# Dropping a title here instead of greying it out also keeps it out of the window's automatic selection, so the candidacy score values are never asked to price a title that does not use appointment succession
+		scope:target = { pam_head_of_faith_candidacy_valid_title_trigger = yes }
+	}
+
+	redirect = {
+		scope:recipient = { save_scope_as = secondary_recipient }
+		scope:actor.faith.main_rite.head_of_rite ?= { save_scope_as = recipient }
+	}
+
+	can_send = {
+		trigger_if = {
+			limit = {
+				OR = {
+					scope:as_much_as_needed_candidacy_option ?= yes
+					scope:major_candidacy_option ?= yes
+					scope:medium_candidacy_option ?= yes
+				}
+			}
+			scope:actor = {
+				custom_tooltip = {
+					text = support_candidacy_cap_reached_tt
+					succession_appointment_score_invested = {
+						title = scope:target
+						candidate = scope:secondary_recipient
+						value < scope:actor.appointment_investment_cap
+					}
+				}
+			}
+		}
+	}
+
+	auto_accept = yes
+
+	send_option = {
+		flag = as_much_as_needed_candidacy_option
+		localization = as_much_as_needed_candidacy_option_desc
+		is_valid = {
+			trigger_if = {
+				limit = {
+					exists = scope:target
+					exists = scope:secondary_recipient
+				}
+				custom_tooltip = {
+					text = already_first_in_line_candidacy_option_desc
+					NOT = { scope:target.current_heir = scope:secondary_recipient }
+				}
+			}
+		}
+	}
+	send_option = {
+		flag = major_candidacy_option
+		localization = major_candidacy_option_desc
+	}
+	send_option = {
+		flag = medium_candidacy_option
+		localization = medium_candidacy_option_desc
+		starts_enabled = { always = yes }
+	}
+	send_option = {
+		flag = medium_candidacy_loss_option
+		localization = medium_candidacy_loss_option_desc
+	}
+	send_option = {
+		flag = major_candidacy_loss_option
+		localization = major_candidacy_loss_option_desc
+	}
+
+	localization_values = {
+		AS_MUCH_AS_NEEDED_CANDIDACY_OPTION = scope:actor.clerical_appointment_score_max_tt_value
+		MAJOR_CANDIDACY_OPTION = scope:actor.clerical_appointment_score_major_tt_value
+		MEDIUM_CANDIDACY_OPTION = scope:actor.clerical_appointment_score_medium_tt_value
+		MEDIUM_CANDIDACY_LOSS_OPTION = scope:actor.appointment_score_medium_loss_tt_value
+		MAJOR_CANDIDACY_LOSS_OPTION = scope:actor.appointment_score_major_loss_tt_value
+	}
+
+	cost = {
+		piety = {
+			value = {
+				add = 0
+				switch = {
+					trigger = yes
+					scope:as_much_as_needed_candidacy_option = {
+						add = {
+							value = {
+								if = {
+									limit = {
+										exists = scope:secondary_recipient
+										exists = scope:target.current_heir
+									}
+									add = {
+										value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
+										multiply = 1.8
+									}
+									subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
+									multiply = 5
+									min = 250
+								}
+								else = { value = 250 }
+							}
+						}
+					}
+					scope:major_candidacy_option = {
+						add = { value = massive_piety_value }
+					}
+					scope:medium_candidacy_option = {
+						add = { value = major_piety_value }
+					}
+					scope:medium_candidacy_loss_option = {
+						add = { value = major_piety_value }
+					}
+					scope:major_candidacy_loss_option = {
+						add = { value = massive_piety_value }
+					}
+				}
+				multiply = scope:actor.pam_increase_theocratic_heir_candidacy_piety_cost_mult_value
+			}
+		}
+	}
+
+	on_accept = {
+		switch = {
+			trigger = yes
+			scope:as_much_as_needed_candidacy_option = {
+				save_scope_value_as = {
+					name = support_candidate_score
+					value = {
+						value = 0
+						if = {
+							limit = {
+								exists = scope:target
+								exists = scope:target.current_heir
+							}
+							add = {
+								value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
+								multiply = 1.1
+							}
+							subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
+						}
+						min = 4
+						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
+					}
+				}
+				save_scope_value_as = {
+					name = opinion_change_value
+					value = 15
+				}
+			}
+			scope:major_candidacy_option = {
+				save_scope_value_as = {
+					name = support_candidate_score
+					value = {
+						value = appointment_score_major_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
+						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
+					}
+				}
+				save_scope_value_as = {
+					name = opinion_change_value
+					value = 10
+				}
+			}
+			scope:medium_candidacy_option = {
+				save_scope_value_as = {
+					name = support_candidate_score
+					value = {
+						value = appointment_score_medium_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
+						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
+					}
+				}
+				save_scope_value_as = {
+					name = opinion_change_value
+					value = 5
+				}
+			}
+			scope:medium_candidacy_loss_option = {
+				save_scope_value_as = {
+					name = support_candidate_score
+					value = {
+						value = appointment_score_medium_loss_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
+						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
+					}
+				}
+				save_scope_value_as = {
+					name = opinion_change_value
+					value = -10
+				}
+			}
+			scope:major_candidacy_loss_option = {
+				save_scope_value_as = {
+					name = support_candidate_score
+					value = {
+						value = appointment_score_major_loss_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
+						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
+					}
+				}
+				save_scope_value_as = {
+					name = opinion_change_value
+					value = -20
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				OR = {
+					scope:as_much_as_needed_candidacy_option = yes
+					scope:major_candidacy_option = yes
+					scope:medium_candidacy_option = yes
+				}
+			}
+			scope:secondary_recipient ?= {
+				if = {
+					limit = { this != scope:actor }
+					hidden_effect = {
+						send_interface_message = {
+							type = msg_candidacy_improved
+							title = supported_candidacy_toast
+							left_icon = scope:actor
+							right_icon = scope:target
+							show_as_tooltip = {
+								scope:target = {
+									change_appointment_investment = {
+										target = scope:secondary_recipient
+										investor = scope:actor
+										value = scope:support_candidate_score
+									}
+								}
+							}
+						}
+					}
+					add_opinion = {
+						modifier = supported_candidacy_opinion
+						target = scope:actor
+						opinion = scope:opinion_change_value
+					}
+				}
+			}
+		}
+		else = {
+			scope:secondary_recipient ?= {
+				if = {
+					limit = { this != scope:actor }
+					hidden_effect = {
+						send_interface_message = {
+							type = msg_candidacy_harmed
+							title = harmed_candidacy_toast
+							left_icon = scope:actor
+							right_icon = scope:target
+							show_as_tooltip = {
+								scope:target = {
+									change_appointment_investment = {
+										target = scope:secondary_recipient
+										investor = scope:actor
+										value = scope:support_candidate_score
+									}
+								}
+							}
+						}
+					}
+					add_opinion = {
+						modifier = harmed_candidacy_opinion
+						target = scope:actor
+						opinion = scope:opinion_change_value
+					}
+				}
+			}
+		}
+
+		scope:actor = {
+			send_interface_toast = {
+				type = event_toast_effect_neutral
+				title = influence_head_of_faith_candidacy_interaction_notification
+				left_icon = scope:actor
+				right_icon = scope:secondary_recipient
+				scope:target = {
+					change_appointment_investment = {
+						target = scope:secondary_recipient
+						investor = scope:actor
+						value = scope:support_candidate_score
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -1477,6 +1881,38 @@ support_clerical_candidacy_interaction = {
 						}
 					}
 				}
+			}
+		}
+
+		# Christian Situation Catalysts
+		if = {
+			limit = {
+				scope:actor = {
+					NOR = {
+						government_has_flag = government_is_ecclesiastical
+						this = faith.main_rite.head_of_rite
+					}
+				}
+				situation:the_christian_church ?= {
+					situation_top_has_catalyst = catalyst_secular_influenced_clerical_candidacy
+				}
+			}
+			situation:the_christian_church = {
+				trigger_situation_catalyst = catalyst_secular_influenced_clerical_candidacy
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= scope:secondary_recipient
+				scope:actor = {
+					government_has_flag = government_is_ecclesiastical
+				}
+				situation:the_christian_church ?= {
+					situation_top_has_catalyst = catalyst_clergy_influenced_own_candidacy
+				}
+			}
+			situation:the_christian_church = {
+				trigger_situation_catalyst = catalyst_clergy_influenced_own_candidacy
 			}
 		}
 	}
@@ -1822,6 +2258,24 @@ harm_clerical_candidacy_interaction = {
 						}
 					}
 				}
+			}
+		}
+
+		# Christian Situation Catalysts
+		if = {
+			limit = {
+				scope:actor = {
+					NOR = {
+						government_has_flag = government_is_ecclesiastical
+						this = faith.main_rite.head_of_rite
+					}
+				}
+				situation:the_christian_church ?= {
+					situation_top_has_catalyst = catalyst_secular_influenced_clerical_candidacy
+				}
+			}
+			situation:the_christian_church = {
+				trigger_situation_catalyst = catalyst_secular_influenced_clerical_candidacy
 			}
 		}
 	}
@@ -2445,7 +2899,7 @@ request_realm_priest_replacement_interaction = {
 			desc = AI_OPINION_REASON_REALM_PRIEST_OVER_CANDIDATE
 		}
 
-		modifier = { # A trait in common with the candidate (TODO_PAM_ALI Condense these three modifiers into one after TIT-70194 is done)
+		modifier = { # A trait in common with the candidate
 			add = 5
 			scope:recipient = {
 				number_of_personality_traits_in_common = {
@@ -4147,8 +4601,8 @@ appoint_cardinal_interaction = {
 		has_pam_dlc_trigger = yes
 		trigger_if = {
 			limit = { is_ai = yes }
+			pam_leads_college_of_cardinals_trigger = yes
 			faith ?= {
-				religious_head ?= root
 				NOT = { any_clerical_elector_title = { count >= 70 } }
 			}
 		}
@@ -4158,12 +4612,14 @@ appoint_cardinal_interaction = {
 		scope:puppet_or_actor ?= {
 			this != scope:recipient
 			faith ?= { has_doctrine_parameter = has_clerical_electors }
-			this = scope:recipient.faith.religious_head
+			faith = scope:recipient.faith
+			pam_leads_college_of_cardinals_trigger = yes
 		}
 		scope:recipient = {
 			# is_clergy alone misses PAM's landed archbishops, whose organization does not match the faith's
 			pam_is_investiture_clergy_trigger = yes
 			pam_can_hold_cardinalate_trigger = yes
+			pam_pope_is_head_of_faith_or_rite_trigger = yes
 			NOT = { exists = clerical_elector_title } # already a cardinal
 		}
 	}
@@ -4261,23 +4717,17 @@ appoint_cardinal_interaction = {
 						target = scope:recipient
 					}
 				}
-				situation:the_christian_church ?= {
-					if = {
-						limit = {
-							situation_top_has_catalyst = catalyst_the_christian_church_appointed_monastic_cardinal
-						}
-						trigger_situation_catalyst = catalyst_the_christian_church_appointed_monastic_cardinal
-					}
+				pam_the_christian_church_appointed_cardinal_catalyst_effect = {
+					POPE = scope:puppet_or_actor
+					CARDINAL = scope:recipient
+					OTHERWISE = catalyst_the_christian_church_appointed_monastic_cardinal
 				}
 			}
-			else = {	
-				situation:the_christian_church ?= {
-					if = {
-						limit = {
-							situation_top_has_catalyst = catalyst_the_christian_church_appointed_cardinal
-						}
-						trigger_situation_catalyst = catalyst_the_christian_church_appointed_cardinal
-					}
+			else = {
+				pam_the_christian_church_appointed_cardinal_catalyst_effect = {
+					POPE = scope:puppet_or_actor
+					CARDINAL = scope:recipient
+					OTHERWISE = catalyst_the_christian_church_appointed_cardinal
 				}
 			}
 		}
@@ -4460,7 +4910,7 @@ appoint_cardinal_interaction = {
 			add = 50
 			scope:recipient.rite.head_of_rite ?= scope:recipient
 		}
-		modifier = { # Traits in common TODO_PAM Condense these three modifiers into one after TIT-70194 is done
+		modifier = { # Traits in common
 			add = 25
 			scope:puppet_or_actor = {
 				number_of_personality_traits_in_common = {
@@ -4566,7 +5016,14 @@ request_court_chaplain_cardinalate_interaction = {
 
 	is_shown = {
 		scope:actor != scope:recipient
-		scope:actor.religious_head_or_challenger ?= scope:recipient
+		OR = {
+			scope:actor.religious_head_or_challenger ?= scope:recipient
+			AND = {
+				NOT = { exists = scope:actor.faith.religious_head }
+				scope:actor.rite = scope:recipient.rite
+				scope:recipient = { pam_leads_college_of_cardinals_trigger = yes }
+			}
+		}
 	}
 
 	is_valid_showing_failures_only = {
@@ -4599,6 +5056,10 @@ request_court_chaplain_cardinalate_interaction = {
 				custom_tooltip = {
 					text = request_court_chaplain_cardinalate_chaplain_not_cardinal_tt
 					NOT = { exists = clerical_elector_title }
+				}
+				custom_tooltip = {
+					text = request_court_chaplain_cardinalate_chaplain_follows_pope_tt
+					pam_pope_is_head_of_faith_or_rite_trigger = yes
 				}
 			}
 		}
@@ -4917,7 +5378,7 @@ destroy_cardinalate_interaction = {
 	cooldown_against_recipient = { years = 10 }
 
 	is_available = {
-		faith.religious_head ?= this
+		pam_leads_college_of_cardinals_trigger = yes
 		trigger_if = { # A shrinking College is a problem the AI should not create
 			limit = { is_ai = yes }
 			faith ?= {
@@ -4935,7 +5396,7 @@ destroy_cardinalate_interaction = {
 		exists = scope:recipient.clerical_elector_title
 		scope:recipient = {
 			is_ai = yes
-			faith.religious_head ?= scope:actor
+			faith = scope:actor.faith
 		}
 	}
 
@@ -5039,7 +5500,7 @@ destroy_cardinalate_interaction = {
 	ai_frequency_by_tier = {
 		barony = 0
 		county = 0
-		duchy = 24
+		duchy = 0
 		kingdom = 12
 		empire = 12
 		hegemony = 12
@@ -5113,9 +5574,7 @@ give_cardinal_order_interaction = {
 				}
 			}
 			trigger_else = {
-				any_held_title = {
-					is_head_of_faith = yes
-				}
+				pam_leads_college_of_cardinals_trigger = yes
 				#If they are a puppet of their liege the HoF cannot use this interaction
 				NOT = {
 					scope:recipient.liege.puppet:theological_agent_puppet ?= scope:recipient
@@ -5128,10 +5587,6 @@ give_cardinal_order_interaction = {
 		scope:puppet_or_actor != scope:recipient
 	}
 
-
-	is_valid = {
-		#TODO_PAM_LK iteration do we want to have tie ins to situation phase, church authority, tenet status?
-	}
 
 	is_valid_showing_failures_only = {
 		scope:puppet_or_actor = {
@@ -5397,6 +5852,37 @@ give_cardinal_order_interaction = {
 			scope:recipient.liege.puppet:theological_agent_puppet ?= scope:recipient
 			desc = IS_YOUR_PUPPET
 		}
+		# is_shown already established the College relationship, so unlike
+		# theocratic_related_puppet_acceptance_factors_modifier this need not walk any_subordinate.
+		modifier = {
+			add = 20
+			scope:puppet_or_actor = { has_realm_law_flag = puppet_acceptance_1 }
+			desc = CHURCH_AUTHORITY_1_REASON
+		}
+		modifier = {
+			add = 30
+			scope:puppet_or_actor = { has_realm_law_flag = puppet_acceptance_2 }
+			desc = CHURCH_AUTHORITY_2_REASON
+		}
+		modifier = {
+			add = 50
+			scope:puppet_or_actor = { has_realm_law_flag = puppet_acceptance_3 }
+			desc = CHURCH_AUTHORITY_3_REASON
+		}
+		modifier = {
+			add = -20
+			situation:the_christian_church ?= {
+				has_situation_top_phase_parameter = era_type_crisis
+			}
+			desc = CHRISTIAN_CHURCH_PHASE_REASON
+		}
+		modifier = {
+			add = 20
+			situation:the_christian_church ?= {
+				has_situation_top_phase_parameter = era_type_stable
+			}
+			desc = CHRISTIAN_CHURCH_PHASE_REASON
+		}
 	}
 	ai_targets = {
 		ai_recipients = subordinates
@@ -5412,7 +5898,7 @@ give_cardinal_order_interaction = {
 	ai_will_do = {
 		base = 50
 
-		modifier = { # Traits in common TODO_PAM Condense these three modifiers into one after TIT-70194 is done
+		modifier = { # Traits in common
 			add = 25
 			scope:puppet_or_actor = {
 				number_of_personality_traits_in_common = {
@@ -5512,6 +5998,13 @@ request_legitimacy_interaction = {
 			NOT = { this = scope:actor }
 		}
 		pam_should_bother_clergy_interaction_trigger = { PRIEST = scope:recipient }
+		# Those under an antipope ask them instead of the real Head of Faith
+		trigger_if = {
+			limit = {
+				scope:recipient ?= scope:puppet_or_actor.faith.religious_head
+			}
+			scope:puppet_or_actor ?= { is_following_religious_head_challenger = no }
+		}
 	}
 
 	is_highlighted = {
@@ -6227,6 +6720,13 @@ strengthen_claim_interaction = {
 			NOT = { this = scope:actor }
 		}
 		pam_should_bother_clergy_interaction_trigger = { PRIEST = scope:recipient }
+		# Those under an antipope ask them instead of the real Head of Faith
+		trigger_if = {
+			limit = {
+				scope:recipient ?= scope:puppet_or_actor.faith.religious_head
+			}
+			scope:puppet_or_actor ?= { is_following_religious_head_challenger = no }
+		}
 	}
 
 	is_valid_showing_failures_only = {
@@ -7040,11 +7540,11 @@ sell_claim_interaction = {
 
 	ai_frequency_by_tier = {
 		barony = 0
-		county = 24
-		duchy = 24
-		kingdom = 12
-		empire = 12
-		hegemony = 12
+		county = 48
+		duchy = 48
+		kingdom = 24
+		empire = 24
+		hegemony = 24
 	}
 
 	is_available = {
@@ -7258,19 +7758,29 @@ sell_claim_interaction = {
 			}
 			desc = SIMONY_RITE_REASON
 		}
-		modifier = { # Their rite condemns it
+		modifier = { # Your or their rite condemns it
 			add = -50
-			scope:recipient = {
-				rite = {
-					has_tenet_status = {
-						tenet = tenet_simony
-						status = prohibited
+			OR = {
+				scope:actor = {
+					rite = {
+						has_tenet_status = {
+							tenet = tenet_simony
+							status = prohibited
+						}
+					}
+				}
+				scope:recipient = {
+					rite = {
+						has_tenet_status = {
+							tenet = tenet_simony
+							status = prohibited
+						}
 					}
 				}
 			}
 			desc = SIMONY_IS_PROHIBITED
 		}
-		modifier = { # The devout want no part in trafficking the Church's authority
+		modifier = {
 			add = {
 				add = -5
 				multiply = scope:recipient.piety_level
@@ -7284,14 +7794,62 @@ sell_claim_interaction = {
 		base = 10
 
 		modifier = {
+			add = scope:puppet_or_actor.ai_greed
+		}
+		modifier = {
 			add = 25
 			scope:puppet_or_actor = {
-				ai_greed >= medium_positive_ai_value
+				debt_level > 0
+			}
+		}
+		modifier = {
+			add = -50
+			scope:puppet_or_actor = {
+				has_trait = zealous
 			}
 		}
 		modifier = {
 			add = 25
-			debt_level >= 0
+			scope:puppet_or_actor = {
+				has_trait = cynical
+			}
+		}
+		modifier = {
+			add = -50
+			scope:puppet_or_actor = {
+				rite = {
+					has_tenet_status = {
+						tenet = tenet_simony
+						status = prohibited
+					}
+				}
+			}
+		}
+		modifier = {
+			add = 20
+			scope:puppet_or_actor = {
+				OR = {
+					has_relation_friend = scope:recipient
+					has_relation_best_friend = scope:recipient
+					opinion = {
+						target = scope:recipient
+						value >= high_positive_opinion
+					}
+				}
+			}
+		}
+		modifier = {
+			add = -60
+			scope:puppet_or_actor = {
+				OR = {
+					has_relation_rival = scope:recipient
+					has_relation_nemesis = scope:recipient
+					opinion = {
+						target = scope:recipient
+						value <= medium_negative_opinion
+					}
+				}
+			}
 		}
 	}
 
@@ -8530,7 +9088,6 @@ ecclesiastic_transfer_land_interaction = {
 	desc = ecclesiastic_transfer_land_interaction_desc
 	notification_text = ecclesiastic_transfer_land_interaction_notification
 	target_type = title
-	# TODO_PAM_JC title list is way too long for big realms, TIT-73041 code support needed for  target_filter for realm_titles_de_jure_or_claimed target_filter that only shows recipient's titles that are claimed by actor or de jure below actor's titles
 	target_filter = realm_titles
 	target_source = recipient
 	interface_priority = 75
@@ -8806,12 +9363,15 @@ ecclesiastic_transfer_land_interaction = {
 			}
 		}
 		scope:recipient = {
+			is_available_quick = {
+				incapable = no
+				imprisoned = no
+				hostage = no
+			}
 			is_at_war = no
 			highest_held_title_tier >= tier_county
-			NOT = {
-				has_strong_hook = scope:actor
-			}
 			NOR = {
+				has_strong_hook = scope:actor
 				has_trait = greatest_of_khans
 				has_trait = conqueror
 			}
@@ -9908,7 +10468,7 @@ ecclesiastic_transfer_land_interaction = {
 # Create a New Ecclesiastical Title as HoF (player only - we'll make the ai use the "request" ones)
 create_new_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
-	icon = request_clerical_title_creation # TODO_PAM_ALI TIT-73245
+	icon = request_clerical_title_creation
 	interface_priority = 45
 	common_interaction = yes
 
@@ -9918,13 +10478,19 @@ create_new_ecclesiastical_title_interaction = {
 
 	desc = create_new_ecclesiastical_title_interaction_desc
 	target_type = title
-	target_filter = recipient_domain_titles
+	target_filter = domain_titles
+	target_source = recipient
+	show_all_targets = no
 
 	# Recipient's court chaplain as the default new title holder
 	redirect = {
 		scope:recipient = {
+			# A character may hold only one clerical region, so an existing archbishop cannot default here
 			cp:councillor_court_chaplain ?= {
-				save_scope_as = secondary_recipient
+				if = {
+					limit = { NOT = { any_held_title = { has_clerical_region = yes } } }
+					save_scope_as = secondary_recipient
+				}
 			}
 		}
 	}
@@ -9932,10 +10498,16 @@ create_new_ecclesiastical_title_interaction = {
 	# Recipient's court chaplain, then eligible AI courtiers from either the recipient or the actor (HoF) as candidate holders
 	populate_recipient_list = {
 		scope:recipient = {
-			cp:councillor_court_chaplain ?= { add_to_list = characters }
+			cp:councillor_court_chaplain ?= {
+				if = {
+					limit = { NOT = { any_held_title = { has_clerical_region = yes } } }
+					add_to_list = characters
+				}
+			}
 			every_courtier = {
 				limit = {
 					is_ai = yes
+					NOT = { any_held_title = { has_clerical_region = yes } }
 					can_be_court_chaplain_trigger = { COURT_OWNER = scope:actor }
 				}
 				add_to_list = characters
@@ -9945,6 +10517,7 @@ create_new_ecclesiastical_title_interaction = {
 			every_courtier = {
 				limit = {
 					is_ai = yes
+					NOT = { any_held_title = { has_clerical_region = yes } }
 					can_be_court_chaplain_trigger = { COURT_OWNER = scope:actor }
 				}
 				add_to_list = characters
@@ -9961,16 +10534,19 @@ create_new_ecclesiastical_title_interaction = {
 		is_adult = yes
 	}
 
-	# Same-faith kingdom-tier rulers whose realm has no clerical region yet, covering their capital
+	# Same-faith duke-or-above rulers holding at least one title whose de jure capital is not in a clerical region yet.
+	# Deliberately not gated on the recipient's own capital: a ruler whose seat already sits inside a see must still
+	# be able to have one founded elsewhere in their realm
 	is_shown = {
 		scope:recipient = {
 			is_ruler = yes
 			faith ?= scope:actor.faith
 			NOT = { this = scope:actor }
 			any_held_title = {
-				tier = tier_kingdom
+				tier >= tier_duchy
 				is_landless_type_title = no
 				title_capital_county ?= {
+					NOT = { exists = clerical_region_title }
 					OR = {
 						holder ?= scope:recipient
 						holder ?= {
@@ -9979,11 +10555,6 @@ create_new_ecclesiastical_title_interaction = {
 							}
 						}
 					}
-				}
-			}
-			capital_county ?= { # Their realm is not inside a clerical region
-				NOT = {
-					exists = clerical_region_title
 				}
 			}
 		}
@@ -10005,13 +10576,7 @@ create_new_ecclesiastical_title_interaction = {
 			text = create_new_ecclesiastical_title_no_eligible_kingdom_tt
 			scope:recipient = {
 				any_held_title = {
-					tier = tier_kingdom
-					holder = scope:recipient
-					is_landless_type_title = no
-					is_head_of_faith = no
-					title_capital_county = {
-						NOT = { exists = clerical_region_title }
-					}
+					pam_valid_new_clerical_region_anchor_trigger = { PETITIONER = scope:recipient }
 				}
 			}
 		}
@@ -10033,33 +10598,25 @@ create_new_ecclesiastical_title_interaction = {
 		}
 	}
 
-	can_be_picked_title = {
-		scope:target = {
-			tier = tier_kingdom
-			holder = scope:recipient
-			is_landless_type_title = no
-			is_head_of_faith = no
-			title_capital_county = {
-				has_clerical_region = no
-				OR = {
-					holder = scope:recipient
-					holder = {
-						any_liege_or_above = {
-							this = scope:recipient
-						}
-					}
-				}
-			}
-			any_de_jure_county = {
-				has_clerical_region = no
+	has_valid_target_showing_failures_only = {
+		custom_tooltip = {
+			text = pam_new_clerical_region_invalid_anchor_tt
+			scope:target ?= {
+				pam_valid_new_clerical_region_anchor_trigger = { PETITIONER = scope:recipient }
 			}
 		}
 	}
 
-	# Scales with the number of de jure counties in the chosen kingdom title
+	can_be_picked_title = {
+		scope:target = {
+			pam_valid_new_clerical_region_anchor_trigger = { PETITIONER = scope:recipient }
+		}
+	}
+
+	# Scales with the free Christian de jure counties of the anchor's de jure kingdom, which is what the region takes
 	cost = {
 		piety = {
-			value = pam_new_ecclesiastical_title_cost_value
+			value = pam_new_clerical_region_cost_value
 			# A Head of Rites acting for a faith with no Head of Faith pays more
 			if = {
 				limit = { NOT = { exists = scope:actor.faith.religious_head } }
@@ -10079,7 +10636,7 @@ create_new_ecclesiastical_title_interaction = {
 # Expand an Ecclesiastical Title as HoF (player only - we'll make the ai use the "request" ones)
 expand_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
-	icon = request_clerical_title_expansion # TODO_PAM_ALI TIT-73562
+	icon = request_clerical_title_expansion
 	interface_priority = 45
 	common_interaction = yes
 
@@ -10167,7 +10724,7 @@ expand_ecclesiastical_title_interaction = {
 # Split an Ecclesiastical Title as HoF (player only - we'll make the ai use the "request" ones)
 split_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
-	icon = request_clerical_title_split # TODO_PAM_ALI TIT-73560
+	icon = request_clerical_title_split
 	interface_priority = 45
 	common_interaction = yes
 
@@ -10469,7 +11026,7 @@ split_ecclesiastical_title_interaction = {
 # Merge an Ecclesiastical Title as HoF (player only - we'll make the ai use the "request" ones)
 merge_new_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
-	icon = request_clerical_title_merger # TODO_PAM_ALI TIT-73561
+	icon = request_clerical_title_merger
 	interface_priority = 45
 	common_interaction = yes
 
@@ -10907,14 +11464,15 @@ grant_ecclesiastical_title_interaction = {
 
 	cooldown_against_recipient = { years = 5 }
 
-	# Same-faith clergy and realm priests without a see of their own
+	# Same-faith candidates without a see of their own: clergy, plus any non-ruler the holder
+	# could elevate, which is deliberately wider than the clergy organization
 	is_shown = {
 		scope:recipient = {
 			this != scope:actor
 			faith ?= scope:actor.faith
 			OR = {
 				is_clergy = yes
-				has_council_position = councillor_court_chaplain
+				is_ruler = no
 			}
 			NOT = { any_held_title = { has_clerical_region = yes } }
 		}
@@ -11039,6 +11597,10 @@ grant_ecclesiastical_title_interaction = {
 		ai_recipients = courtiers
 		max = 10
 	}
+	ai_targets = {
+		ai_recipients = family
+		max = 5
+	}
 
 	ai_target_quick_trigger = {
 		adult = yes
@@ -11048,9 +11610,9 @@ grant_ecclesiastical_title_interaction = {
 		barony = 0
 		county = 0
 		duchy = 0
-		kingdom = 12
-		empire = 12
-		hegemony = 12
+		kingdom = 6
+		empire = 6
+		hegemony = 6
 	}
 
 	ai_will_do = {
@@ -11100,7 +11662,7 @@ grant_ecclesiastical_title_interaction = {
 
 petition_antipope_indulgences_interaction = {
 	category = interaction_category_religion
-	icon = letter_of_indulgence
+	icon = petition_antipope_indulgences
 	common_interaction = yes
 
 	desc = petition_antipope_indulgences_interaction_desc
@@ -11262,7 +11824,7 @@ petition_antipope_indulgences_interaction = {
 
 petition_antipope_gold_interaction = {
 	category = interaction_category_religion
-	icon = icon_gold
+	icon = petition_antipope_gold
 	common_interaction = yes
 
 	desc = petition_antipope_gold_interaction_desc
@@ -11623,6 +12185,12 @@ ecclesiastic_incite_holy_war_interaction = {
 				}
 				multiply = ecclesiastical_domicile_cheaper_incite_war_mult_3
 			}
+			if = {
+				limit = {
+					scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
+				}
+				multiply = 0.75
+			}
 		}
 	}
 
@@ -11758,6 +12326,14 @@ ecclesiastic_incite_holy_war_interaction = {
 				}
 			}
 		}
+		if = {
+			limit = {
+				scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
+			}
+			scope:puppet_or_actor = {
+				add_prestige = medium_prestige_value
+			}
+		}
 		ecclesiastic_incite_holy_war_interaction_effect = yes
 	}
 
@@ -11855,6 +12431,11 @@ ecclesiastic_incite_holy_war_interaction = {
 					has_domicile_parameter = estate_incite_war_reliquary_3
 				}
 			}
+		}
+		modifier = {
+			add = 15
+			desc = CHIVALRIC_DOMINANCE_REASON
+			scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
 		}
 
 		modifier = {
@@ -12712,6 +13293,7 @@ influence_papal_vote_interaction = {
 
 	is_available = {
 		faith = { has_doctrine_parameter = has_clerical_electors }
+		pam_pope_is_head_of_faith_or_rite_trigger = yes
 		is_adult = yes
 		NOR = {
 			government_has_flag = government_is_mercenary
@@ -12738,7 +13320,7 @@ influence_papal_vote_interaction = {
 						limit = {
 							this != scope:recipient
 							this != scope:actor
-							this != scope:actor.faith.religious_head
+							NOT = { scope:actor.faith.religious_head ?= this }
 							is_alive = yes
 							is_papabile = yes
 						}
@@ -13157,7 +13739,9 @@ increase_papabile_score_interaction = {
 	filter_tags = { papabile }
 
 	is_available = {
-		faith.religious_head_title ?= {
+		faith ?= { has_doctrine_parameter = has_clerical_electors }
+		pam_pope_is_head_of_faith_or_rite_trigger = yes
+		title:k_papal_state ?= {
 			any_elector = {}
 			is_title_created = yes
 		}
@@ -13256,6 +13840,10 @@ increase_papabile_score_interaction = {
 					value = scope:recipient.pam_papabile_place_first_powerful_value
 					multiply = pam_papabile_place_first_piety_per_point_value
 				}
+			}
+			if = {
+				limit = { scope:actor = { has_perk = court_of_shadows_perk } }
+				multiply = 0.75
 			}
 		}
 		gold = {
@@ -13408,7 +13996,7 @@ increase_papabile_score_interaction = {
 # Reform a patroned monastic order's tenet or rite
 pam_reform_order_interaction = {
 	category = interaction_category_religion
-	icon = holy_order # TODO_PAM_VP TIT-76243
+	icon = reform_order
 	interface_priority = 41
 	common_interaction = yes
 	
@@ -14667,7 +15255,7 @@ pam_reform_order_interaction = {
 # The actor spreads their own Personal Tenet to a subject or courtier, increases that tenet's popularity
 pam_evangelize_personal_tenet_interaction = {
 	category = interaction_category_religion
-	icon = religious
+	icon = evangelize_personal_tenet
 	interface_priority = 40
 	common_interaction = yes
 
@@ -16151,7 +16739,7 @@ pam_evangelize_personal_tenet_interaction = {
 # which only carries the hook send_option and lets on_send pick a random tenet.
 pam_ai_evangelize_personal_tenet_interaction = {
 	category = interaction_category_religion
-	icon = religious
+	icon = evangelize_personal_tenet
 	interface_priority = 40
 	hidden = yes
 
@@ -16544,7 +17132,7 @@ pam_ai_evangelize_personal_tenet_interaction = {
 # Replace a doctrine of other rite in your faith by your rite's in same group
 pam_reaffirm_doctrine_interaction = {
 	category = interaction_category_religion
-	icon = religious
+	icon = reaffirm_doctrine
 	interface_priority = 40
 	common_interaction = yes
 
@@ -20415,8 +21003,10 @@ request_ecclesiastical_treasury_interaction = {
 			desc = REQUEST_ECCLESIASTICAL_TREASURY_RECIPIENT_LOW_TREASURY_REASON
 		}
 
-		modifier = { # Deliberately undescribed: an AI-side reserve, not a requirement we want to advertise
+		modifier = { # AI-to-AI only, and undescribed: a reserve between AI characters must never read
+			# to a player as an unexplained refusal, in either direction
 			add = -1000
+			scope:actor = { is_ai = yes }
 			scope:recipient = {
 				is_ai = yes
 				any_held_title = { is_head_of_faith = yes }
@@ -20793,6 +21383,13 @@ request_white_peace_interaction = {
 			}
 		}
 		pam_should_bother_clergy_interaction_trigger = { PRIEST = scope:recipient }
+		# Those under an antipope ask them instead of the real Head of Faith
+		trigger_if = {
+			limit = {
+				scope:recipient ?= scope:puppet_or_actor.faith.religious_head
+			}
+			scope:puppet_or_actor ?= { is_following_religious_head_challenger = no }
+		}
 	}
 
 	populate_recipient_list = {
@@ -21322,6 +21919,13 @@ request_victory_interaction = {
 			NOT = { this = scope:actor }
 		}
 		pam_should_bother_clergy_interaction_trigger = { PRIEST = scope:recipient }
+		# Those under an antipope ask them instead of the real Head of Faith
+		trigger_if = {
+			limit = {
+				scope:recipient ?= scope:puppet_or_actor.faith.religious_head
+			}
+			scope:puppet_or_actor ?= { is_following_religious_head_challenger = no }
+		}
 	}
 
 	populate_recipient_list = {
@@ -27072,10 +27676,13 @@ demand_divorce_interaction = {
 
 	ai_targets = {
 		ai_recipients = rulers_in_clerical_region
-		ai_recipients = peer_vassals
-		ai_recipients = domicile_location_top_realm_vassals
 		ai_recipients = neighboring_rulers
 		ai_recipients = scripted_relations
+	}
+	ai_targets = {
+		ai_recipients = peer_vassals
+		ai_recipients = domicile_location_top_realm_vassals
+		max = 20
 	}
 
 	ai_target_quick_trigger = {
@@ -27439,7 +28046,10 @@ seek_communion_interaction = {
 			trigger_else = {
 				main_rite.head_of_rite = root
 			}
-			NOT = { has_doctrine = special_doctrine_ecumenical_christian }
+			NOR = {
+				has_doctrine = special_doctrine_ecumenical_christian
+				has_doctrine = special_doctrine_ecumenical_miaphysite
+			}
 		}
 		has_pam_dlc_trigger = yes
 	}
@@ -27615,7 +28225,7 @@ seek_communion_interaction = {
 
 pam_destroy_monastic_order_interaction = {
 	category = interaction_category_religion
-	icon = revoke_title # TODO_PAM_VP TIT-76244
+	icon = pam_destroy_monastic_order
 	interface_priority = 39
 
 	desc = pam_destroy_monastic_order_interaction_desc
