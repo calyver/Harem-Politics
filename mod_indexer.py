@@ -12,7 +12,7 @@ EXCLUDED_FOLDERS = ["culture/cultures", "religion/religion_types", "religion/rit
 VANILLA_PATH = r"C:\Program Files (x86)\Steam\steamapps\common\Crusader Kings III\game"
 
 # 2. Where the script should create the replicated vanilla folders and paste the files
-VANILLA_OUTPUT_DIR = r"E:\Documents\Steve\Harem politics\Vanilla"
+VANILLA_OUTPUT_DIR = r"E:\Documents\Steve\Harem politics\HP mod\Vanilla files"
 
 # 3. Specific keys you want to locate deep inside Vanilla files (Inline References)
 SPECIFIC_TRACKED_KEYS = [
