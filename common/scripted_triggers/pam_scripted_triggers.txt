@@ -23,6 +23,25 @@ rite_has_pre_scripted_liturgical_language_trigger = {
 	}
 }
 
+# Rite scope. Rites tied to one founding see, so only a local can plausibly take them up.
+# Roman and Byzantine are excluded as map-wide traditions; schools of law and Buddhist
+# schools are excluded because swapping those is ordinary.
+pam_rite_is_regional_trigger = {
+	OR = {
+		this = rite:insular_celtic
+		this = rite:georgian_rite
+		this = rite:ambrosian_rite
+		this = rite:beneventan_rite
+		this = rite:mozarabic_church
+		this = rite:carolingian_christianity
+		this = rite:slavic_rite
+		this = rite:coptic_rite
+		this = rite:antiochian_rite
+		this = rite:ethiopian_rite
+		this = rite:armenian_rite
+	}
+}
+
 pam_latin_as_liturgical_language_trigger = {
 	OR = {
 		faith = faith:catholic
@@ -126,6 +145,12 @@ the_christian_church_radical_change_allowed_trigger = {
 			has_situation_top_phase_parameter = era_type_instability
 			has_situation_top_phase_parameter = era_type_crisis
 		}
+	}
+}
+
+pam_mass_rite_conversion_conversion_phase_trigger = {
+	situation:the_christian_church ?= {
+		has_situation_top_phase_parameter = the_christian_church_mass_rite_conversion_decision
 	}
 }
 
@@ -274,6 +299,10 @@ is_clerical_appointment_valid_trigger = {
 				}
 			}
 		}
+		custom_tooltip = { # Titles below the holder's primary tier are inherited alongside it, so they cannot be contested on their own
+			text = follows_other_title_appointment_tt
+			scope:title_temp.holder ?= { primary_title.tier = scope:title_temp.tier }
+		}
 	}
 	is_clerical_appointment_valid_base_trigger = {
 		CANDIDATE = $CANDIDATE$
@@ -308,6 +337,33 @@ influence_clerical_candidacy_reach_trigger = {
 	}
 }
 
+pam_head_of_faith_candidacy_valid_title_trigger = {
+	has_clerical_region = no
+	trigger_if = {
+		limit = { exists = holder }
+		has_order_of_succession = appointment
+	}
+}
+
+influence_head_of_faith_candidacy_target_trigger = {
+	custom_tooltip = {
+		text = influence_head_of_faith_candidacy_not_created_tt
+		exists = scope:target.holder
+	}
+	# has_order_of_succession resolves the holder's realm laws, so both checks stay behind the holder check
+	trigger_if = {
+		limit = { exists = scope:target.holder }
+		custom_tooltip = {
+			text = has_appointment_succession_tt
+			scope:target = { has_order_of_succession = appointment }
+		}
+		custom_tooltip = {
+			text = influence_head_of_faith_candidacy_same_faith_tt
+			scope:target.holder ?= { faith = scope:actor.faith }
+		}
+	}
+}
+
 is_clerical_appointment_valid_base_trigger = {
 	$CANDIDATE$ = { save_temporary_scope_as = candidate_temp }
 	$TOP_LIEGE$ = { save_temporary_scope_as = top_liege_temp }
@@ -337,6 +393,38 @@ is_clerical_appointment_valid_base_trigger = {
 			OR = {
 				government_has_flag = government_is_theocracy
 				is_landed = no
+			}
+		}
+		custom_tooltip = { # Barred from holding titles
+			text = can_be_appointed_interaction_can_inherit_tt
+			NOR = {
+				has_trait = order_member
+				has_trait = gallivanter
+				has_trait = disinherited
+			}
+		}
+	}
+}
+
+# A seated archbishop must not campaign for himself in a second clerical region
+# Reads the interaction scopes directly, like tgp_ceremonial_candidacy_restriction_trigger.
+pam_clerical_self_candidacy_restriction_trigger = {
+	trigger_if = {
+		limit = {
+			exists = scope:target
+			scope:actor ?= scope:secondary_recipient
+			scope:actor = {
+				any_held_title = { has_clerical_region = yes }
+			}
+		}
+		custom_tooltip = {
+			text = pam_clerical_self_candidacy_restriction_tt
+			scope:target = {
+				OR = {
+					this = title:d_et_constantinople
+					is_head_of_faith = yes
+					holder ?= { faith.religious_head ?= this }
+				}
 			}
 		}
 	}
@@ -733,6 +821,18 @@ faith_has_monasticism_trigger = {
 	}
 }
 
+# TRUE if ROOT's rite has room for a fighting prelate. Martial training and martial skill only weigh on
+# clerical candidacy where holy war is part of what the faith is for; everywhere else a see is not
+# looking for a soldier.
+pam_rite_values_martial_clergy_trigger = {
+	rite = {
+		OR = {
+			rite_has_tenet = tenet_warmonger
+			rite_has_tenet = tenet_unrelenting_faith
+		}
+	}
+}
+
 # TRUE if ROOT's court should read as a clerical one: a Christian prelate of a faith that practises
 # monasticism. Holy orders and mercenary companies keep their own courts and are excluded. Deliberately
 # not gated on is_landed, which means "holds a county or barony" - ecclesiastical government is
@@ -863,7 +963,6 @@ holy_order_range_trigger = {
 government_is_religious_trigger = {
 	OR = {
 		government_has_flag = government_is_theocracy
-		government_has_flag = government_is_ecclesiastical
 		government_has_flag = government_is_holy_order
 	}
 }
@@ -878,6 +977,33 @@ pam_better_siphon_treasury_trigger = {
 pam_the_christian_church_no_coronation_trigger = {
 	top_participant_group:the_christian_church ?= {
 		has_participant_group_parameter = the_christian_church_no_coronation
+	}
+}
+
+# Secular rulers who follow an Antipope can be anointed by them while the mainline hierarchy refuses
+pam_the_christian_church_antipope_coronations_trigger = {
+	top_participant_group:the_christian_church ?= {
+		has_participant_group_parameter = the_christian_church_antipope_coronations
+	}
+}
+
+# SCOPE: the Anointment authority. $RULER$ is the ruler seeking the Anointment.
+# The Investiture Crisis stops the mainline hierarchy from anointing anyone, but an Antipope still
+# anoints the rulers who follow them
+pam_the_christian_church_no_anointment_trigger = {
+	save_temporary_scope_as = pam_anointment_authority_check
+	trigger_if = {
+		limit = {
+			pam_is_antipope_trigger = yes
+			$RULER$ = {
+				pam_the_christian_church_antipope_coronations_trigger = yes
+				religious_head_or_challenger ?= scope:pam_anointment_authority_check
+			}
+		}
+		always = no
+	}
+	trigger_else = {
+		pam_the_christian_church_no_coronation_trigger = yes
 	}
 }
 
@@ -944,6 +1070,18 @@ pam_is_archbishop_or_higher_trigger = {
 	OR = {
 		any_held_title = { has_clerical_region = yes }
 		religious_head_or_challenger ?= this
+	}
+}
+
+# A cardinal, Head of Rite, or archbishop of $CHARACTER$'s faith
+pam_is_senior_cleric_of_character_trigger = {
+	has_pam_dlc_trigger = yes
+	religion = religion:christianity_religion
+	faith = $CHARACTER$.faith
+	OR = {
+		exists = clerical_elector_title
+		$CHARACTER$.rite.head_of_rite ?= this
+		any_held_title = { has_clerical_region = yes }
 	}
 }
 
@@ -1043,7 +1181,6 @@ holy_site_free_action_show_usage_trigger = {
 
 # Ecumenical council: attendee knows a tenet that root has not learned, and that root's faith main rite still treats as unknown.
 # Scope: the attendee (teacher). root = the character receiving the activity event (student).
-# TODO_PAM_JosH - Right now the council picks attendees that have very similar knowledge to root. Check if this actually change over time and if a fallback is needed.  
 ecumenical_shareable_unknown_tenet_for_root_trigger = {
 	save_temporary_scope_as = ecumenical_tenet_teacher
 	any_character_tenet = {
@@ -1732,7 +1869,6 @@ pam_rite_locally_present_trigger = {
 }
 
 pam_died_from_murder_reason_trigger = {
-	# death_reason errors on living characters; in on_death the dier is still is_alive = yes, so use scope:killer there.
 	trigger_if = {
 		limit = { is_alive = no }
 		OR = {
@@ -1755,6 +1891,27 @@ pam_clergy_court_chaplain_murdered_catalyst_trigger = {
 	has_pam_dlc_trigger = yes
 	religion = religion:christianity_religion
 	has_council_position = councillor_court_chaplain
+	pam_died_from_murder_reason_trigger = yes
+}
+
+pam_clergy_archbishop_murdered_catalyst_trigger = {
+	has_pam_dlc_trigger = yes
+	religion = religion:christianity_religion
+	any_held_title = { has_clerical_region = yes }
+	pam_died_from_murder_reason_trigger = yes
+}
+
+pam_clergy_cardinal_murdered_catalyst_trigger = {
+	has_pam_dlc_trigger = yes
+	religion = religion:christianity_religion
+	exists = clerical_elector_title
+	pam_died_from_murder_reason_trigger = yes
+}
+
+pam_clergy_head_of_rite_murdered_catalyst_trigger = {
+	has_pam_dlc_trigger = yes
+	religion = religion:christianity_religion
+	rite.head_of_rite ?= this
 	pam_died_from_murder_reason_trigger = yes
 }
 
@@ -2204,6 +2361,31 @@ pam_tenet_can_be_persecuted_no_actor_trigger = {
 	}
 }
 
+pam_tenet_is_incompatible_with_armed_pilgrimages_trigger = {
+	OR = {
+		this = tenet:tenet_peace_of_god
+		this = tenet:tenet_pacifism
+		this = tenet:tenet_dharmic_pacifism
+	}
+}
+
+pam_tenet_can_be_replaced_for_armed_pilgrimages_trigger = {
+	trigger_if = {
+		limit = {
+			scope:actor.faith.main_rite ?= {
+				any_rite_tenet = {
+					status = core
+					pam_tenet_is_incompatible_with_armed_pilgrimages_trigger = yes
+				}
+			}
+		}
+		custom_tooltip = {
+			text = pam_secure_pilgrim_routes_incompatible_tenet_tt
+			pam_tenet_is_incompatible_with_armed_pilgrimages_trigger = yes
+		}
+	}
+}
+
 pam_faith_tenet_is_core_trigger = {
 	main_rite = {
 		has_tenet_status = { tenet = $TENET$ status = core }
@@ -2373,6 +2555,7 @@ pam_ai_oriental_christian_actor_trigger = {
 		culture = { has_cultural_pillar = heritage_caucasian }
 		culture = { has_same_culture_language = culture:ethiopian }
 		faith ?= faith:miaphysitism
+		faith ?= faith:armenian_apostolic
 	}
 }
 
@@ -2718,8 +2901,6 @@ pam_potential_secular_clerical_split_ruler_trigger = {
 			# The region's own capital county always stays with the original region, so a ruler whose capital IS
 			# the region capital cannot be split off - the new region would have no capital and is refused. That
 			# is the case for any region an earlier split created around this same ruler.
-			# TODO_PAM_ALI REQUIRES CODE SUPPORT (MR !29140, point 1): counties are orphaned when a split fails. This
-			# guard covers the known route only - the engine assert was still seen once during testing.
 			NOT = { this = clerical_region_title.title_preferred_capital_county }
 		}
 	}
@@ -2752,7 +2933,6 @@ pam_valid_secular_clerical_split_ruler_trigger = {
 # hold - a landed archbishop's capital can sit in someone else's region. This deliberately hides these
 # interactions from a landed archbishop whose capital lies outside their own region, rather than acting on the
 # wrong one.
-# TODO_PAM_ALI REQUIRES CODE SUPPORT (MR !29140, point 2): the pickers should anchor on the held region, not the capital.
 pam_acting_clerical_region_trigger = {
 	$ARCHBISHOP$ = {
 		save_temporary_scope_as = acting_archbishop_temp
@@ -2774,7 +2954,6 @@ pam_potential_merge_clerical_region_title_trigger = {
 		is_head_of_faith = no
 		# An absorbed region keeps showing in the picker as an empty shell until the save is reloaded, so check it
 		# still has counties - this filter is the only reason those shells are not visible.
-		# TODO_PAM_ALI REQUIRES CODE SUPPORT (MR !29140, point 3, latent): absorbed regions are never deleted.
 		clerical_region_size > 0
 		custom_tooltip = {
 			text = pam_potential_merge_clerical_region_title_same_title_trigger
@@ -2804,8 +2983,6 @@ pam_potential_merge_clerical_region_title_trigger = {
 		is_head_of_faith = no
 		custom_tooltip = {
 			text = pam_potential_merge_clerical_region_title_neighboring_trigger
-			# TODO_PAM_ALI REQUIRES CODE SUPPORT (MR !29140, point 6): this correctly offers a freshly split region, but
-			# the merge effect's own adjacency check reads a cache still empty for it, so that first merge fails.
 			any_county_in_clerical_region = {
 				any_neighboring_county = { clerical_region_title ?= $TITLE$ }
 			}
@@ -2873,6 +3050,36 @@ pam_expand_target_is_same_faith_outside_home_kingdom_trigger = {
 			OR = {
 				exists = clerical_region_title
 				faith = $ARCHBISHOP$.faith
+			}
+		}
+	}
+}
+
+# Anchor for a new clerical region. The picked title only decides which county becomes the see:
+# create_clerical_region always fills the region from that county's de jure kingdom, so the tier floor
+# here governs who may petition, not how large the resulting region ends up
+pam_valid_new_clerical_region_anchor_trigger = {
+	trigger_if = {
+		limit = { $PETITIONER$ ?= { has_government = ecclesiastical_government } }
+		tier >= tier_county
+	}
+	trigger_else = {
+		tier >= tier_duchy
+	}
+	is_landless_type_title = no
+	is_head_of_faith = no
+	exists = title_capital_county
+	exists = title_capital_county.kingdom
+	title_capital_county = {
+		NOT = { exists = clerical_region_title }
+		exists = holder
+		faith = $PETITIONER$.faith # the region takes its faith from this county, and a mismatch destroys the new title
+		OR = {
+			holder = $PETITIONER$
+			holder = {
+				any_liege_or_above = {
+					this = $PETITIONER$
+				}
 			}
 		}
 	}
@@ -4689,6 +4896,90 @@ pam_college_of_cardinals_election_active_trigger = {
 	}
 }
 
+pam_leads_college_of_cardinals_trigger = {
+	has_title = title:k_papal_state
+	pam_college_of_cardinals_election_active_trigger = yes
+}
+
+pam_pope_is_head_of_faith_or_rite_trigger = {
+	OR = {
+		rite.head_of_rite ?= { has_title = title:k_papal_state }
+		faith.religious_head ?= { has_title = title:k_papal_state }
+	}
+}
+
+# A cardinalate handed to the Pope's own blood, friend or lover reads as a packed College rather than a
+# promotion on merit. Both dynasty sides need an exists check or two lowborn prelates match each other.
+# Cardinal scope; needs POPE
+pam_cardinal_is_nepotistic_appointment_trigger = {
+	OR = {
+		AND = {
+			exists = dynasty
+			exists = $POPE$.dynasty
+			dynasty = $POPE$.dynasty
+		}
+		has_any_moderate_good_relationship_with_character_trigger = { CHARACTER = $POPE$ }
+		has_any_best_good_relationship_with_character_trigger = { CHARACTER = $POPE$ }
+	}
+}
+
+# Character scope. Is $TITLE$ the seat that heads this character's Church? Rome is named directly and the
+# head of faith title is guarded by an exists, because a headless faith (Chalcedonianism before the Great
+# Schism) seats the Pope as head of rite and has no religious head title to compare against.
+pam_title_is_church_seat_trigger = {
+	OR = {
+		$TITLE$ = title:k_papal_state
+		AND = {
+			exists = faith.religious_head_title
+			$TITLE$ = faith.religious_head_title
+		}
+	}
+}
+
+# Character scope. Do they sit on the seat that heads a Church? Rome is named directly for the same reason
+# as above: while Chalcedonianism is headless the Pope heads it as head of rite, so is_head_of_faith is no.
+pam_holds_church_seat_trigger = {
+	OR = {
+		any_held_title = { is_head_of_faith = yes }
+		has_title = title:k_papal_state
+	}
+}
+
+# The College elects the faith's religious head title when one exists; headless faiths
+# (pre-schism Chalcedonianism) elect Rome directly.
+pam_college_election_title_has_electors_trigger = {
+	trigger_if = {
+		limit = { exists = faith.religious_head_title }
+		# any_elector rather than a bare exists: is_candidate_from_set errors on a title with no election law.
+		faith.religious_head_title = { any_elector = {} }
+	}
+	trigger_else = {
+		title:k_papal_state = { any_elector = {} }
+	}
+}
+
+pam_is_college_election_candidate_trigger = {
+	trigger_if = {
+		limit = { pam_college_election_title_has_electors_trigger = yes }
+		trigger_if = {
+			limit = { exists = faith.religious_head_title }
+			is_candidate_from_set = {
+				title = faith.religious_head_title
+				source = $SOURCE$
+			}
+		}
+		trigger_else = {
+			is_candidate_from_set = {
+				title = title:k_papal_state
+				source = $SOURCE$
+			}
+		}
+	}
+	trigger_else = { # Error log suppressing
+		always = no
+	}
+}
+
 # A member of the faith's clergy for the council: holds a clerical title, rules an ecclesiastical government, or
 # is a court chaplain. Clerical-title is the reliable check - government_is_ecclesiastical / is_clergy miss many PAM prelates.
 pam_is_investiture_clergy_trigger = {
@@ -6113,17 +6404,13 @@ pam_ai_marriage_respects_clerical_restraint_trigger = {
 }
 
 # Is there still a $SLOT$ seat on the papabile shortlist for this cardinal to claim? False for non-cardinals,
-# for faiths with no religious head to elect, and for the cardinal already seated there.
+# for faiths whose College elects no title, and for the cardinal already seated there.
 pam_papabile_slot_open_to_trigger = {
 	exists = clerical_elector_title
 	NOT = { has_variable = pam_refuses_papacy }
-	# any_elector rather than a bare exists: is_candidate_from_set errors on a title with no election law.
-	faith.religious_head_title ?= { any_elector = {} }
+	pam_college_election_title_has_electors_trigger = yes
 	NOT = {
-		is_candidate_from_set = {
-			title = faith.religious_head_title
-			source = $SLOT$
-		}
+		pam_is_college_election_candidate_trigger = { SOURCE = $SLOT$ }
 	}
 }
 

@@ -118,7 +118,6 @@ pam_investiture_council_host_score_value = {
 	}
 }
 
-# TODO_PAM_JF TIT-74509 Design may tweak these
 # years before being able to convert again
 pam_ui_conversion_cooldown = 5
 pam_same_faith_rite_knowledge_requirement = 0.4
@@ -400,6 +399,70 @@ pam_papal_candidate_mainline_rite_value = {
 	}
 }
 
+pam_papal_candidate_mainline_virtues_value = {
+	value = 0
+	if = {
+		limit = { num_virtuous_traits = { value >= 1 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 2 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 3 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 4 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 5 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 6 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_virtuous_traits = { value >= 7 target = faith.main_rite } }
+		add = 1
+	}
+}
+
+pam_papal_candidate_mainline_sins_value = {
+	value = 0
+	if = {
+		limit = { num_sinful_traits = { value >= 1 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 2 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 3 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 4 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 5 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 6 target = faith.main_rite } }
+		add = 1
+	}
+	if = {
+		limit = { num_sinful_traits = { value >= 7 target = faith.main_rite } }
+		add = 1
+	}
+}
+
 # "The Pious" - holiness of life
 pam_papal_pious_priority_value = {
 	value = pam_papal_candidate_anathema_value
@@ -436,9 +499,9 @@ pam_papal_pious_priority_value = {
 		}
 	}
 	if = {
-		limit = { num_virtuous_traits >= 1 }
+		limit = { num_virtuous_traits = { value >= 1 target = faith.main_rite } }
 		add = {
-			value = num_virtuous_traits
+			value = pam_papal_candidate_mainline_virtues_value
 			multiply = 20
 			desc = tooltip_pam_papal_pious_virtues
 		}
@@ -685,9 +748,9 @@ pam_papal_pious_priority_value = {
 		}
 	}
 	if = {
-		limit = { num_sinful_traits >= 1 }
+		limit = { num_sinful_traits = { value >= 1 target = faith.main_rite } }
 		add = {
-			value = num_sinful_traits
+			value = pam_papal_candidate_mainline_sins_value
 			multiply = -30
 			desc = tooltip_pam_papal_pious_sins
 		}
@@ -1550,10 +1613,7 @@ pam_papal_powerful_incumbent_score_value = {
 				holder = {
 					if = {
 						limit = {
-							is_candidate_from_set = {
-								title = faith.religious_head_title
-								source = theocratic_elective_powerful
-							}
+							pam_is_college_election_candidate_trigger = { SOURCE = theocratic_elective_powerful }
 						}
 						add = pam_papal_powerful_priority_value
 					}
@@ -1572,10 +1632,7 @@ pam_papal_populist_incumbent_score_value = {
 				holder = {
 					if = {
 						limit = {
-							is_candidate_from_set = {
-								title = faith.religious_head_title
-								source = theocratic_elective_populist
-							}
+							pam_is_college_election_candidate_trigger = { SOURCE = theocratic_elective_populist }
 						}
 						add = pam_papal_populist_priority_value
 					}
@@ -1788,7 +1845,9 @@ pam_papal_elector_powerful_affinity_value = {
 ecumenical_council_wait_time_before_start_months = 6
 
 # How long a faith is closed to further councils after one is called.
-ecumenical_council_faith_cooldown_years = 10
+ecumenical_council_faith_cooldown_years = 25
+
+ecumenical_council_ongoing_backstop_years = 10
 
 ecumenical_council_province_reference_value = {
 	value = 1
@@ -2390,6 +2449,35 @@ pam_clerical_court_trait_xp_gain_value = {
 }
 
 # Clerical Appointment
+# Rank 1-5 of whatever education the candidate holds, so the clerical candidate score needs one block
+# per education family instead of one per tier. Evaluated on the candidate.
+# The ranks are tested by how common they are rather than in order, because the chain stops at the
+# first match and this runs for every candidate in an appointment. The rank triggers test exact
+# traits and a character holds one education, so the order cannot change the result.
+clerical_appointment_education_rank_value = {
+	value = 0
+	if = {
+		limit = { has_education_rank_3_trigger = yes }
+		add = 3
+	}
+	else_if = {
+		limit = { has_education_rank_2_trigger = yes }
+		add = 2
+	}
+	else_if = {
+		limit = { has_education_rank_4_trigger = yes }
+		add = 4
+	}
+	else_if = {
+		limit = { has_education_rank_1_trigger = yes }
+		add = 1
+	}
+	else_if = {
+		limit = { has_education_rank_5_trigger = yes }
+		add = 5
+	}
+}
+
 clerical_appointment_score_medium_value = {
 	value = 20
 }
@@ -2405,6 +2493,8 @@ clerical_appointment_score_max_tt_value = {
 			exists = scope:target.current_heir
 			exists = scope:secondary_recipient
 			NOT = { scope:secondary_recipient = scope:target.current_heir }
+			# appointment_candidate_score errors out on any other order of succession
+			scope:target = { has_order_of_succession = appointment }
 		}
 		add = {
 			value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
@@ -2568,6 +2658,13 @@ activity_tenet_pick_score = {
 					status = core
 				}
 			}
+		}
+		add = -100000
+	}
+	# Armed Pilgrimages must never be put up for debate by an AI host.
+	if = {
+		limit = {
+			scope:tenet = tenet:tenet_armed_pilgrimages
 		}
 		add = -100000
 	}
@@ -4982,7 +5079,6 @@ activity_doctrine_pick_score = {
 		doctrine:doctrine_no_head = {
 			value = -100
 		}
-		# TODO add score based on the dependency and/or add dependency to picking options
 		doctrine:doctrine_spiritual_head = {
 			# A member of the clergy favours a spiritual head over a lay temporal head.
 			if = {
@@ -5014,7 +5110,14 @@ activity_doctrine_pick_score = {
 						the_christian_church_radical_change_allowed_trigger = yes
 						highest_held_title_tier >= tier_kingdom
 						faith = {
-							NOT = { has_doctrine = doctrine_temporal_head }
+							# can_pick on doctrine_temporal_head rejects the theocracy and succession
+							# doctrines, so debating it first spends the council on an unadoptable doctrine
+							NOR = {
+								has_doctrine = doctrine_temporal_head
+								has_doctrine = doctrine_theocracy_temporal
+								has_doctrine = doctrine_clerical_succession_spiritual_appointment
+								has_doctrine = doctrine_clerical_succession_spiritual_fixed_appointment
+							}
 						}
 					}
 					add = 100
@@ -5424,7 +5527,6 @@ activity_doctrine_pick_score = {
 				limit = {
 					NOT = { faith = { has_doctrine = doctrine_pilgrimage_local_rites } }
 					the_christian_church_radical_change_allowed_trigger = yes
-					# TODO add personal syncretism flag here
 					OR = {
 						rite = { rite_has_parameter = sinitic_syncretic_actor }
 						rite = { rite_has_parameter = eastern_syncretic_actor }
@@ -5491,7 +5593,6 @@ activity_doctrine_pick_score = {
 						NOT = { has_doctrine = doctrine_pilgrimage_mandatory_hajj }
 						any_holy_site = { is_holy_site_type = mecca }
 					}
-					# TODO add personal syncretism flag here
 					OR = {
 						rite = { rite_has_parameter = islamic_syncretic_actor }
 						has_personal_tenet = tenet_islamic_syncretism
@@ -5743,7 +5844,7 @@ activity_doctrine_pick_score = {
 			}
 		}
 		doctrine:doctrine_monasticism_absent = {
-			# TODO should not available for picking. either accept or ban, you can't back to unknown.
+			# Absent means monasticism never took root, so a faith that already has monasteries has nothing to gain by claiming otherwise. Rites that legitimately sit here are filtered by rite_can_choose_doctrine on the council option instead.
 			add = -100
 		}
 		doctrine:doctrine_monasticism_forbidden = {
@@ -6026,7 +6127,6 @@ clerical_hesitation_claim_interaction_value = {
 	#Your rite divergence
 	if = {
 		limit = {
-			#TODO_PAM_JC rite values here and below are kinda placeholder, don't know how system will work out
 			rite = {
 				this != scope:cleric.rite
 				"divergence(scope:cleric.rite)" >= monumental_rite_divergence_value
@@ -6486,28 +6586,24 @@ pam_request_ecclesiastical_title_split_cost_value = {
 	}
 }
 
-pam_request_ecclesiastical_title_creation_cost_value = {
+pam_new_clerical_region_cost_value = {
 	value = 0
 
-	# Christian de jure county count of the kingdom that receives the clerical region * piety (matches the target_kingdom resolved in on_accept)
-	# Secular: scales by the petitioner's own primary title; Clergy: by their liege's primary (king-tier) title
+	# Piety per free Christian de jure county in the anchor's de jure kingdom, which is what
+	# create_clerical_region actually takes regardless of the tier of the picked title
 	if = {
-		limit = { scope:puppet_or_actor ?= { NOT = { has_government = ecclesiastical_government } } }
-		add = {
-			scope:puppet_or_actor.primary_title = {
-				every_de_jure_county = {
-					limit = { faith.religion = religion:christianity_religion }
-					add = minor_piety_value
-				}
-			}
+		limit = {
+			exists = scope:target
+			exists = scope:target.title_capital_county
+			exists = scope:target.title_capital_county.kingdom
 		}
-	}
-	else_if = {
-		limit = { scope:puppet_or_actor ?= { has_government = ecclesiastical_government } }
 		add = {
-			scope:puppet_or_actor.liege.primary_title = {
+			scope:target.title_capital_county.kingdom = {
 				every_de_jure_county = {
-					limit = { faith.religion = religion:christianity_religion }
+					limit = {
+						faith.religion = religion:christianity_religion
+						NOT = { exists = clerical_region_title }
+					}
 					add = minor_piety_value
 				}
 			}
@@ -7388,6 +7484,12 @@ pam_sell_claim_piety_cost_value = {
 			}
 		}
 		multiply = 2
+	}
+	if = {
+		limit = {
+			scope:puppet_or_actor ?= { has_perk = sanctioned_loopholes_perk }
+		}
+		multiply = 0.75
 	}
 }
 
