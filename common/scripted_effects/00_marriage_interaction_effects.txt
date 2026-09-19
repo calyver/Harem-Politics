@@ -2,7 +2,7 @@
 	#Use hook
 	if = {
 		limit = { always = scope:hook }
-		scope:actor = {
+		scope:puppet_or_actor = {
 			use_hook = scope:recipient
 		}
 		#To make sure betrothals can't be broken if a hook was used
@@ -23,7 +23,7 @@
 	}
 	
 	#Penalties for marrying a lowborn
-	scope:actor = {
+	scope:puppet_or_actor = {
 		if = {
 			limit = {
 				this = scope:secondary_actor # We check that you're marrying them yourself
@@ -34,7 +34,7 @@
 			show_as_tooltip = {
 				vassals_dislike_marry_lowborn_effect = {
 					SPOUSE = scope:secondary_recipient
-					RULER = scope:actor
+					RULER = scope:puppet_or_actor
 				}
 			}
 			#Legitimacy loss for marrying a lowborn
@@ -53,10 +53,10 @@
 					send_interface_toast = {
 						type = event_toast_effect_good
 						title = married_lowborn_toast
-						left_icon = scope:actor
+						left_icon = scope:puppet_or_actor
 						add_legitimacy = {
 							value = medium_legitimacy_loss
-							multiply = scope:actor.primary_title.tier
+							multiply = scope:puppet_or_actor.primary_title.tier
 						}
 					}
 				}
@@ -64,7 +64,7 @@
 					send_interface_toast = {
 						type = event_toast_effect_good
 						title = married_lowborn_toast
-						left_icon = scope:actor
+						left_icon = scope:puppet_or_actor
 						add_legitimacy = { value = minor_legitimacy_loss }
 					}
 					hidden_effect = {
@@ -145,8 +145,8 @@
 				this = scope:secondary_recipient # We check that you're marrying them yourself
 				scope:secondary_actor = { is_lowborn = no }
 				is_valid_for_nomadic_legitimacy_change = yes
-				scope:actor = { government_has_flag = government_is_nomadic }
-				mpo_lower_nomad_authority_trigger = { CHARACTER = scope:actor } # Only if recipient has higher Dominance than you
+				scope:puppet_or_actor = { government_has_flag = government_is_nomadic }
+				mpo_lower_nomad_authority_trigger = { CHARACTER = scope:puppet_or_actor } # Only if recipient has higher Dominance than you
 			}
 			add_legitimacy = medium_legitimacy_gain
 		}
@@ -160,7 +160,7 @@
 				government_has_flag = government_is_herder
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			switch = {
 				trigger = has_government
 				feudal_government = {
@@ -220,14 +220,14 @@
 		set_grand_wedding_betrothal_variables = {
 			SPOUSE_1 = scope:secondary_actor
 			SPOUSE_2 = scope:secondary_recipient
-			HOST = scope:actor
+			HOST = scope:puppet_or_actor
 			PROMISEE = scope:recipient
 		}
 	}
 
 	#Marriage notification events
 	hidden_effect = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			if = {
 				limit = { this != scope:recipient }
 				trigger_event = marriage_interaction.0010
@@ -373,7 +373,7 @@
 			scope:secondary_actor = {
 				has_character_modifier = heir_easier_to_marry_off_modifier
 			}
-			scope:actor = { player_heir = scope:secondary_actor }
+			scope:puppet_or_actor = { player_heir = scope:secondary_actor }
 		}
 		scope:secondary_actor = {
 			remove_character_modifier = heir_easier_to_marry_off_modifier
@@ -382,7 +382,7 @@
 	if = {
 		limit = {
 			scope:secondary_actor = {
-				is_child_of = scope:actor
+				is_child_of = scope:puppet_or_actor
 				has_character_modifier = child_easier_to_marry_off_modifier
 			}
 		}
@@ -417,17 +417,17 @@
 	#interfaith wedding provides piety
 	if = {
 		limit = {
-			scope:actor = scope:secondary_actor
+			scope:puppet_or_actor = scope:secondary_actor
 			scope:secondary_actor = {
 				faith != scope:secondary_recipient.faith
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				any_character_struggle = {
 					has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_gives_piety
 				}
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			add_piety = medium_piety_gain
 		}
 	}
@@ -436,15 +436,15 @@
 	#Khurramites and Mazdakists gain piety from marrying lowborn
 	if = {
 		limit = {
-			scope:actor = scope:secondary_actor
+			scope:puppet_or_actor = scope:secondary_actor
 			scope:secondary_recipient = {
 				is_lowborn = yes 
 			}
-			scope:actor.rite = {
+			scope:puppet_or_actor.rite = {
 				rite_has_parameter = piety_from_marrying_lowborn_active
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			add_piety = medium_piety_gain
 		}
 	}
@@ -1662,7 +1662,10 @@ break_grand_wedding_betrothal_effect = {
 		}
 		scope:spouse_1 = { save_scope_as = rejecting_betrothed }
 		scope:spouse_2 = { save_scope_as = rejected_betrothed }
-		root = { save_scope_as = actor }
+		root = {
+			save_scope_as = actor
+			save_scope_as = puppet_or_actor
+		}
 	}
 	scope:rejecting_betrothed.var:promised_grand_wedding_by ?= { save_scope_as = promising_host }
 	# Save the offended party
@@ -1708,12 +1711,12 @@ break_grand_wedding_betrothal_effect = {
 				}
 			}
 			add_opinion = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				modifier = broke_betrothal_grand_wedding_opinion
 				opinion = -50
 			}
 			if = {
-				limit = { scope:rejecting_betrothed != scope:actor }
+				limit = { scope:rejecting_betrothed != scope:puppet_or_actor }
 				add_opinion = {
 					target = scope:rejecting_betrothed
 					modifier = broke_betrothal_grand_wedding_opinion
@@ -1723,16 +1726,16 @@ break_grand_wedding_betrothal_effect = {
 			if = {
 				limit = {
 					this != scope:rejected_betrothal_owner
-					scope:rejected_betrothal_owner != scope:actor
+					scope:rejected_betrothal_owner != scope:puppet_or_actor
 				}
 				scope:rejected_betrothal_owner = {
 					add_opinion = {
-						target = scope:actor
+						target = scope:puppet_or_actor
 						modifier = broke_betrothal_grand_wedding_opinion
 						opinion = -50
 					}
 					if = {
-						limit = { scope:rejecting_betrothed != scope:actor }
+						limit = { scope:rejecting_betrothed != scope:puppet_or_actor }
 						add_opinion = {
 							target = scope:rejecting_betrothed
 							modifier = broke_betrothal_grand_wedding_opinion
@@ -1860,10 +1863,10 @@ break_grand_wedding_betrothal_effect = {
 			give_nickname = nick_the_naysayer
 			if = {
 				limit = {
-					this != scope:actor
+					this != scope:puppet_or_actor
 				}
 				reverse_add_opinion = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					modifier = challenged_authority_opinion
 				}
 			}

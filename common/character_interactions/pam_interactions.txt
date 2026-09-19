@@ -74,15 +74,9 @@ designate_theocratic_heir_interaction = {
 				scope:puppet_or_actor.house ?= house
 				is_close_or_extended_family_of = scope:puppet_or_actor
 			}
-			# Has to be of right gender
 			trigger_if = {
-				limit = {
-					rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-				}
-				is_female = yes
-			}
-			trigger_else = {
-				is_female = no
+				limit = { exists = scope:puppet_or_actor }
+				can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 			}
 		}
 	}
@@ -462,8 +456,6 @@ increase_theocratic_heir_candidacy = {
 			}
 		}
 		has_pam_dlc_trigger = yes
-		# domain_titles offers baronies too, and appointment investment is county tier and up
-		scope:target ?= { tier >= tier_county }
 		trigger_if = { # For Theocracies, boost your Heir/courtiers/house members
 			limit = {
 				scope:puppet_or_actor ?= {
@@ -481,14 +473,7 @@ increase_theocratic_heir_candidacy = {
 						is_close_or_extended_family_of = scope:puppet_or_actor
 						is_courtier_of = scope:puppet_or_actor
 					}
-					# Has to be of right gender
-					trigger_if = {
-						limit = {
-							rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-						}
-						is_female = yes
-					}
-					trigger_else = { is_female = no }
+					can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 				}
 			}
 		}
@@ -503,15 +488,9 @@ increase_theocratic_heir_candidacy = {
 			scope:secondary_recipient ?= {
 				is_ruler = no
 				is_available = yes
-				# Has to be of right gender
 				trigger_if = {
-					limit = {
-						rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-					}
-					is_female = yes
-				}
-				trigger_else = {
-					is_female = no
+					limit = { exists = scope:puppet_or_actor }
+					can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 				}
 			}
 		}
@@ -539,15 +518,7 @@ increase_theocratic_heir_candidacy = {
 						top_liege != this
 						faith = scope:puppet_or_actor.faith
 						is_ruler = no
-						trigger_if = {
-							limit = {
-								rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-							}
-							is_female = yes
-						}
-						trigger_else = {
-							is_female = no
-						}
+						can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 					}
 					add_to_list = characters
 				}
@@ -561,14 +532,7 @@ increase_theocratic_heir_candidacy = {
 					limit = {
 						is_available = yes
 						faith = scope:puppet_or_actor.faith
-						# Has to be of right gender
-						trigger_if = {
-							limit = {
-								rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-							}
-							is_female = yes
-						}
-						trigger_else = { is_female = no }
+						can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 					}
 					add_to_list = characters
 				}
@@ -576,14 +540,7 @@ increase_theocratic_heir_candidacy = {
 					limit = {
 						is_available = yes
 						faith = scope:puppet_or_actor.faith
-						# Has to be of right gender
-						trigger_if = {
-							limit = {
-								rite = { rite_has_doctrine = doctrine_gender_female_dominated }
-							}
-							is_female = yes
-						}
-						trigger_else = { is_female = no }
+						can_be_granted_theocratic_titles_by = { RULER = scope:puppet_or_actor }
 					}
 					add_to_list = characters
 				}
@@ -593,6 +550,8 @@ increase_theocratic_heir_candidacy = {
 
 	can_be_picked_title = {
 		scope:target = {
+			# domain_titles offers baronies too, and appointment investment is county tier and up
+			tier >= tier_county
 			is_head_of_faith = no
 			OR = {
 				this = scope:puppet_or_actor.primary_title
@@ -691,19 +650,8 @@ increase_theocratic_heir_candidacy = {
 				save_scope_value_as = {
 					name = support_candidate_score
 					value = {
-						value = 0
-						if = {
-							limit = {
-								exists = scope:target
-								exists = scope:target.current_heir
-							}
-							add = {
-								value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-								multiply = 1.1
-							}
-							subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-						}
-						min = 4 # We do this to prevent cases when the default score of the candidate is already much higher than that the heir
+						value = clerical_appointment_score_max_value
+						multiply = scope:puppet_or_actor.appointment_score_interaction_multiplier_modifiers_value
 						multiply = scope:puppet_or_actor.pam_theocratic_candidacy_situation_multiplier_value
 					}
 				}
@@ -894,6 +842,7 @@ influence_clerical_candidacy_interaction = {
 		scope:secondary_recipient ?= {
 			this != faith.main_rite.head_of_rite
 			faith ?= scope:actor.faith
+			pam_holds_church_seat_trigger = no
 			is_clerical_appointment_valid_base_trigger = {
 				CANDIDATE = scope:secondary_recipient
 				TOP_LIEGE = scope:actor
@@ -1025,22 +974,7 @@ influence_clerical_candidacy_interaction = {
 					trigger = yes
 					scope:as_much_as_needed_candidacy_option = {
 						add = {
-							value = {
-								if = {
-									limit = {
-										exists = scope:secondary_recipient
-										exists = scope:target.current_heir
-									}
-									add = {
-										value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-										multiply = 1.8
-									}
-									subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-									multiply = 5
-									min = 250
-								}
-								else = { value = 250 }
-							}
+							value = pam_clerical_candidacy_outbid_piety_base_cost_value
 						}
 					}
 					scope:major_candidacy_option = {
@@ -1068,19 +1002,8 @@ influence_clerical_candidacy_interaction = {
 				save_scope_value_as = {
 					name = support_candidate_score
 					value = {
-						value = 0
-						if = {
-							limit = {
-								exists = scope:target
-								exists = scope:target.current_heir
-							}
-							add = {
-								value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-								multiply = 1.1
-							}
-							subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-						}
-						min = 4
+						value = clerical_appointment_score_max_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
 						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
 					}
 				}
@@ -1425,22 +1348,7 @@ influence_head_of_faith_candidacy_interaction = {
 					trigger = yes
 					scope:as_much_as_needed_candidacy_option = {
 						add = {
-							value = {
-								if = {
-									limit = {
-										exists = scope:secondary_recipient
-										exists = scope:target.current_heir
-									}
-									add = {
-										value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-										multiply = 1.8
-									}
-									subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-									multiply = 5
-									min = 250
-								}
-								else = { value = 250 }
-							}
+							value = pam_clerical_candidacy_outbid_piety_base_cost_value
 						}
 					}
 					scope:major_candidacy_option = {
@@ -1468,19 +1376,8 @@ influence_head_of_faith_candidacy_interaction = {
 				save_scope_value_as = {
 					name = support_candidate_score
 					value = {
-						value = 0
-						if = {
-							limit = {
-								exists = scope:target
-								exists = scope:target.current_heir
-							}
-							add = {
-								value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-								multiply = 1.1
-							}
-							subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-						}
-						min = 4
+						value = clerical_appointment_score_max_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
 						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
 					}
 				}
@@ -1811,19 +1708,8 @@ support_clerical_candidacy_interaction = {
 				save_scope_value_as = {
 					name = support_candidate_score
 					value = {
-						value = 0
-						if = {
-							limit = {
-								exists = scope:target
-								exists = scope:target.current_heir
-							}
-							add = {
-								value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-								multiply = 1.1
-							}
-							subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-						}
-						min = 4
+						value = clerical_appointment_score_max_value
+						multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
 						multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
 					}
 				}
@@ -4392,10 +4278,12 @@ pam_sway_schism_stance_interaction = {
 		}
 		scope:recipient = {
 			NOR = {
-				# The recipient must not already share our stance
-				var:pam_schism_stance ?= scope:actor.var:pam_schism_stance
 				is_adult = no
 				has_trait = incapable
+			}
+			custom_description = { # The recipient must not already share our stance
+				text = pam_sway_schism_stance_already_aligned_tt
+				NOT = { var:pam_schism_stance ?= scope:actor.var:pam_schism_stance }
 			}
 		}
 	}
@@ -5296,6 +5184,15 @@ request_court_chaplain_cardinalate_interaction = {
 			exists = scope:actor.cp:councillor_court_chaplain
 			scope:actor.cp:councillor_court_chaplain.rite != scope:recipient.rite
 			desc = COURT_CHAPLAIN_DIFFERENT_RITE
+		}
+
+		modifier = {
+			add = -50
+			exists = scope:actor.cp:councillor_court_chaplain
+			scope:recipient.rite = {
+				NOT = { rite_has_allowed_gender_for_clergy = scope:actor.cp:councillor_court_chaplain }
+			}
+			desc = COURT_CHAPLAIN_WRONG_CLERICAL_GENDER
 		}
 
 		modifier = {
@@ -7848,6 +7745,185 @@ sell_claim_interaction = {
 						target = scope:recipient
 						value <= medium_negative_opinion
 					}
+				}
+			}
+		}
+	}
+
+	ai_targets = {
+		ai_recipients = rulers_in_clerical_region
+	}
+
+	ai_target_quick_trigger = {
+		adult = yes
+	}
+}
+
+#Hand one of my own claims to a ruler under my spiritual care
+gift_claim_interaction = {
+	category = interaction_category_diplomacy
+	icon = icon_clergy_transfer_claim
+	common_interaction = no
+	interface_priority = 34
+	target_type = title
+	target_filter = claimed_titles
+	target_source = puppet_or_actor
+	notification_text = gift_claim_interaction_notification
+	greeting = positive
+
+	cooldown_against_recipient = { years = 3 }
+
+	use_diplomatic_range = yes
+	ai_min_reply_days = 1
+	ai_max_reply_days = 5
+	popup_on_receive = yes
+
+	desc = gift_claim_interaction_desc
+
+	cost = {
+		piety = medium_piety_value
+	}
+
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 48
+		duchy = 48
+		kingdom = 24
+		empire = 24
+		hegemony = 24
+	}
+
+	is_available = {
+		has_pam_dlc_trigger = yes
+	}
+
+	is_shown = {
+		scope:puppet_or_actor ?= {
+			government_has_flag = government_is_theocracy
+			faith ?= { has_doctrine_parameter = has_clerical_regions }
+			OR = {
+				any_held_title = { has_clerical_region = yes }
+				faith.religious_head ?= this
+			}
+			is_adult = yes
+			is_ruler = yes
+		}
+		scope:puppet_or_actor ?= {
+			NOT = { is_at_war_with = scope:recipient }
+			this != scope:recipient
+		}
+		scope:recipient = {
+			is_ruler = yes
+			faith ?= scope:puppet_or_actor.faith
+			highest_held_title_tier >= tier_county
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		custom_tooltip = {
+			text = gift_claim_must_have_valid_claim_tt
+			scope:puppet_or_actor ?= {
+				any_claim = {
+					save_temporary_scope_as = gift_claim_candidate_title
+					pam_gift_claim_valid_title_trigger = { TITLE = scope:gift_claim_candidate_title }
+				}
+			}
+		}
+		scope:puppet_or_actor = {
+			is_available_quick = {
+				incapable = no
+				imprisoned = no
+				hostage = no
+				ruler = yes
+				adult = yes
+			}
+			NOT = { has_trait = excommunicated }
+		}
+		scope:recipient = {
+			is_available_quick = {
+				incapable = no
+				imprisoned = no
+				hostage = no
+				ruler = yes
+				adult = yes
+			}
+			NOT = { has_trait = excommunicated }
+		}
+		custom_tooltip = {
+			text = gift_claim_recipient_must_be_in_clerical_region_tt
+			scope:puppet_or_actor ?= {
+				OR = {
+					pam_gift_claim_recipient_in_own_clerical_region_trigger = { TARGET = scope:recipient }
+					faith.religious_head ?= this
+				}
+			}
+		}
+	}
+
+	can_be_picked_title = {
+		scope:target ?= { tier = tier_county }
+	}
+
+	has_valid_target_showing_failures_only = {
+		pam_can_gift_claim_on_target_trigger = yes
+	}
+
+	on_accept = {
+		scope:puppet_or_actor = {
+			gift_claim_interaction_effect = yes
+		}
+	}
+
+	ai_accept = {
+		base = 100
+	}
+
+	ai_will_do = {
+		base = 0
+
+		modifier = {
+			add = 25
+			scope:puppet_or_actor = {
+				OR = {
+					has_relation_friend = scope:recipient
+					has_relation_best_friend = scope:recipient
+					opinion = {
+						target = scope:recipient
+						value >= high_positive_opinion
+					}
+				}
+			}
+		}
+		modifier = {
+			add = 25
+			scope:puppet_or_actor = {
+				has_trait = generous
+			}
+		}
+		modifier = {
+			add = 15
+			scope:puppet_or_actor = {
+				has_trait = humble
+			}
+		}
+		modifier = {
+			add = -60
+			scope:puppet_or_actor = {
+				OR = {
+					has_relation_rival = scope:recipient
+					has_relation_nemesis = scope:recipient
+					opinion = {
+						target = scope:recipient
+						value <= medium_negative_opinion
+					}
+				}
+			}
+		}
+		modifier = {
+			factor = 0
+			NOT = {
+				scope:target = {
+					is_neighbor_to_realm = scope:recipient
 				}
 			}
 		}
@@ -10638,7 +10714,7 @@ expand_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
 	icon = request_clerical_title_expansion
 	interface_priority = 45
-	common_interaction = yes
+	common_interaction = no
 
 	use_diplomatic_range = yes
 	ai_maybe = no
@@ -10726,7 +10802,7 @@ split_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
 	icon = request_clerical_title_split
 	interface_priority = 45
-	common_interaction = yes
+	common_interaction = no
 
 	use_diplomatic_range = yes
 	ai_maybe = no
@@ -11028,7 +11104,7 @@ merge_new_ecclesiastical_title_interaction = {
 	category = interaction_category_religion
 	icon = request_clerical_title_merger
 	interface_priority = 45
-	common_interaction = yes
+	common_interaction = no
 
 	use_diplomatic_range = yes
 	ai_maybe = no
@@ -11335,7 +11411,7 @@ replace_ecclesiastical_title_holder_interaction = {
 		}
 	}
 
-	# Deposing a holder doubles the cost; one of another rite costs five times the base
+			# Deposing a holder doubles the cost; one of another rite costs three times the base, and their head of rite ten times
 	cost = {
 		piety = {
 			value = pam_grant_ecclesiastical_title_cost_value
@@ -11344,6 +11420,9 @@ replace_ecclesiastical_title_holder_interaction = {
 				limit = { NOT = { exists = scope:actor.faith.religious_head } }
 				multiply = 1.5
 			}
+		}
+		treasury_or_gold = {
+			value = pam_grant_ecclesiastical_title_gold_cost_value
 		}
 	}
 
@@ -11549,7 +11628,7 @@ grant_ecclesiastical_title_interaction = {
 		}
 	}
 
-	# Deposing a holder doubles the cost; one of another rite costs five times the base
+			# Deposing a holder doubles the cost; one of another rite costs three times the base, and their head of rite ten times
 	cost = {
 		piety = {
 			value = pam_grant_ecclesiastical_title_cost_value
@@ -11558,6 +11637,9 @@ grant_ecclesiastical_title_interaction = {
 				limit = { NOT = { exists = scope:actor.faith.religious_head } }
 				multiply = 1.5
 			}
+		}
+		treasury_or_gold = {
+			value = pam_grant_ecclesiastical_title_gold_cost_value
 		}
 	}
 
@@ -11630,6 +11712,11 @@ grant_ecclesiastical_title_interaction = {
 				pam_ai_deposable_cleric_trigger = { HEAD_OF_FAITH = scope:actor }
 			}
 		}
+		# Reform pushes for one rite across every see, ahead of any personal grudge
+		modifier = {
+			add = 150
+			pam_ai_reform_rite_replacement_trigger = yes
+		}
 		# Never invest someone who would immediately qualify for deposition
 		modifier = {
 			factor = 0
@@ -11637,10 +11724,11 @@ grant_ecclesiastical_title_interaction = {
 				pam_ai_deposable_cleric_trigger = { HEAD_OF_FAITH = scope:actor }
 			}
 		}
-		# Only invest friends, lovers, and clerics of great repute
+		# Only invest friends, lovers, and clerics of great repute, except when clearing another rite out during Reform
 		modifier = {
 			factor = 0
 			exists = scope:target.holder
+			pam_ai_reform_rite_replacement_trigger = no
 			scope:recipient = {
 				NOR = {
 					has_relation_friend = scope:actor
@@ -12444,7 +12532,7 @@ ecclesiastic_incite_holy_war_interaction = {
 				value = 25
 				if = {
 					limit = {
-						scope:secondary_recipient = {
+						scope:secondary_recipient ?= {
 							highest_held_title_tier < scope:puppet_or_actor.highest_held_title_tier
 							current_military_strength < scope:puppet_or_actor.current_military_strength
 						}
@@ -12459,6 +12547,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		modifier = {
 			scope:use_hook = yes
 			add = 100
+			exists = scope:secondary_recipient
 			scope:actor = { NOT = { has_strong_hook = scope:secondary_recipient } }
 			desc = SCHEME_WEAK_HOOK_USED
 		}
@@ -12605,6 +12694,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			add = -200
+			exists = scope:secondary_recipient
 			scope:secondary_recipient.rite ?= {
 				rite_has_parameter = holy_wars_forbidden
 			}
@@ -12612,6 +12702,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			add = -100
+			exists = scope:secondary_recipient
 			scope:secondary_recipient.rite ?= {
 				has_tenet_status = {
 					tenet = tenet_peace_of_god
@@ -12639,6 +12730,7 @@ ecclesiastic_incite_holy_war_interaction = {
 			desc = PT_AI_IS_FAR_AWAY
 		}
 		opinion_modifier = {
+			trigger = { exists = scope:secondary_recipient }
 			who = scope:secondary_recipient
 			opinion_target = scope:puppet_or_actor
 			multiplier = 0.5
@@ -12674,6 +12766,7 @@ ecclesiastic_incite_holy_war_interaction = {
 			desc = SECONDARY_RECIPIENT_LOATHES_RECIPIENT_REASON
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:actor = {
 				NOT = { rite = scope:secondary_recipient.rite }
 			}
@@ -12681,10 +12774,11 @@ ecclesiastic_incite_holy_war_interaction = {
 			desc = DIFFERENT_RITE_REASON
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:actor = {
 				NOT = { rite = scope:secondary_recipient.rite }
 			}
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				rite_fulfillment_score = {
 					target = scope:actor.rite
 					value >= 75
@@ -12694,10 +12788,11 @@ ecclesiastic_incite_holy_war_interaction = {
 			desc = PERSONAL_APPROVAL_OF_RITE_REASON
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:actor = {
 				NOT = { rite = scope:secondary_recipient.rite }
 			}
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				rite_fulfillment_score = {
 					target = scope:actor.rite
 					value < 25
@@ -12708,6 +12803,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		#Your rite is heretical
 		modifier = {
+			exists = scope:secondary_recipient
 			exists = scope:puppet_or_actor
 			scope:puppet_or_actor = {
 				NOT = { rite = scope:secondary_recipient.rite }
@@ -12730,6 +12826,7 @@ ecclesiastic_incite_holy_war_interaction = {
 			desc = RITE_CORE_TENET_PROHIBITED_SECONDARY
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:actor = {
 				NOT = { rite = scope:secondary_recipient.rite }
 			}
@@ -12904,20 +13001,21 @@ ecclesiastic_incite_holy_war_interaction = {
 		# More likely to accept if you have an alliance
 		modifier = {
 			add = 50
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor = { is_allied_to = scope:secondary_recipient }
 			desc = AI_HAS_ALLIANCE
 		}
 		# Respect the liege
 		modifier = {
 			add = 25
-			scope:secondary_recipient = { target_is_liege_or_above = scope:puppet_or_actor }
+			scope:secondary_recipient ?= { target_is_liege_or_above = scope:puppet_or_actor }
 			desc = LIEGE_REASON_SECONDARY
 		}
 		# Actor is from the secondary_recipient's house
 		modifier = { 
 			add = 15
 			exists = scope:puppet_or_actor.house
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				is_close_or_extended_family_of = scope:puppet_or_actor
 			}
 			desc = YOU_ARE_MY_HOUSE_MEMBER_SECONDARY
@@ -12930,6 +13028,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			exists = scope:puppet_or_actor.house
+			exists = scope:secondary_recipient
 			NOT = { house ?= scope:puppet_or_actor.house }
 			scope:secondary_recipient.dynasty ?= scope:puppet_or_actor.dynasty
 			add = 10
@@ -12944,6 +13043,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			exists = scope:puppet_or_actor.house
+			exists = scope:secondary_recipient
 			NOT = { house.house_head ?= scope:puppet_or_actor }
 			scope:secondary_recipient.dynasty.dynast ?= scope:puppet_or_actor
 			add = 15
@@ -12984,7 +13084,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		# Fs
 		modifier = { 
 			add = 25
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_relation_friend = scope:puppet_or_actor
 			}
 			desc = WE_ARE_FRIENDS
@@ -12992,7 +13092,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		# BFFs
 		modifier = { 
 			add = 50
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_relation_best_friend = scope:puppet_or_actor
 			}
 			desc = WE_ARE_BEST_FRIENDS
@@ -13003,14 +13103,14 @@ ecclesiastic_incite_holy_war_interaction = {
 				value = 15
 				if = {
 					limit = {
-						scope:secondary_recipient = {
+						scope:secondary_recipient ?= {
 							target_is_liege_or_above = scope:puppet_or_actor
 						}
 					}
 					multiply = 2
 				}
 			}
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_dread_level_towards = {
 					target = scope:puppet_or_actor
 					level = 1
@@ -13023,14 +13123,14 @@ ecclesiastic_incite_holy_war_interaction = {
 				value = 30
 				if = {
 					limit = {
-						scope:secondary_recipient = {
+						scope:secondary_recipient ?= {
 							target_is_liege_or_above = scope:puppet_or_actor
 						}
 					}
 					multiply = 2
 				}
 			}
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_dread_level_towards = {
 					target = scope:puppet_or_actor
 					level = 2
@@ -13041,7 +13141,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		# Take dread into account
 		modifier = {
 			add = -50
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_dread_level_towards = {
 					target = scope:recipient
 					level = 1
@@ -13051,7 +13151,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			add = -150
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_dread_level_towards = {
 					target = scope:recipient
 					level >= 2
@@ -13167,12 +13267,808 @@ ecclesiastic_incite_holy_war_interaction = {
 	}
 }
 
+#Sponsor a same-faith secular ruler's claim war against another secular ruler
+ecclesiastic_incite_claim_war_interaction = {
+	category = interaction_category_diplomacy
+	icon = icon_coax_to_war
+	interface_priority = 74
+	common_interaction = yes
+	target_type = title
+	target_filter = realm_titles
+	target_source = recipient
+	notification_text = ecclesiastic_incite_claim_war_interaction_notification
+	greeting = negative
+	ai_min_reply_days = 1
+	ai_max_reply_days = 5
+	popup_on_receive = no
+	cooldown_against_recipient = { years = 5 }
+	use_diplomatic_range = no
+
+	is_available = {
+		trigger_if = {
+			limit = { is_ai = yes }
+			piety >= 750
+			piety_level >= 2
+			government_has_flag = government_is_theocracy
+			OR = {
+				rite.head_of_rite ?= this
+				faith.religious_head ?= this
+			}
+			is_at_war = no
+		}
+	}
+
+	is_shown = {
+		has_pam_dlc_trigger = yes
+		scope:puppet_or_actor ?= {
+			government_has_flag = government_is_theocracy
+		}
+		scope:recipient = {
+			is_landed = yes
+			NOT = { government_has_flag = government_is_theocracy }
+			this != scope:puppet_or_actor
+			trigger_if = {
+				limit = {
+					scope:actor = { is_ai = yes }
+				}
+				is_independent_ruler = yes
+			}
+		}
+	}
+
+	populate_recipient_list = {
+		if = {
+			limit = { scope:actor = { is_ai = yes } }
+			scope:puppet_or_actor = {
+				faith = {
+					every_faith_ruler = {
+						limit = {
+							valid_claim_war_incited_attacker_trigger = { RECIPIENT = scope:recipient }
+						}
+						add_to_list = characters
+					}
+				}
+			}
+		}
+		else = {
+			if = {
+				limit = { exists = scope:target }
+				scope:target = {
+					every_claimant = {
+						limit = { is_alive = yes }
+						add_to_list = characters
+					}
+				}
+			}
+			else = {
+				scope:recipient = {
+					every_held_title = {
+						limit = {
+							tier >= tier_county
+							tier <= tier_kingdom
+							is_landless_type_title = no
+						}
+						every_claimant = {
+							limit = { is_alive = yes }
+							add_to_list = characters
+						}
+					}
+					every_vassal_or_below = {
+						limit = { is_landed = yes }
+						every_held_title = {
+							limit = {
+								tier >= tier_county
+								tier <= tier_kingdom
+								is_landless_type_title = no
+							}
+							every_claimant = {
+								limit = { is_alive = yes }
+								add_to_list = characters
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	can_be_picked_title = {
+		scope:target = {
+			incite_claim_war_title_can_be_picked_trigger = { RECIPIENT = scope:recipient SECONDARY = scope:secondary_recipient }
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:puppet_or_actor = {
+			is_available_quick = {
+				adult = yes
+				alive = yes
+				imprisoned = no
+				incapable = no
+			}
+
+			trigger_if = {
+				limit = {
+					scope:target ?= {
+						tier >= tier_kingdom
+					}
+				}
+				custom_tooltip = {
+					text = piety_too_low_target_kingdom_tt
+					piety_level >= 4
+				}
+			}
+			trigger_else_if = {
+				limit = {
+					scope:target ?= {
+						tier >= tier_duchy
+					}
+				}
+				custom_tooltip = {
+					text = piety_too_low_target_duchy_tt
+					piety_level >= 3
+				}
+			}
+			trigger_else = {
+				piety_level >= 2
+			}
+			trigger_if = {
+				limit = {
+					scope:recipient = { is_independent_ruler = yes }
+				}
+				custom_tooltip = {
+					text = no_valid_sponsored_claim_war_attacker_tt
+					faith = {
+						any_faith_ruler = {
+							valid_claim_war_incited_attacker_trigger = { RECIPIENT = scope:recipient }
+						}
+					}
+				}
+			}
+		}
+		scope:recipient = {
+			is_alive = yes
+			custom_tooltip = {
+				text = incite_claim_war_use_on_liege_tt
+				is_independent_ruler = yes
+			}
+		}
+		trigger_if = {
+			limit = { scope:puppet_or_actor != scope:actor }
+			scope:puppet_or_actor = {
+				piety >= pam_ecclesiastic_incite_claim_war_cost_value
+			}
+		}
+		trigger_if = {
+			limit = { exists = scope:secondary_recipient }
+			scope:secondary_recipient = {
+				claim_war_incited_attacker_can_be_picked_trigger = { RECIPIENT = scope:recipient }
+			}
+		}
+	}
+
+	has_valid_target_showing_failures_only = {
+		exists = scope:target
+		exists = scope:secondary_recipient
+		scope:target = {
+			tier <= tier_kingdom
+			tier >= tier_county
+			is_landless_type_title = no
+			custom_tooltip = {
+				text = sponsored_claim_war_target_must_be_held_by_recipient_tt
+				holder ?= {
+					target_is_same_character_or_above = scope:recipient
+				}
+			}
+			custom_tooltip = {
+				text = sponsored_claim_war_attacker_must_have_claim_tt
+				scope:secondary_recipient = { has_claim_on = scope:target }
+			}
+		}
+	}
+
+	cost = {
+		piety = {
+			value = pam_ecclesiastic_incite_claim_war_cost_value
+			if = {
+				limit = { scope:puppet_or_actor != scope:actor }
+				multiply = 0
+			}
+			if = {
+				limit = {
+					scope:puppet_or_actor ?= {
+						domicile ?= { has_domicile_parameter = estate_cheaper_incite_war_1 }
+					}
+				}
+				multiply = ecclesiastical_domicile_cheaper_incite_war_mult_1
+			}
+			if = {
+				limit = {
+					scope:puppet_or_actor ?= {
+						domicile ?= { has_domicile_parameter = estate_cheaper_incite_war_2 }
+					}
+				}
+				multiply = ecclesiastical_domicile_cheaper_incite_war_mult_2
+			}
+			if = {
+				limit = {
+					scope:puppet_or_actor ?= {
+						domicile ?= { has_domicile_parameter = estate_cheaper_incite_war_3 }
+					}
+				}
+				multiply = ecclesiastical_domicile_cheaper_incite_war_mult_3
+			}
+			if = {
+				limit = {
+					scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
+				}
+				multiply = 0.75
+			}
+			if = {
+				limit = { scope:appeal_to_gods_will ?= yes }
+				add = major_piety_value
+			}
+		}
+	}
+
+	send_option = {
+		is_shown = {
+			trigger_if = {
+				limit = {
+					exists = scope:secondary_recipient
+				}
+				scope:secondary_recipient = {
+					is_ai = yes
+				}
+			}
+		}
+		is_valid = {
+			trigger_if = {
+				limit = {
+					exists = scope:secondary_recipient
+				}
+				scope:actor = {
+					has_usable_hook = scope:secondary_recipient
+				}
+			}
+			trigger_else = {
+				custom_tooltip = {
+					text = no_attacker_picked_tt
+					always = no
+				}
+			}
+		}
+		flag = use_hook
+		localization = EDUCATION_HOOK
+	}
+
+	send_option = {
+		is_valid = {
+			scope:puppet_or_actor ?= {
+				trigger_if = {
+					limit = {
+						scope:actor = {
+							is_ai = yes
+						}
+					}
+					prestige_level >= 3
+					ai_boldness > low_positive_ai_value
+					ai_energy > low_positive_ai_value
+					NOT = {
+						religious_head_or_challenger ?= this
+					}
+				}
+				NOR = {
+					is_at_war_with = scope:recipient
+					has_truce = scope:recipient
+					is_vassal_or_below_of = scope:recipient
+					is_tributary_of = scope:recipient
+				}
+				prestige_level >= 1
+			}
+		}
+		flag = join_war
+		localization = JOIN_WAR_INTERACTION_OPTION
+	}
+
+	send_option = {
+		is_valid = {
+			scope:puppet_or_actor ?= {
+				trigger_if = {
+					limit = {
+						scope:actor = {
+							is_ai = yes
+						}
+					}
+					short_term_gold >= monumental_gold_value
+				}
+				trigger_else = {
+					gold >= major_gold_value
+				}
+			}
+		}
+		flag = fund_war
+		localization = FUND_WAR_INTERACTION_OPTION
+	}
+
+	send_option = {
+		is_valid = {
+			scope:puppet_or_actor ?= {
+				piety >= major_piety_value
+			}
+		}
+		flag = appeal_to_gods_will
+		localization = APPEAL_TO_GODS_WILL_INTERACTION_OPTION
+	}
+
+	send_options_exclusive = no
+
+	on_accept = {
+		if = {
+			limit = { scope:puppet_or_actor != scope:actor }
+			scope:puppet_or_actor = {
+				if = {
+					limit = { pam_ecclesiastic_incite_claim_war_cost_value > 0 }
+					add_piety = {
+						value = {
+							add = pam_ecclesiastic_incite_claim_war_cost_value
+							max = piety
+							multiply = -1
+						}
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
+			}
+			scope:puppet_or_actor = {
+				add_prestige = medium_prestige_value
+			}
+		}
+		ecclesiastic_incite_claim_war_interaction_effect = yes
+	}
+
+	auto_accept = {
+		OR = {
+			scope:recipient = {
+				is_ai = no
+			}
+			trigger_if = {
+				limit = {
+					exists = scope:secondary_recipient
+				}
+				custom_description = {
+					text = "spending_hook"
+					subject = scope:actor
+					object = scope:secondary_recipient
+					scope:use_hook = yes
+					scope:actor = { has_strong_hook = scope:secondary_recipient }
+				}
+			}
+		}
+	}
+
+	ai_targets = {
+		ai_recipients = rulers_in_clerical_region
+	}
+	ai_targets = {
+		ai_recipients = neighboring_rulers
+	}
+	ai_targets = {
+		ai_recipients = vassals
+	}
+	ai_targets = {
+		ai_recipients = neighboring_rulers_including_tributary_borders
+		ai_recipients = war_enemies
+		ai_recipients = rulers_in_clerical_region
+		max = 10
+	}
+
+	ai_accept = {
+		base = -25
+
+		modifier = {
+			scope:appeal_to_gods_will = yes
+			add = 50
+			desc = APPEAL_TO_GODS_WILL_INTERACTION_OPTION_REASON
+		}
+
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_minor_value_1
+			desc = ESTATE_WARRIORS_VESTRY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_vestry_1
+				}
+			}
+		}
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_minor_value_2
+			desc = ESTATE_WARRIORS_VESTRY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_vestry_2
+				}
+			}
+		}
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_minor_value_3
+			desc = ESTATE_WARRIORS_VESTRY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_vestry_3
+				}
+			}
+		}
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_micro_value_1
+			desc = ESTATE_RELIQUARY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_reliquary_1
+				}
+			}
+		}
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_micro_value_2
+			desc = ESTATE_RELIQUARY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_reliquary_2
+				}
+			}
+		}
+		modifier = {
+			add = ecclesiastical_domicile_acceptance_micro_value_3
+			desc = ESTATE_RELIQUARY_REASON
+			scope:puppet_or_actor ?= {
+				domicile ?= {
+					has_domicile_parameter = estate_incite_war_reliquary_3
+				}
+			}
+		}
+		modifier = {
+			add = 15
+			desc = CHIVALRIC_DOMINANCE_REASON
+			scope:puppet_or_actor ?= { has_perk = chivalric_dominance_perk }
+		}
+
+		modifier = {
+			scope:use_hook = yes
+			add = 100
+			exists = scope:secondary_recipient
+			scope:actor = { NOT = { has_strong_hook = scope:secondary_recipient } }
+			desc = SCHEME_WEAK_HOOK_USED
+		}
+
+		modifier = {
+			add = {
+				value = 25
+			}
+			exists = scope:secondary_recipient
+			scope:fund_war = yes
+			scope:puppet_or_actor.major_gold_value < scope:secondary_recipient.minor_gold_value
+			desc = FUND_HOLY_WAR_INTERACTION_OPTION_REASON
+		}
+		modifier = {
+			add = {
+				value = 50
+			}
+			exists = scope:secondary_recipient
+			scope:fund_war = yes
+			scope:puppet_or_actor.major_gold_value < scope:secondary_recipient.major_gold_value
+			scope:puppet_or_actor.major_gold_value >= scope:secondary_recipient.minor_gold_value
+			desc = FUND_HOLY_WAR_INTERACTION_OPTION_REASON
+		}
+		modifier = {
+			add = {
+				value = 75
+			}
+			exists = scope:secondary_recipient
+			scope:fund_war = yes
+			scope:puppet_or_actor.major_gold_value >= scope:secondary_recipient.major_gold_value
+			scope:puppet_or_actor.major_gold_value < scope:secondary_recipient.monumental_gold_value
+			desc = FUND_HOLY_WAR_INTERACTION_OPTION_REASON
+		}
+		modifier = {
+			add = {
+				value = 100
+			}
+			exists = scope:secondary_recipient
+			scope:fund_war = yes
+			scope:puppet_or_actor.major_gold_value >= scope:secondary_recipient.monumental_gold_value
+			desc = FUND_HOLY_WAR_INTERACTION_OPTION_REASON
+		}
+
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:secondary_recipient.highest_held_title_tier >= tier_duchy
+			add = {
+				value = scope:secondary_recipient.highest_held_title_tier
+				subtract = 2
+				multiply = -25
+			}
+			desc = INCITE_CLAIM_WAR_ATTACKER_TIER_REASON
+		}
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:target ?= {
+				tier >= tier_kingdom
+			}
+			scope:secondary_recipient.highest_held_title_tier >= tier_duchy
+			add = 25
+			desc = KINGDOM_TIER_REASON
+		}
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:target ?= {
+				tier = tier_duchy
+			}
+			scope:secondary_recipient.highest_held_title_tier = tier_county
+			add = 25
+			desc = TARGET_TIER_REASON
+		}
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:target ?= {
+				tier = tier_county
+			}
+			scope:secondary_recipient.highest_held_title_tier >= tier_duchy
+			add = {
+				value = -25
+				multiply = {
+					value = scope:secondary_recipient.highest_held_title_tier
+					subtract = 2
+				}
+			}
+			desc = TARGET_TIER_REASON
+		}
+
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:join_war ?= yes
+			add = {
+				value = scope:actor.current_military_strength
+				divide = { value = scope:secondary_recipient.current_military_strength min = 1 }
+				multiply = 100
+				round = yes
+				max = 250
+			}
+			desc = CLERIC_JOIN_HOLY_WAR_REASON
+		}
+
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:secondary_recipient.current_military_strength >= scope:recipient.fifty_percent_more_of_current_military_strength
+			add = {
+				value = scope:secondary_recipient.current_military_strength
+				divide = {
+					value = scope:recipient.current_military_strength
+					min = 1
+				}
+				multiply = 15
+				round = yes
+				max = 75
+			}
+			desc = SPONSORED_HOLY_WAR_RELATIVE_STRENGTH_REASON
+		}
+		modifier = {
+			exists = scope:secondary_recipient
+			scope:recipient.current_military_strength > scope:secondary_recipient.current_military_strength
+			add = {
+				value = scope:recipient.current_military_strength
+				divide = { value = scope:secondary_recipient.current_military_strength min = 1 }
+				multiply = -50
+				round = yes
+			}
+			desc = SPONSORED_HOLY_WAR_RELATIVE_STRENGTH_REASON
+		}
+		modifier = {
+			add = {
+				value = scope:actor.piety_level
+				multiply = 10
+			}
+			scope:actor.piety_level > 0
+			desc = I_AM_PIOUS
+		}
+		modifier = {
+			add = -100
+			scope:secondary_recipient ?= {
+				any_personal_tenet = {
+					OR = {
+						this = tenet:tenet_pacifism
+						this = tenet:tenet_dharmic_pacifism
+					}
+				}
+			}
+			desc = PERSONAL_TENET_PACIFISM
+		}
+		modifier = {
+			add = -50
+			exists = scope:secondary_recipient.capital_province
+			exists = scope:recipient.capital_province
+			"scope:secondary_recipient.capital_province.squared_distance(scope:recipient.capital_province)" >= squared_distance_huge
+			desc = PT_AI_IS_FAR_AWAY
+		}
+		opinion_modifier = {
+			trigger = { exists = scope:secondary_recipient }
+			who = scope:secondary_recipient
+			opinion_target = scope:puppet_or_actor
+			multiplier = 0.5
+		}
+		modifier = {
+			add = -50
+			scope:secondary_recipient ?= {
+				opinion = {
+					target = scope:recipient
+					value >= 25
+				}
+			}
+			desc = SECONDARY_RECIPIENT_LIKES_RECIPIENT_REASON
+		}
+		modifier = {
+			add = -100
+			scope:secondary_recipient ?= {
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+			}
+			desc = SECONDARY_RECIPIENT_GOOD_RELATION_WITH_RECIPIENT_REASON
+		}
+		modifier = {
+			add = 30
+			scope:secondary_recipient ?= {
+				OR = {
+					has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+					opinion = {
+						target = scope:recipient
+						value <= -95
+					}
+				}
+			}
+			desc = SECONDARY_RECIPIENT_LOATHES_RECIPIENT_REASON
+		}
+		modifier = {
+			scope:secondary_recipient ?= {
+				OR = {
+					ai_boldness > 0
+					ai_boldness < 0
+				}
+			}
+			add = {
+				value = scope:secondary_recipient.ai_boldness
+				multiply = 0.5
+			}
+			desc = SECONDARY_RECIPIENT_BOLDNESS_REASON
+		}
+		modifier = {
+			scope:secondary_recipient ?= {
+				ai_compassion != 0
+			}
+			add = {
+				value = scope:secondary_recipient.ai_compassion
+				multiply = -0.25
+			}
+			desc = SECONDARY_RECIPIENT_COMPASSION_REASON
+		}
+		modifier = {
+			scope:recipient = {
+				is_at_war = yes
+			}
+			add = 40
+			desc = RECIPIENT_AT_WAR_REASON
+		}
+		modifier = {
+			add = 50
+			exists = scope:secondary_recipient
+			scope:puppet_or_actor = { is_allied_to = scope:secondary_recipient }
+			desc = AI_HAS_ALLIANCE
+		}
+		modifier = {
+			add = 25
+			scope:secondary_recipient ?= { target_is_liege_or_above = scope:puppet_or_actor }
+			desc = LIEGE_REASON_SECONDARY
+		}
+		modifier = {
+			add = -50
+			scope:secondary_recipient ?= {
+				has_dread_level_towards = {
+					target = scope:recipient
+					level = 1
+				}
+			}
+			desc = SECONDARY_INTIMIDATED_BY_RECIPIENT_REASON
+		}
+		modifier = {
+			add = -150
+			scope:secondary_recipient ?= {
+				has_dread_level_towards = {
+					target = scope:recipient
+					level >= 2
+				}
+			}
+			desc = SECONDARY_COWED_BY_RECIPIENT_REASON
+		}
+	}
+
+	can_send_despite_rejection = no
+
+	ai_frequency_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 60
+		kingdom = 48
+		empire = 24
+		hegemony = 24
+	}
+
+	ai_will_do = {
+		base = 0
+
+		opinion_modifier = {
+			who = scope:recipient
+			opinion_target = scope:actor
+			multiplier = 0.5
+		}
+
+		modifier = {
+			add = 25
+			scope:recipient = {
+				is_at_war = yes
+			}
+		}
+		modifier = {
+			add = 25
+			exists = scope:secondary_recipient
+			scope:secondary_recipient.current_military_strength > scope:recipient.twice_current_military_strength
+		}
+		modifier = {
+			add = {
+				value = scope:actor.ai_zeal
+				multiply = 0.5
+			}
+		}
+		modifier = {
+			add = {
+				value = scope:actor.ai_compassion
+				multiply = -0.5
+			}
+		}
+		modifier = {
+			add = {
+				value = scope:actor.ai_boldness
+				multiply = 0.5
+			}
+		}
+		modifier = {
+			factor = 0.5
+			scope:puppet_or_actor = {
+				piety < monumental_piety_value
+			}
+		}
+		modifier = {
+			factor = 0
+			OR = {
+				AND = {
+					exists = scope:secondary_recipient
+					scope:secondary_recipient.current_military_strength < scope:recipient.current_military_strength
+				}
+				AND = {
+					exists = scope:secondary_recipient
+					scope:recipient = { is_ai = no }
+					incite_holy_war_ai_invalidation_trigger = { RECIPIENT = scope:recipient SECONDARY = scope:secondary_recipient }
+				}
+			}
+		}
+	}
+}
+
 # Reduces a rite's divergence score
 grant_pope_blessing_interaction = {
 	category = interaction_category_religion
 	icon = religious
 
-	use_diplomatic_range = yes
+	use_diplomatic_range = no
 	auto_accept = yes
 
 	desc = grant_pope_blessing_interaction_desc
@@ -13195,7 +14091,7 @@ grant_pope_blessing_interaction = {
 	}
 	
 	cost = {
-		piety = medium_piety_value
+		piety = massive_piety_value
 	}
 
 	is_valid_showing_failures_only = {
@@ -13235,18 +14131,15 @@ grant_pope_blessing_interaction = {
 
 	ai_targets = {
 		ai_recipients = rulers_in_clerical_region
-	}
-	ai_targets = {
 		ai_recipients = neighboring_rulers
-	}
-	ai_targets = {
 		ai_recipients = vassals
+		ai_recipients = subordinates
 	}
 
 	ai_frequency_by_tier = {
 		barony = 0
 		county = 0
-		duchy = 72
+		duchy = 144
 		kingdom = 36
 		empire = 36
 		hegemony = 36
@@ -13256,7 +14149,7 @@ grant_pope_blessing_interaction = {
 		base = 0
 
 		modifier = {
-			add = 25
+			add = 50
 			scope:recipient.rite = {
 				"divergence(faith.main_rite)" >= minor_rite_divergence_value
 			}
@@ -13874,10 +14767,10 @@ increase_papabile_score_interaction = {
 					}
 					else_if = {
 						limit = { scope:pam_papabile_gold_option = yes }
-						pam_increase_papabile_score_effect = { VALUE = 20 }
+						pam_increase_papabile_score_effect = { VALUE = pam_papabile_gold_option_score_value }
 					}
 					else = {
-						pam_increase_papabile_score_effect = { VALUE = 10 }
+						pam_increase_papabile_score_effect = { VALUE = pam_papabile_base_score_value }
 					}
 				}
 			}
@@ -13888,22 +14781,24 @@ increase_papabile_score_interaction = {
 					this != scope:actor
 					is_ai = no
 				}
-				send_interface_toast = {
-					type = event_toast_effect_good
-					title = increase_papabile_score_interaction_toast
-					left_icon = scope:recipient
-					right_icon = scope:actor
-					show_as_tooltip = {
-						if = {
-							limit = { scope:pam_papabile_place_first_option = yes }
-							pam_place_first_as_powerful_effect = { VALUE = pam_papabile_place_first_powerful_value }
-						}
-						else_if = {
-							limit = { scope:pam_papabile_gold_option = yes }
-							pam_increase_papabile_score_effect = { VALUE = 30 }
-						}
-						else = {
-							pam_increase_papabile_score_effect = { VALUE = 15 }
+				hidden_effect = {
+					send_interface_toast = {
+						type = event_toast_effect_good
+						title = increase_papabile_score_interaction_toast
+						left_icon = scope:recipient
+						right_icon = scope:actor
+						show_as_tooltip = {
+							if = {
+								limit = { scope:pam_papabile_place_first_option = yes }
+								pam_place_first_as_powerful_effect = { VALUE = pam_papabile_place_first_powerful_value }
+							}
+							else_if = {
+								limit = { scope:pam_papabile_gold_option = yes }
+								pam_increase_papabile_score_effect = { VALUE = pam_papabile_gold_option_score_value }
+							}
+							else = {
+								pam_increase_papabile_score_effect = { VALUE = pam_papabile_base_score_value }
+							}
 						}
 					}
 				}
@@ -14086,9 +14981,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_aniconism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_aniconism }
-		}
 		flag = tenet_aniconism
 		localization = pam_evangelize_tenet_aniconism
 		starts_enabled = { always = yes }
@@ -14097,9 +14989,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_alexandrian_catechism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_alexandrian_catechism }
 		}
 		flag = tenet_alexandrian_catechism
 		localization = pam_evangelize_tenet_alexandrian_catechism
@@ -14110,9 +14999,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_armed_pilgrimages }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_armed_pilgrimages }
-		}
 		flag = tenet_armed_pilgrimages
 		localization = pam_evangelize_tenet_armed_pilgrimages
 		starts_enabled = { always = yes }
@@ -14121,9 +15007,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_carnal_exaltation }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_carnal_exaltation }
 		}
 		flag = tenet_carnal_exaltation
 		localization = pam_evangelize_tenet_carnal_exaltation
@@ -14134,9 +15017,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_communal_identity }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_communal_identity }
-		}
 		flag = tenet_communal_identity
 		localization = pam_evangelize_tenet_communal_identity
 		starts_enabled = { always = yes }
@@ -14145,9 +15025,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_communion }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_communion }
 		}
 		flag = tenet_communion
 		localization = pam_evangelize_tenet_communion
@@ -14158,9 +15035,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_consolamentum }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_consolamentum }
-		}
 		flag = tenet_consolamentum
 		localization = pam_evangelize_tenet_consolamentum
 		starts_enabled = { always = yes }
@@ -14169,9 +15043,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_divine_marriage }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_divine_marriage }
 		}
 		flag = tenet_divine_marriage
 		localization = pam_evangelize_tenet_divine_marriage
@@ -14182,9 +15053,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_gnosticism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_gnosticism }
-		}
 		flag = tenet_gnosticism
 		localization = pam_evangelize_tenet_gnosticism
 		starts_enabled = { always = yes }
@@ -14193,9 +15061,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_mendicant_preachers }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_mendicant_preachers }
 		}
 		flag = tenet_mendicant_preachers
 		localization = pam_evangelize_tenet_mendicant_preachers
@@ -14206,9 +15071,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pacifism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pacifism }
-		}
 		flag = tenet_pacifism
 		localization = pam_evangelize_tenet_pacifism
 		starts_enabled = { always = yes }
@@ -14217,9 +15079,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pentarchy }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pentarchy }
 		}
 		flag = tenet_pentarchy
 		localization = pam_evangelize_tenet_pentarchy
@@ -14230,9 +15089,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_unrelenting_faith }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_unrelenting_faith }
-		}
 		flag = tenet_unrelenting_faith
 		localization = pam_evangelize_tenet_unrelenting_faith
 		starts_enabled = { always = yes }
@@ -14241,9 +15097,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_vows_of_poverty }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_vows_of_poverty }
 		}
 		flag = tenet_vows_of_poverty
 		localization = pam_evangelize_tenet_vows_of_poverty
@@ -14254,9 +15107,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pastoral_isolation }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pastoral_isolation }
-		}
 		flag = tenet_pastoral_isolation
 		localization = pam_evangelize_tenet_pastoral_isolation
 		starts_enabled = { always = yes }
@@ -14265,9 +15115,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_adaptive }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_adaptive }
 		}
 		flag = tenet_adaptive
 		localization = pam_evangelize_tenet_adaptive
@@ -14278,9 +15125,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_esotericism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_esotericism }
-		}
 		flag = tenet_esotericism
 		localization = pam_evangelize_tenet_esotericism
 		starts_enabled = { always = yes }
@@ -14289,9 +15133,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_legalism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_legalism }
 		}
 		flag = tenet_legalism
 		localization = pam_evangelize_tenet_legalism
@@ -14302,9 +15143,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_literalism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_literalism }
-		}
 		flag = tenet_literalism
 		localization = pam_evangelize_tenet_literalism
 		starts_enabled = { always = yes }
@@ -14313,9 +15151,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_reincarnation }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_reincarnation }
 		}
 		flag = tenet_reincarnation
 		localization = pam_evangelize_tenet_reincarnation
@@ -14326,9 +15161,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_religious_legal_pronouncements }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_religious_legal_pronouncements }
-		}
 		flag = tenet_religious_legal_pronouncements
 		localization = pam_evangelize_tenet_religious_legal_pronouncements
 		starts_enabled = { always = yes }
@@ -14337,9 +15169,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_struggle_submission }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_struggle_submission }
 		}
 		flag = tenet_struggle_submission
 		localization = pam_evangelize_tenet_struggle_submission
@@ -14350,9 +15179,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_false_conversion_sanction }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_false_conversion_sanction }
-		}
 		flag = tenet_false_conversion_sanction
 		localization = pam_evangelize_tenet_false_conversion_sanction
 		starts_enabled = { always = yes }
@@ -14361,9 +15187,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_tax_nonbelievers }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_tax_nonbelievers }
 		}
 		flag = tenet_tax_nonbelievers
 		localization = pam_evangelize_tenet_tax_nonbelievers
@@ -14374,9 +15197,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_asceticism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_asceticism }
-		}
 		flag = tenet_asceticism
 		localization = pam_evangelize_tenet_asceticism
 		starts_enabled = { always = yes }
@@ -14385,9 +15205,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_bhakti }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_bhakti }
 		}
 		flag = tenet_bhakti
 		localization = pam_evangelize_tenet_bhakti
@@ -14398,9 +15215,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_dharmic_pacifism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_dharmic_pacifism }
-		}
 		flag = tenet_dharmic_pacifism
 		localization = pam_evangelize_tenet_dharmic_pacifism
 		starts_enabled = { always = yes }
@@ -14409,9 +15223,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_inner_journey }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_inner_journey }
 		}
 		flag = tenet_inner_journey
 		localization = pam_evangelize_tenet_inner_journey
@@ -14422,9 +15233,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_ritual_hospitality }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_ritual_hospitality }
-		}
 		flag = tenet_ritual_hospitality
 		localization = pam_evangelize_tenet_ritual_hospitality
 		starts_enabled = { always = yes }
@@ -14433,9 +15241,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_adorcism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_adorcism }
 		}
 		flag = tenet_adorcism
 		localization = pam_evangelize_tenet_adorcism
@@ -14446,9 +15251,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_ancestor_worship }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_ancestor_worship }
-		}
 		flag = tenet_ancestor_worship
 		localization = pam_evangelize_tenet_ancestor_worship
 		starts_enabled = { always = yes }
@@ -14457,9 +15259,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_astrology }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_astrology }
 		}
 		flag = tenet_astrology
 		localization = pam_evangelize_tenet_astrology
@@ -14470,9 +15269,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_hedonistic }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_hedonistic }
-		}
 		flag = tenet_hedonistic
 		localization = pam_evangelize_tenet_hedonistic
 		starts_enabled = { always = yes }
@@ -14481,9 +15277,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_human_sacrifice }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_human_sacrifice }
 		}
 		flag = tenet_human_sacrifice
 		localization = pam_evangelize_tenet_human_sacrifice
@@ -14494,9 +15287,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_mystical_birthright }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_mystical_birthright }
-		}
 		flag = tenet_mystical_birthright
 		localization = pam_evangelize_tenet_mystical_birthright
 		starts_enabled = { always = yes }
@@ -14505,9 +15295,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_ritual_celebrations }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_ritual_celebrations }
 		}
 		flag = tenet_ritual_celebrations
 		localization = pam_evangelize_tenet_ritual_celebrations
@@ -14518,9 +15305,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sacred_childbirth }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sacred_childbirth }
-		}
 		flag = tenet_sacred_childbirth
 		localization = pam_evangelize_tenet_sacred_childbirth
 		starts_enabled = { always = yes }
@@ -14529,9 +15313,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sanctity_of_nature }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sanctity_of_nature }
 		}
 		flag = tenet_sanctity_of_nature
 		localization = pam_evangelize_tenet_sanctity_of_nature
@@ -14542,9 +15323,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sun_worship }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sun_worship }
-		}
 		flag = tenet_sun_worship
 		localization = pam_evangelize_tenet_sun_worship
 		starts_enabled = { always = yes }
@@ -14553,9 +15331,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_warmonger }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_warmonger }
 		}
 		flag = tenet_warmonger
 		localization = pam_evangelize_tenet_warmonger
@@ -14566,9 +15341,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_gruesome_festivals }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_gruesome_festivals }
-		}
 		flag = tenet_gruesome_festivals
 		localization = pam_evangelize_tenet_gruesome_festivals
 		starts_enabled = { always = yes }
@@ -14577,9 +15349,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_cthonic_redoubts }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_cthonic_redoubts }
 		}
 		flag = tenet_cthonic_redoubts
 		localization = pam_evangelize_tenet_cthonic_redoubts
@@ -14590,9 +15359,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_household_gods }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_household_gods }
-		}
 		flag = tenet_household_gods
 		localization = pam_evangelize_tenet_household_gods
 		starts_enabled = { always = yes }
@@ -14601,9 +15367,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sinitic_syncretism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sinitic_syncretism }
 		}
 		flag = tenet_sinitic_syncretism
 		localization = pam_evangelize_tenet_sinitic_syncretism
@@ -14614,9 +15377,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_eastern_syncretism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_eastern_syncretism }
-		}
 		flag = tenet_eastern_syncretism
 		localization = pam_evangelize_tenet_eastern_syncretism
 		starts_enabled = { always = yes }
@@ -14625,9 +15385,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_unreformed_syncretism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_unreformed_syncretism }
 		}
 		flag = tenet_unreformed_syncretism
 		localization = pam_evangelize_tenet_unreformed_syncretism
@@ -14638,9 +15395,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_christian_syncretism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_christian_syncretism }
-		}
 		flag = tenet_christian_syncretism
 		localization = pam_evangelize_tenet_christian_syncretism
 		starts_enabled = { always = yes }
@@ -14649,9 +15403,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_islamic_syncretism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_islamic_syncretism }
 		}
 		flag = tenet_islamic_syncretism
 		localization = pam_evangelize_tenet_islamic_syncretism
@@ -14662,9 +15413,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_jewish_syncretism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_jewish_syncretism }
-		}
 		flag = tenet_jewish_syncretism
 		localization = pam_evangelize_tenet_jewish_syncretism
 		starts_enabled = { always = yes }
@@ -14673,9 +15421,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_exaltation_of_pain }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_exaltation_of_pain }
 		}
 		flag = tenet_exaltation_of_pain
 		localization = pam_evangelize_tenet_exaltation_of_pain
@@ -14686,9 +15431,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_natural_primitivism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_natural_primitivism }
-		}
 		flag = tenet_natural_primitivism
 		localization = pam_evangelize_tenet_natural_primitivism
 		starts_enabled = { always = yes }
@@ -14697,9 +15439,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pursuit_of_power }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pursuit_of_power }
 		}
 		flag = tenet_pursuit_of_power
 		localization = pam_evangelize_tenet_pursuit_of_power
@@ -14710,9 +15449,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_ritual_cannibalism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_ritual_cannibalism }
-		}
 		flag = tenet_ritual_cannibalism
 		localization = pam_evangelize_tenet_ritual_cannibalism
 		starts_enabled = { always = yes }
@@ -14721,9 +15457,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sacred_shadows }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sacred_shadows }
 		}
 		flag = tenet_sacred_shadows
 		localization = pam_evangelize_tenet_sacred_shadows
@@ -14734,9 +15467,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_polyamory }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_polyamory }
-		}
 		flag = tenet_polyamory
 		localization = pam_evangelize_tenet_polyamory
 		starts_enabled = { always = yes }
@@ -14745,9 +15475,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sacrificial_ceremonies }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sacrificial_ceremonies }
 		}
 		flag = tenet_sacrificial_ceremonies
 		localization = pam_evangelize_tenet_sacrificial_ceremonies
@@ -14758,9 +15485,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_megaliths }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_megaliths }
-		}
 		flag = tenet_megaliths
 		localization = pam_evangelize_tenet_megaliths_name
 		starts_enabled = { always = yes }
@@ -14769,9 +15493,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_fp3_fedayeen }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_fp3_fedayeen }
 		}
 		flag = tenet_fp3_fedayeen
 		localization = pam_evangelize_tenet_fp3_fedayeen
@@ -14782,9 +15503,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_communal_possessions }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_communal_possessions }
-		}
 		flag = tenet_communal_possessions
 		localization = pam_evangelize_tenet_communal_possessions
 		starts_enabled = { always = yes }
@@ -14793,9 +15511,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pure_land }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pure_land }
 		}
 		flag = tenet_pure_land
 		localization = pam_evangelize_tenet_pure_land
@@ -14806,9 +15521,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_no_mind }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_no_mind }
-		}
 		flag = tenet_no_mind
 		localization = pam_evangelize_tenet_no_mind
 		starts_enabled = { always = yes }
@@ -14817,9 +15529,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_mountain_worship }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_mountain_worship }
 		}
 		flag = tenet_mountain_worship
 		localization = pam_evangelize_tenet_mountain_worship
@@ -14830,9 +15539,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_extinction_of_dharma }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_extinction_of_dharma }
-		}
 		flag = tenet_extinction_of_dharma
 		localization = pam_evangelize_tenet_extinction_of_dharma
 		starts_enabled = { always = yes }
@@ -14841,9 +15547,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_cranial_trophies }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_cranial_trophies }
 		}
 		flag = tenet_cranial_trophies
 		localization = pam_evangelize_tenet_cranial_trophies
@@ -14854,9 +15557,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_pursuit_of_knowledge }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_pursuit_of_knowledge }
-		}
 		flag = tenet_pursuit_of_knowledge
 		localization = pam_evangelize_tenet_pursuit_of_knowledge
 		starts_enabled = { always = yes }
@@ -14865,9 +15565,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_benevolent_governance }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_benevolent_governance }
 		}
 		flag = tenet_benevolent_governance
 		localization = pam_evangelize_tenet_benevolent_governance
@@ -14878,9 +15575,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_filial_piety }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_filial_piety }
-		}
 		flag = tenet_filial_piety
 		localization = pam_evangelize_tenet_filial_piety
 		starts_enabled = { always = yes }
@@ -14889,9 +15583,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_harmonious_society }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_harmonious_society }
 		}
 		flag = tenet_harmonious_society
 		localization = pam_evangelize_tenet_harmonious_society
@@ -14902,9 +15593,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_sacred_destruction }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_sacred_destruction }
-		}
 		flag = tenet_sacred_destruction
 		localization = pam_evangelize_tenet_sacred_destruction
 		starts_enabled = { always = yes }
@@ -14913,9 +15601,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_preservation }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_preservation }
 		}
 		flag = tenet_preservation
 		localization = pam_evangelize_tenet_preservation
@@ -14926,9 +15611,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_takamin }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_takamin }
-		}
 		flag = tenet_takamin
 		localization = pam_evangelize_tenet_takamin
 		starts_enabled = { always = yes }
@@ -14937,9 +15619,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_peace_of_god }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_peace_of_god }
 		}
 		flag = tenet_peace_of_god
 		localization = pam_evangelize_tenet_peace_of_god
@@ -14950,9 +15629,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_dulia }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_dulia }
-		}
 		flag = tenet_dulia
 		localization = pam_evangelize_tenet_dulia
 		starts_enabled = { always = yes }
@@ -14961,9 +15637,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_transubstantiation }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_transubstantiation }
 		}
 		flag = tenet_transubstantiation
 		localization = pam_evangelize_tenet_transubstantiation
@@ -14974,9 +15647,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_ora_et_labora }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_ora_et_labora }
-		}
 		flag = tenet_ora_et_labora
 		localization = pam_evangelize_tenet_ora_et_labora
 		starts_enabled = { always = yes }
@@ -14985,9 +15655,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_hyperdulia }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_hyperdulia }
 		}
 		flag = tenet_hyperdulia
 		localization = pam_evangelize_tenet_hyperdulia
@@ -14998,9 +15665,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_simony }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_simony }
-		}
 		flag = tenet_simony
 		localization = pam_evangelize_tenet_simony
 		starts_enabled = { always = yes }
@@ -15009,9 +15673,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_monophysitism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_monophysitism }
 		}
 		flag = tenet_monophysitism
 		localization = pam_evangelize_tenet_monophysitism
@@ -15022,9 +15683,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_acts_of_apostles }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_acts_of_apostles }
-		}
 		flag = tenet_acts_of_apostles
 		localization = pam_evangelize_tenet_acts_of_apostles
 		starts_enabled = { always = yes }
@@ -15033,9 +15691,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_purgatory }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_purgatory }
 		}
 		flag = tenet_purgatory
 		localization = pam_evangelize_tenet_purgatory
@@ -15046,9 +15701,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_be_fruitful_and_multiply }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_be_fruitful_and_multiply }
-		}
 		flag = tenet_be_fruitful_and_multiply
 		localization = pam_evangelize_tenet_be_fruitful_and_multiply
 		starts_enabled = { always = yes }
@@ -15057,9 +15709,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_apostolic_succession }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_apostolic_succession }
 		}
 		flag = tenet_apostolic_succession
 		localization = pam_evangelize_tenet_apostolic_succession
@@ -15070,9 +15719,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_confession }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_confession }
-		}
 		flag = tenet_confession
 		localization = pam_evangelize_tenet_confession
 		starts_enabled = { always = yes }
@@ -15081,9 +15727,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_original_sin }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_original_sin }
 		}
 		flag = tenet_original_sin
 		localization = pam_evangelize_tenet_original_sin
@@ -15094,9 +15737,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_celestial_hierarchy }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_celestial_hierarchy }
-		}
 		flag = tenet_celestial_hierarchy
 		localization = pam_evangelize_tenet_celestial_hierarchy
 		starts_enabled = { always = yes }
@@ -15105,9 +15745,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_miles_christi }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_miles_christi }
 		}
 		flag = tenet_miles_christi
 		localization = pam_evangelize_tenet_miles_christi
@@ -15118,9 +15755,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_philanthropia }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_philanthropia }
-		}
 		flag = tenet_philanthropia
 		localization = pam_evangelize_tenet_philanthropia
 		starts_enabled = { always = yes }
@@ -15129,9 +15763,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_scholasticism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_scholasticism }
 		}
 		flag = tenet_scholasticism
 		localization = pam_evangelize_tenet_scholasticism
@@ -15142,9 +15773,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_adoptionism }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_adoptionism }
-		}
 		flag = tenet_adoptionism
 		localization = pam_evangelize_tenet_adoptionism
 		starts_enabled = { always = yes }
@@ -15153,9 +15781,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_love_thy_neighbour }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_love_thy_neighbour }
 		}
 		flag = tenet_love_thy_neighbour
 		localization = pam_evangelize_tenet_love_thy_neighbour
@@ -15166,9 +15791,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_divine_liturgy }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_divine_liturgy }
-		}
 		flag = tenet_divine_liturgy
 		localization = pam_evangelize_tenet_divine_liturgy
 		starts_enabled = { always = yes }
@@ -15177,9 +15799,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_miaphysitism }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_miaphysitism }
 		}
 		flag = tenet_miaphysitism
 		localization = pam_evangelize_tenet_miaphysitism
@@ -15190,9 +15809,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_hesychasm }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_hesychasm }
-		}
 		flag = tenet_hesychasm
 		localization = pam_evangelize_tenet_hesychasm
 		starts_enabled = { always = yes }
@@ -15201,9 +15817,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_anachoresis }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_anachoresis }
 		}
 		flag = tenet_anachoresis
 		localization = pam_evangelize_tenet_anachoresis
@@ -15214,9 +15827,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_mortification_of_the_flesh }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_mortification_of_the_flesh }
-		}
 		flag = tenet_mortification_of_the_flesh
 		localization = pam_evangelize_tenet_mortification_of_the_flesh
 		starts_enabled = { always = yes }
@@ -15226,9 +15836,6 @@ pam_reform_order_interaction = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_holy_myron }
 		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_holy_myron }
-		}
 		flag = tenet_holy_myron
 		localization = pam_evangelize_tenet_holy_myron
 		starts_enabled = { always = yes }
@@ -15237,9 +15844,6 @@ pam_reform_order_interaction = {
 	send_option = {
 		is_shown = {
 			pam_reform_order_tenet_option_shown_trigger = { TENET = tenet_khachkar }
-		}
-		is_valid = {
-			pam_reform_order_tenet_option_valid_trigger = { TENET = tenet_khachkar }
 		}
 		flag = tenet_khachkar
 		localization = pam_evangelize_tenet_khachkar

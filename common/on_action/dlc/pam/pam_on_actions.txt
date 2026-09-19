@@ -11,7 +11,7 @@ pam_the_christian_church_yearly_on_action = {
 	effect = {
 		# Non Christian presence in Europe
 		pam_the_christian_church_non_christian_kingdom_in_europe_catalyst_effect = yes
-		# Catholic HoF weak control of Papal State de jure
+		# Non-Catholic ruler controls the Papal State's de jure capital
 		pam_the_christian_church_catholic_hof_weak_papal_state_control_catalyst_effect = yes
 		# Byzantine emperor is not Christian
 		pam_the_christian_church_byzantine_emperor_non_christian_catalyst_effect = yes
@@ -78,6 +78,13 @@ on_travel_plan_movement = {
 	on_actions = {
 		pam_mountain_travel_personal_tenet_on_action
 		sun_worship_desert_travel_personal_tenet_on_action
+		pam_sanctity_of_nature_travel_on_action
+	}
+}
+
+on_building_completed = {
+	on_actions = {
+		pam_sanctity_of_nature_building_completed_on_action
 	}
 }
 
@@ -176,6 +183,84 @@ sun_worship_desert_travel_personal_tenet_on_action = {
 				add_piety = minor_piety_gain
 				change_spiritual_fulfillment = minor_spiritual_fulfillment_value
 			}
+		}
+	}
+}
+
+pam_sanctity_of_nature_travel_on_action = {
+	effect = {
+		if = {
+			limit = {
+				current_travel_plan.current_location = {
+					has_province_modifier = preserved_wilderness_modifier
+				}
+			}
+			current_travel_plan = {
+				if = {
+					limit = {
+						NOT = { has_travel_plan_modifier = preserved_wilderness_travel_modifier }
+					}
+					add_travel_plan_modifier = preserved_wilderness_travel_modifier
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				current_travel_plan = {
+					has_travel_plan_modifier = preserved_wilderness_travel_modifier
+				}
+			}
+			current_travel_plan = {
+				remove_travel_plan_modifier = preserved_wilderness_travel_modifier
+			}
+		}
+
+		if = {
+			limit = {
+				has_personal_tenet_flag = tenet_sanctity_of_nature_wilderness_fulfillment
+				current_travel_plan.current_location = {
+					has_holding = no
+					is_sea_province = no
+				}
+				current_travel_plan = {
+					OR = {
+						NOT = { has_variable_list = pam_sanctity_of_nature_visited_wilderness }
+						AND = {
+							has_variable_list = pam_sanctity_of_nature_visited_wilderness
+							NOT = {
+								is_target_in_variable_list = {
+									name = pam_sanctity_of_nature_visited_wilderness
+									target = root.current_travel_plan.current_location
+								}
+							}
+						}
+					}
+				}
+			}
+			change_spiritual_fulfillment = miniscule_spiritual_fulfillment_value
+			current_travel_plan = {
+				add_to_variable_list = {
+					name = pam_sanctity_of_nature_visited_wilderness
+					target = root.current_travel_plan.current_location
+				}
+			}
+		}
+	}
+}
+
+pam_sanctity_of_nature_building_completed_on_action = {
+	# add_great_building fires on_building_completed during history setup.
+	trigger = {
+		has_global_variable = game_has_started
+	}
+
+	effect = {
+		if = {
+			limit = {
+				has_holding = yes
+				has_province_modifier = preserved_wilderness_modifier
+			}
+			remove_province_modifier = preserved_wilderness_modifier
 		}
 	}
 }

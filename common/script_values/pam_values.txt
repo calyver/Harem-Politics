@@ -5,7 +5,7 @@ pam_the_christian_church_faster_county_control_task_value = 1.25
 
 # Single source of truth for the timed Investiture Controversy length (in days). Drives both the on_monthly
 # timer check and the "years left" UI, so change only this value.
-pam_investiture_crisis_duration_days = 10950
+pam_investiture_crisis_duration_days = 9125
 
 # The same duration expressed in years, used to cap the "years left" label.
 pam_investiture_crisis_duration_years = {
@@ -239,23 +239,14 @@ pam_increase_theocratic_heir_candidacy_piety_cost_mult_value = {
 	}
 }
 
-# The three clerical-candidacy investment tiers, as the piety actually charged. The AI reads the same
-# values to pick a tier it can pay for, so its affordability check can never drift from the real price.
+pam_clerical_candidacy_outbid_piety_base_cost_value = {
+	value = clerical_appointment_score_max_value
+	multiply = massive_piety_value
+	divide = appointment_score_major_value
+}
+
 pam_clerical_candidacy_outbid_piety_cost_value = {
-	value = 0
-	if = {
-		limit = {
-			exists = scope:target.current_heir
-			exists = scope:secondary_recipient
-		}
-		add = {
-			value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-			multiply = 1.8
-		}
-		subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-	}
-	multiply = 5
-	min = 250
+	value = pam_clerical_candidacy_outbid_piety_base_cost_value
 	multiply = scope:actor.pam_increase_theocratic_heir_candidacy_piety_cost_mult_value
 }
 
@@ -1642,6 +1633,9 @@ pam_papal_populist_incumbent_score_value = {
 	}
 }
 
+pam_papabile_gold_option_score_value = 20
+pam_papabile_base_score_value = 10
+
 # What it takes to overtake the sitting candidate. The campaign penalty for the seat being abandoned is
 # added back, so a cardinal switching campaigns is not billed for the malus they are about to shed.
 pam_papabile_place_first_powerful_value = {
@@ -2486,6 +2480,23 @@ clerical_appointment_score_major_value = {
 	value = 50
 }
 
+clerical_appointment_score_max_value = {
+	value = 0
+	if = {
+		limit = {
+			exists = scope:target
+			exists = scope:target.current_heir
+			exists = scope:secondary_recipient
+		}
+		add = {
+			value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
+			multiply = 1.1
+		}
+		subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
+	}
+	min = 4 # We do this to prevent cases when the default score of the candidate is already much higher than that the heir
+}
+
 clerical_appointment_score_max_tt_value = {
 	if = {
 		limit = {
@@ -2496,12 +2507,7 @@ clerical_appointment_score_max_tt_value = {
 			# appointment_candidate_score errors out on any other order of succession
 			scope:target = { has_order_of_succession = appointment }
 		}
-		add = {
-			value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-			multiply = 1.1
-		}
-		subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-		min = 4 # We do this to prevent cases when the default score of the candidate is already much higher than that the heir
+		add = clerical_appointment_score_max_value
 		multiply = scope:actor.appointment_score_interaction_multiplier_modifiers_value
 		multiply = scope:actor.pam_theocratic_candidacy_situation_multiplier_value
 	}
@@ -2649,7 +2655,6 @@ activity_tenet_pick_score = {
 		}
 		add = 100
 	}
-	# Never preselect a tenet that is already core in the faith's main rite.
 	if = {
 		limit = {
 			faith.main_rite = {
@@ -2661,12 +2666,18 @@ activity_tenet_pick_score = {
 		}
 		add = -100000
 	}
-	# Armed Pilgrimages must never be put up for debate by an AI host.
 	if = {
 		limit = {
 			scope:tenet = tenet:tenet_armed_pilgrimages
 		}
 		add = -100000
+	}
+	if = {
+		limit = {
+			scope:tenet = tenet:tenet_polyamory
+			NOT = { scope:index ?= 2 }
+		}
+		multiply = 0.25
 	}
 	# Debate topic 1: favor high-popularity tenets; debate 2: favor low-popularity tenets.
 	if = {
@@ -6676,7 +6687,7 @@ pam_merge_new_ecclesiastical_title_cost_value = {
 	}
 }
 
-# Vacant seat: base; deposing a sitting holder: 2x base; a holder of another rite: 5x base
+# Vacant seat: base; deposing a sitting holder: 2x base; a holder of another rite: 3x base; a head of rite of another rite: 10x base
 pam_grant_ecclesiastical_title_cost_value = {
 	value = minor_piety_value
 
@@ -6689,11 +6700,64 @@ pam_grant_ecclesiastical_title_cost_value = {
 	}
 	if = {
 		limit = {
+			scope:target.holder ?= {
+				rite != scope:actor.rite
+				rite.head_of_rite ?= this
+			}
+			pam_grant_ecclesiastical_title_appointee_changes_rite_trigger = yes
+		}
+		add = {
+			value = major_piety_value
+			multiply = 10
+			desc = pam_grant_ecclesiastical_title_head_of_rite_cost_desc
+		}
+	}
+	else_if = {
+		limit = {
 			scope:target.holder ?= { rite != scope:actor.rite }
+			pam_grant_ecclesiastical_title_appointee_changes_rite_trigger = yes
 		}
 		add = {
 			value = major_piety_value
 			multiply = 3
+			desc = pam_grant_ecclesiastical_title_different_rite_cost_desc
+		}
+	}
+}
+
+# Vacant free; sitting = base; other rite x3; head of rite x6
+pam_grant_ecclesiastical_title_gold_cost_value = {
+	value = 0
+
+	if = {
+		limit = { exists = scope:target.holder }
+		add = {
+			value = scope:actor.medium_treasury_or_gold_value
+			desc = pam_grant_ecclesiastical_title_deposition_cost_desc
+		}
+	}
+	if = {
+		limit = {
+			scope:target.holder ?= {
+				rite != scope:actor.rite
+				rite.head_of_rite ?= this
+			}
+			pam_grant_ecclesiastical_title_appointee_changes_rite_trigger = yes
+		}
+		add = {
+			value = scope:actor.medium_treasury_or_gold_value
+			multiply = 5
+			desc = pam_grant_ecclesiastical_title_head_of_rite_cost_desc
+		}
+	}
+	else_if = {
+		limit = {
+			scope:target.holder ?= { rite != scope:actor.rite }
+			pam_grant_ecclesiastical_title_appointee_changes_rite_trigger = yes
+		}
+		add = {
+			value = scope:actor.medium_treasury_or_gold_value
+			multiply = 2
 			desc = pam_grant_ecclesiastical_title_different_rite_cost_desc
 		}
 	}
@@ -6940,6 +7004,33 @@ ecclesiastical_domicile_church_succession_cost_mult = {
 		}
 		multiply = ecclesiastical_domicile_cheaper_church_succession_provost_mult_3
 	}
+}
+# Jumps above duchy; gold scales linearly instead
+pam_demand_church_succession_piety_cost_value = {
+	value = massive_piety_value
+	if = {
+		limit = {
+			exists = scope:recipient.primary_title
+			scope:recipient.primary_title.tier >= tier_kingdom
+		}
+		multiply = 10
+	}
+	if = {
+		limit = {
+			exists = scope:recipient.primary_title
+			scope:recipient.primary_title.tier >= tier_empire
+		}
+		multiply = 2
+	}
+	if = {
+		limit = {
+			exists = scope:recipient.primary_title
+			scope:recipient.primary_title.tier >= tier_hegemony
+		}
+		multiply = 2
+	}
+	multiply = scope:puppet_or_actor.ecclesiastical_domicile_church_succession_cost_mult
+	round_to = 5
 }
 ecclesiastical_domicile_cheaper_candidacy_mult_1 = 0.8
 ecclesiastical_domicile_cheaper_candidacy_mult_2 = 0.65
@@ -8091,6 +8182,20 @@ pam_ecclesiastic_incite_holy_war_inspire_realm_value = {
 	}
 }
 
+pam_ecclesiastic_incite_claim_war_cost_value = {
+	value = 100
+	if = {
+		limit = {
+			exists = scope:target
+		}
+		multiply = {
+			value = scope:target.tier
+			subtract = 1
+			multiply = 2
+		}
+	}
+}
+
 pam_request_white_peace_cost_value = {
 	add = major_piety_value
 	multiply = 1.5
@@ -8117,18 +8222,7 @@ pam_increase_theocratic_heir_candidacy_cost_value = {
 		trigger = yes
 		scope:as_much_as_needed_candidacy_option = {
 			add = {
-				value = {
-					if = {
-						limit = { exists = scope:target.current_heir }
-						add = {
-							value = "scope:target.current_heir.appointment_candidate_score(scope:target)"
-							multiply = 1.8
-						}
-						subtract = "scope:secondary_recipient.appointment_candidate_score(scope:target)"
-					}
-					multiply = 5
-					min = 250 # massive_piety_value
-				}
+				value = pam_clerical_candidacy_outbid_piety_base_cost_value
 			}
 		}
 		scope:major_candidacy_option = {
@@ -8495,6 +8589,23 @@ pam_ecclesiastical_de_jure_shifting_prestige_cost_value = {
 
 pam_enact_a_bull_cost_value = {
 	value = massive_piety_value
+	if = {
+		limit = {
+			situation:the_christian_church ?= {
+				situation_participant_group:christian_clerical_main_power_rulers = {
+					participant_group_has_character = root
+					has_participant_group_parameter = the_christian_church_cheaper_bulls
+				}
+			}
+		}
+		multiply = 0.5
+	}
+}
+
+undirected_ghw_piety_cost_value = massive_piety_value
+
+pam_enact_a_crusade_bull_cost_value = {
+	value = undirected_ghw_piety_cost_value
 	if = {
 		limit = {
 			situation:the_christian_church ?= {

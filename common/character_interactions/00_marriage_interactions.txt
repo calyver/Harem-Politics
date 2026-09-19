@@ -102,6 +102,7 @@ arrange_marriage_interaction = {
 				save_scope_as = secondary_actor
 				matchmaker = {
 					save_scope_as = actor
+					save_scope_as = puppet_or_actor
 				}
 			}
 			if = {
@@ -180,7 +181,7 @@ arrange_marriage_interaction = {
 					}
 					trigger_if = {
 						limit = { exists = scope:secondary_recipient }
-						can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+						can_marry_character_trigger = { CHARACTER = scope:secondary_recipient }
 					}
 				}
 				add_to_list = characters
@@ -195,7 +196,7 @@ arrange_marriage_interaction = {
 					}
 					trigger_if = {
 						limit = { exists = scope:secondary_recipient }
-						can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+						can_marry_character_trigger = { CHARACTER = scope:secondary_recipient }
 					}
 				}
 				add_to_list = characters
@@ -214,7 +215,7 @@ arrange_marriage_interaction = {
 						}
 						trigger_if = {
 							limit = { exists = scope:secondary_recipient }
-							can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+							can_marry_character_trigger = { CHARACTER = scope:secondary_recipient }
 						}
 					}
 					add_to_list = characters
@@ -238,7 +239,7 @@ arrange_marriage_interaction = {
 							}
 							trigger_if = {
 								limit = { exists = scope:secondary_recipient }
-								can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+								can_marry_character_trigger = { CHARACTER = scope:secondary_recipient }
 							}
 						}
 						add_to_list = characters
@@ -261,7 +262,7 @@ arrange_marriage_interaction = {
 								}
 								trigger_if = {
 									limit = { exists = scope:secondary_recipient }
-									can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+									can_marry_character_trigger = { CHARACTER = scope:secondary_recipient }
 								}
 							}
 							add_to_list = characters
@@ -4027,7 +4028,7 @@ divorce_character_house_head_interaction = {
 				limit = { scope:actor = scope:puppet_or_actor }
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW
 				}
@@ -4035,7 +4036,7 @@ divorce_character_house_head_interaction = {
 			trigger_else = {
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW_puppeteer
 				}
@@ -4253,7 +4254,7 @@ divorce_character_house_head_interaction = {
 		}
 		if = {
 			limit = { scope:actor != scope:puppet_or_actor }
-			scope:puppet_or_actor = {
+			scope:actor = {
 				send_interface_toast = {
 					type = event_toast_effect_neutral
 					title = divorce_interaction_notification_puppeteer
@@ -4654,7 +4655,7 @@ divorce_character_rel_head_interaction = {
 				limit = { scope:actor = scope:puppet_or_actor }
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW
 				}
@@ -4662,7 +4663,7 @@ divorce_character_rel_head_interaction = {
 			trigger_else = {
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW_puppeteer
 				}
@@ -5144,8 +5145,8 @@ divorce_character_rel_head_interaction = {
 		}
 		if = {
 			limit = { scope:puppet_or_actor != scope:actor }
-			scope:puppet_or_actor = {
-				add_piety = { value = { add = divorce_cost max = piety multiply = -1 } }
+			scope:actor = {
+				scope:puppet_or_actor = { add_piety = { value = { add = divorce_cost max = piety multiply = -1 } } }
 				send_interface_toast = {
 					type = event_toast_effect_neutral
 					title = divorce_interaction_notification_puppeteer
@@ -5438,8 +5439,20 @@ divorce_character_dynast_request_interaction = {
 	desc = divorce_character_dynast_request_interaction_desc
 
 	cost = {
-		piety = divorce_cost
-		renown = scope:puppet_or_actor.dynasty.minor_dynasty_prestige_value
+		piety = {
+			value = divorce_cost
+			if = {
+				limit = { scope:puppet_or_actor != scope:actor }
+				multiply = 0
+			}
+		}
+		renown = {
+			value = scope:puppet_or_actor.dynasty.minor_dynasty_prestige_value
+			if = {
+				limit = { scope:puppet_or_actor != scope:actor }
+				multiply = 0
+			}
+		}
 	}
 
 	redirect = {
@@ -5537,6 +5550,7 @@ divorce_character_dynast_request_interaction = {
 			}
 			custom_description = {
 				scope:secondary_actor.top_liege = scope:puppet_or_actor.top_liege
+				subject = scope:puppet_or_actor
 				text = "same_realm_as"
 			}
 		}
@@ -5564,6 +5578,13 @@ divorce_character_dynast_request_interaction = {
 	auto_accept = yes
 
 	on_accept = {
+		if = {
+			limit = { scope:puppet_or_actor != scope:actor }
+			scope:puppet_or_actor = {
+				add_piety = { value = { add = divorce_cost max = piety multiply = -1 } }
+				dynasty ?= { add_dynasty_prestige = { value = { add = scope:puppet_or_actor.dynasty.minor_dynasty_prestige_value multiply = -1 } } }
+			}
+		}
 		scope:puppet_or_actor = {
 			send_interface_toast = {
 				type = event_toast_effect_good
@@ -5958,6 +5979,7 @@ divorce_character_dynast_request_rel_head_interaction = {
 			}
 			custom_description = {
 				scope:secondary_actor.top_liege = scope:puppet_or_actor.top_liege
+				subject = scope:puppet_or_actor
 				text = "same_realm_as"
 			}
 		}
@@ -5966,7 +5988,7 @@ divorce_character_dynast_request_rel_head_interaction = {
 				limit = { scope:actor = scope:puppet_or_actor }
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW
 				}
@@ -5974,7 +5996,7 @@ divorce_character_dynast_request_rel_head_interaction = {
 			trigger_else = {
 				custom_tooltip = {
 					NOT = {
-						var:family_widow_forbidden_divorce ?= scope:recipient
+						var:family_widow_forbidden_divorce ?= scope:secondary_recipient
 					}
 					text = BOUND_TO_FAMILY_WIDOW_puppeteer
 				}
@@ -6525,6 +6547,7 @@ divorce_character_dynast_request_rel_head_interaction = {
 		#For follow-up event
 		scope:secondary_actor = {
 			save_scope_as = actor
+			save_scope_as = puppet_or_actor
 		}
 		#Recipient is free to fuck with the divorce
 		if = {
@@ -6564,6 +6587,7 @@ divorce_character_dynast_request_rel_head_interaction = {
 			}
 			scope:secondary_actor = {
 				save_scope_as = actor
+				save_scope_as = puppet_or_actor
 			}
 			scope:recipient = {
 				if = {

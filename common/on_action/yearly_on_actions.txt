@@ -2124,8 +2124,8 @@ yearly_playable_pulse = {
 		if = {
 			limit = {
 				OR = {
-					rite = { rite_has_tenet = tenet_simony }
-					has_personal_tenet = tenet_simony
+					rite = { rite_has_parameter = tenet_simony_wealth_fulfillment }
+					has_personal_tenet_flag = tenet_simony_wealth_fulfillment
 				}
 			}
 			random = {
@@ -2166,12 +2166,51 @@ yearly_playable_pulse = {
 			}
 		}
 		###############
+		# PAM Pentarchy Tenet
+		###############
+		if = {
+			limit = {
+				rite ?= { rite_has_parameter = tenet_pentarchy_holy_site_prosperity }
+			}
+			faith = {
+				every_holy_site = {
+					limit = {
+						exists = holy_site_county.holder
+						holy_site_county.holder = root
+						holy_site_county.faith = root.faith
+					}
+					holy_site_county = {
+						add_county_modifier = {
+							modifier = tenet_pentarchy_holy_site_modifier
+							years = 2
+						}
+					}
+				}
+			}
+		}
+		###############
+		# PAM Miaphysitism Tenet
+		###############
+		if = {
+			limit = {
+				has_personal_tenet_flag = tenet_miaphysitism_open_confession
+				liege ?= {
+					NOT = { faith = root.faith }
+				}
+			}
+			send_interface_toast = {
+				type = event_toast_effect_good
+				title = pam_miaphysitism_open_confession_toast_title
+				left_icon = root
+				add_piety = minor_piety_gain
+			}
+		}
+		###############
 		# PAM Scholasticism Tenet
 		###############
 		if = {
 			limit = {
-				rite = { rite_has_tenet = tenet_scholasticism }
-				has_personal_tenet = tenet_scholasticism
+				has_personal_tenet_flag = tenet_scholasticism_university_chance
 				NOT = {
 					has_character_modifier = tenet_scholasticism_modifier
 				}
@@ -2183,8 +2222,7 @@ yearly_playable_pulse = {
 		###############
 		if = {
 			limit = {
-				rite = { rite_has_tenet = tenet_love_thy_neighbour }
-				has_personal_tenet = tenet_love_thy_neighbour
+				rite = { rite_has_parameter = tenet_love_thy_neighbour_county_bonus }
 				any_held_county = {
 					faith = prev.faith
 					county_opinion >= 60
@@ -2248,6 +2286,23 @@ yearly_playable_pulse = {
 				has_character_modifier = tenet_purgatory_sin_penalty_modifier
 			}
 			remove_all_character_modifier_instances = tenet_purgatory_sin_penalty_modifier
+		}
+		###############
+		# PAM Original Sin Tenet
+		###############
+		if = {
+			limit = {
+				rite = {
+					rite_has_parameter = tenet_original_sin_sinners_insight
+				}
+			}
+			pam_tenet_original_sin_insight_effect = yes
+		}
+		else_if = {
+			limit = {
+				has_character_modifier = tenet_original_sin_sinners_insight_modifier
+			}
+			remove_all_character_modifier_instances = tenet_original_sin_sinners_insight_modifier
 		}
 		###############
 		# PAM Apostolic Succession Tenet - the episcopal chain

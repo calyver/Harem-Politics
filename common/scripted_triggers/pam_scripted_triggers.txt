@@ -2,6 +2,41 @@
 	has_personal_tenet_flag = consolamentum_grief_immunity
 }
 
+# Character scope. Keep this cheap for relation/war-enemy iterators; full target validation is below.
+pam_adorcism_curse_target_is_living_adult_trigger = {
+	is_available_quick = {
+		adult = yes
+		alive = yes
+	}
+}
+
+pam_adorcism_curse_target_is_valid_trigger = {
+	$TARGET$ ?= {
+		pam_adorcism_curse_target_is_living_adult_trigger = yes
+		OR = {
+			has_relation_rival = $ACTOR$
+			has_relation_nemesis = $ACTOR$
+			$ACTOR$ = {
+				any_war_enemy = {
+					this = $TARGET$
+				}
+			}
+		}
+	}
+}
+
+pam_adorcism_has_available_curse_target_trigger = {
+	OR = {
+		any_relation = {
+			type = rival
+			pam_adorcism_curse_target_is_living_adult_trigger = yes
+		}
+		any_war_enemy = {
+			pam_adorcism_curse_target_is_living_adult_trigger = yes
+		}
+	}
+}
+
 # The liturgical language triggers below only evaluate in a rite scope; call them through
 # main_rite from a faith and through rite from a character.
 # Pre-scripted rites skip the Head of Rite culture fallback. Slavic, Georgian, Antiochian,
@@ -154,6 +189,11 @@ pam_mass_rite_conversion_conversion_phase_trigger = {
 	}
 }
 
+pam_mass_rite_conversion_requirements_trigger = {
+	has_pam_dlc_trigger = yes
+	highest_held_title_tier >= tier_duchy
+}
+
 # Great Schism: progress can still change. Any scope
 pam_great_schism_progress_can_change_trigger = {
 	NOT = { has_global_variable = pam_great_schism_decision_taken }
@@ -181,6 +221,14 @@ pam_schism_stance_supports_rite_trigger = {
 			var:pam_schism_stance ?= flag:competitor
 			faith:christian_faith.main_rite ?= rite:$OTHER_RITE$
 		}
+	}
+}
+
+pam_schism_is_chalcedonian_trigger = {
+	OR = {
+		faith = scope:schism_western_faith
+		faith = scope:schism_eastern_faith
+		faith = faith:christian_faith
 	}
 }
 
@@ -592,6 +640,92 @@ pam_can_sell_claim_on_target_trigger = {
 			}
 		}
 	}
+	# Realm scan, so it sits behind the cheap ownership and claim gates
+	custom_tooltip = {
+		text = sell_claim_recipient_must_border_target_tt
+		scope:target ?= {
+			is_neighbor_to_realm = scope:recipient
+		}
+	}
+}
+
+###Gift Claim###
+pam_gift_claim_recipient_in_own_clerical_region_trigger = {
+	exists = $TARGET$.capital_county.clerical_region_title
+	any_held_title = {
+		has_clerical_region = yes
+		this = $TARGET$.capital_county.clerical_region_title
+	}
+}
+
+pam_gift_claim_valid_title_trigger = {
+	$TITLE$ = {
+		tier = tier_county
+		faith ?= scope:puppet_or_actor.faith
+		NOT = { holder ?= scope:recipient }
+		holder ?= {
+			NOR = {
+				government_has_flag = government_is_ecclesiastical
+				government_has_flag = government_is_theocracy
+			}
+		}
+	}
+	scope:puppet_or_actor ?= {
+		OR = {
+			pam_sell_claim_target_in_own_clerical_region_trigger = { TARGET = $TITLE$ }
+			faith.religious_head ?= this
+		}
+	}
+	scope:recipient = {
+		NOT = { has_claim_on = $TITLE$ }
+	}
+}
+
+pam_can_gift_claim_on_target_trigger = {
+	custom_tooltip = {
+		text = gift_claim_target_must_be_county_of_faith_tt
+		scope:target ?= {
+			tier = tier_county
+			faith ?= scope:puppet_or_actor.faith
+		}
+	}
+	custom_tooltip = {
+		text = gift_claim_target_must_be_in_clerical_region_tt
+		trigger_if = {
+			limit = { scope:target ?= { tier = tier_county } }
+			scope:puppet_or_actor ?= {
+				OR = {
+					pam_sell_claim_target_in_own_clerical_region_trigger = { TARGET = scope:target }
+					faith.religious_head ?= this
+				}
+			}
+		}
+	}
+	custom_tooltip = {
+		text = gift_claim_target_must_not_be_church_held_tt
+		scope:target.holder ?= {
+			NOR = {
+				government_has_flag = government_is_ecclesiastical
+				government_has_flag = government_is_theocracy
+			}
+		}
+	}
+	custom_tooltip = {
+		text = gift_claim_recipient_must_not_hold_title_tt
+		scope:target ?= {
+			NOT = {
+				holder ?= scope:recipient
+			}
+		}
+	}
+	custom_tooltip = {
+		text = gift_claim_recipient_must_not_have_claim_tt
+		scope:recipient = {
+			NOT = {
+				has_claim_on = scope:target
+			}
+		}
+	}
 }
 
 can_influence_clerical_appointment_trigger = {
@@ -618,6 +752,12 @@ can_influence_clerical_appointment_trigger = {
 			}
 		}
 	}
+}
+
+pam_cathedral_project_requirements_trigger = {
+	has_pam_dlc_trigger = yes
+	highest_held_title_tier >= tier_duchy
+	has_spiritual_fulfillment_type = christian_fulfillment
 }
 
 is_valid_cathedral_spot_in_province_trigger = {
@@ -1349,6 +1489,17 @@ pam_recipient_is_clerical_title_authority_trigger = {
 	}
 }
 
+# secondary_recipient if present (replace), else recipient (grant)
+pam_grant_ecclesiastical_title_appointee_changes_rite_trigger = {
+	trigger_if = {
+		limit = { exists = scope:secondary_recipient }
+		scope:secondary_recipient.rite != scope:target.holder.rite
+	}
+	trigger_else = {
+		scope:recipient.rite != scope:target.holder.rite
+	}
+}
+
 # Non-military clergy ruler: generic theocracy, Christian ecclesiastical, or monastic holy order.
 pam_is_clergy_ruler_trigger = {
 	OR = {
@@ -1371,7 +1522,7 @@ pam_grants_own_divorce_trigger = {
 pam_clergy_continence_expected_trigger = {
 	rite = {
 		NOR = {
-			rite_has_tenet = tenet_carnal_exaltation
+			rite_has_parameter = tenet_carnal_exaltation_clergy_no_continence
 			trait_is_virtue_rite = lustful
 		}
 	}
@@ -1566,6 +1717,19 @@ pam_ai_deposable_cleric_trigger = {
 	}
 }
 
+# Reform is the era of Latin uniformity, so an AI Head of Faith pulls sees out of the hands of other rites
+# and hands them to their own without weighing the candidate. Phase first: this runs per see inside the
+# interaction AI, and outside Reform the global lookup ends it at once.
+pam_ai_reform_rite_replacement_trigger = {
+	situation:the_christian_church ?= { situation_current_phase = reform_phase }
+	scope:target.holder ?= {
+		rite != scope:actor.rite
+		is_ai = yes
+	}
+	scope:recipient = { rite = scope:actor.rite }
+	years_from_game_start >= 25
+}
+
 pam_beseech_claims_access_trigger = {
 	has_pam_dlc_trigger = yes
 	pam_clergy_interactions_faith_trigger = yes
@@ -1576,10 +1740,7 @@ pam_beseech_claims_access_trigger = {
 pam_actor_rite_has_core_simony_trigger = {
 	scope:actor = {
 		rite = {
-			has_tenet_status = {
-				tenet = tenet_simony
-				status = core 
-			}
+			rite_has_parameter = tenet_simony_gold_donations
 		}
 	}
 }
@@ -1587,8 +1748,8 @@ pam_actor_rite_has_core_simony_trigger = {
 pam_actor_has_simony_trigger = {
 	scope:actor = {
 		OR = {
-			rite = { rite_has_tenet = tenet_simony }
-			has_personal_tenet = tenet_simony
+			rite = { rite_has_parameter = tenet_simony_ecclesiastical_purchase }
+			has_personal_tenet_flag = tenet_simony_ecclesiastical_purchase
 		}
 	}
 }
@@ -2337,6 +2498,116 @@ pam_tenet_can_be_prohibited_no_actor_trigger = {
 	}
 }
 
+# Tenet scope. Practices a Christian church reads as corruption rather than doctrine.
+pam_tenet_is_christian_vice_trigger = {
+	OR = {
+		this = tenet:tenet_simony
+		this = tenet:tenet_polyamory
+		this = tenet:tenet_hedonistic
+		this = tenet:tenet_gnosticism
+		this = tenet:tenet_carnal_exaltation
+		this = tenet:tenet_natural_primitivism
+		this = tenet:tenet_consolamentum
+	}
+}
+
+# Tenet scope. Christologies settled against by Nicaea, Chalcedon and Antioch.
+pam_tenet_is_christological_heresy_trigger = {
+	OR = {
+		this = tenet:tenet_monophysitism
+		this = tenet:tenet_miaphysitism
+		this = tenet:tenet_adoptionism
+	}
+}
+
+# Tenet scope. The decision-scope counterpart to pam_ec_tenet_is_christian_abomination_trigger,
+# which reads ecumenical council scopes instead. Ritual Cannibalism is deliberately left off: the
+# Eucharist already invites the charge, so a church sanctioning it stays available.
+pam_tenet_is_christian_abomination_trigger = {
+	OR = {
+		this = tenet:tenet_human_sacrifice
+		this = tenet:tenet_cranial_trophies
+		this = tenet:tenet_gruesome_festivals
+		this = tenet:tenet_sacrificial_ceremonies
+	}
+}
+
+# Tenet scope. Sacraments and settled doctrine, pooled across the Christian faiths rather than split
+# per faith: where a faith already prohibits one of these the prohibit path is closed anyway, and
+# where it holds one as core both paths are closed, so the pooled list resolves correctly per faith.
+pam_tenet_is_christian_dogma_trigger = {
+	OR = {
+		this = tenet:tenet_apostolic_succession
+		this = tenet:tenet_divine_liturgy
+		this = tenet:tenet_communion
+		this = tenet:tenet_original_sin
+		this = tenet:tenet_transubstantiation
+		this = tenet:tenet_pentarchy
+		this = tenet:tenet_celestial_hierarchy
+		this = tenet:tenet_confession
+		this = tenet:tenet_philanthropia
+		this = tenet:tenet_hyperdulia
+		this = tenet:tenet_armed_pilgrimages
+		this = tenet:tenet_scholasticism
+		this = tenet:tenet_holy_myron
+		this = tenet:tenet_alexandrian_catechism
+	}
+}
+
+# Tenet scope. $CHARACTER$ = the Head of Faith deciding. AI-only gate on the permit decision and
+# bull; the player keeps the full list. Vice waits for the Church to lose its grip or for the
+# practice to be near-universal, while a condemned Christology or an abomination takes a groundswell
+# no Head of Faith could resist. Ecumenical councils set tenet status directly and are not gated here.
+pam_tenet_ai_may_permit_trigger = {
+	trigger_if = {
+		limit = {
+			$CHARACTER$.faith = { has_tenet_popularity_trigger = yes }
+			pam_tenet_is_christian_vice_trigger = yes
+		}
+		OR = {
+			situation:the_christian_church ?= { situation_current_phase = saeculum_obscurum }
+			pam_tenet_is_at_least_very_popular_trigger = { CHARACTER = $CHARACTER$ }
+		}
+	}
+	trigger_else_if = {
+		limit = {
+			$CHARACTER$.faith = { has_tenet_popularity_trigger = yes }
+			OR = {
+				pam_tenet_is_christological_heresy_trigger = yes
+				pam_tenet_is_christian_abomination_trigger = yes
+			}
+		}
+		pam_tenet_is_overwhelmingly_popular_trigger = { CHARACTER = $CHARACTER$ }
+	}
+	trigger_else = {
+		always = yes
+	}
+}
+
+# As above, for the prohibit decision and bull: an AI Head of Faith does not strike settled doctrine
+# from the creed while the faithful still hold to it.
+pam_tenet_ai_may_prohibit_trigger = {
+	trigger_if = {
+		limit = {
+			$CHARACTER$.faith = { has_tenet_popularity_trigger = yes }
+			pam_tenet_is_christian_dogma_trigger = yes
+		}
+		pam_tenet_is_unpopular_trigger = { CHARACTER = $CHARACTER$ }
+	}
+}
+
+# As above. Reform is the era that exists to root out corruption, so an AI Head of Faith moves
+# against vice then even where their own inclinations would leave it alone. Phase first: this runs
+# per candidate tenet inside the decision AI, and outside Reform the global lookup ends it at once.
+pam_tenet_ai_should_purge_trigger = {
+	situation:the_christian_church ?= { situation_current_phase = reform_phase }
+	OR = {
+		pam_tenet_is_christian_vice_trigger = yes
+		pam_tenet_is_christian_abomination_trigger = yes
+	}
+	$CHARACTER$.faith = { has_tenet_popularity_trigger = yes }
+}
+
 pam_tenet_can_be_persecuted_trigger = {
 	save_temporary_scope_as = pam_tenet_candidate
 	custom_tooltip = {
@@ -2427,6 +2698,16 @@ pam_tenet_is_at_least_very_popular_trigger = {
 	$CHARACTER$.faith = {
 		has_tenet_popularity_trigger = yes
 		pam_faith_tenet_popularity_value >= tenet_popularity_very_popular_threshold
+	}
+}
+
+# As above, but the tenet has fallen below the Neutral display tier: the faithful have turned on it
+# rather than merely being indifferent.
+pam_tenet_is_unpopular_trigger = {
+	save_temporary_scope_as = pam_popularity_tenet
+	$CHARACTER$.faith = {
+		has_tenet_popularity_trigger = yes
+		pam_faith_tenet_popularity_value < tenet_popularity_neutral_threshold
 	}
 }
 
@@ -2566,6 +2847,16 @@ pam_ai_armenian_actor_trigger = {
 	}
 }
 
+pam_ai_pentarchy_christian_actor_trigger = {
+	OR = {
+		culture = culture:greek
+		culture = { has_same_culture_language = culture:greek }
+		rite ?= { pam_greek_as_liturgical_language_trigger = yes }
+		# Alexandria and Antioch are Oriental Orthodox sees, so those churches count the five as their own.
+		pam_ai_oriental_christian_actor_trigger = yes
+	}
+}
+
 pam_ai_southeast_asian_actor_trigger = {
 	OR = {
 		culture = { has_cultural_pillar = heritage_austronesian }
@@ -2586,18 +2877,17 @@ pam_ai_mountain_capital_actor_trigger = {
 	}
 }
 
-# Catholic religious head does not control the de jure capital county of k_papal_state (most often Rome).
-# title_preferred_capital_county resolves to the de jure capital regardless of the holder's current location, so it stays correct while the pope is travelling.
+# A non-Catholic ruler holds the de jure capital county of k_papal_state (most often Rome).
+# title_preferred_capital_county resolves to the de jure capital regardless of whether k_papal_state is currently created.
 pam_catholic_hof_weak_papal_state_control_trigger = {
 	has_pam_dlc_trigger = yes
-	faith:catholic = {
-		exists = religious_head
-		religious_head = {
-			save_temporary_scope_as = catholic_hof_temp
-			title:k_papal_state = {
-				is_title_created = yes
-				title_preferred_capital_county = {
-					NOT = { county_held_or_vassal_to_target_trigger = { TARGET = scope:catholic_hof_temp } }
+	title:k_papal_state = {
+		title_preferred_capital_county = {
+			holder ?= {
+				is_alive = yes
+				NOR = {
+					faith = faith:catholic
+					faith = faith:christian_faith
 				}
 			}
 		}
@@ -3274,6 +3564,15 @@ pam_any_muslim_holy_site_not_under_muslim_control_trigger = {
 			any_holy_site_barony = {
 				holder.top_liege.faith.religion != religion:islam_religion
 			}
+		}
+	}
+}
+
+pam_is_the_christian_church_main_power_trigger = {
+	top_participant_group:the_christian_church ?= {
+		OR = {
+			participant_group_type = christian_clerical_main_power_rulers
+			participant_group_type = christian_regular_main_power_rulers
 		}
 	}
 }
@@ -4241,6 +4540,203 @@ incite_holy_war_title_can_be_picked_trigger = {
 		}
 	}
 }
+
+valid_claim_war_incited_attacker_trigger = {
+	faith = scope:puppet_or_actor.faith
+	highest_held_title_tier >= tier_county
+	is_at_war = no
+	is_landed = yes
+	gold > 0
+
+	is_available_quick = {
+		alive = yes
+		imprisoned = no
+		incapable = no
+	}
+	current_military_strength >= $RECIPIENT$.one_tenth_current_military_strength
+	NOR = {
+		government_has_flag = government_is_landless_adventurer
+		government_has_flag = government_is_nomadic
+		government_has_flag = government_is_celestial
+		government_has_flag = government_is_theocracy
+		government_has_flag = government_is_ecclesiastical
+		this = scope:puppet_or_actor
+		this = $RECIPIENT$
+		is_allied_to = $RECIPIENT$
+		has_truce = $RECIPIENT$
+		is_tributary_of = $RECIPIENT$.top_liege
+		is_tributary_of = $RECIPIENT$
+		top_liege = $RECIPIENT$.top_liege
+		liege = $RECIPIENT$
+		puppet:theological_agent_puppet ?= scope:puppet_or_actor
+		puppet:external_theological_agent_puppet ?= scope:puppet_or_actor
+	}
+	NOT = {
+		any_liege_or_above = {
+			is_at_war_with = $RECIPIENT$
+		}
+	}
+	any_claim = {
+		tier >= tier_county
+		tier <= tier_kingdom
+		is_landless_type_title = no
+		holder ?= {
+			target_is_same_character_or_above = $RECIPIENT$
+		}
+	}
+	tgp_japan_offensive_wars_ban_trigger = yes
+}
+claim_war_incited_attacker_can_be_picked_trigger = {
+	custom_description = {
+		text = incite_claim_war_attacker_must_share_faith_tt
+		faith = scope:puppet_or_actor.faith
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_be_landed_count_tt
+		is_landed = yes
+		highest_held_title_tier >= tier_county
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_not_be_at_war_tt
+		is_at_war = no
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_not_be_in_debt_tt
+		gold > 0
+	}
+	is_available_quick = {
+		alive = yes
+		imprisoned = no
+		incapable = no
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_be_strong_enough_tt
+		current_military_strength >= $RECIPIENT$.one_tenth_current_military_strength
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_be_secular_tt
+		NOR = {
+			government_has_flag = government_is_landless_adventurer
+			government_has_flag = government_is_nomadic
+			government_has_flag = government_is_celestial
+			government_has_flag = government_is_theocracy
+			government_has_flag = government_is_ecclesiastical
+		}
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_not_be_blocked_diplomacy_tt
+		NOR = {
+			this = scope:puppet_or_actor
+			this = $RECIPIENT$
+			is_allied_to = $RECIPIENT$
+			has_truce = $RECIPIENT$
+			is_tributary_of = $RECIPIENT$.top_liege
+			is_tributary_of = $RECIPIENT$
+			top_liege = $RECIPIENT$.top_liege
+			liege = $RECIPIENT$
+			puppet:theological_agent_puppet ?= scope:puppet_or_actor
+			puppet:external_theological_agent_puppet ?= scope:puppet_or_actor
+		}
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_liege_not_at_war_tt
+		NOT = {
+			any_liege_or_above = {
+				is_at_war_with = $RECIPIENT$
+			}
+		}
+	}
+	custom_description = {
+		text = incite_claim_war_attacker_must_have_claim_on_recipient_tt
+		any_claim = {
+			tier >= tier_county
+			tier <= tier_kingdom
+			is_landless_type_title = no
+			holder ?= {
+				target_is_same_character_or_above = $RECIPIENT$
+			}
+		}
+	}
+	trigger_if = {
+		limit = { exists = scope:target }
+		custom_description = {
+			text = incite_claim_war_attacker_must_have_claim_on_target_tt
+			has_claim_on = scope:target
+		}
+	}
+	tgp_japan_offensive_wars_ban_trigger = yes
+}
+incite_claim_war_title_can_be_picked_trigger = {
+	tier <= tier_kingdom
+	tier >= tier_county
+	is_landless_type_title = no
+	holder ?= {
+		target_is_same_character_or_above = $RECIPIENT$
+	}
+	trigger_if = {
+		limit = {
+			exists = $SECONDARY$
+		}
+		custom_tooltip = {
+			text = sponsored_claim_war_attacker_must_have_claim_tt
+			$SECONDARY$ = { has_claim_on = scope:target }
+		}
+	}
+	trigger_else = {
+		custom_tooltip = {
+			text = sponsored_claim_war_someone_must_have_claim_tt
+			any_claimant = {
+				valid_claim_war_incited_attacker_trigger = { RECIPIENT = $RECIPIENT$ }
+			}
+		}
+	}
+	trigger_if = {
+		limit = {
+			tier >= tier_kingdom
+		}
+		custom_tooltip = {
+			text = piety_too_low_target_kingdom_tt
+			scope:puppet_or_actor = { piety_level >= 4 }
+		}
+	}
+	trigger_if = {
+		limit = {
+			tier >= tier_duchy
+		}
+		custom_tooltip = {
+			text = piety_too_low_target_duchy_tt
+			scope:puppet_or_actor = { piety_level >= 3 }
+		}
+	}
+	trigger_if = {
+		limit = {
+			scope:puppet_or_actor = {
+				is_at_war_with = $RECIPIENT$
+			}
+		}
+		custom_tooltip = {
+			text = not_at_war_for_target_title_or_above_tt
+			scope:puppet_or_actor = {
+				NOT = {
+					any_character_war = {
+						casus_belli = {
+							any_target_title = {
+								OR = {
+									any_this_title_or_de_jure_above = {
+										this = scope:target
+									}
+									any_in_de_jure_hierarchy = {
+										this = scope:target
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
 incite_holy_war_ai_invalidation_trigger = {
 	#One condition must be true, and none of the NOR true
 	OR = {
@@ -4367,6 +4863,21 @@ pam_valid_enforce_succession_title_trigger = {
 			faith = $ACTOR$.faith
 			NOT = { is_at_war_with = $ACTOR$ }
 		}
+	}
+}
+
+pam_demand_church_succession_cs_candidate_trigger = {
+	this != $ACTOR$
+	age >= 50
+	NOT = { any_child = { is_alive = yes } }
+	is_landed = yes
+	faith = $ACTOR$.faith
+	is_valid_demand_church_succession_target_trigger = yes
+	primary_title ?= { tier >= tier_county }
+	NOR = {
+		has_character_flag = demand_church_succession_refused_immunity
+		exists = fallback_succession_title
+		exists = fallback_succession_character
 	}
 }
 
@@ -4955,6 +5466,16 @@ pam_college_election_title_has_electors_trigger = {
 	}
 	trigger_else = {
 		title:k_papal_state = { any_elector = {} }
+	}
+}
+
+pam_college_election_title_is_theocratic_elective_trigger = {
+	trigger_if = {
+		limit = { exists = faith.religious_head_title }
+		faith.religious_head_title.holder ?= { has_realm_law = theocratic_elective_succession_law }
+	}
+	trigger_else = {
+		title:k_papal_state.holder ?= { has_realm_law = theocratic_elective_succession_law }
 	}
 }
 
@@ -6328,22 +6849,22 @@ eligible_for_pam_legacy_trigger = {
 
 pam_study_scripture_pursuit_of_knowledge_trigger = {
 	OR = {
-		rite ?= { rite_has_tenet = tenet_pursuit_of_knowledge }
-		has_personal_tenet = tenet_pursuit_of_knowledge
+		rite ?= { rite_has_parameter = tenet_pursuit_of_knowledge_study_scripture_bonus }
+		has_personal_tenet_flag = tenet_pursuit_of_knowledge_study_scripture_bonus
 	}
 }
 
 pam_study_scripture_scholasticism_trigger = {
 	OR = {
-		rite ?= { rite_has_tenet = tenet_scholasticism }
-		has_personal_tenet = tenet_scholasticism
+		rite ?= { rite_has_parameter = tenet_scholasticism_study_scripture_bonus }
+		has_personal_tenet_flag = tenet_scholasticism_study_scripture_bonus
 	}
 }
 
 pam_study_scripture_confession_tenet_trigger = {
 	OR = {
-		rite ?= { rite_has_tenet = tenet_confession }
-		has_personal_tenet = tenet_confession
+		rite ?= { rite_has_parameter = tenet_confession_study_scripture_bonus }
+		has_personal_tenet_flag = tenet_confession_study_scripture_bonus
 	}
 }
 
@@ -6414,6 +6935,26 @@ pam_papabile_slot_open_to_trigger = {
 	}
 }
 
+pam_papal_ruling_rite_has_parameter_trigger = {
+	trigger_if = {
+		limit = { exists = faith.religious_head_title }
+		faith.religious_head_title.holder.rite ?= { rite_has_parameter = $PARAMETER$ }
+	}
+	trigger_else = {
+		title:k_papal_state.holder.rite ?= { rite_has_parameter = $PARAMETER$ }
+	}
+}
+
+pam_papabile_barred_by_clerical_gender_trigger = {
+	trigger_if = {
+		limit = { is_female = yes }
+		pam_papal_ruling_rite_has_parameter_trigger = { PARAMETER = clergy_must_be_male }
+	}
+	trigger_else = {
+		pam_papal_ruling_rite_has_parameter_trigger = { PARAMETER = clergy_must_be_female }
+	}
+}
+
 # Only the patron's own personal tenets may be imposed, and not one the order already advocates.
 pam_reform_order_tenet_option_shown_trigger = {
 	scope:actor = {
@@ -6421,16 +6962,6 @@ pam_reform_order_tenet_option_shown_trigger = {
 		any_patroned_holy_order = {
 			leader = scope:recipient
 			NOT = { order_tenet = tenet:$TENET$ }
-		}
-	}
-}
-
-pam_reform_order_tenet_option_valid_trigger = {
-	custom_tooltip = {
-		text = pam_reform_order_only_one_tenet_tt
-		OR = {
-			scope:$TENET$ = yes
-			pam_evangelize_personal_tenet_send_option_selected_trigger = no
 		}
 	}
 }
@@ -6476,5 +7007,13 @@ monastic_movement_non_order_size_reqs_trigger = {
 				}
 			}
 		}
+	}
+}
+
+# Core tenet or personal pick; shared by scheme success/prediction
+pam_study_rite_tenet_bonus_trigger = {
+	OR = {
+		rite ?= { rite_has_parameter = $PARAM$ }
+		has_personal_tenet_flag = $PARAM$
 	}
 }

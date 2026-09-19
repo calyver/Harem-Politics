@@ -4,16 +4,16 @@
 	#########
 	#Promising Prospects Lifestyle Perk:
 	modifier = { # A lot of acceptance for yourself - you are likely already married, thus you need motivation to get rid of your spouse to marry someone better
-		scope:actor = { has_perk = promising_prospects_perk }
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = { has_perk = promising_prospects_perk }
+		scope:puppet_or_actor = scope:secondary_actor
 		add = promising_prospects_self_value
 		desc = PROMISING_PROSPECTS_PERK_MODIFIER
 	}
 	modifier = { # A significant but lesser chunk of acceptance for your extended family, to increase the value of the perk!
-		scope:actor = { has_perk = promising_prospects_perk }
-		scope:actor != scope:secondary_actor
+		scope:puppet_or_actor = { has_perk = promising_prospects_perk }
+		scope:puppet_or_actor != scope:secondary_actor
 		scope:secondary_actor = {
-			is_close_or_extended_family_of = scope:actor
+			is_close_or_extended_family_of = scope:puppet_or_actor
 		}
 		add = promising_prospects_other_value
 		desc = PROMISING_PROSPECTS_PERK_MODIFIER
@@ -34,27 +34,27 @@
 	}
 	#Surveyor Perk, similar logic to Promising Prospects but only same realm
 	modifier = { # A lot of acceptance for yourself - you are likely already married, thus you need motivation to get rid of your spouse to marry someone better
-		scope:actor = { has_perk = know_your_land_know_your_people_perk }
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = { has_perk = know_your_land_know_your_people_perk }
+		scope:puppet_or_actor = scope:secondary_actor
 		#We need to be in the same realm:
-		scope:recipient.top_liege = scope:actor.top_liege
+		scope:recipient.top_liege = scope:puppet_or_actor.top_liege
 		# Not Nomadic
-		scope:actor = { government_has_flag = government_is_settled }
+		scope:puppet_or_actor = { government_has_flag = government_is_settled }
 		add = surveyor_marriage_perk_self_value
 		desc = SURVEYOR_PERK_REALM_ACCEPTANCE
 	}
 	modifier = { # A significant but lesser chunk of acceptance for your extended family, to increase the value of the perk!
-		scope:actor = { has_perk = know_your_land_know_your_people_perk }
-		scope:actor != scope:secondary_actor
+		scope:puppet_or_actor = { has_perk = know_your_land_know_your_people_perk }
+		scope:puppet_or_actor != scope:secondary_actor
 		scope:secondary_actor = {
-			is_close_or_extended_family_of = scope:actor
+			is_close_or_extended_family_of = scope:puppet_or_actor
 
 		}
 		#We all need to be in the same realm:
-		scope:secondary_actor.top_liege = scope:actor.top_liege
-		scope:recipient.top_liege = scope:actor.top_liege
+		scope:secondary_actor.top_liege = scope:puppet_or_actor.top_liege
+		scope:recipient.top_liege = scope:puppet_or_actor.top_liege
 		# Not Nomadic
-		scope:actor = { government_has_flag = government_is_settled }
+		scope:puppet_or_actor = { government_has_flag = government_is_settled }
 		add = surveyor_marriage_perk_other_value
 		desc = SURVEYOR_PERK_REALM_ACCEPTANCE
 	}
@@ -69,7 +69,7 @@ marriage_ai_accept_politic_modifier = {
 			value = 40
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = hard_difficulty
@@ -78,7 +78,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else_if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = very_hard_difficulty
@@ -87,7 +87,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						tier_difference = {
 							target = scope:recipient
 							value = -1
@@ -98,7 +98,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else_if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						tier_difference = {
 							target = scope:recipient
 							value = -2
@@ -109,22 +109,22 @@ marriage_ai_accept_politic_modifier = {
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						any_ally = {
 							NOR = {
-    							target_is_liege_or_above = scope:actor
-    							target_is_vassal_or_below = scope:actor
+    							target_is_liege_or_above = scope:puppet_or_actor
+    							target_is_vassal_or_below = scope:puppet_or_actor
 							}
 							count >= 2
 						}
 					}
 				}
-				scope:actor = {
+				scope:puppet_or_actor = {
 					every_ally = {
 						limit = {
 							NOR = {
-    							target_is_liege_or_above = scope:actor
-    							target_is_vassal_or_below = scope:actor
+    							target_is_liege_or_above = scope:puppet_or_actor
+    							target_is_vassal_or_below = scope:puppet_or_actor
 							}
 						}
 						multiply = 0.5
@@ -133,7 +133,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_at_war = yes
 					}
 				}
@@ -142,40 +142,40 @@ marriage_ai_accept_politic_modifier = {
 		}
 		scope:recipient = {
 			NOR = {
-				is_allied_to = scope:actor
-				scope:actor = { # Emperors do not care for Counts at all
+				is_allied_to = scope:puppet_or_actor
+				scope:puppet_or_actor = { # Emperors do not care for Counts at all
 					tier_difference = {
 						target = scope:recipient
 						value <= -3
 					}
 				}
 				has_government = landless_adventurer_government
-				scope:actor = { has_government = landless_adventurer_government }
+				scope:puppet_or_actor = { has_government = landless_adventurer_government }
 			}
 			OR = {
 				ai_diplomacy_stance = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					stance = neutral
 				}
 				ai_diplomacy_stance = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					stance = threat
 				}
 			}
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
 		OR = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				top_liege = this
 			}
 			scope:recipient = {
 				top_liege = this
 			}
-			scope:recipient.liege = scope:actor.liege
+			scope:recipient.liege = scope:puppet_or_actor.liege
 		}
 
 		desc = DESIRES_ALLIANCE
@@ -185,7 +185,7 @@ marriage_ai_accept_politic_modifier = {
 			value = 100
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = hard_difficulty
@@ -194,7 +194,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else_if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = very_hard_difficulty
@@ -203,22 +203,22 @@ marriage_ai_accept_politic_modifier = {
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						any_ally = {
 							NOR = {
-    							target_is_liege_or_above = scope:actor
-    							target_is_vassal_or_below = scope:actor
+    							target_is_liege_or_above = scope:puppet_or_actor
+    							target_is_vassal_or_below = scope:puppet_or_actor
 							}
 							count >= 2
 						}
 					}
 				}
-				scope:actor = {
+				scope:puppet_or_actor = {
 					every_ally = {
 						limit = {
 							NOR = {
-    							target_is_liege_or_above = scope:actor
-    							target_is_vassal_or_below = scope:actor
+    							target_is_liege_or_above = scope:puppet_or_actor
+    							target_is_vassal_or_below = scope:puppet_or_actor
 							}
 						}
 						multiply = 0.5
@@ -227,7 +227,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_at_war = yes
 					}
 				}
@@ -235,14 +235,14 @@ marriage_ai_accept_politic_modifier = {
 			}
 		}
 		scope:recipient = {
-			NOT = { is_allied_to = scope:actor }
+			NOT = { is_allied_to = scope:puppet_or_actor }
 			ai_diplomacy_stance = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				stance = friend
 			}
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
@@ -253,7 +253,7 @@ marriage_ai_accept_politic_modifier = {
 			value = -100
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = hard_difficulty
@@ -262,7 +262,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else_if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = very_hard_difficulty
@@ -271,14 +271,14 @@ marriage_ai_accept_politic_modifier = {
 			}
 		}
 		scope:recipient = {
-			NOT = { is_allied_to = scope:actor }
+			NOT = { is_allied_to = scope:puppet_or_actor }
 			ai_diplomacy_stance = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				stance = enemy
 			}
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
@@ -286,18 +286,18 @@ marriage_ai_accept_politic_modifier = {
 	}
 	modifier = {
 		add = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				every_ally = {
 					limit = {
 						NOR = {
-    						target_is_liege_or_above = scope:actor
-    						target_is_vassal_or_below = scope:actor
+    						target_is_liege_or_above = scope:puppet_or_actor
+    						target_is_vassal_or_below = scope:puppet_or_actor
 						}
 					}
 					add = -15
 					if = {
 						limit = {
-							scope:actor = {
+							scope:puppet_or_actor = {
 								is_ai = no
 							}
 							has_game_rule = hard_difficulty
@@ -306,7 +306,7 @@ marriage_ai_accept_politic_modifier = {
 					}
 					else_if = {
 						limit = {
-							scope:actor = {
+							scope:puppet_or_actor = {
 								is_ai = no
 							}
 							has_game_rule = very_hard_difficulty
@@ -316,7 +316,7 @@ marriage_ai_accept_politic_modifier = {
 				}
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			trigger_if = {
 				limit = {
 					OR = {
@@ -327,8 +327,8 @@ marriage_ai_accept_politic_modifier = {
 				}
 				any_ally = {
 					NOR = {
-						target_is_vassal_or_below = scope:actor
-						target_is_liege_or_above = scope:actor
+						target_is_vassal_or_below = scope:puppet_or_actor
+						target_is_liege_or_above = scope:puppet_or_actor
 					}
 					count >= 1
 				}
@@ -336,8 +336,8 @@ marriage_ai_accept_politic_modifier = {
 			trigger_else = {
 				any_ally = {
 					NOR = {
-						target_is_vassal_or_below = scope:actor
-						target_is_liege_or_above = scope:actor
+						target_is_vassal_or_below = scope:puppet_or_actor
+						target_is_liege_or_above = scope:puppet_or_actor
 					}
 					count >= 2
 				}
@@ -345,13 +345,13 @@ marriage_ai_accept_politic_modifier = {
 		}
 		scope:recipient = {
 			NOR = {
-				is_allied_to = scope:actor
-				target_is_vassal_or_below = scope:actor
-				target_is_liege_or_above = scope:actor
+				is_allied_to = scope:puppet_or_actor
+				target_is_vassal_or_below = scope:puppet_or_actor
+				target_is_liege_or_above = scope:puppet_or_actor
 			}
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
@@ -362,7 +362,7 @@ marriage_ai_accept_politic_modifier = {
 			value = -50
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = hard_difficulty
@@ -371,7 +371,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else_if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = no
 					}
 					has_game_rule = very_hard_difficulty
@@ -398,21 +398,21 @@ marriage_ai_accept_politic_modifier = {
 				}
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_at_war = yes
 		}
 		scope:recipient = {
 			NOR = {
-				is_allied_to = scope:actor
-				is_close_family_of = scope:actor
-				has_relation_friend = scope:actor
-				has_relation_lover = scope:actor
-				target_is_vassal_or_below = scope:actor
-				target_is_liege_or_above = scope:actor
+				is_allied_to = scope:puppet_or_actor
+				is_close_family_of = scope:puppet_or_actor
+				has_relation_friend = scope:puppet_or_actor
+				has_relation_lover = scope:puppet_or_actor
+				target_is_vassal_or_below = scope:puppet_or_actor
+				target_is_liege_or_above = scope:puppet_or_actor
 			}
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
@@ -424,11 +424,11 @@ marriage_ai_accept_politic_modifier = {
 		OR = {
 			# Liege PoV
 			scope:recipient = {
-				is_vassal_of = scope:actor
+				is_vassal_of = scope:puppet_or_actor
 				vassal_contract_has_flag = vassal_contract_marriage_favor
 			}
 			# Vassal PoV
-			scope:actor = {
+			scope:puppet_or_actor = {
 				is_vassal_of = scope:recipient
 				vassal_contract_has_flag = vassal_contract_marriage_favor
 			}
@@ -443,11 +443,11 @@ marriage_ai_accept_politic_modifier = {
 			is_confederation_member = yes
 			yields_alliance = {
 				candidate = scope:secondary_recipient
-				target = scope:actor
+				target = scope:puppet_or_actor
 				target_candidate = scope:secondary_actor
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_member_of_confederation = scope:recipient.confederation
 		}
 
@@ -462,7 +462,7 @@ marriage_ai_accept_politic_modifier = {
 		add = marry_close_family_tiers_acceptance_value
 		desc = CLOSE_FAMILY_TIERS_REASON
 		NOT = {
-			scope:actor = { has_government = landless_adventurer_government }
+			scope:puppet_or_actor = { has_government = landless_adventurer_government }
 		}
 	}
 
@@ -476,7 +476,7 @@ marriage_ai_accept_politic_modifier = {
 			if = {
 				limit = {
 					scope:recipient = { government_is_japanese_trigger = yes }
-					scope:actor = { government_is_japanese_trigger = yes }
+					scope:puppet_or_actor = { government_is_japanese_trigger = yes }
 				}
 				multiply = 3
 			}
@@ -484,7 +484,7 @@ marriage_ai_accept_politic_modifier = {
 		scope:recipient = {
 			government_has_mechanic = administrative
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			NOT = { government_has_mechanic = administrative }
 		}
 		desc = YOU_ARE_NON_ADMIN_REASON
@@ -496,7 +496,7 @@ marriage_ai_accept_politic_modifier = {
 			if = {
 				limit = {
 					scope:recipient = { government_is_japanese_trigger = yes }
-					scope:actor = { government_is_japanese_trigger = yes }
+					scope:puppet_or_actor = { government_is_japanese_trigger = yes }
 				}
 				multiply = 3
 			}
@@ -504,7 +504,7 @@ marriage_ai_accept_politic_modifier = {
 		scope:recipient = {
 			NOT = { government_has_mechanic = administrative }
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_has_mechanic = administrative
 		}
 		desc = THEY_ARE_NON_ADMIN_REASON
@@ -518,13 +518,13 @@ marriage_ai_accept_politic_modifier = {
 		scope:secondary_actor = {
 			merit_level > 1
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_allows = merit
 		}
 		scope:recipient = {
 			government_allows = merit
 			culture = {
-				has_same_culture_heritage = scope:actor.culture
+				has_same_culture_heritage = scope:puppet_or_actor.culture
 			}
 		}
 		desc = SECONDARY_ACTOR_MERIT_MARRIAGE_REASON
@@ -533,20 +533,20 @@ marriage_ai_accept_politic_modifier = {
 	modifier = {
 		add = {
 			value = 5
-			multiply = scope:actor.merit_level
+			multiply = scope:puppet_or_actor.merit_level
 		}
 		scope:secondary_actor = {
-			NOT = { this = scope:actor }
-			is_close_family_of = scope:actor
+			NOT = { this = scope:puppet_or_actor }
+			is_close_family_of = scope:puppet_or_actor
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_allows = merit
 			merit_level >= 3
 		}
 		scope:recipient = {
 			government_allows = merit
 			culture = {
-				has_same_culture_heritage = scope:actor.culture
+				has_same_culture_heritage = scope:puppet_or_actor.culture
 			}
 		}
 		desc = ACTOR_MERIT_MARRIAGE_REASON
@@ -569,7 +569,7 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else = { add = -20 }
 		}
-		scope:actor = { government_has_flag = government_is_landless_adventurer }
+		scope:puppet_or_actor = { government_has_flag = government_is_landless_adventurer }
 		scope:recipient = {
 			NOT = { government_has_flag = government_is_landless_adventurer }
 		}
@@ -613,9 +613,9 @@ marriage_ai_accept_politic_modifier = {
 			}
 			else = { add = -20 }
 		}
-		scope:actor.faith = scope:recipient.faith # Same Faith
-		scope:actor.rite = { rite_has_doctrine = doctrine_clerical_marriage_disallowed } # And they don't normally allow clerical marriage
-		scope:actor = { government_has_flag = government_is_theocracy }
+		scope:puppet_or_actor.faith = scope:recipient.faith # Same Faith
+		scope:puppet_or_actor.rite = { rite_has_doctrine = doctrine_clerical_marriage_disallowed } # And they don't normally allow clerical marriage
+		scope:puppet_or_actor = { government_has_flag = government_is_theocracy }
 		scope:recipient = {
 			NOT = { government_has_flag = government_is_theocracy }
 		}
@@ -628,7 +628,7 @@ marriage_ai_accept_politic_modifier = {
 	modifier = { # A Recipient is more likely to agree to a marriage arranged by their liege.
 		add = 40
 		scope:recipient = {
-			target_is_liege_or_above = scope:actor
+			target_is_liege_or_above = scope:puppet_or_actor
 			NOT = { target_is_liege_or_above = scope:secondary_actor }
 			OR = {
 				opinion = {
@@ -702,10 +702,10 @@ marriage_ai_accept_opinion_relationship_modifier = {
 	}
 	opinion_modifier = { # A lot more likely if Recipient likes Actor
 		trigger = {
-			scope:actor != scope:recipient
+			scope:puppet_or_actor != scope:recipient
 		}
 		who = scope:recipient
-		opinion_target = scope:actor
+		opinion_target = scope:puppet_or_actor
 		multiplier = 0.75
 		desc = AI_OPINION_REASON_ACTOR
 	}
@@ -774,7 +774,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 					type = secret_lover
 					secret_target = scope:secondary_actor
 					any_secret_knower = {
-						this = scope:actor
+						this = scope:puppet_or_actor
 					}
 				}
 			}
@@ -799,7 +799,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 					type = secret_lover
 					secret_target = scope:secondary_actor
 					any_secret_knower = {
-						this = scope:actor
+						this = scope:puppet_or_actor
 					}
 				}
 			}
@@ -811,7 +811,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 		add = -50
 		desc = just_widowed_interaction_reason
 		trigger = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				has_variable = just_widowed_var
 			}
 		}
@@ -821,7 +821,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 		add = 5
 		desc = speaks_same_language_interaction_reason
 		trigger = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				knows_language_of_culture = scope:recipient.culture
 			}
 		}
@@ -832,14 +832,14 @@ marriage_ai_accept_opinion_relationship_modifier = {
 		desc = foreign_realm_court_language_non_spoken_interaction_reason
 		trigger = {
 			has_dlc_feature = royal_court
-			scope:actor = {
+			scope:puppet_or_actor = {
 				has_royal_court = yes
 				NOT = { knows_court_language_of = this }
 			}
-			scope:actor.top_liege != scope:recipient.top_liege
+			scope:puppet_or_actor.top_liege != scope:recipient.top_liege
 			trigger_if = {
 				limit = { scope:recipient = { has_royal_court = yes } }
-				scope:actor = { # You share Court Language
+				scope:puppet_or_actor = { # You share Court Language
 					has_same_court_language = scope:recipient
 				}
 			}
@@ -849,7 +849,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 					is_ruler = yes
 					any_liege_or_above = {
 						has_royal_court = yes
-						has_same_court_language = scope:actor
+						has_same_court_language = scope:puppet_or_actor
 						save_temporary_scope_as = court_temp
 						scope:recipient = {
 							NOT = {
@@ -870,14 +870,14 @@ marriage_ai_accept_opinion_relationship_modifier = {
 		desc = foreign_realm_court_language_spoken_interaction_reason
 		trigger = {
 			has_dlc_feature = royal_court
-			scope:actor = {
+			scope:puppet_or_actor = {
 				has_royal_court = yes
 				knows_court_language_of = this
 			}
-			scope:actor.top_liege != scope:recipient.top_liege
+			scope:puppet_or_actor.top_liege != scope:recipient.top_liege
 			trigger_if = {
 				limit = { scope:recipient = { has_royal_court = yes } }
-				scope:actor = { # You share Court Language
+				scope:puppet_or_actor = { # You share Court Language
 					has_same_court_language = scope:recipient
 				}
 			}
@@ -887,7 +887,7 @@ marriage_ai_accept_opinion_relationship_modifier = {
 					is_ruler = yes
 					any_liege_or_above = {
 						has_royal_court = yes
-						has_same_court_language = scope:actor
+						has_same_court_language = scope:puppet_or_actor
 						save_temporary_scope_as = court_temp
 						scope:recipient = {
 							NOT = {
@@ -907,16 +907,16 @@ marriage_ai_accept_opinion_relationship_modifier = {
 		add = 25
 		desc = laamp_from_contact_list_reason
 		scope:recipient = {
-			is_contact_of = scope:actor
+			is_contact_of = scope:puppet_or_actor
 		}
 	}
 	modifier = { # Oath from allied ruler
 		add = 10
 		desc = oath_of_alliances_marriage_acceptance_value
 		scope:recipient = {
-			is_allied_to = scope:actor
+			is_allied_to = scope:puppet_or_actor
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_character_modifier = oath_of_alliances
 		}
 	}
@@ -931,10 +931,10 @@ marriage_ai_accept_succession_modifier = {
 		scope:recipient = scope:secondary_recipient
 		desc = MY_OWN_MARRIAGE_REASON
 	}
-	#More likely if the secondary_actor is the actor's heir
+	#More likely if the secondary_actor is the puppet_or_actor's heir
 	modifier = {
 		add = 10
-		scope:actor = {
+		scope:puppet_or_actor = {
 			exists = player_heir
 			player_heir_position = {
 				value <= 4 #0, 1, 2, 3, 4 = 5 first player heirs
@@ -947,7 +947,7 @@ marriage_ai_accept_succession_modifier = {
 				}
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			tier_difference = {
 				target = scope:recipient
 				value > 0
@@ -958,14 +958,14 @@ marriage_ai_accept_succession_modifier = {
 
 	modifier = {
 		add = 20
-		scope:actor = {
+		scope:puppet_or_actor = {
 			exists = player_heir
 			player_heir_position = {
 				value = 0 #player heir
 				target = scope:secondary_actor
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			tier_difference = {
 				target = scope:recipient
 				value > 0
@@ -982,7 +982,7 @@ marriage_ai_accept_succession_modifier = {
 			exists = scope:recipient.dynasty
 			dynasty = scope:recipient.dynasty
 			NAND = {
-				dynasty = scope:actor.dynasty
+				dynasty = scope:puppet_or_actor.dynasty
 				dynasty = scope:secondary_actor.dynasty
 				scope:secondary_actor = { NOT = { has_trait = bastard } }
 			}
@@ -1129,20 +1129,20 @@ marriage_ai_accept_faith_hostility_modifier = {
 	#########
 	# FAITH #
 	#########
-	modifier = { # A recipient will be reluctant (to differing degrees) to agree to marriages sent from an actor of a different faith
+	modifier = { # A recipient will be reluctant (to differing degrees) to agree to marriages sent from an puppet_or_actor of a different faith
 		#Same faith is always fully accepted, so we can skip the hostility level check below
-		scope:recipient.faith != scope:actor.faith
+		scope:recipient.faith != scope:puppet_or_actor.faith
 		# Nomads care little of Faith within the Steppe, and Tributaries are willing to marry them, too.
 		trigger_if = {
 			limit = {
-				scope:actor = {
+				scope:puppet_or_actor = {
 					government_has_flag = government_is_in_steppe
 				}
 			}
 			scope:recipient = {
 				NOR = {
 					government_has_flag = government_is_in_steppe
-					is_tributary_of = scope:actor
+					is_tributary_of = scope:puppet_or_actor
 				}
 			}
 		}
@@ -1152,7 +1152,7 @@ marriage_ai_accept_faith_hostility_modifier = {
 					government_has_flag = government_is_in_steppe
 				}
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOR = {
 					government_has_flag = government_is_in_steppe
 					is_tributary_of = scope:recipient
@@ -1162,7 +1162,7 @@ marriage_ai_accept_faith_hostility_modifier = {
 
 		scope:recipient.faith = {
 			faith_hostility_level = {
-				target = scope:actor.faith
+				target = scope:puppet_or_actor.faith
 				value > faith_fully_accepted_level
 			}
 		}
@@ -1176,7 +1176,7 @@ marriage_ai_accept_faith_hostility_modifier = {
 						# Exempt Conciliation struggle resolution
 						AND = {
 							has_global_variable = fp2_struggle_conciliation_ending
-							fp2_struggle_conciliation_special_cultural_rules_trigger = { C1 = scope:recipient C2 = scope:actor }
+							fp2_struggle_conciliation_special_cultural_rules_trigger = { C1 = scope:recipient C2 = scope:puppet_or_actor }
 						}
 					}
 				}
@@ -1184,7 +1184,7 @@ marriage_ai_accept_faith_hostility_modifier = {
 					limit = {
 						scope:recipient.faith = {
 							faith_hostility_level = {
-								target = scope:actor.faith
+								target = scope:puppet_or_actor.faith
 								value > faith_astray_level
 							}
 						}
@@ -1195,7 +1195,7 @@ marriage_ai_accept_faith_hostility_modifier = {
 					limit = {
 						scope:recipient.faith = {
 							faith_hostility_level = {
-								target = scope:actor.faith
+								target = scope:puppet_or_actor.faith
 								value >= faith_hostility_prevents_marriage_level
 							}
 						}
@@ -1211,46 +1211,46 @@ marriage_ai_accept_faith_hostility_modifier = {
 	first_valid = {
 		modifier = {
 			add = -50
-			scope:recipient.faith = scope:actor.faith
-			scope:actor.rite != scope:recipient.rite
+			scope:recipient.faith = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.rite != scope:recipient.rite
 			scope:recipient.rite = {
-				"divergence(scope:actor.rite)" >= monumental_rite_divergence_value
+				"divergence(scope:puppet_or_actor.rite)" >= monumental_rite_divergence_value
 			}
 			desc = marriage_monumental_divergence_reason
 		}
 		modifier = {
 			add = -30
-			scope:recipient.faith = scope:actor.faith
-			scope:actor.rite != scope:recipient.rite
+			scope:recipient.faith = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.rite != scope:recipient.rite
 			scope:recipient.rite = {
-				"divergence(scope:actor.rite)" >= massive_rite_divergence_value
+				"divergence(scope:puppet_or_actor.rite)" >= massive_rite_divergence_value
 			}
 			desc = marriage_massive_divergence_reason
 		}
 		modifier = {
 			add = -20
-			scope:recipient.faith = scope:actor.faith
-			scope:actor.rite != scope:recipient.rite
+			scope:recipient.faith = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.rite != scope:recipient.rite
 			scope:recipient.rite = {
-				"divergence(scope:actor.rite)" >= major_rite_divergence_value
+				"divergence(scope:puppet_or_actor.rite)" >= major_rite_divergence_value
 			}
 			desc = marriage_major_divergence_reason
 		}
 		modifier = {
 			add = -10
-			scope:recipient.faith = scope:actor.faith
-			scope:actor.rite != scope:recipient.rite
+			scope:recipient.faith = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.rite != scope:recipient.rite
 			scope:recipient.rite = {
-				"divergence(scope:actor.rite)" >= medium_rite_divergence_value
+				"divergence(scope:puppet_or_actor.rite)" >= medium_rite_divergence_value
 			}
 			desc = marriage_medium_divergence_reason
 		}
 		modifier = {
 			add = -5
-			scope:recipient.faith = scope:actor.faith
-			scope:actor.rite != scope:recipient.rite
+			scope:recipient.faith = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.rite != scope:recipient.rite
 			scope:recipient.rite = {
-				"divergence(scope:actor.rite)" >= minor_rite_divergence_value
+				"divergence(scope:puppet_or_actor.rite)" >= minor_rite_divergence_value
 			}
 			desc = marriage_minor_divergence_reason
 		}
@@ -1512,8 +1512,8 @@ marriage_ai_accept_fertility_modifier = {
 
 marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
-		scope:actor = { has_character_modifier = abandoned_marriage_modifier }
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = { has_character_modifier = abandoned_marriage_modifier }
+		scope:puppet_or_actor = scope:secondary_actor
 		add = -150
 		desc = ABANDONED_SPOUSE_MODIFIER
 	}
@@ -1523,13 +1523,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = { #Weak hook
 		scope:hook = yes
 		add = 100
-		scope:actor = { NOT = { has_strong_hook = scope:recipient } }
+		scope:puppet_or_actor = { NOT = { has_strong_hook = scope:recipient } }
 		desc = SCHEME_WEAK_HOOK_USED
 	}
 	modifier = { #Strong Hook (in some cases it's not auto accept)
 		scope:hook = yes
 		add = 200
-		scope:actor = { has_strong_hook = scope:recipient }
+		scope:puppet_or_actor = { has_strong_hook = scope:recipient }
 		desc = SCHEME_STRONG_HOOK_USED
 	}
 
@@ -1575,14 +1575,14 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		# Nomads don't care about polygamy.
 		trigger_if = {
 			limit = {
-				scope:actor = {
+				scope:puppet_or_actor = {
 					government_has_flag = government_is_in_steppe
 				}
 			}
 			scope:recipient = {
 				NOR = {
 					government_has_flag = government_is_in_steppe
-					is_tributary_of = scope:actor
+					is_tributary_of = scope:puppet_or_actor
 				}
 			}
 		}
@@ -1592,7 +1592,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 					government_has_flag = government_is_in_steppe
 				}
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOR = {
 					government_has_flag = government_is_in_steppe
 					is_tributary_of = scope:recipient
@@ -1681,9 +1681,9 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = intimidated_marriage_reason_value
 		scope:recipient = {
 			this != scope:secondary_recipient
-			target_is_liege_or_above = scope:actor
+			target_is_liege_or_above = scope:puppet_or_actor
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 1
 			}
 		}
@@ -1693,9 +1693,9 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = cowed_marriage_reason_value
 		scope:recipient = {
 			this != scope:secondary_recipient
-			target_is_liege_or_above = scope:actor
+			target_is_liege_or_above = scope:puppet_or_actor
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 2
 			}
 		}
@@ -1706,10 +1706,10 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = intimidated_marriage_external_reason_value
 		scope:recipient = {
 			this != scope:secondary_recipient
-			NOT = { target_is_liege_or_above = scope:actor }
+			NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 			exists = top_liege
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 1
 			}
 		}
@@ -1719,10 +1719,10 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = cowed_marriage_external_reason_value
 		scope:recipient = {
 			this != scope:secondary_recipient
-			NOT = { target_is_liege_or_above = scope:actor }
+			NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 			exists = top_liege
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 2
 			}
 		}
@@ -1731,12 +1731,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	#Less likely to accept a marriage with someone they are scared off
 	modifier = {
 		add = -50
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
-			target_is_liege_or_above = scope:actor
+			target_is_liege_or_above = scope:puppet_or_actor
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 1
 			}
 		}
@@ -1744,12 +1744,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	}
 	modifier = {
 		add = -75
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
-			target_is_liege_or_above = scope:actor
+			target_is_liege_or_above = scope:puppet_or_actor
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 2
 			}
 		}
@@ -1758,12 +1758,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 
 	modifier = {
 		add = -75
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
-			NOT = { target_is_liege_or_above = scope:actor }
+			NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 1
 			}
 		}
@@ -1771,12 +1771,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	}
 	modifier = {
 		add = -150
-		scope:actor = scope:secondary_actor
+		scope:puppet_or_actor = scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
-			NOT = { target_is_liege_or_above = scope:actor }
+			NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 2
 			}
 		}
@@ -1785,12 +1785,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	#More likely to accept a marriage proposal from someone they're scared of if they're not the secondary_actor
 	modifier = {
 		add = intimidated_marriage_not_secondary_reason_value
-		scope:actor != scope:secondary_actor
+		scope:puppet_or_actor != scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
 			exists = top_liege
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 1
 			}
 		}
@@ -1798,12 +1798,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	}
 	modifier = {
 		add = cowed_marriage_not_secondary_reason_value
-		scope:actor != scope:secondary_actor
+		scope:puppet_or_actor != scope:secondary_actor
 		scope:recipient = {
 			this = scope:secondary_recipient
 			exists = top_liege
 			has_dread_level_towards = {
-				target = scope:actor
+				target = scope:puppet_or_actor
 				level = 2
 			}
 		}
@@ -1825,7 +1825,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 					value > 10
 				}
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOT = { has_government = landless_adventurer_government }
 			}
 		}
@@ -1849,7 +1849,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 					value > 10
 				}
 			}
-			scope:actor = { has_government = landless_adventurer_government }
+			scope:puppet_or_actor = { has_government = landless_adventurer_government }
 		}
 
 		who = scope:recipient
@@ -1886,12 +1886,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		desc = MARRIAGE_DESPERATION
 	}
 
-	modifier = { #The actor's spouse has boosted the AI's willingness to marry the heir
+	modifier = { #The puppet_or_actor's spouse has boosted the AI's willingness to marry the heir
 		add = 75
 		scope:secondary_actor = {
 			has_character_modifier = heir_easier_to_marry_off_modifier
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			player_heir ?= scope:secondary_actor
 		}
 		desc = MARRIAGE_SPOUSE_COUNCILLOR_BOOST_HEIR
@@ -1899,7 +1899,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = 50
 		scope:secondary_actor = {
-			is_child_of = scope:actor
+			is_child_of = scope:puppet_or_actor
 			has_character_modifier = child_easier_to_marry_off_modifier
 		}
 		desc = MARRIAGE_SPOUSE_COUNCILLOR_BOOST_CHILD
@@ -1924,7 +1924,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = { # Court grandeur level above expected level gives a boost
 		add = ep1_court_grandeur_marriage_acceptance_value
 		desc = COURT_GRANDEUR_LEVEL_MARRIAGE_ACCEPTANCE_BOOST_MODIFIER
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_royal_court = yes
 			has_dlc_feature = royal_court
 			court_grandeur_current_level > court_grandeur_minimum_expected_level
@@ -1934,7 +1934,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = { # Court grandeur level below expected level gives a penalty
 		add = ep1_court_grandeur_marriage_acceptance_value_penalty
 		desc = COURT_GRANDEUR_LEVEL_MARRIAGE_ACCEPTANCE_PENALTY_MODIFIER
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_royal_court = yes
 			has_dlc_feature = royal_court
 			court_grandeur_current_level < court_grandeur_minimum_expected_level
@@ -1948,7 +1948,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = { # Court grandeur level below expected level gives a penalty
 		add = mpo_domicile_yurt_marriage_acceptance_value
 		desc = YURT_DOMICILE_MARRIAGE_ACCEPTANCE_MODIFIER
-		scope:actor.domicile ?= {
+		scope:puppet_or_actor.domicile ?= {
 			has_domicile_building_or_higher = marriage_yurt_01
 		}
 	}
@@ -1957,7 +1957,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	#  TRADITIONS  #
 	################
 	modifier = { # Wedding Ceremonies
-		scope:actor.culture = { has_cultural_parameter = marriage_acceptance_bonus }
+		scope:puppet_or_actor.culture = { has_cultural_parameter = marriage_acceptance_bonus }
 		add = 10
 		desc = TRADITION_BONUS_WEDDING_CEREMONIES
 	}
@@ -1968,7 +1968,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 				has_cultural_parameter = dislikes_marrying_outside_of_culture
 			}
 		}
-		scope:recipient.culture != scope:actor.culture
+		scope:recipient.culture != scope:puppet_or_actor.culture
 		desc = TRADITION_PENALTY_ISOLATIONIST
 	}
 	modifier = {
@@ -1976,12 +1976,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		scope:recipient = {
 			has_personal_tenet_flag = tenet_pastoral_isolation_endogamy
 		}
-		scope:recipient.faith != scope:actor.faith
+		scope:recipient.faith != scope:puppet_or_actor.faith
 		desc = PERSONAL_TENET_PASTORAL_ISOLATION_MARRIAGE_PENALTY
 	}
 	modifier = { # Wedding Ceremonies
-		exists = scope:actor.house
-		scope:actor.house = {
+		exists = scope:puppet_or_actor.house
+		scope:puppet_or_actor.house = {
 			has_variable = intermarrying_with_var
 			var:intermarrying_with_var = {
 				this = scope:recipient.house
@@ -1996,7 +1996,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = 25
 		desc = STRUGGLE_MARRIAGE_ACCEPTANCE_BOTH_INVOLVED_BONUS
-		scope:actor = {
+		scope:puppet_or_actor = {
 			any_character_struggle = {
 				involvement = involved
 				is_struggle_parameter_active_secondary_character_involvement_involved_trigger = {
@@ -2013,7 +2013,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			value = 0
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						is_ai = yes
 						any_character_struggle = {
 							involvement = involved
@@ -2039,7 +2039,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 								phase_has_catalyst = catalyst_forming_alliance_with_major_uninvolved_power
 							}
 						}
-						scope:actor = {
+						scope:puppet_or_actor = {
 							is_ai = yes
 							realm_size <= medium_realm_size
 						}
@@ -2049,7 +2049,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			}
 			if = {
 				limit = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						has_trait = fp3_struggle_detractor
 						any_character_struggle = {
 							involvement = involved
@@ -2071,7 +2071,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 							phase_has_catalyst = catalyst_forming_alliance_between_detractor_uninvolved_rulers
 						}
 					}
-					scope:actor = {
+					scope:puppet_or_actor = {
 						fp3_character_uninvolved_in_struggle_trigger = yes
 					}
 				}
@@ -2079,22 +2079,22 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			}
 		}
 		OR = {
-			# The actor is involved and try to marry with someone outside of it
-			scope:actor = {
+			# The puppet_or_actor is involved and try to marry with someone outside of it
+			scope:puppet_or_actor = {
 				any_character_struggle = {
 					involvement = involved
 					is_secondary_character_involvement_neither_trigger = { CHAR = scope:recipient }
 				}
 			}
-			# The actor is not involved and try to marry with someone inside of it
+			# The puppet_or_actor is not involved and try to marry with someone inside of it
 			scope:recipient = {
 				any_character_struggle = {
 					involvement = involved
-					is_secondary_character_involvement_neither_trigger = { CHAR = scope:actor }
+					is_secondary_character_involvement_neither_trigger = { CHAR = scope:puppet_or_actor }
 				}
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_ai = yes
 		}
 		scope:recipient = {
@@ -2130,12 +2130,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		scope:recipient = {
 			OR = {
 				AND = {
-					designated_diarch ?= scope:actor
+					designated_diarch ?= scope:puppet_or_actor
 					# Otherwise designated diarchs that become entrenched regents'll still this bonus.
 					NOT = { exists = diarch }
 				}
 				AND = {
-					diarch ?= scope:actor
+					diarch ?= scope:puppet_or_actor
 					has_diarchy_active_parameter = diarchy_type_is_temporary_regency
 				}
 			}
@@ -2149,7 +2149,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			multiply = 0.5
 		}
 		scope:recipient = {
-			diarch ?= scope:actor
+			diarch ?= scope:puppet_or_actor
 			has_diarchy_active_parameter = diarchy_type_is_entrenched_regency
 		}
 		desc = DIARCHY_ENTRENCHED_REGENT_WEDDING_ACCEPTANCE
@@ -2161,7 +2161,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = -25
 		scope:recipient = {
-			house_has_feud_relation_with_trigger = { TARGET = scope:actor }
+			house_has_feud_relation_with_trigger = { TARGET = scope:puppet_or_actor }
 		}
 		desc = MARRY_FAMILY_FEUD_REASON
 	}
@@ -2172,20 +2172,20 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = 50
 		scope:recipient = {
-			is_tributary_of_suzerain_or_above = scope:actor
+			is_tributary_of_suzerain_or_above = scope:puppet_or_actor
 		}
 		desc = AI_TRIBUTARY_REASON
 	}
 	modifier = {
 		add = 100
 		scope:recipient = {
-			is_obedient_to = scope:actor
+			is_obedient_to = scope:puppet_or_actor
 		}
 		desc = AI_OBEDIENT_REASON
 	}
 	modifier = {
 		add = -100
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_has_flag = government_is_nomadic
 		}
 		scope:recipient = {
@@ -2193,8 +2193,8 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			NOR = {
 				government_has_flag = government_is_nomadic
 				government_has_flag = government_is_tribal
-				is_vassal_or_below_of = scope:actor
-				is_obedient_to = scope:actor
+				is_vassal_or_below_of = scope:puppet_or_actor
+				is_obedient_to = scope:puppet_or_actor
 			}
 		}
 		desc = AI_FILTHY_HORSE_LORD_REASON
@@ -2202,7 +2202,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	#Smaller prejudicial malus for tribals, vassals and obedient tributaries
 	modifier = {
 		add = -50
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_has_flag = government_is_nomadic
 		}
 		scope:recipient = {
@@ -2210,12 +2210,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			NOT = { government_has_flag = government_is_nomadic }
 			OR = {
 				government_has_flag = government_is_tribal
-				is_vassal_or_below_of = scope:actor
-				is_obedient_to = scope:actor
+				is_vassal_or_below_of = scope:puppet_or_actor
+				is_obedient_to = scope:puppet_or_actor
 			}
 			NAND = {
-				is_vassal_or_below_of = scope:actor
-				is_obedient_to = scope:actor
+				is_vassal_or_below_of = scope:puppet_or_actor
+				is_obedient_to = scope:puppet_or_actor
 			}
 		}
 		desc = AI_FILTHY_HORSE_LORD_REASON
@@ -2223,45 +2223,45 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = {
 			value = 14
-			subtract = scope:actor.prowess
+			subtract = scope:puppet_or_actor.prowess
 			multiply = -4
 		}
 		scope:recipient = {
 			government_has_flag = government_is_nomadic
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			prowess < 14
 		}
 		desc = AI_REASON_LOW_PROWESS
 	}
 	modifier = {
 		add = -40
-		scope:actor = { has_realm_law = nomadic_authority_1 }
+		scope:puppet_or_actor = { has_realm_law = nomadic_authority_1 }
 		scope:recipient = { government_has_flag = government_is_nomadic }
 		desc = AI_REASON_NOMADIC_AUTHORITY_1
 	}
 	modifier = {
 		add = -20
-		scope:actor = { has_realm_law = nomadic_authority_2 }
+		scope:puppet_or_actor = { has_realm_law = nomadic_authority_2 }
 		scope:recipient = { government_has_flag = government_is_nomadic }
 		desc = AI_REASON_NOMADIC_AUTHORITY_2
 	}
 	modifier = {
 		add = 10
-		scope:actor = { has_realm_law = nomadic_authority_4 }
+		scope:puppet_or_actor = { has_realm_law = nomadic_authority_4 }
 		scope:recipient = { government_has_flag = government_is_nomadic }
 		desc = AI_REASON_NOMADIC_AUTHORITY_4
 	}
 	modifier = {
 		add = 20
-		scope:actor = { has_realm_law = nomadic_authority_5 }
+		scope:puppet_or_actor = { has_realm_law = nomadic_authority_5 }
 		scope:recipient = { government_has_flag = government_is_nomadic }
 		desc = AI_REASON_NOMADIC_AUTHORITY_5
 	}
 	#Nomadic base malus
 	modifier = {
 		desc = NOMADIC_BASE_MALUS
-		scope:actor = {
+		scope:puppet_or_actor = {
 			government_has_flag = government_is_nomadic
 		}
 		add = -20
@@ -2295,7 +2295,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	modifier = {
 		add = ep2_activities_legacy_2_grand_weddings_acceptance_boost_value
 		scope:grand_wedding_promise = yes
-		scope:actor.dynasty ?= { has_dynasty_perk = ep2_activities_legacy_2  }
+		scope:puppet_or_actor.dynasty ?= { has_dynasty_perk = ep2_activities_legacy_2  }
 		desc = GRAND_WEDDING_DYNASTY_LEGACY_BONUS
 	}
 
@@ -2307,7 +2307,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = -5000
 		scope:recipient = { is_ai = no }
 		OR = {
-			# Secondary actor has already been refused by the player
+			# Secondary puppet_or_actor has already been refused by the player
 			scope:secondary_actor = { has_character_flag = player_declined_marriage }
 			# Don't spam the player with courtiers' marriages
 			scope:secondary_recipient = {
@@ -2318,10 +2318,10 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			}
 			AND = {
 				# Don't spam the player with weaker offers
-				scope:recipient.eighty_percent_of_max_military_strength > scope:actor.current_military_strength
+				scope:recipient.eighty_percent_of_max_military_strength > scope:puppet_or_actor.current_military_strength
 				exists = scope:recipient.primary_title
-				exists = scope:actor.primary_title
-				NOT = { scope:actor.primary_title.tier >= scope:recipient.primary_title.tier }
+				exists = scope:puppet_or_actor.primary_title
+				NOT = { scope:puppet_or_actor.primary_title.tier >= scope:recipient.primary_title.tier }
 			}
 		}
 	}
@@ -2334,12 +2334,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = -5000
 		years_from_game_start <= 5
 		OR = {
-			scope:actor = character:122
+			scope:puppet_or_actor = character:122
 			scope:recipient = character:122
 			scope:secondary_actor = character:122
 			scope:secondary_recipient = character:122
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_ai = yes
 		}
 		scope:recipient = {
@@ -2356,7 +2356,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	# LOW LEGITIMACY
 	modifier = {
 		desc = "LOW_LEGITIMACY_REASON"
-		scope:actor = {
+		scope:puppet_or_actor = {
 			OR = {
 				has_legitimacy_flag = reduced_marriage_acceptance
 				has_legitimacy_flag = very_reduced_marriage_acceptance
@@ -2365,7 +2365,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		}
 		add = {
 			value = 0
-			scope:actor = {
+			scope:puppet_or_actor = {
 				if = {
 					limit = { has_legitimacy_flag = reduced_marriage_acceptance }
 					add = -25
@@ -2392,7 +2392,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	# HIGH LEGITIMACY
 	modifier = {
 		desc = "HIGH_LEGITIMACY_REASON"
-		scope:actor = {
+		scope:puppet_or_actor = {
 			OR = {
 				has_legitimacy_flag = increased_marriage_acceptance
 				has_legitimacy_flag = very_increased_marriage_acceptance
@@ -2401,7 +2401,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		}
 		add = {
 			value = 0
-			scope:actor = {
+			scope:puppet_or_actor = {
 				if = {
 					limit = { has_legitimacy_flag = increased_marriage_acceptance }
 					add = 25
@@ -2428,7 +2428,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	#Want to keep AI latin empire strengthened by allies though
 	modifier = {
 		desc = "LATIN_EMPIRE_REASON"
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_trait = despoiler_of_byzantium
 			top_liege ?= {
 				has_title = title:e_latin_empire
@@ -2495,13 +2495,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		}
 		NOT = { scope:secondary_actor.culture = scope:secondary_recipient.culture }
 		scope:secondary_recipient.culture = { has_cultural_parameter = reduced_marriage_acceptance_outside_culture }
-		# if the recipient is the Chinese Emperor and the actor is their tributary, check for investiture_marriage_yes
+		# if the recipient is the Chinese Emperor and the puppet_or_actor is their tributary, check for investiture_marriage_yes
 		trigger_if = {
 			limit = {
 				scope:recipient.primary_title = title:h_china
-				scope:actor.overlord = scope:recipient
+				scope:puppet_or_actor.overlord = scope:recipient
 			}
-			NOT = { scope:actor = { subject_contract_has_flag = celestial_investiture_marriage } }
+			NOT = { scope:puppet_or_actor = { subject_contract_has_flag = celestial_investiture_marriage } }
 		}
 		desc = REDUCED_MARRIAGE_ACCEPTANCE_OUTSIDE_CULTURE_REASON
 	}
@@ -2518,7 +2518,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		}
 		NOT = { scope:secondary_actor.culture = scope:secondary_recipient.culture }
 		scope:secondary_actor.culture = { has_cultural_parameter = reduced_marriage_acceptance_outside_culture }
-		scope:actor = { is_ai = yes }
+		scope:puppet_or_actor = { is_ai = yes }
 	}
 	# Cultural parameter which makes foreign realms less attractive to marry with based on distance
 	modifier = {
@@ -2535,13 +2535,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			RECIPIENT_SPOUSE = scope:secondary_recipient
 			ACTOR_SPOUSE = scope:secondary_actor
 		}
-		# if the recipient is the Chinese Emperor and the actor is their tributary, check for investiture_marriage_yes
+		# if the recipient is the Chinese Emperor and the puppet_or_actor is their tributary, check for investiture_marriage_yes
 		trigger_if = {
 			limit = {
 				scope:recipient.primary_title = title:h_china
-				scope:actor.overlord = scope:recipient
+				scope:puppet_or_actor.overlord = scope:recipient
 			}
-			NOT = { scope:actor = { subject_contract_has_flag = celestial_investiture_marriage } }
+			NOT = { scope:puppet_or_actor = { subject_contract_has_flag = celestial_investiture_marriage } }
 		}
 		desc = REDUCED_MARRIAGE_ACCEPTANCE_DISTANT_REALMS_REASON
 	}
@@ -2564,12 +2564,12 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 	}
 	modifier = {
 		scope:recipient.primary_title = title:h_china
-		scope:actor = {
+		scope:puppet_or_actor = {
 			overlord = scope:recipient
 			subject_contract_has_flag = celestial_investiture_marriage
 		}
 		add = {
-			add = scope:actor.subject_standing
+			add = scope:puppet_or_actor.subject_standing
 			divide = 4
 		}
 		desc = INCREASED_MARRIAGE_ACCEPTANCE_INVESTITURE_MARRIAGE_REASON
@@ -2587,7 +2587,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			min = -100
 			max = -1
 		}
-		scope:actor = { is_ai = yes }
+		scope:puppet_or_actor = { is_ai = yes }
 		tgp_distant_realm_marriage_trigger = {
 			RECIPIENT_SPOUSE = scope:secondary_actor
 			ACTOR_SPOUSE = scope:secondary_recipient
@@ -2656,13 +2656,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			has_game_rule = hard_difficulty
 			has_game_rule = very_hard_difficulty
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_ai = no
 		}
 		scope:secondary_actor = {
 			NOR = {
-				is_close_family_of = scope:actor
-				this = scope:actor
+				is_close_family_of = scope:puppet_or_actor
+				this = scope:puppet_or_actor
 			}
 		}
 		scope:secondary_recipient = {
@@ -2685,13 +2685,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			has_game_rule = hard_difficulty
 			has_game_rule = very_hard_difficulty
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_ai = no
 		}
 		scope:secondary_actor = {
 			OR = {
-				is_close_family_of = scope:actor
-				this = scope:actor
+				is_close_family_of = scope:puppet_or_actor
+				this = scope:puppet_or_actor
 			}
 		}
 		scope:secondary_recipient = {
@@ -2718,7 +2718,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 
 	# Admin family attribute bonus
 	modifier = {
-		scope:actor.house ?= {
+		scope:puppet_or_actor.house ?= {
 			OR = {
 				has_house_aspiration_parameter = increased_marriage_acceptance_1
 				has_house_aspiration_parameter = increased_marriage_acceptance_2
@@ -2729,13 +2729,13 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			value = 0
 			if = {
 				limit = {
-					scope:actor.house ?= { has_house_aspiration_parameter = increased_marriage_acceptance_3 }
+					scope:puppet_or_actor.house ?= { has_house_aspiration_parameter = increased_marriage_acceptance_3 }
 				}
 				add = increased_marriage_acceptance_3_value
 			}
 			else_if = {
 				limit = {
-					scope:actor.house ?= { has_house_aspiration_parameter = increased_marriage_acceptance_2 }
+					scope:puppet_or_actor.house ?= { has_house_aspiration_parameter = increased_marriage_acceptance_2 }
 				}
 				add = increased_marriage_acceptance_2_value
 			}
@@ -2751,7 +2751,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 		add = -1000
 		desc = saeculum_obscurum_clergy_would_marry_desc_secondary_actor
 		scope:secondary_actor = {
-			this = scope:actor # is proposing own marriage
+			this = scope:puppet_or_actor # is proposing own marriage
 			is_ai = yes
 			top_participant_group:the_christian_church ?= { has_participant_group_parameter = clergy_can_marry }
 			OR = {
@@ -2769,7 +2769,7 @@ marriage_ai_accept_modifier = { ###MARRIAGE SCRIPTED MODIFIERS###
 			scope:secondary_actor.top_participant_group:the_christian_church ?= { has_participant_group_parameter = clergy_can_marry }
 			scope:secondary_recipient.top_participant_group:the_christian_church ?= { has_participant_group_parameter = clergy_can_marry }
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			NOT = { this = scope:secondary_actor } # NOT proposing own marriage
 			is_ai = yes
 			trigger_if = {
@@ -2804,7 +2804,7 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 	############
 
 	modifier = {
-		NOT = { has_relation_soulmate = scope:actor }
+		NOT = { has_relation_soulmate = scope:puppet_or_actor }
 		add = {
 			value = -25
 			if = {
@@ -2822,13 +2822,13 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 	# PERKS #
 	#########
 	modifier = { # A lot of acceptance for yourself - you are likely already married, thus you need motivation to get rid of your spouse to marry someone better
-		scope:actor = { has_perk = promising_prospects_perk }
+		scope:puppet_or_actor = { has_perk = promising_prospects_perk }
 		add = promising_prospects_self_value
 		desc = PROMISING_PROSPECTS_PERK_MODIFIER
 	}
 	modifier = { # Dynasty Glory Perk acceptance,
-		exists = scope:actor.dynasty
-		scope:actor.dynasty = { has_dynasty_perk = glory_legacy_1 }
+		exists = scope:puppet_or_actor.dynasty
+		scope:puppet_or_actor.dynasty = { has_dynasty_perk = glory_legacy_1 }
 		add = glory_legacy_1_marriage_acceptance
 		desc = DYNASTY_LEGACY_GLORY_MARRIAGE_ACCEPTANCE_PERK_MODIFIER
 	}
@@ -2838,7 +2838,7 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 	############
 	opinion_modifier = { # More likely to accept if Recipient likes the person the Actor offers for marriage
 		who = scope:recipient
-		opinion_target = scope:actor
+		opinion_target = scope:puppet_or_actor
 		multiplier = 1
 		desc = AI_OPINION_REASON
 	}
@@ -2865,10 +2865,10 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 	# DYNASTY PRESTIGE LEVELS #
 	###########################
 	modifier = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			OR = {
 				has_dynasty = no
-				scope:actor = {
+				scope:puppet_or_actor = {
 					has_dynasty = yes
 					dynasty.dynasty_prestige_level = 0
 				}
@@ -2878,12 +2878,12 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 		desc = AI_DYNASTY_PRESTIGE_REASON
 	}
 	modifier = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_dynasty = yes
 			dynasty.dynasty_prestige_level >= 2
 		}
 		add = {
-			value = scope:actor.dynasty.dynasty_prestige_level
+			value = scope:puppet_or_actor.dynasty.dynasty_prestige_level
 			multiply = 5
 			subtract = 5 #At 0 dynasty prestige level, there should be a penalty
 		}
@@ -2942,7 +2942,7 @@ elopment_ai_accept_modifier = { #Should copy marriage_ai_accept_modifier on rele
 		add = -1000
 		scope:recipient.rite = {
 			NOT = {
-				rite_allows_marriage_consanguinity_trigger = { CHARACTER_1 = scope:recipient CHARACTER_2 = scope:actor }
+				rite_allows_marriage_consanguinity_trigger = { CHARACTER_1 = scope:recipient CHARACTER_2 = scope:puppet_or_actor }
 			}
 		}
 		desc = MARRY_CONSANGUINITY_REASON
@@ -2964,7 +2964,7 @@ divorce_character_ai_accept_modifier = {
 	opinion_modifier = { # A lot more likely if Recipient likes Actor
 		trigger = { scope:recipient != scope:secondary_recipient }
 		who = scope:recipient
-		opinion_target = scope:actor
+		opinion_target = scope:puppet_or_actor
 		multiplier = 1
 		desc = AI_OPINION_REASON
 	}
@@ -2980,12 +2980,12 @@ divorce_character_ai_accept_modifier = {
 	modifier = { # Very unlikely if the marriage is between kin and the religion has Divine Marriages
 		add = -100
 		desc = DIVORCE_HOLY
-		scope:actor = {
+		scope:puppet_or_actor = {
 			rite = {
 				rite_has_tenet = tenet_divine_marriage
 			}
 		}
-		scope:actor = {
+		scope:puppet_or_actor = {
 			OR = {
 				is_cousin_of = scope:secondary_recipient
 				is_close_or_extended_family_of = scope:secondary_recipient
@@ -3001,7 +3001,7 @@ divorce_character_ai_accept_modifier = {
 			any_relation = {
 				type = lover
 				NOR = {
-					this = scope:actor
+					this = scope:puppet_or_actor
 					this = scope:recipient
 				}
 				relation_with_character_is_incestuous_in_my_rite_trigger = { CHARACTER = scope:secondary_recipient	}
@@ -3041,7 +3041,7 @@ divorce_character_ai_accept_modifier = {
 			}
 		}
 		scope:secondary_recipient = {
-			exposed_cheating_on_spouse_trigger = { SPOUSE = scope:actor }
+			exposed_cheating_on_spouse_trigger = { SPOUSE = scope:puppet_or_actor }
 		}
 	}
 
@@ -3059,7 +3059,7 @@ divorce_character_ai_accept_modifier = {
 		trigger = { scope:recipient != scope:secondary_recipient }
 		add = 100
 		desc = DIVORCE_POLYGAMY
-		scope:actor = {
+		scope:puppet_or_actor = {
 			any_consort = {
 				is_alive = yes
 				this != scope:secondary_recipient
@@ -3079,23 +3079,23 @@ divorce_character_ai_accept_modifier = {
 		trigger = { scope:recipient != scope:secondary_recipient }
 		add = 100
 		desc = DIVORCE_HEATHEN
-		scope:secondary_recipient.faith.religion != scope:actor.faith.religion
+		scope:secondary_recipient.faith.religion != scope:puppet_or_actor.faith.religion
 	}
 
 	modifier = { # Heretic
 		trigger = { scope:recipient != scope:secondary_recipient }
 		add = 10
 		desc = DIVORCE_HERETIC
-		scope:secondary_recipient.faith.religion = scope:actor.faith.religion
+		scope:secondary_recipient.faith.religion = scope:puppet_or_actor.faith.religion
 		scope:secondary_recipient = {
-			faith != scope:actor.faith
+			faith != scope:puppet_or_actor.faith
 		}
 	}
 
 	modifier = { # I am a Kinslayer
 		add = -50
 		desc = I_AM_A_KINSLAYER
-		scope:actor = {
+		scope:puppet_or_actor = {
 			has_trait_rank = {
 				trait = kinslayer
 				rank >= 1
@@ -3119,7 +3119,7 @@ divorce_character_ai_accept_modifier = {
 		add = 50
 		desc = WE_ARE_FRIENDS
 		scope:recipient = {
-			has_relation_friend = scope:actor
+			has_relation_friend = scope:puppet_or_actor
 		}
 	}
 
@@ -3127,7 +3127,7 @@ divorce_character_ai_accept_modifier = {
 		add = 150
 		desc = WE_ARE_BEST_FRIENDS
 		scope:recipient = {
-			has_relation_best_friend = scope:actor
+			has_relation_best_friend = scope:puppet_or_actor
 		}
 	}
 
@@ -3135,7 +3135,7 @@ divorce_character_ai_accept_modifier = {
 		add = 25
 		desc = WE_ARE_LOVERS
 		scope:recipient = {
-			has_relation_lover = scope:actor
+			has_relation_lover = scope:puppet_or_actor
 		}
 	}
 
@@ -3143,7 +3143,7 @@ divorce_character_ai_accept_modifier = {
 		add = -100
 		desc = WE_ARE_RIVALS
 		scope:recipient = {
-			has_relation_rival = scope:actor
+			has_relation_rival = scope:puppet_or_actor
 		}
 	}
 
@@ -3151,7 +3151,7 @@ divorce_character_ai_accept_modifier = {
 		add = -500
 		desc = WE_ARE_NEMESES
 		scope:recipient = {
-			has_relation_nemesis = scope:actor
+			has_relation_nemesis = scope:puppet_or_actor
 		}
 	}
 
@@ -3159,7 +3159,7 @@ divorce_character_ai_accept_modifier = {
 	# HOUSE ASPIRATIONS #
 	#####################
 	modifier = { #House Aspiration Ceremony
-		scope:actor.house ?= { has_house_aspiration_parameter = ceremony_marriage_acceptance }
+		scope:puppet_or_actor.house ?= { has_house_aspiration_parameter = ceremony_marriage_acceptance }
 		add = 15
 		desc = ceremony_house_power
 	}
