@@ -93,7 +93,7 @@ become_tributary_interaction = {
 	send_option = {
 		flag = normal_obligations
 		localization = normal_tributary_obligations
-		starts_enabled = { always = yes	}
+		starts_enabled = { always = yes }
 	}
 
 	# High starting obligations
@@ -643,22 +643,22 @@ become_tributary_interaction = {
 		modifier = {
 			desc = offer_vassalization_interaction_aibehavior_remoterealm_tt
 			trigger = {
+				# Distance leads: every recipient list here is a neighbour list, so most candidates fail it before the border scan below runs
+				trigger_if = { #Islands we can get farther away
+					limit = {
+						scope:actor.capital_county = { is_coastal_county = yes }
+					}
+					scope:actor.capital_province = { squared_distance = { target = scope:recipient.capital_province value >= squared_distance_huge } }
+				}
+				trigger_else = { #Inland is harder
+					scope:actor.capital_province = { squared_distance = { target = scope:recipient.capital_province value >= squared_distance_major } }
+				}
 				scope:recipient = {
 					NOT = {
 						any_land_neighboring_realm_with_tributaries_owner = {
 							this = scope:actor
 						}
 					}
-				}
-				trigger_if = { #Islands we can get farther away
-					limit = {
-						scope:actor.capital_county = { is_coastal_county = yes }
-						any_sub_realm_county = { is_coastal_county = yes }
-					}
-					scope:actor.capital_province = { squared_distance = { target = scope:recipient.capital_province value >= squared_distance_huge } }
-				}
-				trigger_else = { #Inland is harder
-					scope:actor.capital_province = { squared_distance = { target = scope:recipient.capital_province value >= squared_distance_major } }
 				}
 			}
 			add = -250
@@ -868,6 +868,7 @@ demand_tributary_interaction = {
 	is_shown = {
 		scope:puppet_or_actor ?= {
 			can_get_tributaries_peacefully_trigger = yes
+			is_landed = yes # Landless have no realm to render tribute from
 			#Mandala Embraces; not Demand
 			trigger_if = {
 				limit = {
@@ -889,7 +890,7 @@ demand_tributary_interaction = {
 			}
 			trigger_if = {
 				limit = {
-					scope:puppet_or_actor = { is_ai = yes }
+					scope:actor = { is_ai = yes }
 				}
 				current_military_strength >= scope:recipient.one_and_a_half_times_current_military_strength
 				primary_title.tier >= scope:recipient.primary_title.tier
@@ -897,10 +898,12 @@ demand_tributary_interaction = {
 		}
 		scope:recipient = {
 			highest_held_title_tier >= tier_county
+			is_landed = yes # A tributary must hold land
 			is_independent_ruler = yes # target cannot be a vassal
 			NOR = {
 				government_has_flag = cannot_be_vassal_or_liege
 				government_has_flag = government_is_mandala
+				government_has_flag = government_is_holy_order # Monastic and military holy orders cannot become tributaries
 			}
 		}
 		# Temujin cannot make Jamukha his subject once he leaves him
@@ -940,7 +943,7 @@ demand_tributary_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= minor_prestige_value
 			}
@@ -951,7 +954,7 @@ demand_tributary_interaction = {
 		prestige = {
 			value = minor_prestige_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -962,7 +965,7 @@ demand_tributary_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				add_prestige = { value = { add = minor_prestige_value max = prestige multiply = -1 } }
 			}
@@ -1560,7 +1563,7 @@ cease_paying_tribute_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= cease_paying_tribute_interaction_cost_value
 			}
@@ -1571,7 +1574,7 @@ cease_paying_tribute_interaction = {
 		prestige = {
 			value = cease_paying_tribute_interaction_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -1580,7 +1583,7 @@ cease_paying_tribute_interaction = {
 	auto_accept = yes
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { cease_paying_tribute_interaction_cost_value > 0 }
@@ -2026,7 +2029,7 @@ release_tributary_interaction = {
 			this != scope:puppet_or_actor
 			suzerain ?= scope:puppet_or_actor
 			OR = { # AI should only ever consider releasing unruly subjects
-				scope:puppet_or_actor ?= { is_ai = no }
+				scope:actor = { is_ai = no }
 				NOT = { is_obedient_to = scope:puppet_or_actor }
 			}
 		}
@@ -2040,13 +2043,13 @@ release_tributary_interaction = {
 		#	}
 		#}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= release_tributary_interaction_prestige_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= release_tributary_interaction_piety_cost_value
 			}
@@ -2057,14 +2060,14 @@ release_tributary_interaction = {
 		prestige = {
 			value = release_tributary_interaction_prestige_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
 		piety = {
 			value = release_tributary_interaction_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -2073,7 +2076,7 @@ release_tributary_interaction = {
 	auto_accept = yes
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { release_tributary_interaction_prestige_cost_value > 0 }

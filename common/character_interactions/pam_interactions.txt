@@ -200,19 +200,9 @@ designate_theocratic_heir_interaction = {
 				set_designated_heir = scope:recipient
 			}
 		}
-		if = {
-			limit = {
-				scope:actor != scope:puppet_or_actor
-				scope:actor != scope:recipient
-			}
-			scope:actor = {
-				send_interface_toast = {
-					type = event_toast_effect_neutral
-					title = designate_heir_interaction_notification_puppeteer
-					left_icon = scope:puppet_or_actor
-					right_icon = scope:recipient
-				}
-			}
+		notify_puppeteer_of_outcome_effect = {
+			TYPE = event_toast_effect_neutral
+			TITLE = designate_heir_interaction_notification_puppeteer
 		}
 	}
 
@@ -501,7 +491,7 @@ increase_theocratic_heir_candidacy = {
 			is_adult = yes # Children are not valid for Theocratic succession
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_increase_theocratic_heir_candidacy_cost_value
 			}
@@ -629,7 +619,7 @@ increase_theocratic_heir_candidacy = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_increase_theocratic_heir_candidacy_cost_value > 0 }
@@ -697,7 +687,7 @@ increase_theocratic_heir_candidacy = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -736,7 +726,7 @@ increase_theocratic_heir_candidacy = {
 		piety = {
 			value = pam_increase_theocratic_heir_candidacy_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -815,8 +805,7 @@ increase_theocratic_heir_candidacy = {
 	}
 }
 
-# PLAYER ONLY - the AI never evaluates this one because it declares no ai_targets; it uses
-# support_clerical_candidacy_interaction instead
+# Players only, because the AI has no ai_targets and uses support_clerical_candidacy_interaction instead
 influence_clerical_candidacy_interaction = {
 	icon = support_candidacy
 	category = interaction_category_religion
@@ -827,8 +816,8 @@ influence_clerical_candidacy_interaction = {
 
 	target_type = title
 	target_source = actor
-	# Head of Faith and Head of Rite titles are not clerical regions, so they are contested through
-	# influence_head_of_faith_candidacy_interaction instead
+	# This is for clerical regions, not Head of Faith or Head of Rite titles
+	# Those use influence_head_of_faith_candidacy_interaction
 	target_filter = faith_clerical_regions
 
 	custom_character_sort = { candidate_score }
@@ -846,6 +835,10 @@ influence_clerical_candidacy_interaction = {
 			is_clerical_appointment_valid_base_trigger = {
 				CANDIDATE = scope:secondary_recipient
 				TOP_LIEGE = scope:actor
+			}
+			NOR = {
+				scope:actor.religious_head_or_challenger ?= this
+				scope:secondary_recipient.religious_head_or_challenger ?= this
 			}
 		}
 	}
@@ -1202,7 +1195,6 @@ influence_head_of_faith_candidacy_interaction = {
 
 	is_available = {
 		has_pam_dlc_trigger = yes
-		faith ?= { has_doctrine_parameter = has_clerical_regions }
 		# Mirrors the religious_head_titles filter, so a faith whose head titles are all filled by conclave or inheritance hides the interaction instead of opening an empty picker
 		faith ?= {
 			OR = {
@@ -1224,6 +1216,10 @@ influence_head_of_faith_candidacy_interaction = {
 			is_clerical_appointment_valid_base_trigger = {
 				CANDIDATE = scope:secondary_recipient
 				TOP_LIEGE = scope:actor
+			}
+			NOR = {
+				scope:actor.religious_head_or_challenger ?= this
+				scope:secondary_recipient.religious_head_or_challenger ?= this
 			}
 		}
 	}
@@ -1541,11 +1537,8 @@ support_clerical_candidacy_interaction = {
 	target_filter = domain_clerical_regions
 
 	can_be_picked_title = {
-		# Only the see covering the ruler's own capital, so the search stays one title wide however many
-		# clerical regions the domain holds
+		# Only the capital see, so the search stays one title wide
 		scope:actor.capital_county.clerical_region_title ?= scope:target
-		# The see is already headed for someone the ruler is content with, so there is nothing worth buying
-		# and no reason to bid one favourite against another
 		trigger_if = {
 			limit = { exists = scope:target.current_heir }
 			scope:target.current_heir = {
@@ -1584,12 +1577,15 @@ support_clerical_candidacy_interaction = {
 
 	is_shown = {
 		scope:secondary_recipient ?= {
-			# The petition is addressed to the Head of Rite, so they cannot also be its subject. Without this
-			# a Head of Rite backing themselves would end up sending the interaction to themselves.
+			# Without this a Head of Rite backing themselves would send the interaction to themselves
 			this != faith.main_rite.head_of_rite
 			is_clerical_appointment_valid_base_trigger = {
 				CANDIDATE = scope:secondary_recipient
 				TOP_LIEGE = scope:actor
+			}
+			NOR = {
+				scope:actor.religious_head_or_challenger ?= this
+				scope:secondary_recipient.religious_head_or_challenger ?= this
 			}
 		}
 	}
@@ -1599,8 +1595,6 @@ support_clerical_candidacy_interaction = {
 		scope:actor.faith.main_rite.head_of_rite ?= { save_scope_as = recipient }
 	}
 
-	# The people a ruler actually has reason to seat: their own clerical puppets, the friends and lovers they
-	# would rather see in a mitre, and themselves where the faith allows it.
 	populate_recipient_list = {
 		scope:actor = {
 			if = {
@@ -1824,11 +1818,7 @@ support_clerical_candidacy_interaction = {
 		hegemony = 12
 	}
 
-	# Every candidate on the list is already someone the ruler wants seated, so the only thing left to weigh is
-	# how much to spend. Each tier scores above the one below it but only once the ruler can actually pay for it,
-	# so the AI commits as deeply as its piety allows and steps down the tiers instead of stalling on a bid it
-	# cannot make. Scoring the tiers explicitly also keeps the choice off send_option declaration order, which
-	# is what the AI would otherwise fall back on.
+	# Score the piety tiers explicitly so the AI does not fall back on send_option declaration order
 	ai_will_do = {
 		base = 0
 
@@ -2384,9 +2374,7 @@ request_realm_priest_replacement_interaction = {
 	}
 
 	is_available = {
-		# Petitioning is only for rulers the doctrine denies the appointment to. Where the crown holds it freely
-		# (Temporal, Conditional) the council's own Appoint is the channel, and it carries the consequences instead
-		# (see councillor_court_chaplain's on_fired_from_position).
+		# Temporal/Conditional use council Appoint, which fires on_fired_from_position instead
 		NOT = { faith = { has_doctrine_parameter = clerical_appointment_ruler_can_replace_ecc } }
 		government_allows = council
 		# Nomads have no Court Chaplain position to replace, so they cannot request a new Realm Priest
@@ -2517,8 +2505,7 @@ request_realm_priest_replacement_interaction = {
 			cp:councillor_court_chaplain = {
 				save_scope_as = old_chaplain
 			}
-			# The Church is doing the replacing here, so the removal below must not also read as the crown acting
-			# on its own authority (councillor_court_chaplain's on_fired_from_position fires its own catalyst).
+			# Flag so on_fired_from_position does not treat this as the crown acting
 			add_character_flag = { flag = pam_church_replacing_realm_priest days = 1 }
 			assign_councillor_type = {
 				type = councillor_court_chaplain
@@ -2687,6 +2674,7 @@ request_realm_priest_replacement_interaction = {
 		# Candidate is from the recipient's house
 		modifier = {
 			add = 10
+			exists = scope:secondary_recipient
 			exists = scope:secondary_recipient.house
 			scope:recipient = {
 				OR = {
@@ -2709,6 +2697,7 @@ request_realm_priest_replacement_interaction = {
 
 		# Candidate has sinful traits
 		modifier = {
+			exists = scope:secondary_recipient
 			add = {
 				add = -10
 				multiply = scope:secondary_recipient.num_sinful_traits
@@ -2729,6 +2718,7 @@ request_realm_priest_replacement_interaction = {
 
 		# Candidate has virtuous traits
 		modifier = {
+			exists = scope:secondary_recipient
 			add = {
 				add = 10
 				multiply = scope:secondary_recipient.num_virtuous_traits
@@ -2748,6 +2738,7 @@ request_realm_priest_replacement_interaction = {
 		# Religious Superior likes candidate more than the realm priest
 		modifier = {
 			add = 20
+			exists = scope:secondary_recipient
 			scope:recipient = {
 				save_temporary_opinion_value_as = {
 					name = secondary_recipient_opinion
@@ -2768,6 +2759,7 @@ request_realm_priest_replacement_interaction = {
 		# Religious Superior likes realm priest more than the candidate
 		modifier = {
 			add = -20
+			exists = scope:secondary_recipient
 			scope:recipient = {
 				save_temporary_opinion_value_as = {
 					name = secondary_recipient_opinion
@@ -2787,6 +2779,7 @@ request_realm_priest_replacement_interaction = {
 
 		modifier = { # A trait in common with the candidate
 			add = 5
+			exists = scope:secondary_recipient
 			scope:recipient = {
 				number_of_personality_traits_in_common = {
 					target = scope:secondary_recipient
@@ -2798,6 +2791,7 @@ request_realm_priest_replacement_interaction = {
 
 		modifier = { # Two trait in common
 			add = 10
+			exists = scope:secondary_recipient
 			scope:recipient = {
 				number_of_personality_traits_in_common = {
 					target = scope:secondary_recipient
@@ -2809,6 +2803,7 @@ request_realm_priest_replacement_interaction = {
 
 		modifier = { # Three traits in common
 			add = 15
+			exists = scope:secondary_recipient
 			scope:recipient = {
 				number_of_personality_traits_in_common = {
 					target = scope:secondary_recipient
@@ -2830,6 +2825,7 @@ request_realm_priest_replacement_interaction = {
 
 		# Modifier based on Piety Level of the candidate
 		modifier = {
+			exists = scope:secondary_recipient
 			add = {
 				add = 5
 				multiply = scope:secondary_recipient.piety_level
@@ -2896,7 +2892,7 @@ request_realm_priest_replacement_interaction = {
 				multiply = 2
 			}
 			trigger = {
-				scope:secondary_recipient = {
+				scope:secondary_recipient ?= {
 					learning != 10
 				}
 			}
@@ -2906,7 +2902,7 @@ request_realm_priest_replacement_interaction = {
 		# Is a monk
 		modifier = {
 			add = 25
-			scope:secondary_recipient = {
+			scope:secondary_recipient ?= {
 				has_trait = erudite
 			}
 			desc = THEY_HAVE_ERUDITE_TRAIT
@@ -2987,10 +2983,7 @@ request_realm_priest_replacement_interaction = {
 	}
 }
 
-# Sway to Rite is split three ways for performance, like the Demand Conversion family: courtiers,
-# subjects and kin, and the clergy outreach petition (which keeps the original id). The is_shown
-# blocks partition the recipients so no target ever shows two sway interactions at once, and the
-# outreach variant's is_available skips it wholesale for secular actors before any AI list building.
+# Sway to Rite is split three ways for performance, like the Demand Conversion family
 # Persuade one of your own courtiers to adopt your rite
 sway_courtier_to_my_rite_interaction = {
 	category = interaction_category_religion
@@ -3052,7 +3045,7 @@ sway_courtier_to_my_rite_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_sway_ruler_to_my_rite_cost_value
 			}
@@ -3063,7 +3056,7 @@ sway_courtier_to_my_rite_interaction = {
 		piety = {
 			value = pam_sway_ruler_to_my_rite_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 			#Free for holy order leaders spreading beliefs
@@ -3276,7 +3269,7 @@ sway_vassal_to_my_rite_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_sway_ruler_to_my_rite_cost_value
 			}
@@ -3291,7 +3284,7 @@ sway_vassal_to_my_rite_interaction = {
 				add = medium_piety_value
 			}
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -3310,8 +3303,7 @@ sway_vassal_to_my_rite_interaction = {
 		flag = hook
 		localization = SCHEME_HOOK
 	}
-	# The clergy inducements are shared with the outreach variant, so swaying your own vassals is
-	# never a worse toolkit than swaying strangers seated in your diocese
+	# Clergy inducements are shared with the outreach variant so vassal sway is never a worse toolkit
 	# Endow their church - paid to the recipient on acceptance
 	send_option = {
 		is_shown = {
@@ -3638,21 +3630,6 @@ sway_ruler_to_my_rite_interaction = {
 
 	desc = sway_ruler_to_my_rite_interaction_desc
 
-	# The clergy gate here skips this interaction entirely for every secular actor, before any
-	# AI list building; secular rulers sway through the courtier and vassal variants instead.
-	# Puppet flows run through the clergy puppet, who passes the same gate in is_shown.
-	is_available = {
-		OR = {
-			pam_is_clergy_ruler_trigger = yes
-			faith.religious_head ?= this
-		}
-		trigger_if = {
-			limit = { is_ai = yes }
-			is_adult = yes
-			is_incapable = no
-		}
-	}
-
 	is_shown = {
 		scope:puppet_or_actor ?= {
 			faith = scope:recipient.faith
@@ -3661,10 +3638,17 @@ sway_ruler_to_my_rite_interaction = {
 				pam_is_clergy_ruler_trigger = yes
 				faith.religious_head ?= this
 			}
+			trigger_if = {
+				limit = {
+					is_ai = yes
+					NOT = { puppeteer ?= { is_ai = no } }
+				}
+				is_adult = yes
+				is_incapable = no
+			}
 		}
 		scope:puppet_or_actor != scope:recipient
-		# Courtiers, subjects, and kin belong to the courtier/vassal variants - never show two sway
-		# interactions against the same target
+		# Courtiers, subjects, and kin use the other sway variants, so we never show two against the same target
 		scope:recipient = {
 			NOR = {
 				is_courtier_of = scope:puppet_or_actor
@@ -3727,7 +3711,7 @@ sway_ruler_to_my_rite_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_sway_ruler_to_my_rite_cost_value
 			}
@@ -3742,7 +3726,7 @@ sway_ruler_to_my_rite_interaction = {
 				add = medium_piety_value
 			}
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -3888,7 +3872,12 @@ sway_ruler_to_my_rite_interaction = {
 		modifier = { # Doubly so when our rite blesses such transactions
 			add = 20
 			scope:pam_sway_endowment ?= yes
-			pam_actor_has_simony_trigger = yes
+			scope:puppet_or_actor = {
+				OR = {
+					rite = { rite_has_parameter = tenet_simony_ecclesiastical_purchase }
+					has_personal_tenet_flag = tenet_simony_ecclesiastical_purchase
+				}
+			}
 			desc = PAM_SWAY_ENDOWMENT_SIMONY_REASON
 		}
 		modifier = { # Hard to gainsay a doctor of scripture in open disputation
@@ -4487,13 +4476,6 @@ appoint_cardinal_interaction = {
 
 	is_available = {
 		has_pam_dlc_trigger = yes
-		trigger_if = {
-			limit = { is_ai = yes }
-			pam_leads_college_of_cardinals_trigger = yes
-			faith ?= {
-				NOT = { any_clerical_elector_title = { count >= 70 } }
-			}
-		}
 	}
 
 	is_shown = {
@@ -4507,6 +4489,7 @@ appoint_cardinal_interaction = {
 			# is_clergy alone misses PAM's landed archbishops, whose organization does not match the faith's
 			pam_is_investiture_clergy_trigger = yes
 			pam_can_hold_cardinalate_trigger = yes
+			pam_can_receive_cardinalate_trigger = yes
 			pam_pope_is_head_of_faith_or_rite_trigger = yes
 			NOT = { exists = clerical_elector_title } # already a cardinal
 		}
@@ -4516,9 +4499,15 @@ appoint_cardinal_interaction = {
 
 	is_valid_showing_failures_only = {
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= medium_piety_value
+			}
+		}
+		trigger_if = {
+			limit = { scope:is_puppet_action ?= yes }
+			scope:puppet_or_actor = {
+				treasury >= minor_treasury_value
 			}
 		}
 		custom_tooltip = {
@@ -4554,7 +4543,13 @@ appoint_cardinal_interaction = {
 	}
 
 	cost = {
-		treasury = scope:actor.minor_treasury_value
+		treasury = {
+			value = scope:actor.minor_treasury_value
+			if = {
+				limit = { scope:is_puppet_action ?= yes }
+				multiply = 0
+			}
+		}
 	}
 
 	auto_accept = {
@@ -4569,6 +4564,17 @@ appoint_cardinal_interaction = {
 	}
 
 	on_accept = {
+		if = {
+			limit = { scope:is_puppet_action ?= yes }
+			scope:puppet_or_actor = {
+				if = {
+					limit = { minor_treasury_value > 0 }
+					remove_treasury = {
+						value = minor_treasury_value
+					}
+				}
+			}
+		}
 		scope:recipient = {
 			custom_tooltip = {
 				text = appoint_cardinal_interaction_accept_tt
@@ -4621,7 +4627,7 @@ appoint_cardinal_interaction = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -4656,7 +4662,7 @@ appoint_cardinal_interaction = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -4773,11 +4779,14 @@ appoint_cardinal_interaction = {
 		}
 		modifier = { # More likely to seek out bishops who own a Holy Site
 			add = 20
-			scope:recipient = {
-				any_sub_realm_county = {
-					any_county_province = {
-						barony = {
-							is_holy_site_of = scope:puppet_or_actor.faith
+			scope:puppet_or_actor.faith = {
+				any_holy_site = {
+					holy_site_county ?= {
+						holder ?= {
+							OR = {
+								this = scope:recipient
+								is_vassal_or_below_of = scope:recipient
+							}
 						}
 					}
 				}
@@ -4893,12 +4902,12 @@ request_court_chaplain_cardinalate_interaction = {
 
 	cooldown_against_recipient = { years = 10 }
 
-	# Everything that only tests the actor lives here, not in is_shown: is_available is evaluated
-	# once per actor, is_shown again for every candidate recipient
+	# Actor-only tests belong here, since is_available runs once per actor and is_shown per recipient
 	is_available = {
 		pam_can_hold_cardinalate_trigger = yes
 		NOT = { religious_head_or_challenger ?= this }
 		exists = cp:councillor_court_chaplain
+		cp:councillor_court_chaplain = { pam_can_receive_cardinalate_trigger = yes }
 		has_pam_dlc_trigger = yes
 	}
 
@@ -5029,8 +5038,7 @@ request_court_chaplain_cardinalate_interaction = {
 					}
 				}
 			}
-			# Fire the seat first, then move them into the Clerical Ruler slot if it is free.
-			# on_lose_position covers other title-gain paths; the effect no-ops if that already ran.
+			# on_lose_position covers other title gains
 			if = {
 				limit = {
 					scope:actor = { NOT = { exists = puppet:external_theological_agent_puppet } }
@@ -5056,8 +5064,7 @@ request_court_chaplain_cardinalate_interaction = {
 					modifier = grateful_opinion
 					opinion = 50
 				}
-				# Promoted, not dismissed, so he carries none of the usual grudge for losing the seat.
-				# Silent: the penalty is never worth showing when it is cancelled in the same breath.
+				# This is a promotion not a dismissal, so we hide the fired from council opinion or it cancels at once
 				hidden_effect = {
 					remove_opinion = {
 						modifier = fired_from_council_opinion
@@ -5275,13 +5282,6 @@ destroy_cardinalate_interaction = {
 	cooldown_against_recipient = { years = 10 }
 
 	is_available = {
-		pam_leads_college_of_cardinals_trigger = yes
-		trigger_if = { # A shrinking College is a problem the AI should not create
-			limit = { is_ai = yes }
-			faith ?= {
-				any_clerical_elector_title = { count > 30 }
-			}
-		}
 		has_pam_dlc_trigger = yes
 	}
 
@@ -5289,6 +5289,16 @@ destroy_cardinalate_interaction = {
 		scope:puppet_or_actor ?= {
 			this != scope:recipient
 			rite ?= { rite_has_parameter = has_clerical_electors }
+			pam_leads_college_of_cardinals_trigger = yes
+			trigger_if = { # A shrinking College is a problem the AI should not create
+				limit = {
+					is_ai = yes
+					NOT = { puppeteer ?= { is_ai = no } }
+				}
+				faith ?= {
+					any_clerical_elector_title = { count > 30 }
+				}
+			}
 		}
 		exists = scope:recipient.clerical_elector_title
 		scope:recipient = {
@@ -5313,7 +5323,7 @@ destroy_cardinalate_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= medium_piety_value
 			}
@@ -5501,7 +5511,7 @@ give_cardinal_order_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= minor_piety_value
 			}
@@ -5514,7 +5524,7 @@ give_cardinal_order_interaction = {
 				add = minor_piety_value
 			}
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -5669,7 +5679,7 @@ give_cardinal_order_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				add_piety = { value = { add = minor_piety_value max = piety multiply = -1 } }
 			}
@@ -5692,7 +5702,7 @@ give_cardinal_order_interaction = {
 		if = {
 			limit = {
 				scope:recipient = { is_ai = yes }
-				scope:puppet_or_actor = { is_ai = no }
+				scope:actor = { is_ai = no }
 			}
 			pam_cardinal_order_accept_notify_players_effect = {
 				HOF = scope:puppet_or_actor
@@ -5717,7 +5727,7 @@ give_cardinal_order_interaction = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -5749,8 +5759,7 @@ give_cardinal_order_interaction = {
 			scope:recipient.liege.puppet:theological_agent_puppet ?= scope:recipient
 			desc = IS_YOUR_PUPPET
 		}
-		# is_shown already established the College relationship, so unlike
-		# theocratic_related_puppet_acceptance_factors_modifier this need not walk any_subordinate.
+		# is_shown already has the College relationship, so this skips the any_subordinate walk
 		modifier = {
 			add = 20
 			scope:puppet_or_actor = { has_realm_law_flag = puppet_acceptance_1 }
@@ -6016,7 +6025,7 @@ request_legitimacy_interaction = {
 		}
 		pam_not_promised_pilgrimage_trigger = { ACTOR = scope:puppet_or_actor }
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_request_legitimacy_cost_value
 			}
@@ -6029,7 +6038,7 @@ request_legitimacy_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_request_legitimacy_cost_value > 0 }
@@ -6078,7 +6087,7 @@ request_legitimacy_interaction = {
 		piety = {
 			value = pam_request_legitimacy_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -6531,9 +6540,9 @@ request_legitimacy_interaction = {
 							NOT = {
 								faith = scope:puppet_or_actor.faith
 							}
-							faith = {
-								faith_hostility_level = {
-									target = scope:puppet_or_actor.faith
+							rite = {
+								rite_hostility_level = {
+									target = scope:puppet_or_actor.rite
 									value >= faith_astray_level
 								}
 							}
@@ -6557,9 +6566,9 @@ request_legitimacy_interaction = {
 									level >= 1
 								}
 							}
-							faith = {
-								faith_hostility_level = {
-									target = scope:puppet_or_actor.faith
+							rite = {
+								rite_hostility_level = {
+									target = scope:puppet_or_actor.rite
 									value >= faith_astray_level
 								}
 							}
@@ -6596,15 +6605,15 @@ strengthen_claim_interaction = {
 
 	is_shown = {
 		scope:puppet_or_actor ?= {
-			any_claim = {
-				pressed = no
-			}
-			NOT = {
-				government_has_flag = government_is_ecclesiastical
-			}
 			#Has theocratic head of faith or
 			pam_clergy_interactions_faith_trigger = yes
 			is_ruler = yes
+			NOT = {
+				government_has_flag = government_is_ecclesiastical
+			}
+			any_claim = {
+				pressed = no
+			}
 		}
 		scope:puppet_or_actor ?= {
 			has_legitimacy = yes
@@ -6711,7 +6720,7 @@ strengthen_claim_interaction = {
 		}
 		pam_not_promised_pilgrimage_trigger = { ACTOR = scope:puppet_or_actor }
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_strengthen_claim_cost_value
 			}
@@ -6815,7 +6824,7 @@ strengthen_claim_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_strengthen_claim_cost_value > 0 }
@@ -6880,7 +6889,7 @@ strengthen_claim_interaction = {
 		piety = {
 			value = pam_strengthen_claim_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -7215,7 +7224,7 @@ strengthen_claim_interaction = {
 						is_ai = no
 					}
 				}
-				scope:puppet_or_actor = { is_ai = no }
+				scope:actor = { is_ai = no }
 			}
 		}
 		flag = use_hook
@@ -7227,7 +7236,7 @@ strengthen_claim_interaction = {
 			scope:puppet_or_actor = {
 				trigger_if = {
 					limit = {
-						scope:puppet_or_actor = {
+						scope:actor = {
 							is_ai = yes
 						}
 					}
@@ -7247,7 +7256,7 @@ strengthen_claim_interaction = {
 			scope:puppet_or_actor = {
 				dread >= medium_dread_value
 			}
-			scope:puppet_or_actor = {
+			scope:actor = {
 				is_ai = no
 			}
 		}
@@ -7264,7 +7273,7 @@ strengthen_claim_interaction = {
 			}
 			trigger_if = {
 				limit = {
-					scope:puppet_or_actor = { is_ai = yes }
+					scope:actor = { is_ai = yes }
 				}
 				always = no
 			}
@@ -7429,7 +7438,7 @@ sell_claim_interaction = {
 		piety = {
 			value = pam_sell_claim_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -7437,8 +7446,8 @@ sell_claim_interaction = {
 
 	ai_frequency_by_tier = {
 		barony = 0
-		county = 48
-		duchy = 48
+		county = 0
+		duchy = 144
 		kingdom = 24
 		empire = 24
 		hegemony = 24
@@ -7456,8 +7465,6 @@ sell_claim_interaction = {
 				any_held_title = { has_clerical_region = yes }
 				faith.religious_head ?= this
 			}
-			is_adult = yes
-			is_ruler = yes
 		}
 		scope:puppet_or_actor ?= {
 			NOT = { is_at_war_with = scope:recipient }
@@ -7474,7 +7481,7 @@ sell_claim_interaction = {
 	is_valid_showing_failures_only = {
 		# cost = { piety } is only charged to scope:actor, so a puppeteer's cleric is checked here instead
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_sell_claim_piety_cost_value
 			}
@@ -7528,8 +7535,7 @@ sell_claim_interaction = {
 		}
 	}
 
-	# can_be_picked_title only filters the picker and is not rechecked on send, so without this
-	# the chosen county is never validated against the seller's clerical authority again.
+	# can_be_picked_title is picker-only and is not rechecked on send
 	has_valid_target_showing_failures_only = {
 		pam_can_sell_claim_on_target_trigger = yes
 	}
@@ -7971,7 +7977,7 @@ ecclesiastic_grant_claim_interaction = {
 		scope:puppet_or_actor ?= {
 			trigger_if = {
 				limit = {
-					is_ai = yes
+					scope:actor = { is_ai = yes }
 				}
 				piety >= major_piety_value
 				is_playable_character = yes
@@ -8056,13 +8062,30 @@ ecclesiastic_grant_claim_interaction = {
 			clergy_interaction_generic_piety_level_or_puppet_req_trigger = yes
 			
 			trigger_if = {
-				limit = {
-					highest_held_title_tier >= tier_kingdom
+				limit = { is_valid_for_legitimacy_change = yes }
+				trigger_if = {
+					limit = {
+						highest_held_title_tier >= tier_kingdom
+					}
+					legitimacy_level >= 4
 				}
-				legitimacy_level >= 4
-			}
-			trigger_else = {
-				legitimacy_level >= 3
+				trigger_else = {
+					legitimacy_level >= 3
+				}
+				custom_tooltip = {
+					text = above_expected_legitimacy_tt
+					any_vassal = {
+						count = all
+						trigger_if = {
+							limit = {
+								is_ai = yes
+							}
+							scope:puppet_or_actor = {
+								meets_legitimacy_expectation_of = prev
+							}
+						}
+					}
+				}
 			}
 			is_available_quick = {
 				incapable = no
@@ -8071,20 +8094,6 @@ ecclesiastic_grant_claim_interaction = {
 				at_war = no
 			}
 			NOT = { has_trait = excommunicated }
-			custom_tooltip = {
-				text = above_expected_legitimacy_tt
-				any_vassal = {
-					count = all
-					trigger_if = {
-						limit = {
-							is_ai = yes
-						}
-						scope:puppet_or_actor = {
-							meets_legitimacy_expectation_of = prev
-						}
-					}
-				}
-			}
 		}
 		scope:recipient = {
 			faith.religion = scope:puppet_or_actor.faith.religion
@@ -8092,8 +8101,7 @@ ecclesiastic_grant_claim_interaction = {
 				this = scope:puppet_or_actor
 				has_strong_hook = scope:puppet_or_actor
 			}
-			#Someone in the church has to sanction this: the head of faith if they can, otherwise a subordinate cleric.
-			#The head of faith is checked first because searching the organization is by far the more expensive of the two.
+			#Head of faith is checked first because searching the organization is far more expensive
 			trigger_if = {
 				limit = {
 					NAND = {
@@ -8184,7 +8192,7 @@ ecclesiastic_grant_claim_interaction = {
 		}
 		pam_not_promised_pilgrimage_trigger = { ACTOR = scope:puppet_or_actor }
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastic_grant_claim_cost_value
 			}
@@ -8196,7 +8204,7 @@ ecclesiastic_grant_claim_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastic_grant_claim_cost_value > 0 }
@@ -8245,7 +8253,7 @@ ecclesiastic_grant_claim_interaction = {
 		piety = {
 			value = pam_ecclesiastic_grant_claim_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -8258,12 +8266,15 @@ ecclesiastic_grant_claim_interaction = {
 				is_ai = no
 			}
 			# Using a hook should make him auto accept
-			custom_description = {
-				text = "spending_hook"
-				subject = scope:puppet_or_actor
-				object = scope:secondary_recipient
-				scope:use_hook = yes
-				scope:puppet_or_actor = { has_strong_hook = scope:secondary_recipient }
+			AND = {
+				exists = scope:secondary_recipient
+				custom_description = {
+					text = "spending_hook"
+					subject = scope:puppet_or_actor
+					object = scope:secondary_recipient
+					scope:use_hook = yes
+					scope:puppet_or_actor = { has_strong_hook = scope:secondary_recipient }
+				}
 			}
 		}
 	}
@@ -8319,6 +8330,7 @@ ecclesiastic_grant_claim_interaction = {
 		modifier = {
 			scope:use_hook = yes
 			add = 200
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor = { NOT = { has_strong_hook = scope:secondary_recipient } }
 			desc = SCHEME_WEAK_HOOK_USED
 		}
@@ -8360,6 +8372,7 @@ ecclesiastic_grant_claim_interaction = {
 				}
 			}
 			scope:donate_faith = yes
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor.medium_gold_value < scope:secondary_recipient.miniscule_gold_value
 			desc = DONATE_FAITH_INTERACTION_OPTION_REASON
 		}
@@ -8374,6 +8387,7 @@ ecclesiastic_grant_claim_interaction = {
 				}
 			}
 			scope:donate_faith = yes
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor.medium_gold_value < scope:secondary_recipient.medium_gold_value
 			scope:puppet_or_actor.medium_gold_value >= scope:secondary_recipient.miniscule_gold_value
 			desc = DONATE_FAITH_INTERACTION_OPTION_REASON
@@ -8389,6 +8403,7 @@ ecclesiastic_grant_claim_interaction = {
 				}
 			}
 			scope:donate_faith = yes
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor.medium_gold_value >= scope:secondary_recipient.medium_gold_value
 			scope:puppet_or_actor.medium_gold_value < scope:secondary_recipient.massive_gold_value
 			desc = DONATE_FAITH_INTERACTION_OPTION_REASON
@@ -8404,10 +8419,12 @@ ecclesiastic_grant_claim_interaction = {
 				}
 			}
 			scope:donate_faith = yes
+			exists = scope:secondary_recipient
 			scope:puppet_or_actor.medium_gold_value >= scope:secondary_recipient.massive_gold_value
 			desc = DONATE_FAITH_INTERACTION_OPTION_REASON
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			add = {
 				value = 30
 				#Modify value by how scary actor is. Are they higher tier than recipient? Are they neighbors?
@@ -8438,7 +8455,7 @@ ecclesiastic_grant_claim_interaction = {
 						scope:puppet_or_actor = {
 							OR = {
 								is_liege_or_above_of = scope:secondary_recipient
-								scope:secondary_recipient = {
+								scope:secondary_recipient ?= {
 									any_held_title = {
 										is_neighbor_to_realm = scope:puppet_or_actor
 									}
@@ -8527,6 +8544,7 @@ ecclesiastic_grant_claim_interaction = {
 
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:secondary_recipient ?= { save_temporary_scope_as = cleric }
 			scope:recipient = {
 				save_temporary_scope_as = owner
@@ -8592,7 +8610,7 @@ ecclesiastic_grant_claim_interaction = {
 						is_ai = no
 					}
 				}
-				scope:puppet_or_actor = { is_ai = no }
+				scope:actor = { is_ai = no }
 			}
 		}
 		flag = use_hook
@@ -8604,7 +8622,7 @@ ecclesiastic_grant_claim_interaction = {
 			scope:puppet_or_actor = {
 				trigger_if = {
 					limit = {
-						scope:puppet_or_actor = {
+						scope:actor = {
 							is_ai = yes
 						}
 					}
@@ -8624,7 +8642,7 @@ ecclesiastic_grant_claim_interaction = {
 			exists = scope:secondary_recipient
 			scope:puppet_or_actor = {
 				dread >= medium_dread_value
-				is_ai = no
+				scope:actor = { is_ai = no }
 			}
 		}
 		flag = threaten_priest
@@ -8640,7 +8658,7 @@ ecclesiastic_grant_claim_interaction = {
 			}
 			trigger_if = {
 				limit = {
-					scope:puppet_or_actor = { is_ai = yes }
+					scope:actor = { is_ai = yes }
 				}
 				always = no
 			}
@@ -9019,6 +9037,7 @@ buy_ecclesiastical_title_interaction = {
 			desc = pam_peace_of_god_clergy_peacemaking_accept_reason
 		}
 		modifier = { # Receiver's piety level
+			exists = scope:secondary_recipient
 			add = {
 				add = 5
 				multiply = scope:secondary_recipient.piety_level
@@ -9156,7 +9175,6 @@ buy_ecclesiastical_title_interaction = {
 }
 
 #GET THAT JERK TO GIVE ME MY CLAIMED LAND, POWERFUL CLERGY GUY
-#Same weirdness as last interaction, I think
 ecclesiastic_transfer_land_interaction = {
 	category = interaction_category_diplomacy
 	icon = icon_clergy_move_lands
@@ -9451,8 +9469,7 @@ ecclesiastic_transfer_land_interaction = {
 				has_trait = greatest_of_khans
 				has_trait = conqueror
 			}
-			#Someone in the church has to sanction this: the head of faith if they can, otherwise a subordinate cleric.
-			#The head of faith is checked first because searching the organization is by far the more expensive of the two.
+			#Head of faith is checked first because searching the organization is far more expensive
 			trigger_if = {
 				limit = {
 					NAND = {
@@ -9759,17 +9776,19 @@ ecclesiastic_transfer_land_interaction = {
 
 	auto_accept = {
 		OR = {
-			#This is needed because otherwise player recipients can shut down the interaction that pops up for them... auto accept prevents that
-			#But there are detailed factors in ai_will_do so that they hopefully only auto-force interaction when appropriate
+			#Player recipients auto-accept so they cannot shut down the popup
 			scope:recipient = {
 				is_ai = no
 			}
-			custom_description = {
-				text = "spending_hook"
-				subject = scope:actor
-				object = scope:secondary_recipient
-				scope:use_hook = yes
-				scope:actor = { has_strong_hook = scope:secondary_recipient }
+			AND = {
+				exists = scope:secondary_recipient
+				custom_description = {
+					text = "spending_hook"
+					subject = scope:actor
+					object = scope:secondary_recipient
+					scope:use_hook = yes
+					scope:actor = { has_strong_hook = scope:secondary_recipient }
+				}
 			}
 		}
 		
@@ -9914,6 +9933,7 @@ ecclesiastic_transfer_land_interaction = {
 			desc = DONATE_FAITH_INTERACTION_OPTION_REASON
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			add = {
 				value = 30
 				#Modify value by how scary actor is. Are they higher tier than recipient? Are they neighbors?
@@ -9944,7 +9964,7 @@ ecclesiastic_transfer_land_interaction = {
 						scope:actor = {
 							OR = {
 								is_liege_or_above_of = scope:secondary_recipient
-								scope:secondary_recipient = {
+								scope:secondary_recipient ?= {
 									any_held_title = {
 										is_neighbor_to_realm = scope:actor
 									}
@@ -10166,6 +10186,7 @@ ecclesiastic_transfer_land_interaction = {
 
 		}
 		modifier = {
+			exists = scope:secondary_recipient
 			scope:secondary_recipient ?= { save_temporary_scope_as = cleric }
 			scope:recipient = {
 				save_temporary_scope_as = owner
@@ -10610,9 +10631,8 @@ create_new_ecclesiastical_title_interaction = {
 		is_adult = yes
 	}
 
-	# Same-faith duke-or-above rulers holding at least one title whose de jure capital is not in a clerical region yet.
-	# Deliberately not gated on the recipient's own capital: a ruler whose seat already sits inside a see must still
-	# be able to have one founded elsewhere in their realm
+	# Same-faith duke-or-above holding a title whose de jure capital is not yet in a clerical region
+	# We do not require the recipient's own capital, so a seated ruler can still found a see elsewhere
 	is_shown = {
 		scope:recipient = {
 			is_ruler = yes
@@ -10743,8 +10763,7 @@ expand_ecclesiastical_title_interaction = {
 			is_ruler = yes
 			faith ?= scope:actor.faith
 			pam_government_is_religious_playable_trigger = yes
-			# The picker only lists duchies around the region at the recipient's capital, so a region held
-			# elsewhere gives them nothing to expand into
+			# Picker only lists duchies around the region at the recipient's capital
 			pam_acting_clerical_region_trigger = { ARCHBISHOP = this }
 			pam_actor_is_clerical_title_authority_of_this_trigger = yes
 		}
@@ -10771,8 +10790,7 @@ expand_ecclesiastical_title_interaction = {
 		pam_valid_expand_ecclesiastical_title_target_trigger = { TITLE = scope:target ARCHBISHOP = scope:recipient }
 	}
 
-	# can_be_picked_title only filters the picker and is not rechecked on send, so without a has_valid_target
-	# trigger the chosen duchy is never validated again.
+	# can_be_picked_title is picker-only and is not rechecked on send
 	has_valid_target_showing_failures_only = {
 		pam_valid_expand_ecclesiastical_title_target_trigger = { TITLE = scope:target ARCHBISHOP = scope:recipient }
 	}
@@ -11153,8 +11171,7 @@ merge_new_ecclesiastical_title_interaction = {
 				text = merge_new_ecclesiastical_title_cooldown_trigger
 				NOT = { exists = capital_province.county.clerical_region_title.var:merge_clerical_region_cooldown }
 			}
-			# The region being grown must be the recipient's own, not merely one that exists at their capital -
-			# a landed archbishop's capital can sit in someone else's region
+			# Must be the recipient's own region, because a landed archbishop's capital can sit in another region
 			pam_acting_clerical_region_trigger = { ARCHBISHOP = this }
 			capital_province.county.clerical_region_title ?= {
 				pam_has_adjacent_mergeable_clerical_region_trigger = yes
@@ -11170,8 +11187,7 @@ merge_new_ecclesiastical_title_interaction = {
 		}
 	}
 
-	# can_be_picked_title only filters the picker and is not rechecked on send, so without a has_valid_target
-	# trigger the chosen region is never validated again.
+	# can_be_picked_title is picker-only and is not rechecked on send
 	has_valid_target_showing_failures_only = {
 		pam_acting_clerical_region_trigger = { ARCHBISHOP = scope:recipient }
 		pam_potential_merge_clerical_region_title_trigger = {
@@ -11543,8 +11559,7 @@ grant_ecclesiastical_title_interaction = {
 
 	cooldown_against_recipient = { years = 5 }
 
-	# Same-faith candidates without a see of their own: clergy, plus any non-ruler the holder
-	# could elevate, which is deliberately wider than the clergy organization
+	# We include clergy and any non-ruler the holder could elevate, wider than the clergy organization
 	is_shown = {
 		scope:recipient = {
 			this != scope:actor
@@ -11617,14 +11632,19 @@ grant_ecclesiastical_title_interaction = {
 				scope:recipient.capital_county.clerical_region_title ?= this
 			}
 		}
+		pam_antipope_may_grant_clerical_region_trigger = { SEE = scope:target }
 	}
 
-	# can_be_picked_title only filters the picker and is not rechecked on send, and the picker's list is only
-	# rebuilt on save load, so the empty-shell filter has to be repeated here to catch the AI and stale lists.
+	# can_be_picked_title only applies in the picker and is out of date until a save and reload
+	# The empty-shell filter repeats here for the AI
 	has_valid_target_showing_failures_only = {
 		custom_tooltip = {
 			text = grant_ecclesiastical_title_empty_region_tt
 			scope:target ?= { clerical_region_size > 0 }
+		}
+		custom_tooltip = {
+			text = grant_ecclesiastical_title_antipope_obedience_tt
+			pam_antipope_may_grant_clerical_region_trigger = { SEE = scope:target }
 		}
 	}
 
@@ -12195,7 +12215,7 @@ ecclesiastic_incite_holy_war_interaction = {
 			is_alive = yes
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastic_incite_holy_war_cost_value
 			}
@@ -12240,7 +12260,7 @@ ecclesiastic_incite_holy_war_interaction = {
 		piety = {
 			value = pam_ecclesiastic_incite_holy_war_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 			if = {
@@ -12375,7 +12395,7 @@ ecclesiastic_incite_holy_war_interaction = {
 				}
 				trigger_if = {
 					limit = {
-						is_ai = yes
+						scope:actor = { is_ai = yes }
 					}
 					prestige >= major_prestige_value
 				}
@@ -12400,7 +12420,7 @@ ecclesiastic_incite_holy_war_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastic_incite_holy_war_cost_value > 0 }
@@ -12427,15 +12447,13 @@ ecclesiastic_incite_holy_war_interaction = {
 
 	auto_accept = {
 		OR = {
-			#OK so auto accept is necessary so this interaction doesn't show up for player recipients (who shouldn't get a say in whether they are attacked)
-			#BUT the auto-accept will ignore the AI accept logic... so the ai_will_do is more strict than usual
+			#Player recipients auto-accept so they get no say in being attacked
+			#Auto-accept skips ai_accept, so ai_will_do is stricter than usual
 			scope:recipient = {
 				is_ai = no
 			}
-			trigger_if = {
-				limit = {
-					exists = scope:secondary_recipient
-				}
+			AND = {
+				exists = scope:secondary_recipient
 				custom_description = {
 					text = "spending_hook"
 					subject = scope:actor
@@ -12694,7 +12712,6 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			add = -200
-			exists = scope:secondary_recipient
 			scope:secondary_recipient.rite ?= {
 				rite_has_parameter = holy_wars_forbidden
 			}
@@ -12702,7 +12719,6 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			add = -100
-			exists = scope:secondary_recipient
 			scope:secondary_recipient.rite ?= {
 				has_tenet_status = {
 					tenet = tenet_peace_of_god
@@ -13028,7 +13044,6 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			exists = scope:puppet_or_actor.house
-			exists = scope:secondary_recipient
 			NOT = { house ?= scope:puppet_or_actor.house }
 			scope:secondary_recipient.dynasty ?= scope:puppet_or_actor.dynasty
 			add = 10
@@ -13043,7 +13058,6 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			exists = scope:puppet_or_actor.house
-			exists = scope:secondary_recipient
 			NOT = { house.house_head ?= scope:puppet_or_actor }
 			scope:secondary_recipient.dynasty.dynast ?= scope:puppet_or_actor
 			add = 15
@@ -13236,9 +13250,9 @@ ecclesiastic_incite_holy_war_interaction = {
 		}
 		modifier = {
 			factor = 2
-			scope:puppet_or_actor.faith = {
-				faith_hostility_level = {
-					target = scope:recipient.faith
+			scope:puppet_or_actor.rite = {
+				rite_hostility_level = {
+					target = scope:recipient.rite
 					value >= faith_evil_level
 				}
 			}
@@ -13635,10 +13649,8 @@ ecclesiastic_incite_claim_war_interaction = {
 			scope:recipient = {
 				is_ai = no
 			}
-			trigger_if = {
-				limit = {
-					exists = scope:secondary_recipient
-				}
+			AND = {
+				exists = scope:secondary_recipient
 				custom_description = {
 					text = "spending_hook"
 					subject = scope:actor
@@ -14319,6 +14331,10 @@ influence_papal_vote_interaction = {
 						value = scope:secondary_recipient
 						years = 20
 					}
+					# Rather than waiting for the next AI tick, force update views immediately
+					hidden_effect = {
+						recalculate_succession_election_vote = yes
+					}
 				}
 				if = {
 					limit = { scope:pam_papal_vote_bribe = yes }
@@ -14930,8 +14946,10 @@ pam_reform_order_interaction = {
 			text = pam_reform_order_is_valid_showing_failures_only_tt
 			scope:actor = {
 				OR = {
-					any_personal_tenet = { count >= 1 }
 					rite != scope:recipient.rite
+					any_personal_tenet = {
+						NOT = { scope:recipient.holy_order.order_tenet ?= this }
+					}
 				}
 			}
 		}
@@ -14970,9 +14988,12 @@ pam_reform_order_interaction = {
 	}
 
 	can_send = {
-		custom_tooltip = {
-			text = pam_reform_order_select_tenet_tt
-			pam_evangelize_personal_tenet_send_option_selected_trigger = yes
+		OR = {
+			custom_tooltip = {
+				text = pam_reform_order_select_tenet_tt
+				pam_evangelize_personal_tenet_send_option_selected_trigger = yes
+			}
+			scope:recipient.rite != scope:actor.rite
 		}
 	}
 
@@ -17338,9 +17359,7 @@ pam_evangelize_personal_tenet_interaction = {
 	}
 }
 
-# AI-only counterpart of pam_evangelize_personal_tenet_interaction.
-# The player uses the interaction above (with per-tenet send_options); the AI uses this one,
-# which only carries the hook send_option and lets on_send pick a random tenet.
+# Players pick a tenet through send_options, and the AI only has the hook so on_send picks a random tenet
 pam_ai_evangelize_personal_tenet_interaction = {
 	category = interaction_category_religion
 	icon = evangelize_personal_tenet
@@ -17525,8 +17544,7 @@ pam_ai_evangelize_personal_tenet_interaction = {
 		adult = yes
 	}
 
-	# Roughly four times slower than the usual cadence here: every firing pays a one-off sized
-	# popularity gain, which at the old rate outweighed every council, bull and decision combined.
+	# Four times slower than usual: each firing pays a one-off-sized popularity gain
 	ai_frequency_by_tier = {
 		barony = 0
 		county = 240
@@ -17635,8 +17653,7 @@ pam_ai_evangelize_personal_tenet_interaction = {
 		is_clergy = yes # The puppet route is reserved for players; the AI preaches through its own clergy
 		faith ?= { has_tenet_popularity_trigger = yes }
 		has_pam_dlc_trigger = yes
-		# Actor scope. Drop out before any recipient is weighed once every tenet the actor carries is
-		# already Very Popular, since preaching those further only inflates a score with nothing to prove.
+		# Actor scope: drop out in is_available once every tenet is already Very Popular
 		save_temporary_scope_as = pam_evangelize_popularity_actor
 		any_personal_tenet = {
 			save_temporary_scope_as = pam_evangelize_tenet_check
@@ -17687,8 +17704,7 @@ pam_ai_evangelize_personal_tenet_interaction = {
 	auto_accept = no
 
 	on_send = {
-		# Let AI pick a random tenet, as teaching it all send_options is too complicated.
-		# Same two conditions is_shown gates on, so there is always one left to pick.
+		# A random tenet uses the same two is_shown checks, so there is always one left to pick
 		scope:actor = {
 			random_personal_tenet = {
 				limit = {
@@ -20805,7 +20821,7 @@ request_enforce_succession_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= medium_piety_value
 			}
@@ -20832,7 +20848,7 @@ request_enforce_succession_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				add_piety = { value = { add = medium_piety_value max = piety multiply = -1 } }
 			}
@@ -20918,7 +20934,7 @@ request_enforce_succession_interaction = {
 			value = medium_piety_value
 			multiply = pam_peace_of_god_clergy_peacemaking_cost_mult_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -21500,6 +21516,9 @@ request_ecclesiastical_treasury_interaction = {
 	}
 
 	on_decline = {
+		scope:recipient = {
+			add_piety = miniscule_piety_loss
+		}
 		if = {
 			limit = {
 				scope:recipient = {
@@ -21725,6 +21744,7 @@ pam_ask_subordinates_for_gold_interaction = {
 
 	desc = pam_ask_subordinates_for_gold_interaction_desc
 
+	cooldown = { years = 1 }
 	cooldown_against_recipient = { years = 5 }
 
 	is_available = {
@@ -21735,9 +21755,9 @@ pam_ask_subordinates_for_gold_interaction = {
 	is_shown = {
 		scope:actor = {
 			pam_is_clerical_comprehensive_trigger = yes
+			any_subordinate = { this = scope:recipient }
 		}
 		scope:recipient = {
-			superior ?= scope:actor
 			faith ?= scope:actor.faith
 		}
 	}
@@ -21900,9 +21920,9 @@ pam_ask_subordinates_for_gold_interaction = {
 		barony = 0
 		county = 36
 		duchy = 24
-		kingdom = 6
-		empire = 6
-		hegemony = 6
+		kingdom = 12
+		empire = 12
+		hegemony = 12
 	}
 
 	ai_will_do = {
@@ -22045,7 +22065,7 @@ request_white_peace_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_request_white_peace_cost_value
 			}
@@ -22095,7 +22115,7 @@ request_white_peace_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_request_white_peace_cost_value > 0 }
@@ -22135,7 +22155,7 @@ request_white_peace_interaction = {
 		piety = {
 			value = pam_request_white_peace_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -22582,7 +22602,7 @@ request_victory_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_request_victory_cost_value
 			}
@@ -22650,7 +22670,7 @@ request_victory_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_request_victory_cost_value > 0 }
@@ -22690,7 +22710,7 @@ request_victory_interaction = {
 		piety = {
 			value = pam_request_victory_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -23069,7 +23089,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 		}
 		trigger_if = {
 			limit = {
-				scope:puppet_or_actor = {
+				scope:actor = {
 					is_ai = yes
 				}
 			}
@@ -23141,25 +23161,25 @@ ecclesiastic_consecrate_kingdom_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				gold >= pam_ecclesiastic_consecrate_kingdom_gold_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				treasury >= pam_ecclesiastic_consecrate_kingdom_treasury_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastic_consecrate_kingdom_piety_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= pam_ecclesiastic_consecrate_kingdom_prestige_cost_value
 			}
@@ -23172,7 +23192,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 			if = {
 				limit = {
 					OR = {
-						scope:puppet_or_actor != scope:actor
+						scope:is_puppet_action ?= yes
 						scope:puppet_or_actor = { has_treasury = yes }
 					}
 				}
@@ -23184,7 +23204,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 			if = {
 				limit = {
 					OR = {
-						scope:puppet_or_actor != scope:actor
+						scope:is_puppet_action ?= yes
 						scope:puppet_or_actor = { has_treasury = no }
 					}
 				}
@@ -23194,14 +23214,14 @@ ecclesiastic_consecrate_kingdom_interaction = {
 		piety = {
 			value = pam_ecclesiastic_consecrate_kingdom_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
 		prestige = {
 			value = pam_ecclesiastic_consecrate_kingdom_prestige_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -23496,9 +23516,9 @@ ecclesiastic_consecrate_kingdom_interaction = {
 							NOT = {
 								faith = scope:puppet_or_actor.faith
 							}
-							scope:puppet_or_actor.faith = {
-								faith_hostility_level = {
-									target >= prev.faith
+							scope:puppet_or_actor.rite = {
+								rite_hostility_level = {
+									target = prev.rite
 									value >= faith_hostile_level
 								}
 							}
@@ -23518,7 +23538,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastic_consecrate_kingdom_treasury_cost_value > 0 }
@@ -23568,7 +23588,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 		#Show opinion losses to relevant characters
 		if = {
 			limit = {
-				scope:puppet_or_actor = {
+				scope:actor = {
 					is_ai = no
 				}
 			}
@@ -23722,7 +23742,7 @@ ecclesiastic_consecrate_kingdom_interaction = {
 			}
 			if = {
 				limit = {
-					scope:puppet_or_actor = { is_ai = yes }
+					scope:actor = { is_ai = yes }
 				}
 				scope:puppet_or_actor = {
 				add_opinion = {
@@ -23825,9 +23845,9 @@ ecclesiastic_consecrate_kingdom_interaction = {
 							NOT = {
 								faith = scope:puppet_or_actor.faith
 							}
-							scope:puppet_or_actor.faith = {
-								faith_hostility_level = {
-									target >= prev.faith
+							scope:puppet_or_actor.rite = {
+								rite_hostility_level = {
+									target = prev.rite
 									value >= faith_hostile_level
 								}
 							}
@@ -23947,21 +23967,21 @@ ecclesiastical_bestow_title_interaction = {
 		gold = {
 			value = pam_ecclesiastical_bestow_title_gold_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
 		treasury = {
 			value = pam_ecclesiastical_bestow_title_treasury_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
 		piety = {
 			value = pam_ecclesiastical_bestow_title_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -24157,19 +24177,19 @@ ecclesiastical_bestow_title_interaction = {
 
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				gold >= pam_ecclesiastical_bestow_title_gold_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				treasury >= pam_ecclesiastical_bestow_title_treasury_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastical_bestow_title_piety_cost_value
 			}
@@ -24439,9 +24459,9 @@ ecclesiastical_bestow_title_interaction = {
 							NOT = {
 								faith = scope:puppet_or_actor.faith
 							}
-							scope:puppet_or_actor.faith = {
-								faith_hostility_level = {
-									target >= prev.faith
+							scope:puppet_or_actor.rite = {
+								rite_hostility_level = {
+									target = prev.rite
 									value >= faith_hostile_level
 								}
 							}
@@ -24471,7 +24491,7 @@ ecclesiastical_bestow_title_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastical_bestow_title_treasury_cost_value > 0 }
@@ -24501,7 +24521,7 @@ ecclesiastical_bestow_title_interaction = {
 		#Show opinion losses to relevant characters
 		if = {
 			limit = {
-				scope:puppet_or_actor = {
+				scope:actor = {
 					is_ai = no
 				}
 			}
@@ -24645,7 +24665,7 @@ ecclesiastical_bestow_title_interaction = {
 				scope:recipient = {
 					is_ai = no
 				}
-				scope:puppet_or_actor = { is_ai = yes }
+				scope:actor = { is_ai = yes }
 			}
 			scope:puppet_or_actor = {
 				if = {
@@ -24772,9 +24792,9 @@ ecclesiastical_bestow_title_interaction = {
 							NOT = {
 								faith = scope:puppet_or_actor.faith
 							}
-							scope:puppet_or_actor.faith = {
-								faith_hostility_level = {
-									target >= prev.faith
+							scope:puppet_or_actor.rite = {
+								rite_hostility_level = {
+									target = prev.rite
 									value >= faith_hostile_level
 								}
 							}
@@ -25051,7 +25071,7 @@ request_unformed_title_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_request_unformed_title_piety_cost_value
 			}
@@ -25100,7 +25120,7 @@ request_unformed_title_interaction = {
 		piety = {
 			value = pam_request_unformed_title_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -25118,7 +25138,7 @@ request_unformed_title_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_request_unformed_title_piety_cost_value > 0 }
@@ -25224,7 +25244,7 @@ request_unformed_title_interaction = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -25304,8 +25324,8 @@ request_unformed_title_interaction = {
 						percent >= 0.25
 						holder ?= {
 							save_temporary_scope_as = heathen_holder
-							faith = {
-								is_hostile_enough_for_holy_war_trigger = { FAITH = scope:puppet_or_actor.faith }
+							rite = {
+								is_hostile_enough_for_holy_war_trigger = { RITE = scope:puppet_or_actor.rite }
 							}
 							#A holder you cannot lawfully attack is no use as a war target, vassals and fellow subjects included
 							scope:puppet_or_actor = {
@@ -25804,13 +25824,13 @@ ecclesiastical_de_jure_shifting_interaction = {
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastical_de_jure_shifting_piety_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= pam_ecclesiastical_de_jure_shifting_prestige_cost_value
 			}
@@ -25865,14 +25885,14 @@ ecclesiastical_de_jure_shifting_interaction = {
 		piety = {
 			value = pam_ecclesiastical_de_jure_shifting_piety_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
 		prestige = {
 			value = pam_ecclesiastical_de_jure_shifting_prestige_cost_value
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -25890,7 +25910,7 @@ ecclesiastical_de_jure_shifting_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastical_de_jure_shifting_piety_cost_value > 0 }
@@ -26144,7 +26164,7 @@ ecclesiastical_de_jure_shifting_interaction = {
 		}
 		if = {
 			limit = {
-				scope:actor != scope:puppet_or_actor
+				scope:is_puppet_action ?= yes
 				scope:actor != scope:recipient
 			}
 			scope:actor = {
@@ -26351,12 +26371,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						add = 1
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_astray_level
 									}
 								}
@@ -26365,12 +26385,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_hostile_level
 									}
 								}
@@ -26379,12 +26399,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_evil_level
 									}
 								}
@@ -26459,12 +26479,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_astray_level
 									}
 								}
@@ -26473,12 +26493,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_hostile_level
 									}
 								}
@@ -26487,12 +26507,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_evil_level
 									}
 								}
@@ -26651,12 +26671,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						add = 1
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_astray_level
 									}
 								}
@@ -26665,12 +26685,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_hostile_level
 									}
 								}
@@ -26679,12 +26699,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								holder.faith = {
+								holder.rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_evil_level
 									}
 								}
@@ -26814,12 +26834,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						add = 1
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_astray_level
 									}
 								}
@@ -26828,12 +26848,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_hostile_level
 									}
 								}
@@ -26842,12 +26862,12 @@ ecclesiastical_de_jure_shifting_interaction = {
 						}
 						if = {
 							limit = {
-								faith = {
+								rite = {
 									NOT = {
-										this = scope:puppet_or_actor.faith
+										this = scope:puppet_or_actor.rite
 									}
-									faith_hostility_level = {
-										target = scope:puppet_or_actor.faith
+									rite_hostility_level = {
+										target = scope:puppet_or_actor.rite
 										value >= faith_evil_level
 									}
 								}
@@ -26977,9 +26997,9 @@ ecclesiastical_de_jure_shifting_interaction = {
 									OR = {
 										AND = {
 											NOT = { faith = scope:recipient.faith }
-											faith = {
-												faith_hostility_level = {
-													target = scope:recipient.faith
+											rite = {
+												rite_hostility_level = {
+													target = scope:recipient.rite
 													value <= faith_astray_level
 												}
 											}
@@ -27416,7 +27436,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 				multiply = 0.5
 			}
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -27426,7 +27446,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 				multiply = 0.5
 			}
 			if = {
-				limit = { scope:puppet_or_actor != scope:actor }
+				limit = { scope:is_puppet_action ?= yes }
 				multiply = 0
 			}
 		}
@@ -27536,13 +27556,13 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 			scope:recipient.rite = scope:puppet_or_actor.rite
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				piety >= pam_ecclesiastical_de_jure_shifting_piety_cost_value
 			}
 		}
 		trigger_if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				prestige >= pam_ecclesiastical_de_jure_shifting_prestige_cost_value
 			}
@@ -27585,7 +27605,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 			}
 			trigger_if = {
 				limit = {
-					scope:puppet_or_actor = {
+					scope:actor = {
 						is_ai = no
 					}
 				}
@@ -27665,7 +27685,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 
 	on_accept = {
 		if = {
-			limit = { scope:puppet_or_actor != scope:actor }
+			limit = { scope:is_puppet_action ?= yes }
 			scope:puppet_or_actor = {
 				if = {
 					limit = { pam_ecclesiastical_de_jure_shifting_piety_cost_value > 0 }
@@ -27716,7 +27736,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 			scope:target.de_jure_liege.holder = {
 				if = {
 					limit = {
-						scope:puppet_or_actor = {
+						scope:actor = {
 							is_ai = no
 						}
 					}
@@ -27779,7 +27799,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 				}
 				if = {
 					limit = {
-						scope:puppet_or_actor = { is_ai = no }
+						scope:actor = { is_ai = no }
 					}
 					add_opinion = {
 						target = scope:puppet_or_actor
@@ -27803,7 +27823,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 		scope:puppet_or_actor = {
 			if = {
 				limit = {
-					is_ai = no
+					scope:actor = { is_ai = no }
 				}
 				custom_tooltip = every_subordinate_in_target_de_jure_liege_opinion_loss
 				custom_tooltip = every_subordinate_in_actor_title_opinion_gain
@@ -27884,7 +27904,7 @@ ecclesiastical_de_jure_shifting_grant_interaction = {
 			}
 			if = {
 				limit = {
-					scope:actor != scope:puppet_or_actor
+					scope:is_puppet_action ?= yes
 					scope:actor != scope:recipient
 				}
 				scope:actor = {
@@ -28487,9 +28507,7 @@ demand_divorce_interaction = {
 ###############################################
 # Holy Myron
 
-# Gift a charge of your Holy Myron to another ruler: a fresh single-charge ampulla is filled
-# from yours, and the gift redounds to your piety and their gratitude. Core-rite unlock
-# (tenet_holy_myron_artifact_interaction_unlock).
+# Gift a charge of your Holy Myron to another ruler: a fresh single-charge ampulla is filled from yours
 pam_give_holy_myron_interaction = {
 	category = interaction_category_religion
 	icon = religious
@@ -28577,8 +28595,6 @@ pam_give_holy_myron_interaction = {
 		}
 	}
 
-	# The AI gifts only from plenty, on a slow cadence, and favors the faithful it values;
-	# ai_potential is the throttle that keeps AI holders from pouring their oil away.
 	ai_targets = {
 		ai_recipients = neighboring_rulers
 		ai_recipients = peer_vassals
