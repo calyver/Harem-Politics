@@ -36,14 +36,14 @@ marry_off_interaction = {
 		#populate only with your courtiers or children/grandchildren if you are a landless adventurer
 		if = {
 			limit = {
-				scope:actor = {
+				scope:puppet_or_actor = {
 					has_government = landless_adventurer_government
 				}
 			}
 			scope:secondary_actor = {
 				if = {
 					limit = {
-						scope:actor != this
+						scope:puppet_or_actor != this
 					}
 					add_to_list = characters
 				}
@@ -53,8 +53,8 @@ marry_off_interaction = {
 							limit = {
 								is_concubine = yes
 							}
-							is_concubine_of = scope:actor
-							can_marry_character_trigger = { CHARACTER = scope:actor }
+							is_concubine_of = scope:puppet_or_actor
+							can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 						}
 					}
 					add_to_list = characters
@@ -65,8 +65,8 @@ marry_off_interaction = {
 							limit = {
 								is_concubine = yes
 							}
-							is_concubine_of = scope:actor
-							can_marry_character_trigger = { CHARACTER = scope:actor }
+							is_concubine_of = scope:puppet_or_actor
+							can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 						}
 					}
 					add_to_list = characters
@@ -81,8 +81,8 @@ marry_off_interaction = {
 								limit = {
 									is_concubine = yes
 								}
-								is_concubine_of = scope:actor
-								can_marry_character_trigger = { CHARACTER = scope:actor }
+								is_concubine_of = scope:puppet_or_actor
+								can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 							}
 						}
 						add_to_list = characters
@@ -97,8 +97,8 @@ marry_off_interaction = {
 									limit = {
 										is_concubine = yes
 									}
-									is_concubine_of = scope:actor
-									can_marry_character_trigger = { CHARACTER = scope:actor }
+									is_concubine_of = scope:puppet_or_actor
+									can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 								}
 							}
 							add_to_list = characters
@@ -112,8 +112,8 @@ marry_off_interaction = {
 										limit = {
 											is_concubine = yes
 										}
-										is_concubine_of = scope:actor
-										can_marry_character_trigger = { CHARACTER = scope:actor }
+										is_concubine_of = scope:puppet_or_actor
+										can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 									}
 								}
 								add_to_list = characters
@@ -170,27 +170,27 @@ marry_off_interaction = {
 			value = 0
 			if = {
 				limit = {
-					exists = scope:actor
+					exists = scope:puppet_or_actor
 					exists = scope:recipient
 					exists = scope:secondary_recipient
 					exists = scope:secondary_actor
-					scope:secondary_actor = { is_close_family_of = scope:actor }
+					scope:secondary_actor = { is_close_family_of = scope:puppet_or_actor }
 					scope:recipient = {
 						OR = {
 							AND = {
 								vassal_contract_has_flag = vassal_contract_marriage_favor
-								is_allied_to = scope:actor
+								is_allied_to = scope:puppet_or_actor
 							}
 							NOT = { vassal_contract_has_flag = vassal_contract_marriage_favor}
 						}
 					}
 				}
 				add = {
-					scope:actor = {
+					scope:puppet_or_actor = {
 						every_vassal = {
 							limit = {
 								vassal_contract_has_flag = vassal_contract_marriage_favor
-								NOT = { is_allied_to = scope:actor }
+								NOT = { is_allied_to = scope:puppet_or_actor }
 								NOR = {
 									this = scope:recipient
 									this = scope:secondary_recipient
@@ -208,8 +208,32 @@ marry_off_interaction = {
 			value = 0
 			if = {
 				limit = { scope:influence_send_option = yes }
-				add = scope:actor.medium_influence_value
+				add = scope:puppet_or_actor.medium_influence_value
 				desc = INFLUENCE_INTERACTION_ACCEPTANCE_SEND_OPTION
+			}
+		}
+
+		piety = {
+			value = 0
+			if = {
+				limit = {
+					exists = scope:puppet_or_actor
+					exists = scope:recipient
+					exists = scope:secondary_recipient
+					exists = scope:secondary_actor
+					scope:secondary_actor = {
+						faith != scope:secondary_recipient.faith
+					}
+					scope:puppet_or_actor = {
+						any_character_struggle = {
+							has_struggle_phase_parameter = interfaith_marriages_between_involved_characters_costs_piety
+						}
+					}
+				}
+				add = {
+					value = major_piety_value
+					desc = CB_STRUGGLE_PHASE_SURCHARGE
+				}
 			}
 		}
 	}
@@ -223,23 +247,23 @@ marry_off_interaction = {
 		# Enable only for yourself if you're a landless adventurer
 		trigger_if = {
 			limit = {
-				scope:actor = {
+				scope:puppet_or_actor = {
 					has_government = landless_adventurer_government
 				}
 			}
 			scope:secondary_actor = {
-				scope:actor = this
+				scope:puppet_or_actor = this
 			}
 		}
-		scope:secondary_actor = {
+		scope:secondary_actor ?= {
 			#Is this someone I can marry off?
 			OR = {
-				is_courtier_of = scope:actor
+				is_courtier_of = scope:puppet_or_actor
 				AND = {
-					is_child_of = scope:actor
-					target_is_liege_or_above = scope:actor
+					is_child_of = scope:puppet_or_actor
+					target_is_liege_or_above = scope:puppet_or_actor
 				}
-				scope:actor = this
+				scope:puppet_or_actor ?= this
 			}
 			#They can be married
 			can_marry_trigger = yes
@@ -248,8 +272,8 @@ marry_off_interaction = {
 				limit = {
 					is_concubine = yes
 				}
-				is_concubine_of = scope:actor
-				can_marry_character_trigger = { CHARACTER = scope:actor }
+				is_concubine_of = scope:puppet_or_actor
+				can_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 			}
 		}
 		# Block further marriage proposals for people who have a pending grand wedding
@@ -272,7 +296,7 @@ marry_off_interaction = {
 			}
 			marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = secondary_recipient }
 		}
-		marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = actor }
+		marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = puppet_or_actor }
 		marriage_interaction_non_loyal_diarchs_refuse_secondary_marriage_trigger = { TARGET = recipient }
 	}
 
@@ -284,7 +308,7 @@ marry_off_interaction = {
 			is_imprisoned = no
 		}
 		NOT = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				is_at_war_with = scope:recipient
 			}
 		}
@@ -304,7 +328,7 @@ marry_off_interaction = {
 					is_pool_guest = yes
 					host = {
 						is_ai = no
-						this != scope:actor
+						this != scope:puppet_or_actor
 					}
 				}
 				NOT = { is_pool_guest_of = host }
@@ -317,7 +341,7 @@ marry_off_interaction = {
 			limit = {
 				scope:grand_wedding_promise = yes
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				set_variable = {
 					name = grand_wedding_promise_pending
 					days = 10
@@ -351,15 +375,14 @@ marry_off_interaction = {
 
 	on_accept = {
 		marriage_interaction_on_accept_effect = yes
-
-		scope:actor = {
+		scope:puppet_or_actor = {
 			if = {
 				limit = {
 					scope:herd_send_option = yes
 				}
 				pay_herd = {
 					target = scope:recipient
-					value = scope:actor.domicile.medium_herd_value
+					value = scope:puppet_or_actor.domicile.medium_herd_value
 				}
 			}
 			if = {
@@ -372,7 +395,7 @@ marry_off_interaction = {
 	}
 
 	on_decline = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			if = {
 				limit = { this != scope:recipient }
 				trigger_event = marriage_interaction.0011
@@ -387,7 +410,7 @@ marry_off_interaction = {
 
 		# If we're a clan this interaction affects unity
 		add_clan_unity_interaction_effect = {
-			CHARACTER = scope:actor
+			CHARACTER = scope:puppet_or_actor
 			TARGET = scope:recipient
 			VALUE = medium_unity_loss
 			DESC = clan_unity_marry_off_decline.desc
@@ -415,9 +438,9 @@ marry_off_interaction = {
 		localization = GRAND_WEDDING_PROMISE
 
 		is_shown = {
-			scope:actor = { #Can organize a Grand Wedding
+			scope:puppet_or_actor = { #Can organize a Grand Wedding
 				highest_held_title_tier > tier_barony
-				is_landed_or_landless_administrative = yes
+				is_landed_or_landless_administrative_or_theocratic = yes
 				trigger_if = {
 					limit = {
 						is_ai = yes
@@ -435,7 +458,7 @@ marry_off_interaction = {
 		}
 
 		is_valid = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				gold >= real_wedding_cost_actor_scope
 				is_available = yes
 				custom_tooltip = {
@@ -472,7 +495,7 @@ marry_off_interaction = {
 			custom_tooltip = {
 				text = grand_wedding_only_family
 				scope:secondary_actor ?= {
-					is_close_or_extended_family_of = scope:actor
+					is_close_or_extended_family_of = scope:puppet_or_actor
 				}
 			}
 		}
@@ -488,14 +511,14 @@ marry_off_interaction = {
 			}
 		}
 		starts_enabled = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				OR = {
-					faith = {
-						has_doctrine = doctrine_gender_female_dominated
+					rite = {
+						rite_has_doctrine = doctrine_gender_female_dominated
 					}
 					AND = {
 						scope:secondary_actor ?= { is_female = yes }
-						faith = { has_doctrine = doctrine_gender_equal }
+						rite = { rite_has_doctrine = doctrine_gender_equal }
 					}
 					AND = {
 						scope:secondary_actor ?= this
@@ -520,7 +543,7 @@ marry_off_interaction = {
 
 	send_option = {
 		is_valid = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				has_usable_hook = scope:recipient
 			}
 		}
@@ -531,17 +554,17 @@ marry_off_interaction = {
 
 	send_option = { # EP3 Influence
 		is_shown = { # Actor must have a government that uses influence
-			scope:actor = {
+			scope:puppet_or_actor = {
 				government_has_flag = government_has_influence
 			}
 		}
 		is_valid = {
 			# Actor has enough influence
-			scope:actor = { influence >= medium_influence_value }
+			scope:puppet_or_actor = { influence >= medium_influence_value }
 			# Both characters are within the same top realm
 			custom_tooltip = {
 				text = not_same_realm_tt
-				scope:recipient.top_liege = scope:actor.top_liege
+				scope:recipient.top_liege = scope:puppet_or_actor.top_liege
 			}
 		}
 		flag = influence_send_option
@@ -549,7 +572,7 @@ marry_off_interaction = {
 	}
 	send_option = { # MPO Herd
 		is_shown = { # Actor must have a government that uses Herd
-			scope:actor = {
+			scope:puppet_or_actor = {
 				government_has_flag = government_is_nomadic
 				is_ai = no
 			}
@@ -560,7 +583,7 @@ marry_off_interaction = {
 		}
 		is_valid = {
 			# Actor has enough Herd
-			scope:actor = { domicile.herd >= domicile.medium_herd_value }
+			scope:puppet_or_actor = { domicile.herd >= domicile.medium_herd_value }
 		}
 		flag = herd_send_option
 		localization = TRADE_HERD_FOR_BETTER_AI_ACCEPTANCE
@@ -591,7 +614,7 @@ marry_off_interaction = {
 						triggered_desc = {
 							trigger = {
 								scope:matrilineal = yes
-								scope:secondary_actor = scope:actor
+								scope:secondary_actor = scope:puppet_or_actor
 								scope:secondary_recipient = scope:recipient
 							}
 							desc = MARRIAGE_NOTIFICATION_BOTH_PERSONAL_MATRI
@@ -599,7 +622,7 @@ marry_off_interaction = {
 						triggered_desc = {
 							trigger = {
 								scope:matrilineal = yes
-								scope:secondary_actor = scope:actor
+								scope:secondary_actor = scope:puppet_or_actor
 							}
 							desc = MARRIAGE_NOTIFICATION_ACTOR_PERSONAL_MATRI
 						}
@@ -618,14 +641,14 @@ marry_off_interaction = {
 						}
 						triggered_desc = {
 							trigger = {
-								scope:secondary_actor = scope:actor
+								scope:secondary_actor = scope:puppet_or_actor
 								scope:secondary_recipient = scope:recipient
 							}
 							desc = MARRIAGE_NOTIFICATION_BOTH_PERSONAL
 						}
 						triggered_desc = {
 							trigger = {
-								scope:secondary_actor = scope:actor
+								scope:secondary_actor = scope:puppet_or_actor
 							}
 							desc = MARRIAGE_NOTIFICATION_ACTOR_PERSONAL
 						}
@@ -644,7 +667,7 @@ marry_off_interaction = {
 					triggered_desc = {
 						trigger = {
 							scope:matrilineal = yes
-							scope:secondary_actor = scope:actor
+							scope:secondary_actor = scope:puppet_or_actor
 							scope:secondary_recipient = scope:recipient
 						}
 						desc = BETROTHAL_NOTIFICATION_BOTH_PERSONAL_MATRI
@@ -652,7 +675,7 @@ marry_off_interaction = {
 					triggered_desc = {
 						trigger = {
 							scope:matrilineal = yes
-							scope:secondary_actor = scope:actor
+							scope:secondary_actor = scope:puppet_or_actor
 						}
 						desc = BETROTHAL_NOTIFICATION_ACTOR_PERSONAL_MATRI
 					}
@@ -671,14 +694,14 @@ marry_off_interaction = {
 					}
 					triggered_desc = {
 						trigger = {
-							scope:secondary_actor = scope:actor
+							scope:secondary_actor = scope:puppet_or_actor
 							scope:secondary_recipient = scope:recipient
 						}
 						desc = BETROTHAL_NOTIFICATION_BOTH_PERSONAL
 					}
 					triggered_desc = {
 						trigger = {
-							scope:secondary_actor = scope:actor
+							scope:secondary_actor = scope:puppet_or_actor
 						}
 						desc = BETROTHAL_NOTIFICATION_ACTOR_PERSONAL
 					}
