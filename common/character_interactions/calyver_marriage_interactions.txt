@@ -1038,7 +1038,7 @@ find_concubine = {
 	needs_recipient_to_open = no
 
 	redirect = {
-		scope:actor = { # The UI will open to the already filled left first if we don't tell it we've got "our side" actor which is always ourselves
+		scope:puppet_or_actor = { # The UI will open to the already filled left first if we don't tell it we've got "our side" actor which is always ourselves
 			save_scope_as = secondary_actor
 		}
 		if = {
@@ -1046,7 +1046,7 @@ find_concubine = {
 				# This is needed for the UI to function properly. Initially UI opens with player as both actor and recipient
 				# After UI opens with empty recipient, player can click on a candidate
 				# When candidate is selected both primary and secondary recipient must be set for the interaction to work
-				scope:actor != scope:recipient
+				scope:puppet_or_actor != scope:recipient
 			}
 			scope:recipient = {
 				save_scope_as = secondary_recipient
@@ -1055,17 +1055,17 @@ find_concubine = {
 	}
 
 	populate_recipient_list = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			every_courtier = {
 				limit = {
-					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+					can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 				}
 				add_to_list = characters
 			}
 			every_prisoner = {
 				limit = {
 					NOT = { is_in_list = characters }
-					can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+					can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 				}
 				add_to_list = characters
 			}
@@ -1073,35 +1073,35 @@ find_concubine = {
 	}
 
 	is_shown = {
-		scope:actor = {
+		scope:puppet_or_actor ?= {
 			allowed_concubines = yes
 			is_adult = yes
 			trigger_if = { #So that we show the recipient list, but can also only use this on ourselves, we have to do this check in the beginning
 				limit = {
 					NOT = { exists = scope:secondary_recipient }
 				}
-				scope:actor = scope:recipient
+				scope:puppet_or_actor = scope:recipient
 			}
 		}
 		trigger_if = {
 			limit = {
-				scope:actor != scope:recipient
+				scope:puppet_or_actor != scope:recipient
 			}
-			scope:actor = {
+			scope:puppet_or_actor ?= {
 				trigger_if = {
 					limit = {
 						allowed_to_marry_same_sex_trigger = no
 					}
 					sex_opposite_of = scope:recipient
 				}
-				NOT = { relation_with_character_is_incestuous_in_my_faith_trigger = { CHARACTER = scope:recipient } }
+				NOT = { relation_with_character_is_incestuous_in_my_rite_trigger = { CHARACTER = scope:recipient } }
 			}
 			scope:recipient = {
-				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+				can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 				is_adult = yes
 				OR = {
-					is_imprisoned_by = scope:actor
-					is_courtier_of = scope:actor
+					is_imprisoned_by = scope:puppet_or_actor
+					is_courtier_of = scope:puppet_or_actor
 				}
 			}
 		}
@@ -1111,30 +1111,30 @@ find_concubine = {
 		custom_description = {
 			text = take_concubine_allowed_more
 			object = scope:recipient
-			scope:actor = {
+			scope:puppet_or_actor = {
 				allowed_more_concubines = yes
 			}
 		}
 		custom_description = {
 			text = take_concubine_available_character_opp
-			object = scope:actor
-			scope:actor = {
+			object = scope:puppet_or_actor
+			scope:puppet_or_actor = {
 				OR = {
 					any_courtier = {
-						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+						can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 					}
 					any_prisoner = {
-						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+						can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 					}
 				}
 			}
 		}
 		trigger_if = {
 			limit = {
-				scope:actor != scope:recipient
+				scope:puppet_or_actor != scope:recipient
 			}
 			scope:recipient = {
-				can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
+				can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
 			}
 		}
 	}
