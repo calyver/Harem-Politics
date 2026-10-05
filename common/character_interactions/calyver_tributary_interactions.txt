@@ -196,8 +196,21 @@ demand_concubine_interaction = {
 						CHARACTER = scope:actor 
 						RECEIVER = scope:actor
 					}
+					NOT = { has_character_flag = has_been_offered_as_concubine }
 				}
 				add_to_list = characters
+			}
+		}
+	}
+
+	is_available = {
+		allowed_concubines = yes
+		trigger_if = {
+			limit = { is_ai = yes }
+			any_tributary = { }
+			OR = {
+				ai_honor <= 0
+				has_trait = lustful
 			}
 		}
 	}
@@ -205,7 +218,6 @@ demand_concubine_interaction = {
 	is_shown = {
 		scope:actor != scope:recipient
 		scope:actor = {
-			allowed_concubines = yes
 			NOR = { # We expect scope:actor to Exact Tribute for this purpose when Merit- or Mandala-based instead
 				government_has_flag = government_has_merit
 				government_has_flag = government_is_mandala
@@ -242,6 +254,7 @@ demand_concubine_interaction = {
 						CHARACTER = scope:actor 
 						RECEIVER = scope:actor
 					}
+					NOT = { has_character_flag = has_been_offered_as_concubine }
 				}
 			}
 		}
@@ -258,7 +271,7 @@ demand_concubine_interaction = {
 
 	ai_accept = {
 		base = 0
-		
+
 		modifier = {
 			add = 1000
 			scope:recipient = {
@@ -266,7 +279,7 @@ demand_concubine_interaction = {
 			}
 			desc = AI_OBEDIENT_REASON
 		}
-		
+
 		modifier = {
 			add = 25
 			scope:recipient = {
@@ -277,7 +290,7 @@ demand_concubine_interaction = {
 			}
 			desc = INTIMIDATED_REASON
 		}
-		
+
 		modifier = {
 			add = 50
 			scope:recipient = {
@@ -288,14 +301,14 @@ demand_concubine_interaction = {
 			}
 			desc = COWED_REASON
 		}
-		
+
 		opinion_modifier = { # Opinion Factor
 			who = scope:recipient
 			opinion_target = scope:actor
 			multiplier = 1.0
 			desc = AI_OPINION_REASON
 		}
-		
+
 		modifier = {
 			add = -25
 			scope:secondary_actor = {
@@ -306,7 +319,7 @@ demand_concubine_interaction = {
 			}
 			desc = AI_EMPLOYED_COURTIER_REASON
 		}
-		
+
 		modifier = {
 			add = -15
 			scope:secondary_actor = {
@@ -314,13 +327,13 @@ demand_concubine_interaction = {
 			}
 			desc = AI_IS_KNIGHT_REASON
 		}
-		
+
 		modifier = {
 			add = -50
 			exists = scope:secondary_actor.inspiration
 			desc = AI_INSPIRED_REASON
 		}
-		
+
 		modifier = {
 			add = -25
 			scope:secondary_actor = {
@@ -328,7 +341,7 @@ demand_concubine_interaction = {
 			}
 			desc = AI_FAMILY_REASON
 		}
-		
+
 		modifier = {
 			add = -50
 			scope:secondary_actor = {
@@ -336,19 +349,40 @@ demand_concubine_interaction = {
 			}
 			desc = AI_FRIEND_REASON
 		}
-		modifier = { # Harem Politics #
+		# Harem Politics #
+		modifier = { # Their lover
 			add = -50
 			scope:secondary_actor = {
 				has_relation_lover = scope:recipient
+				NOT = {
+					lover_is_secret_trigger = {
+						CHARACTER = scope:recipient
+					}
+				}
 			}
 			desc = AI_LOVER_REASON
 		}
-		modifier = { # Harem Politics #
+		modifier = { # scope:recipient is the scope:actor's friend
 			add = 50
 			scope:recipient = {
-				has_relation_friend = scope:actor
+				OR = {
+					has_relation_friend = scope:actor
+					has_relation_best_friend = scope:actor
+				}
 			}
 			desc = AI_ACTOR_FRIEND_REASON
+		}
+		modifier = { # Can a Muslim be taken as concubine?
+			add = -100
+			scope:secondary_actor = {
+				NOT = {
+					can_be_taken_as_muslim_concubine_trigger = {
+						CHARACTER = scope:recipient
+						RECEIVER = scope:recipient
+					}
+				}
+			}
+			desc = AI_MUSLIM_REASON
 		}
 		# Vanilla
 		modifier = {
@@ -358,7 +392,7 @@ demand_concubine_interaction = {
 			}
 			desc = AI_SPOUSE_REASON
 		}
-		
+
 		modifier = {
 			add = -50
 			scope:secondary_actor = {
@@ -366,7 +400,7 @@ demand_concubine_interaction = {
 			}
 			desc = AI_CHILD_REASON
 		}
-		
+
 		modifier = {
 			add = 1000
 			scope:secondary_actor = {
@@ -374,28 +408,6 @@ demand_concubine_interaction = {
 			}
 			desc = AI_RIVAL_REASON
 		}
-
-		# Harem Politics #
-		modifier = {
-			add = -100
-			scope:secondary_actor = {
-				NOT = {
-					can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
-						CHARACTER = scope:recipient
-						RECEIVER = scope:recipient
-					}
-				}
-			}
-			desc = AI_MUSLIM_REASON
-		}
-	}
-
-	ai_potential = {
-		OR = {
-			has_trait = lustful
-			ai_honor <= 0
-		}
-		any_tributary = { }
 	}
 
 	ai_will_do = {
@@ -455,10 +467,33 @@ demand_concubine_interaction = {
 				}
 			}
 		}
-
 		#More/Less likely based on difference in rank between actor and recipient
 		modifier = {
-			add = 20
+			add = {
+				value = 20
+				if = {
+					limit = {
+						scope:actor = {
+							tier_difference = {
+								target = scope:recipient
+								value >= 2
+							}
+						}
+					}
+					add = 10
+				}
+				if = {
+					limit = {
+						scope:actor = {
+							tier_difference = {
+								target = scope:recipient
+								value >= 3
+							}
+						}
+					}
+					add = 10
+				}
+			}
 			scope:actor = {
 				tier_difference = {
 					target = scope:recipient
@@ -467,31 +502,11 @@ demand_concubine_interaction = {
 			}
 		}
 		modifier = {
-			add = 10
-			scope:actor = {
-				tier_difference = {
-					target = scope:recipient
-					value >= 2
-				}
-			}
-		}
-		modifier = {
-			add = 10
-			scope:actor = {
-				tier_difference = {
-					target = scope:recipient
-					value >= 3
-				}
-			}
-		}
-
-		modifier = {
-			add = 10
+			add = 15
 			scope:actor = {
 				has_trait = lustful
 			}
 		}
-
 		modifier = {
 			add = -50
 			scope:actor = {
@@ -516,23 +531,19 @@ demand_concubine_interaction = {
 				has_trait = compassionate
 			}
 		}
-
 		modifier = { #Virginity is prized
 			add = -65
 			scope:secondary_actor = {
 				is_virgin_trigger = no
 			}
 		}
-
 		# Vanilla #
 		modifier = { # Slightly modified #
 			add = 100
 			scope:secondary_actor = {
 				OR = {
-					has_relation_friend = scope:actor
-					has_relation_best_friend = scope:actor
-					has_relation_lover = scope:actor
-					has_relation_soulmate = scope:actor
+					has_any_moderate_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+					has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
 					sum_of_all_skills_value >= sum_of_all_skills_threshold_good
 					martial >= monumentally_high_skill_rating
 					prowess >= extremely_high_skill_rating
@@ -541,11 +552,11 @@ demand_concubine_interaction = {
 						OR = {
 							AND = {
 								is_female = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
+								scope:actor.rite = { NOT = { rite_has_parameter = male_dominated_council } }
 							}
 							AND = {
 								is_male = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
+								scope:actor.rite = { NOT = { rite_has_parameter = female_dominated_council } }
 							}
 						}
 						diplomacy >= monumentally_high_skill_rating
@@ -555,11 +566,11 @@ demand_concubine_interaction = {
 						OR = {
 							AND = {
 								is_female = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = male_dominated_council } }
+								scope:actor.rite = { NOT = { rite_has_parameter = male_dominated_council } }
 							}
 							AND = {
 								is_male = yes
-								scope:actor.faith = { NOT = { has_doctrine_parameter = female_dominated_council } }
+								scope:actor.rite = { NOT = { rite_has_parameter = female_dominated_council } }
 							}
 						}
 						stewardship >= monumentally_high_skill_rating
@@ -579,8 +590,8 @@ demand_concubine_interaction = {
 			factor = 0
 			scope:recipient = {
 				OR = {
-					has_relation_friend = scope:actor
-					has_relation_lover = scope:actor
+					has_any_moderate_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+					has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
 				}
 			}
 		}
@@ -605,7 +616,7 @@ demand_concubine_interaction = {
 			}
 		}
 	}
-	
+
 	on_accept = {
 		scope:recipient = {
 			if = {
