@@ -1780,8 +1780,8 @@ offer_concubine = {
 		barony = 0
 		county = 36
 		duchy = 36
-		kingdom = 48
-		empire = 48
+		kingdom = 60
+		empire = 60
 		hegemony = 60
 	}
 
@@ -1791,11 +1791,11 @@ offer_concubine = {
 	#interface = concubine_list
 
 	populate_recipient_list = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			every_courtier = {
 				limit = {
 					can_be_offered_as_concubine_to_character_trigger = {
-						GIVER = scope:actor
+						GIVER = scope:puppet_or_actor
 						CHARACTER = scope:recipient
 					}
 				}
@@ -1805,7 +1805,7 @@ offer_concubine = {
 				limit = {
 					NOT = { is_in_list = characters }
 					can_be_offered_as_concubine_to_character_trigger = {
-						GIVER = scope:actor
+						GIVER = scope:puppet_or_actor
 						CHARACTER = scope:recipient
 					}
 				}
@@ -1814,8 +1814,22 @@ offer_concubine = {
 		}
 	}
 
+	is_available = {
+		trigger_if = {
+			limit = { is_ai = yes }
+			allowed_concubines = yes
+			NOR = {
+				has_trait = greedy
+				ai_greed > very_high_positive_ai_value
+			}
+			is_adult = yes
+			is_at_war = no
+			is_incapable = no
+		}
+	}
+
 	is_shown = {
-		scope:actor != scope:recipient
+		scope:puppet_or_actor != scope:recipient
 		scope:recipient = {
 			NOT = { government_has_flag = government_is_herder }
 			allowed_concubines = yes
@@ -1827,17 +1841,17 @@ offer_concubine = {
 		custom_description = {
 			text = take_concubine_available_character_opp
 			object = scope:recipient
-			scope:actor = {
+			scope:puppet_or_actor = {
 				OR = {
 					any_courtier = {
 						can_be_offered_as_concubine_to_character_trigger = {
-							GIVER = scope:actor
+							GIVER = scope:puppet_or_actor
 							CHARACTER = scope:recipient
 						}
 					}
 					any_prisoner = {
 						can_be_offered_as_concubine_to_character_trigger = {
-							GIVER = scope:actor
+							GIVER = scope:puppet_or_actor
 							CHARACTER = scope:recipient
 						}
 					}
@@ -1854,13 +1868,13 @@ offer_concubine = {
 
 		trigger_if = { #Landless adventurers check range
 			limit = {
-				scope:actor = {
+				scope:puppet_or_actor = {
 					is_landless_adventurer = yes
 				}
 			}
 			ep3_laamp_diplo_range_trigger = {
 				TARGET = scope:recipient
-				LAAMP = scope:actor
+				LAAMP = scope:puppet_or_actor
 			}
 		}
 	}
@@ -1875,7 +1889,7 @@ offer_concubine = {
 			object = scope:secondary_recipient
 			scope:secondary_recipient = {
 				can_be_offered_as_concubine_to_character_trigger = {
-					GIVER = scope:actor
+					GIVER = scope:puppet_or_actor
 					CHARACTER = scope:recipient
 				}
 			}
@@ -1957,7 +1971,7 @@ offer_concubine = {
 
 		opinion_modifier = { # Opinion of you
 			who = scope:recipient
-			opinion_target = scope:actor
+			opinion_target = scope:puppet_or_actor
 			multiplier = 1.0
 			desc = AI_OPINION_REASON
 		}
@@ -2020,9 +2034,10 @@ offer_concubine = {
 
 		modifier = { # A Recipient is more likely to agree if you're their liege
 			add = 40
-			scope:actor = { is_landed = yes }
+			scope:puppet_or_actor = { is_landed = yes }
 			scope:recipient = {
-				target_is_liege_or_above = scope:actor
+				is_landed_or_landless_administrative_or_theocratic = yes
+				target_is_liege_or_above = scope:puppet_or_actor
 			}
 			desc = LIEGE_REASON
 		}
@@ -2030,7 +2045,7 @@ offer_concubine = {
 		#More/Less likely based on difference in rank between actor and recipient
 		modifier = {
 			add = 20
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = 1
@@ -2040,7 +2055,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = 30
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = 2
@@ -2050,7 +2065,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = 40
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = 3
@@ -2060,7 +2075,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = 50
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = 4
@@ -2070,7 +2085,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = 60
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = 5
@@ -2080,7 +2095,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = -20
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = -1
@@ -2090,7 +2105,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = -30
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = -2
@@ -2100,7 +2115,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = -40
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = -3
@@ -2110,7 +2125,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = -50
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = -4
@@ -2120,7 +2135,7 @@ offer_concubine = {
 		}
 		modifier = {
 			add = -60
-			scope:actor = {
+			scope:puppet_or_actor = {
 				tier_difference = {
 					target = scope:recipient
 					value = -5
@@ -2132,9 +2147,9 @@ offer_concubine = {
 		modifier = {
 			add = intimidated_reason_value
 			scope:recipient = {
-				target_is_liege_or_above = scope:actor
+				target_is_liege_or_above = scope:puppet_or_actor
 				has_dread_level_towards = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					level = 1
 				}
 			}
@@ -2143,9 +2158,9 @@ offer_concubine = {
 		modifier = {
 			add = cowed_reason_value
 			scope:recipient = {
-				target_is_liege_or_above = scope:actor
+				target_is_liege_or_above = scope:puppet_or_actor
 				has_dread_level_towards = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					level = 2
 				}
 			}
@@ -2155,9 +2170,9 @@ offer_concubine = {
 		modifier = {
 			add = intimidated_external_reason_value
 			scope:recipient = {
-				NOT = { target_is_liege_or_above = scope:actor }
+				NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 				has_dread_level_towards = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					level = 1
 				}
 			}
@@ -2166,9 +2181,9 @@ offer_concubine = {
 		modifier = {
 			add = cowed_external_reason_value
 			scope:recipient = {
-				NOT = { target_is_liege_or_above = scope:actor }
+				NOT = { target_is_liege_or_above = scope:puppet_or_actor }
 				has_dread_level_towards = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					level = 2
 				}
 			}
@@ -2196,7 +2211,6 @@ offer_concubine = {
 					NOR = {
 						has_character_modifier = unfavored_consort_modifier
 						has_character_modifier = forgotten_consort_modifier
-						has_character_modifier = rejected_from_marriage_bed_modifier
 					}
 					has_trait = chaste
 					has_trait_with_flag = age_related_ailment
@@ -2215,13 +2229,13 @@ offer_concubine = {
 		modifier = {
 			scope:hook = yes
 			add = 500
-			scope:actor = { NOT = { has_strong_hook = scope:recipient } }
+			scope:puppet_or_actor = { NOT = { has_strong_hook = scope:recipient } }
 			desc = SCHEME_WEAK_HOOK_USED
 		}
 		modifier = {
 			scope:hook = yes
 			add = 1000
-			scope:actor = { has_strong_hook = scope:recipient }
+			scope:puppet_or_actor = { has_strong_hook = scope:recipient }
 			desc = SCHEME_STRONG_HOOK_USED
 		}
 
@@ -2274,7 +2288,7 @@ offer_concubine = {
 		}
 
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				is_powerful_vassal_of = scope:recipient
 			}
 			add = 50
@@ -2286,7 +2300,7 @@ offer_concubine = {
 				government_has_mechanic = administrative
 				exists = top_liege
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				government_has_mechanic = administrative
 				top_liege ?= scope:recipient.top_liege
 				house ?= {
@@ -2302,17 +2316,6 @@ offer_concubine = {
 		}
 	}
 
-	ai_potential = {
-		is_adult = yes
-		NOT = { has_trait = incapable }
-		is_at_war = no
-		NOR = {
-			has_trait = greedy
-			ai_greed > very_high_positive_ai_value
-		}
-		hp_accepts_concubinage = yes
-	}
-
 	ai_will_do = {
 		base = 0
 
@@ -2322,7 +2325,7 @@ offer_concubine = {
 				if = {
 					limit = {
 						scope:recipient = {
-							is_liege_or_above_of = scope:actor
+							is_liege_or_above_of = scope:puppet_or_actor
 						}
 					}
 					add = 15
@@ -2342,7 +2345,7 @@ offer_concubine = {
 				is_young_character = yes
 				trigger_if = {
 					limit = {				
-						scope:actor = {
+						scope:puppet_or_actor = {
 							government_has_mechanic = administrative
 							top_liege ?= scope:recipient
 							religion != religion:islam_religion
@@ -2353,13 +2356,13 @@ offer_concubine = {
 				trigger_else = {
 					NOT = {
 						is_of_major_interest_trigger = {
-							CHARACTER = scope:actor
+							CHARACTER = scope:puppet_or_actor
 						}
 					}
 				}
 				NOR = {
-					is_councillor_of = scope:actor
-					is_concubine_of = scope:actor
+					is_councillor_of = scope:puppet_or_actor
+					is_concubine_of = scope:puppet_or_actor
 				}
 			}
 		}
@@ -2371,20 +2374,20 @@ offer_concubine = {
 				OR = {
 					AND = {
 						NOT = {
-							scope:actor = {
+							scope:puppet_or_actor = {
 								government_has_mechanic = administrative
 								top_liege ?= scope:recipient
 								religion != religion:islam_religion
 							}
 						}
 						is_of_minor_interest_trigger = {
-							CHARACTER = scope:actor
+							CHARACTER = scope:puppet_or_actor
 						}
 					}
-					is_consort_of = scope:actor
+					is_consort_of = scope:puppet_or_actor
 					AND = {
-						can_become_concubine_of_character_trigger = { CHARACTER = scope:actor }
-						scope:actor = { number_of_concubines < number_of_desired_concubines }
+						can_become_concubine_of_character_trigger = { CHARACTER = scope:puppet_or_actor }
+						scope:puppet_or_actor = { number_of_concubines < number_of_desired_concubines }
 					}
 				}
 			}
@@ -2392,7 +2395,7 @@ offer_concubine = {
 
 		modifier = { # If secondary_recipient could be an agent...
 			add = 55
-			scope:actor = {
+			scope:puppet_or_actor = {
 				any_scheme = {
 					scheme_target_character ?= scope:recipient
 					save_temporary_scope_as = scheme_check
@@ -2406,8 +2409,8 @@ offer_concubine = {
 		modifier = { # More likely if it's a neighboring ruler that you want to like you
 			add = 50
 			scope:recipient = {
-				any_neighboring_top_liege_realm_owner = { this = scope:actor }
-				max_military_strength > scope:actor.max_military_strength
+				any_neighboring_top_liege_realm_owner = { this = scope:puppet_or_actor }
+				max_military_strength > scope:puppet_or_actor.max_military_strength
 			}
 		}
 
@@ -2415,8 +2418,8 @@ offer_concubine = {
 			add = 50
 			scope:recipient = {
 				OR = {
-					has_relation_friend = scope:actor
-					has_relation_best_friend = scope:actor
+					has_relation_friend = scope:puppet_or_actor
+					has_relation_best_friend = scope:puppet_or_actor
 				}
 			}
 			scope:secondary_recipient = {
@@ -2452,20 +2455,19 @@ offer_concubine = {
 			}
 			add = -35
 		}
-
 		modifier = { # More likely to send concubines to liege in non-admin realms
 			add = {
 				value = 10
 				if = {
 					limit = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							is_powerful_vassal_of = scope:recipient
 						}
 					}
 					add = 40
 				}
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				is_vassal_of = scope:recipient
 				NOT = { government_has_mechanic = administrative }
 				trigger_if = {
@@ -2495,9 +2497,9 @@ offer_concubine = {
 			scope:recipient = {
 				NOR = {
 					any_consort = {
-						is_close_family_of = scope:actor
+						is_close_family_of = scope:puppet_or_actor
 					}
-					hp_accepts_polygamy = yes
+					allowed_more_spouses = yes
 				}
 			}
 		}
@@ -2508,14 +2510,14 @@ offer_concubine = {
 				value = 10
 				if = {
 					limit = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							is_powerful_vassal_of = scope:recipient
 						}
 					}
 					add = 40
 				}
 			}
-			scope:actor = {
+			scope:puppet_or_actor = {
 				top_liege ?= scope:recipient
 				government_has_mechanic = administrative
 				trigger_if = {
@@ -2555,16 +2557,16 @@ offer_concubine = {
 				government_has_mechanic = administrative
 				NOR = {
 					any_consort = {
-						is_close_family_of = scope:actor
+						is_close_family_of = scope:puppet_or_actor
 					}
-					hp_accepts_polygamy = yes
+					allowed_more_spouses = yes
 				}
 			}
 		}
 
 		modifier = { # More likely to send concubines to fellow vassals in admin realms
 			add = 10
-			scope:actor = {
+			scope:puppet_or_actor = {
 				top_liege ?= {
 					this != scope:recipient
 				}
@@ -2591,8 +2593,8 @@ offer_concubine = {
 			scope:recipient = {
 				government_has_mechanic = administrative
 				top_liege ?= {
-					this != scope:actor
-					this = scope:actor.top_liege
+					this != scope:puppet_or_actor
+					this = scope:puppet_or_actor.top_liege
 				}
 				house ?= {
 					OR = {
@@ -2602,9 +2604,8 @@ offer_concubine = {
 				}
 			}
 		}
-
 		modifier = { # Powerful vassals are more likely at higher authority levels
-			scope:actor = {
+			scope:puppet_or_actor = {
 				trigger_if = {
 					limit = {
 						government_has_mechanic = administrative
@@ -2638,138 +2639,53 @@ offer_concubine = {
 			}
 			scope:recipient = {
 				can_have_imperial_consorts_trigger = yes
-				OR = {
-					has_realm_law = crown_authority_1
-					has_realm_law = imperial_bureaucracy_1
-					has_realm_law = celestial_bureaucracy_1
-					has_realm_law = meritocratic_bureaucracy_1
-					has_realm_law = japanese_bureaucracy_1
-				}
+				realm_authority_level >= 1
 				NOR = {
 					any_consort = {
-						is_close_family_of = scope:actor
+						is_close_family_of = scope:puppet_or_actor
 					}
 				}
+				allowed_more_spouses = no
 			}
-			add = 10
-		}
-		modifier = { # Powerful vassals are more likely at higher authority levels
-			scope:actor = {
-				trigger_if = {
+			add = {
+				value = 10
+				if = {
 					limit = {
-						government_has_mechanic = administrative
+						scope:recipient.realm_authority_level >= 2
 					}
-					top_liege ?= {
-						this = scope:recipient
-						government_has_mechanic = administrative
-					}
-					house ?= {
-						OR = {
-							is_powerful_family = yes
-							is_dominant_family = yes
-						}
-						any_house_member = {
-							this = scope:secondary_recipient
-						}
-					}
+					add = 10
 				}
-				trigger_else = {
-					is_powerful_vassal_of = scope:recipient
-					is_close_family_of = scope:secondary_recipient
-				}
-				NOR = {
-					house ?= {
-						any_house_member = {
-							this = scope:recipient
-						}
-					}
-					has_character_flag = received_influence_offer_concubine_flag
-				}
-			}
-			scope:recipient = {
-				can_have_imperial_consorts_trigger = yes
-				OR = {
-					has_realm_law = crown_authority_2
-					has_realm_law = imperial_bureaucracy_2
-					has_realm_law = celestial_bureaucracy_2
-					has_realm_law = meritocratic_bureaucracy_2
-					has_realm_law = japanese_bureaucracy_2
-				}
-				NOR = {
-					any_consort = {
-						is_close_family_of = scope:actor
-					}
-				}
-			}
-			add = 20
-		}
-		modifier = { # Powerful vassals are more likely at higher authority levels
-			scope:actor = {
-				trigger_if = {
+				if = {
 					limit = {
-						government_has_mechanic = administrative
+						scope:recipient.realm_authority_level >= 3
 					}
-					top_liege ?= {
-						this = scope:recipient
-						government_has_mechanic = administrative
-					}
-					house ?= {
-						OR = {
-							is_powerful_family = yes
-							is_dominant_family = yes
-						}
-						any_house_member = {
-							this = scope:secondary_recipient
-						}
-					}
+					add = 10
 				}
-				trigger_else = {
-					is_powerful_vassal_of = scope:recipient
-					is_close_family_of = scope:secondary_recipient
-				}
-				NOR = {
-					house ?= {
-						any_house_member = {
-							this = scope:recipient
-						}
+				if = {
+					limit = {
+						scope:recipient.realm_authority_level >= 4
 					}
-					has_character_flag = received_influence_offer_concubine_flag
+					add = 10
 				}
 			}
-			scope:recipient = {
-				can_have_imperial_consorts_trigger = yes
-				OR = {
-					has_realm_law = crown_authority_3
-					has_realm_law = imperial_bureaucracy_3
-					has_realm_law = celestial_bureaucracy_3
-					has_realm_law = meritocratic_bureaucracy_3
-					has_realm_law = japanese_bureaucracy_3
-				}
-				NOR = {
-					any_consort = {
-						is_close_family_of = scope:actor
-					}
-				}
-			}
-			add = 30
 		}
 
 		modifier = { # More likely to the primary heir
 			scope:recipient = {
 				reverse_opinion = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					value > 0
 				}
 				number_of_concubines < number_of_desired_concubines
-				is_primary_heir_of = scope:actor
+				is_primary_heir_of = scope:puppet_or_actor
 			}
 			add = 25
 		}
 		modifier = { #More likely if the recipient is a relative
 			scope:recipient = {
-				is_close_family_of = scope:actor
+				is_close_family_of = scope:puppet_or_actor
 				reverse_opinion = {
-					target = scope:actor
+					target = scope:puppet_or_actor
 					value > 0
 				}
 				number_of_concubines < number_of_desired_concubines
@@ -2778,7 +2694,7 @@ offer_concubine = {
 		}
 		modifier = { # Muslims would never offer a relative as concubine
 			factor = 0
-			scope:actor = {
+			scope:puppet_or_actor = {
 				religion = religion:islam_religion
 				OR = {
 					is_close_or_extended_family_of = scope:secondary_recipient
@@ -2790,15 +2706,14 @@ offer_concubine = {
 				}
 			}
 		}
-		# Does not accept concubinage
-		modifier = {
-			scope:actor = {
+		modifier = { # Does not accept concubinage
+			scope:puppet_or_actor = {
 				hp_accepts_concubinage = no
 			}
 			factor = 0.25
 		}
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				hp_accepts_harems = no
 			}
 			factor = 0.5
@@ -2807,7 +2722,7 @@ offer_concubine = {
 		# Vanilla
 		modifier = { # No if it's a same-sex concubinage and actor isn't accepting of it
 			factor = 0
-			scope:actor = {
+			scope:puppet_or_actor = {
 				allowed_to_marry_same_sex_trigger = no
 				scope:recipient = { sex_same_as = scope:secondary_recipient }
 			}
@@ -2832,7 +2747,7 @@ offer_concubine = {
 		modifier = { # Incest Filtering: Hard NO!
 			factor = 0
 			scope:recipient = {
-				relation_with_character_is_incestuous_in_my_faith_trigger = { CHARACTER = scope:secondary_recipient }
+				relation_with_character_is_incestuous_in_my_rite_trigger = { CHARACTER = scope:secondary_recipient }
 				NOR = {
 					accepts_incest_with_trigger = { CHARACTER = scope:secondary_recipient }
 					sexually_liberal_trigger = yes
@@ -2843,7 +2758,7 @@ offer_concubine = {
 		modifier = { # Incest Filtering: Not likely, but keep the door open...
 			factor = 0.2
 			scope:recipient = {
-				relation_with_character_is_incestuous_in_my_faith_trigger = { CHARACTER = scope:secondary_recipient }
+				relation_with_character_is_incestuous_in_my_rite_trigger = { CHARACTER = scope:secondary_recipient }
 				OR = {
 					accepts_incest_with_trigger = { CHARACTER = scope:secondary_recipient }
 					sexually_liberal_trigger = yes
@@ -2856,13 +2771,13 @@ offer_concubine = {
 			scope:recipient = {
 				faith = {
 					faith_hostility_level = {
-						target = scope:actor.faith
+						target = scope:puppet_or_actor.faith
 						value >= faith_hostile_level
 					}
 				}
 				NOR = {
-					has_relation_friend = scope:actor
-					has_relation_best_friend = scope:actor
+					has_relation_friend = scope:puppet_or_actor
+					has_relation_best_friend = scope:puppet_or_actor
 				}
 			}
 		}
@@ -2882,7 +2797,7 @@ offer_concubine = {
 	}
 
 	on_decline = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			send_interface_toast = {
 				type = event_toast_effect_bad
 				title = msg_concubine_offer_rejected_title
@@ -2894,7 +2809,7 @@ offer_concubine = {
 
 		# If we're a clan this interaction affects unity
 		add_clan_unity_interaction_effect = {
-			CHARACTER = scope:actor
+			CHARACTER = scope:puppet_or_actor
 			TARGET = scope:recipient
 			VALUE = medium_unity_loss
 			DESC = clan_unity_concubinage_offer_decline.desc
@@ -2905,7 +2820,7 @@ offer_concubine = {
 	send_options_exclusive = no
 	send_option = {
 		is_valid = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				has_usable_hook = scope:recipient
 			}
 		}
@@ -2913,7 +2828,7 @@ offer_concubine = {
 		localization = SCHEME_HOOK
 	}
 	should_use_extra_icon = {
-		scope:actor = { has_usable_hook = scope:recipient }
+		scope:puppet_or_actor = { has_usable_hook = scope:recipient }
 	}
 	extra_icon = "gfx/interface/icons/character_interactions/hook_icon.dds"
 }
