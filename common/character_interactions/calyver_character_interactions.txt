@@ -1059,39 +1059,42 @@ summon_to_chambers_interaction = {
 
 	auto_accept = yes
 
+	is_available = {
+		is_ruler = yes
+		NOR = {
+			has_trait = celibate
+			has_trait = eunuch
+			has_trait = pregnant
+			has_trait = devoted
+			has_any_illness = yes
+			has_any_debilitating_illness = yes
+			has_trait = wounded
+		}
+	}
+
 	is_shown = {
-		scope:actor = {
-			is_landed_or_landless_administrative = yes
+		scope:puppet_or_actor = {
 			any_consort = {
-				is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+				is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:puppet_or_actor }
 				is_imprisoned = no
 				count >= 3
-			}
-			NOR = {
-				has_trait = celibate
-				has_trait = eunuch
-				has_trait = pregnant
-				has_trait = devoted
-				has_trait_with_flag = illness
-				has_trait_with_flag = debilitating_illness
-				has_trait = wounded
 			}
 			exists = location
 		}
 		scope:recipient = {
-			is_consort_of = scope:actor
-			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:actor }
+			is_consort_of = scope:puppet_or_actor
+			is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:puppet_or_actor }
 			NOR = {
 				has_trait = pregnant
 				has_trait_with_flag = illness
 				has_trait_with_flag = debilitating_illness
 				has_trait = wounded
 			}
-			location ?= scope:actor.location
+			location ?= scope:puppet_or_actor.location
 		}
 	}
 	is_valid_showing_failures_only = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			is_available = yes
 			is_physically_able = yes
 			is_healthy = yes
@@ -1103,7 +1106,7 @@ summon_to_chambers_interaction = {
 		}
 		custom_tooltip = {
 			text = already_summoned_recipient
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOT = {
 					has_character_flag = summoned_to_chambers_flag
 				}
@@ -1119,7 +1122,7 @@ summon_to_chambers_interaction = {
 		}
 		custom_tooltip = {
 			text = indisposed_recipient_opinion
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOT = {
 					has_opinion_modifier = {
 						modifier = indisposed_consort_opinion
@@ -1131,7 +1134,7 @@ summon_to_chambers_interaction = {
 	}
 
 	on_accept = {
-		scope:actor = {
+		scope:puppet_or_actor = {
 			add_character_flag = {
 				flag = summoned_to_chambers_flag
 				days = 12
@@ -1140,12 +1143,12 @@ summon_to_chambers_interaction = {
 				86 = { # Success
 					opinion_modifier = { # Opinion of you
 						who = scope:recipient
-						opinion_target = scope:actor
+						opinion_target = scope:puppet_or_actor
 						multiplier = 0.2
 					}
 					compatibility_modifier = {
 						who = scope:recipient
-						compatibility_target = scope:actor
+						compatibility_target = scope:puppet_or_actor
 						min = -25
 						max = 25
 						multiplier = 0.2
@@ -1196,24 +1199,24 @@ summon_to_chambers_interaction = {
 					}
 					# Marital duties - rank
 					modifier = {
-						scope:actor.primary_spouse ?= scope:recipient
+						scope:puppet_or_actor.primary_spouse ?= scope:recipient
 						add = 15
 					}
 					modifier = {
 						scope:recipient = {
 							is_high_consort_trigger = {
-								LIEGE = scope:actor
+								LIEGE = scope:puppet_or_actor
 							}
 						}
 						add = 10
 					}
 					modifier = {
 						scope:recipient = {
-							is_spouse_of = scope:actor
+							is_spouse_of = scope:puppet_or_actor
 							NOR = {
-								this = scope:actor.primary_spouse
+								this = scope:puppet_or_actor.primary_spouse
 								is_high_consort_trigger = {
-									LIEGE = scope:actor
+									LIEGE = scope:puppet_or_actor
 								}
 							}
 						}
@@ -1222,12 +1225,12 @@ summon_to_chambers_interaction = {
 					# Attraction
 					modifier = {
 						scope:recipient = {
-							is_attracted_to_gender_of = scope:actor
+							is_attracted_to_gender_of = scope:puppet_or_actor
 						}
 						add = 10
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							is_attracted_to_gender_of = scope:recipient
 						}
 						add = 5
@@ -1238,13 +1241,13 @@ summon_to_chambers_interaction = {
 						add = 5
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = lustful
 						}
 						add = 10
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = gregarious
 						}
 						add = 10
@@ -1262,7 +1265,7 @@ summon_to_chambers_interaction = {
 						add = 10
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = seducer
 						}
 						add = 20
@@ -1287,12 +1290,12 @@ summon_to_chambers_interaction = {
 				10 = { # Failure
 					opinion_modifier = { # Opinion of you
 						who = scope:recipient
-						opinion_target = scope:actor
+						opinion_target = scope:puppet_or_actor
 						multiplier = -0.25
 					}
 					compatibility_modifier = {
 						who = scope:recipient
-						compatibility_target = scope:actor
+						compatibility_target = scope:puppet_or_actor
 						min = -25
 						max = 25
 						multiplier = -0.25
@@ -1308,7 +1311,7 @@ summon_to_chambers_interaction = {
 						add = 20
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							any_child = {
 								even_if_dead = yes
 								count = 0
@@ -1323,7 +1326,7 @@ summon_to_chambers_interaction = {
 						add = 25
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							age <= 20
 						}
 						add = 10
@@ -1354,19 +1357,19 @@ summon_to_chambers_interaction = {
 						add = 30
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = craven
 						}
 						add = 5
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = shy
 						}
 						add = 10
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							has_trait = chaste
 						}
 						add = 15
@@ -1376,30 +1379,30 @@ summon_to_chambers_interaction = {
 						scope:recipient = {
 							has_opinion_modifier = {
 								modifier = forced_me_concubine_marriage_opinion
-								target = scope:actor
+								target = scope:puppet_or_actor
 							}
 						}
 						add = 20
 					}
 					modifier = {
-						has_relation_nemesis = scope:actor
+						has_relation_nemesis = scope:puppet_or_actor
 						add = 50
 					}
 					modifier = {
-						has_relation_rival = scope:actor
+						has_relation_rival = scope:puppet_or_actor
 						add = 30
 					}
 					# Attraction
 					modifier = {
 						scope:recipient = {
 							NOT = {
-								is_attracted_to_gender_of = scope:actor
+								is_attracted_to_gender_of = scope:puppet_or_actor
 							}
 						}
 						add = 30
 					}
 					modifier = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							NOT = {
 								is_attracted_to_gender_of = scope:recipient
 							}
@@ -1414,19 +1417,18 @@ summon_to_chambers_interaction = {
 				}
 				2 = { # Accident
 					trigger = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							harem_politics_accident_event_trigger = yes
 						}
 					}
 					modifier = {
-						scope:actor.highest_held_title_tier >= tier_kingdom
+						scope:puppet_or_actor.highest_held_title_tier >= tier_kingdom
 						add = 3
 					}
 					modifier = {
 						scope:recipient = {
 							OR = {
-								has_relation_lover = scope:actor
-								has_relation_friend = scope:actor
+								has_any_good_relationship_with_character_trigger = { CHARACTER = scope:puppet_or_actor }
 								has_character_modifier = favored_consort_modifier
 							}
 						}
@@ -1435,8 +1437,7 @@ summon_to_chambers_interaction = {
 					modifier = {
 						scope:recipient = {
 							OR = {
-								has_relation_soulmate = scope:actor
-								has_relation_best_friend = scope:actor
+								has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:puppet_or_actor }
 								has_character_modifier = beloved_consort_modifier
 							}
 						}
@@ -1452,11 +1453,11 @@ summon_to_chambers_interaction = {
 						scope:recipient = {
 							any_close_family_member = {
 								OR = {
-									is_powerful_vassal_of = scope:actor
-									is_councillor_of = scope:actor
-									is_liege_or_above_of = scope:actor
+									is_powerful_vassal_of = scope:puppet_or_actor
+									is_councillor_of = scope:puppet_or_actor
+									is_liege_or_above_of = scope:puppet_or_actor
 									tier_difference = {
-										target = scope:actor
+										target = scope:puppet_or_actor
 										value >= 0
 									}
 								}
@@ -1506,7 +1507,7 @@ summon_to_chambers_interaction = {
 				}
 				2 = { # A pregnant consort miscarries
 					trigger = {
-						scope:actor = {
+						scope:puppet_or_actor = {
 							harem_politics_miscarriage_event_trigger = yes
 						}
 					}
@@ -1562,7 +1563,7 @@ summon_to_chambers_interaction = {
 		base = 0
 
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				any_child = {
 					is_alive = yes
 					NOR = {
@@ -1576,10 +1577,10 @@ summon_to_chambers_interaction = {
 			add = 35
 		}
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				any_child = {
 					is_alive = yes
-					character_gender_can_inherit_from_trigger = { CHARACTER = scope:actor }
+					character_gender_can_inherit_from_trigger = { CHARACTER = scope:puppet_or_actor }
 					NOR = {
 						has_trait = bastard
 						has_trait = eunuch
@@ -1592,16 +1593,13 @@ summon_to_chambers_interaction = {
 			add = 25
 		}
 		modifier = {
-			scope:actor = {
-				OR = {
-					has_relation_rival = scope:recipient
-					has_relation_nemesis = scope:recipient
-				}
+			scope:puppet_or_actor = {
+				has_any_moderate_bad_relationship_with_character_trigger = { CHARACTER = scope:recipient }
 			}
 			add = -35
 		}
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				OR = {
 					has_relation_lover = scope:recipient
 					has_relation_friend = scope:recipient
@@ -1610,7 +1608,7 @@ summon_to_chambers_interaction = {
 			add = 15
 		}
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				OR = {
 					has_relation_soulmate = scope:recipient
 					has_relation_best_friend = scope:recipient
@@ -1619,7 +1617,7 @@ summon_to_chambers_interaction = {
 			add = 25
 		}
 		modifier = {
-			scope:actor = {
+			scope:puppet_or_actor = {
 				NOT = {
 					is_attracted_to_gender_of = scope:recipient
 				}
@@ -1628,12 +1626,8 @@ summon_to_chambers_interaction = {
 		}
 		modifier = { # Infertility
 			add = -15
-			scope:actor = {
-				fertility > 0.1
-			}
-			scope:recipient = {
-				fertility < 0.1
-			}
+			scope:puppet_or_actor.fertility > 0.1
+			scope:recipient.fertility < 0.1
 		}
 	}
 }
