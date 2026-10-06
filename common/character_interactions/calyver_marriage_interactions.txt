@@ -3383,7 +3383,7 @@ request_concubine_interaction = {
 				limit = {
 					NAND = {
 						scope:actor = {
-							government_has_flag = government_has_influence 
+							government_has_flag = government_has_influence
 							exists = house
 						}
 						scope:recipient = {
@@ -3397,7 +3397,91 @@ request_concubine_interaction = {
 					}
 				}
 				add = {
-					value = medium_prestige_value
+					if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value >= 3
+								}
+							}
+						}
+						add = miniscule_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 2
+								}
+							}
+						}
+						add = minor_prestige_value	
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 1
+								}
+							}
+						}
+						add = 100	
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = 0
+								}
+							}
+						}
+						add = medium_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = -1
+								}
+							}
+						}
+						add = major_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value = -2
+								}
+							}
+						}
+						add = massive_prestige_value
+					}
+					else_if = {
+						limit = {
+							scope:actor = {
+								tier_difference = {
+									target = scope:recipient
+									value <= -3
+								}
+							}
+						}
+						add = monumental_prestige_value
+					}
+					if = {
+						limit = {
+							scope:recipient = {
+								is_powerful_vassal_of = scope:actor
+							}
+						}
+						add = medium_prestige_value
+					}
 				}
 			}
 		}
@@ -3412,14 +3496,31 @@ request_concubine_interaction = {
 					scope:recipient = {
 						government_has_flag = government_has_influence 
 						is_vassal_or_below_of = scope:actor
-						house ?= {
-							house_head.top_liege ?= scope:actor.house.house_head.top_liege
+						house ?= {	
 							this != scope:actor.house
 						}
 					}
 				}
 				add = {
-					value = medium_influence_value
+					if = {
+						limit = {
+							scope:recipient.house = {
+								is_dominant_family = yes
+							}
+						}
+						add = massive_influence_value
+					}
+					else_if = {
+						limit = {
+							scope:recipient.house = {
+								is_powerful_family = yes
+							}
+						}
+						add = major_influence_value
+					}
+					else = {
+						add = minor_influence_value
+					}
 				}
 			}
 		}
@@ -3471,8 +3572,21 @@ request_concubine_interaction = {
 						CHARACTER = scope:actor 
 						RECEIVER = scope:actor
 					}
+					NOT = { has_character_flag = has_been_offered_as_concubine }
 				}
 				add_to_list = characters
+			}
+		}
+	}
+
+	is_available = {
+		allowed_concubines = yes
+		trigger_if = {
+			limit = { is_ai = yes }
+			any_vassal = { }
+			OR = {
+				ai_honor <= 0
+				has_trait = lustful
 			}
 		}
 	}
@@ -3530,6 +3644,7 @@ request_concubine_interaction = {
 						CHARACTER = scope:actor 
 						RECEIVER = scope:actor
 					}
+					NOT = { has_character_flag = has_been_offered_as_concubine }
 				}
 			}
 		}
@@ -3602,8 +3717,6 @@ request_concubine_interaction = {
 		localization = TRADE_INFLUENCE_FOR_BETTER_AI_ACCEPTANCE
 	}
 	send_options_exclusive = no
-
-
 
 	ai_accept = {
 		base = -25
@@ -3738,89 +3851,14 @@ request_concubine_interaction = {
 			desc = INTERACTION_GREEDY
 		}
 
-		# Crown Authority #
+		# Government Authority #
 		modifier = {
-			scope:actor = { has_realm_law = crown_authority_1 }
-			add = 25
-			desc = AI_CROWN_AUTHORITY_1_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = crown_authority_2 }
-			add = 50
-			desc = AI_CROWN_AUTHORITY_2_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = crown_authority_3 }
-			add = 75
-			desc = AI_CROWN_AUTHORITY_3_REASON
-		}
-
-		# Imperial Bureaucracy #
-		modifier = {
-			scope:actor = { has_realm_law = imperial_bureaucracy_1 }
-			add = 25
-			desc = AI_IMPERIAL_BUREAUCRACY_1_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = imperial_bureaucracy_2 }
-			add = 50
-			desc = AI_IMPERIAL_BUREAUCRACY_2_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = imperial_bureaucracy_3 }
-			add = 75
-			desc = AI_IMPERIAL_BUREAUCRACY_3_REASON
-		}
-
-		# Celestial Bureaucracy #
-		modifier = {
-			scope:actor = { has_realm_law = celestial_bureaucracy_1 }
-			add = 25
-			desc = AI_CELESTIAL_BUREAUCRACY_1_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = celestial_bureaucracy_2 }
-			add = 50
-			desc = AI_CELESTIAL_BUREAUCRACY_2_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = celestial_bureaucracy_3 }
-			add = 75
-			desc = AI_CELESTIAL_BUREAUCRACY_3_REASON
-		}
-
-		# Meritocratic Bureaucracy #
-		modifier = {
-			scope:actor = { has_realm_law = meritocratic_bureaucracy_1 }
-			add = 25
-			desc = AI_MERITOCRATIC_BUREAUCRACY_1_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = meritocratic_bureaucracy_2 }
-			add = 50
-			desc = AI_MERITOCRATIC_BUREAUCRACY_2_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = meritocratic_bureaucracy_3 }
-			add = 75
-			desc = AI_MERITOCRATIC_BUREAUCRACY_3_REASON
-		}
-
-		# Japanese Bureaucracy #
-		modifier = {
-			scope:actor = { has_realm_law = japanese_bureaucracy_1 }
-			add = 25
-			desc = AI_JAPANESE_BUREAUCRACY_1_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = japanese_bureaucracy_2 }
-			add = 50
-			desc = AI_JAPANESE_BUREAUCRACY_2_REASON
-		}
-		modifier = {
-			scope:actor = { has_realm_law = japanese_bureaucracy_3 }
-			add = 75
-			desc = AI_JAPANESE_BUREAUCRACY_3_REASON
+			scope:actor.realm_authority_level >= 1
+			add = {
+				value = scope:actor.realm_authority_level
+				multiply = 20
+			}
+			desc = AI_GOVERNMENT_AUTHORITY_1_REASON
 		}
 
 		# Option modifiers #
@@ -3906,15 +3944,6 @@ request_concubine_interaction = {
 		}
 	}
 
-	ai_potential = {
-		OR = {
-			has_trait = lustful
-			ai_honor <= 0
-			ai_rationality > 0
-		}
-		any_vassal = { }
-	}
-
 	ai_will_do = {
 		base = 0
 		# Harem Politics #
@@ -3990,13 +4019,11 @@ request_concubine_interaction = {
 			scope:secondary_actor.num_of_bad_genetic_traits > 0
 		}
 
-		modifier = { # Slightly modified #
+		modifier = {
 			factor = 0
 			scope:recipient = {
-				OR = {
-					has_relation_soulmate = scope:actor
-					has_relation_lover = scope:actor
-				}
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
+				has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:actor }
 			}
 		}
 
@@ -4020,7 +4047,7 @@ request_concubine_interaction = {
 			}
 		}
 	}
-	
+
 	on_accept = {
 		request_concubine_interaction_on_accept_effect = yes
 	}
