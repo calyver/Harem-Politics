@@ -11,15 +11,21 @@ miscarriage_interaction = {
 
 	desc = miscarriage_interaction_desc
 
-	is_shown = {
-		scope:actor = {
-			OR = {
-				is_married = yes
-				is_concubine = yes
-			}
+	is_available = {
+		OR = {
+			is_married = yes
+			is_concubine = yes
 		}
-		NOR = { 
-			scope:recipient = scope:actor
+		is_imprisoned = no
+		NOT = {
+			has_trait = incapable
+		}
+		
+	}
+
+	is_shown = {
+		scope:recipient != scope:actor
+		NOT = { 
 			scope:recipient = { 
 				is_consort_of = scope:actor
 			}
@@ -30,7 +36,7 @@ miscarriage_interaction = {
 			has_trait = pregnant
 			pregnancy_month <= 8
 			pregnancy_assumed_father ?= {
-				is_landed = yes
+				is_ruler = yes
 				highest_held_title_tier >= tier_county
 				any_consort = {
 					this = scope:actor
@@ -52,17 +58,9 @@ miscarriage_interaction = {
 
 	is_valid_showing_failures_only = {
 		scope:actor = {
-			is_imprisoned = no
-		}
-		scope:actor = {
-			NOT = {
-				has_trait = incapable
-			}
-		}
-		scope:actor = {
 			NOR = {
-				has_relation_soulmate = scope:recipient
-				has_relation_lover = scope:recipient
+				has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
 			}
 		}
 		custom_tooltip = {
@@ -92,14 +90,6 @@ miscarriage_interaction = {
 		ai_recipients = realm_characters
 	}
 	
-	ai_potential = {
-		is_imprisoned = no
-		NOT = {
-			has_trait = incapable
-		}
-		
-	}
-	
 	ai_frequency = 15
 	ai_will_do = {
 		base = 0
@@ -112,11 +102,11 @@ miscarriage_interaction = {
 			scope:actor = { has_character_flag = flag_new_consort }
 		}
 		modifier = { #Evil consorts
-			add = 5
+			add = 15
 			scope:actor = { harem_politics_evil_consort_trigger = yes }
 		}
 		modifier = { #Rivals
-			add = 20
+			add = 25
 			scope:actor = {
 				OR = {
 					has_relation_potential_rival = scope:recipient
@@ -126,7 +116,7 @@ miscarriage_interaction = {
 			}
 		}
 		modifier = { #Scheming consorts
-			add = 5
+			add = 10
 			scope:actor = { has_character_modifier = scheming_consort_modifier }
 		}
 		opinion_modifier = { #Opinion
@@ -137,6 +127,18 @@ miscarriage_interaction = {
 			add = 10
 			scope:recipient = {
 				has_character_modifier = favored_consort_modifier
+			}
+		}
+		modifier = { #Favored consorts
+			add = 20
+			scope:recipient = {
+				has_character_modifier = beloved_consort_modifier
+			}
+		}
+		modifier = { #Favored consorts
+			add = 25
+			scope:recipient = {
+				has_character_modifier = favor_boost_modifier
 			}
 		}
 		modifier = { #The main spouse must protect their position
@@ -173,12 +175,7 @@ miscarriage_interaction = {
 		modifier = { #The Grand Consort must protect their position
 			add = 15
 			scope:actor = {
-				OR = {
-					has_court_position = grand_consort_court_position
-					has_court_position = pure_consort_court_position
-					has_court_position = virtuous_consort_court_position
-					has_court_position = worthy_consort_court_position
-				}
+				has_high_consort_position_trigger = yes
 			}
 			scope:recipient = {
 				OR = {
@@ -234,18 +231,6 @@ miscarriage_interaction = {
 				OR = {
 					has_trait = shy
 					has_trait = craven
-				}
-			}
-		}
-		modifier = { #Lovers
-			factor = 0
-			scope:actor = {
-				OR = {
-					has_relation_friend = scope:recipient
-					has_relation_best_friend = scope:recipient
-
-					has_relation_lover = scope:recipient
-					has_relation_soulmate = scope:recipient
 				}
 			}
 		}
