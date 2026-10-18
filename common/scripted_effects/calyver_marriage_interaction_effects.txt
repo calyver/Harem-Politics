@@ -1129,21 +1129,39 @@ concubine_on_accept_effect = {
 								primary_spouse ?= {
 									this = scope:recipient
 								}
-								any_spouse = {
-									count >= 2
+							}
+							if = { # Selecting a new PS
+								limit = {
+									any_spouse = {
+										count >= 2
+									}
 								}
+								add_character_flag = {
+									flag = flag_lowborn_exception
+									days = 2
+								}
+								scope:recipient = {
+									new_primary_spouse_divorce_effect = {
+										PREVIOUS_PS = scope:recipient
+										PARTNER = prev
+									}
+								}
+								remove_character_flag = flag_lowborn_exception
 							}
-							add_character_flag = {
-								flag = flag_lowborn_exception
-								days = 2
-							}
+							# Was a recipient a PS that was going to give birth to a di_child?
+							save_temporary_scope_as = previous_spouse
 							scope:recipient = {
-								new_primary_spouse_divorce_effect = {
-									PREVIOUS_PS = scope:recipient
-									PARTNER = prev
+								if = {
+									limit = {
+										is_pregnant = yes
+										pregnancy_assumed_father ?= scope:previous_spouse
+									}
+								}
+								add_character_flag = {
+									flag = should_be_di_child_flag
+									months = 6
 								}
 							}
-							remove_character_flag = flag_lowborn_exception
 						}
 					}
 					show_as_tooltip = {
