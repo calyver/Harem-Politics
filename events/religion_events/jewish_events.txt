@@ -16,9 +16,15 @@ jewish_events.0001 = {
 	option = { #Just accept it
 		name = jewish_events.0001.a
 		show_as_tooltip = {
-			root.faith = {
-				remove_doctrine = doctrine_polygamy
-				add_doctrine = doctrine_monogamy
+			root.rite = {
+				change_rite_doctrine = doctrine_monogamy
+				if = {
+					limit = {
+						rite_has_doctrine = doctrine_marriage_realm_celebration_disallowed
+						NOT = { has_doctrine_parameter = allows_concubinage }
+					}
+					change_rite_doctrine = doctrine_marriage_realm_celebration_first
+				}
 			}
 		}
 		ai_chance = {
@@ -26,35 +32,71 @@ jewish_events.0001 = {
 		}
 	}
 
-	option = { #Refuse to change
+	option = { #Refuse to change - Polygamy
 		name = jewish_events.0001.b
 		trigger = {
+			root.rite = {
+				rite_has_parameter = allows_polygamy
+				NOT = { rite_has_parameter = allows_concubinage }
+			}
 			this = root.culture.culture_head
 			root.culture = {
-				NOT = { has_cultural_tradition = tradition_polygamous }
+				NOR = {
+					has_cultural_parameter = allows_polygamy
+					has_cultural_parameter = allows_concubinage
+					has_cultural_tradition = tradition_monogamous
+				}
 			}
 		}
 		add_piety = major_piety_loss
 		show_as_tooltip = {
-			root.faith = {
-				remove_doctrine = doctrine_polygamy
-				add_doctrine = doctrine_monogamy
+			root.rite = {
+				change_rite_doctrine = doctrine_monogamy
+				if = {
+					limit = {
+						rite_has_doctrine = doctrine_marriage_realm_celebration_disallowed
+						NOT = { has_doctrine_parameter = allows_concubinage }
+					}
+					change_rite_doctrine = doctrine_marriage_realm_celebration_first
+				}
 			}
 		}
 		root.culture = {
-			if = {
-				limit = {
+			add_culture_tradition = tradition_polygamous
+		}
+	}
+
+	option = { #Refuse to change - Harem
+		name = jewish_events.0001.b
+		trigger = {
+			root.rite = {
+				rite_has_parameter = allows_polygamy
+				rite_has_parameter = allows_concubinage
+			}
+			this = root.culture.culture_head
+			root.culture = {
+				NOR = {
+					has_cultural_parameter = allows_polygamy
+					has_cultural_parameter = allows_concubinage
 					has_cultural_tradition = tradition_monogamous
 				}
-				remove_culture_tradition = tradition_monogamous
 			}
-			if = {
-				limit = {
-					has_cultural_tradition = tradition_concubines
+		}
+		add_piety = major_piety_loss
+		show_as_tooltip = {
+			root.rite = {
+				change_rite_doctrine = doctrine_monogamy
+				if = {
+					limit = {
+						rite_has_doctrine = doctrine_marriage_realm_celebration_disallowed
+						NOT = { has_doctrine_parameter = allows_concubinage }
+					}
+					change_rite_doctrine = doctrine_marriage_realm_celebration_first
 				}
-				remove_culture_tradition = tradition_concubines
 			}
-			add_culture_tradition = tradition_polygamous
+		}
+		root.culture = {
+			add_culture_tradition = tradition_harem
 		}
 	}
 
@@ -70,7 +112,7 @@ jewish_events.0001 = {
         	modifier = insulted_opinion
         	opinion = -75
 		}
-		root.faith = {
+		root.faith.main_rite = {
 			set_variable = {
 				name = rabbinicism_rejected_monogamy
 				value = yes
@@ -79,35 +121,47 @@ jewish_events.0001 = {
 	}
 
 	after = {
-		add_character_flag = had_event_jewish_events_0001
-		if = {
-			limit = {
-				NOT = { root.faith = { has_variable = rabbinicism_rejected_monogamy } }
-			}
+		hidden_effect = {
+			add_character_flag = had_event_jewish_events_0001
 			if = {
 				limit = {
-					root.rite = { rite_has_doctrine = doctrine_polygamy }
+					NOT = { root.main_rite = { has_variable = rabbinicism_rejected_monogamy } }
 				}
-				root.faith = {
-					set_variable = {
-						name = rabbinicism_accepted_monogamy
-						value = yes
-					}
-					remove_doctrine = doctrine_polygamy
-					add_doctrine = doctrine_monogamy
-				}
-			}
-			if = {
-				limit = {
-					exists = root.faith.religious_head
-					root.faith.religious_head = { is_vassal_or_below_of = root }
-				}
-				every_player = {
+				if = {
 					limit = {
-						faith = root.faith
-						NOT = { has_character_flag = had_event_jewish_events_0001 }
+						root.main_rite = { NOT = { rite_has_doctrine = doctrine_monogamy } }
 					}
-					trigger_event = jewish_events.0001
+					root.faith = {
+						main_rite = {
+							set_variable = {
+								name = rabbinicism_accepted_monogamy
+								value = yes
+							}
+						}
+						every_faith_rite = {
+							change_rite_doctrine = doctrine_monogamy
+							if = {
+								limit = {
+									rite_has_doctrine = doctrine_marriage_realm_celebration_disallowed
+									NOT = { has_doctrine_parameter = allows_concubinage }
+								}
+								change_rite_doctrine = doctrine_marriage_realm_celebration_first
+							} 
+						}
+					}
+				}
+				if = {
+					limit = {
+						exists = root.faith.religious_head
+						root.faith.religious_head = { is_vassal_or_below_of = root }
+					}
+					every_player = {
+						limit = {
+							faith = root.faith
+							NOT = { has_character_flag = had_event_jewish_events_0001 }
+						}
+						trigger_event = jewish_events.0001
+					}
 				}
 			}
 		}
