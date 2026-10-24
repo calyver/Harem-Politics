@@ -43,10 +43,7 @@ grand_consort_gained_court_position_effect = {
 						if = {
 							limit = {
 								NOR = {
-									has_relation_best_friend = scope:employee
-									has_relation_friend = scope:employee
-									has_relation_soulmate = scope:employee
-									has_relation_lover = scope:employee
+									has_any_good_relationship_with_character_trigger = { CHARACTER = scope:employee }
 
 									has_relation_soulmate = scope:liege
 								}
@@ -67,9 +64,8 @@ grand_consort_gained_court_position_effect = {
 										has_trait = shy
 	
 										harem_politics_evil_consort_trigger = yes
-	
-										has_relation_rival = scope:employee
-										has_relation_nemesis = scope:employee
+
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:employee }
 									}
 									NOT = { has_trait = trusting }
 								}
@@ -104,8 +100,7 @@ grand_consort_gained_court_position_effect = {
 										is_head_of_the_harem_trigger = {
 											LIEGE = scope:liege
 										}
-										has_relation_rival = scope:liege
-										has_relation_nemesis = scope:liege
+										has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:liege }
 									}
 								}
 								if = {
@@ -218,7 +213,7 @@ grand_consort_gained_court_position_effect = {
 							limit = {
 								exists = scope:liege.primary_spouse
 							}
-							scope:liege.primary_spouse != scope:employee
+							this != scope:liege.primary_spouse
 						}
 						trigger_else = {
 							NOT = { exists = scope:liege.primary_spouse }
@@ -270,7 +265,10 @@ grand_consort_gained_court_position_effect = {
 			}
 			# Notify relatives
 			every_close_family_member = {
-				limit = { this != scope:liege }
+				limit = {
+					this != scope:liege
+					is_ai = no
+				}
 				hidden_effect = {
 					send_interface_message = {
 						type = event_generic_good_text 
@@ -314,8 +312,12 @@ grand_consort_gained_court_position_effect = {
 					add_prestige = { value = minor_prestige_gain }
 				}
 				else_if = {
-					limit = { scope:liege.primary_title.tier >= tier_empire }
+					limit = { scope:liege.primary_title.tier = tier_empire }
 					add_prestige = { value = medium_prestige_gain }
+				}
+				else_if = {
+					limit = { scope:liege.primary_title.tier > tier_empire }
+					add_prestige = { value = major_prestige_gain }
 				}
 				high_consort_event_appointment_effect = yes
 			}
