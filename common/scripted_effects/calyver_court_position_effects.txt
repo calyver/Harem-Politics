@@ -670,160 +670,117 @@ high_consort_gained_court_position_effect = {
 			}
 			every_in_list = {
 				list = harem_members_list
-				send_interface_toast = {
-					type = event_generic_bad
-					title = grand_consort_promotion_toast
-					right_icon = scope:grand_consort
-					left_icon = scope:liege
-					custom_tooltip = $TITLE$_consort_promotion_toast_desc_hp
-
-					if = {
-						limit = {
-							scope:grand_consort = {
-								NOT = {
-									has_demoted_or_divorced_as_ps_opinion_trigger = {
-										TARGET = scope:liege
-									}
+				if = {
+					limit = {
+						scope:grand_consort = {
+							NOT = {
+								has_demoted_or_divorced_as_ps_opinion_trigger = {
+									TARGET = scope:liege
 								}
 							}
 						}
-						# Update their opinion
+					}
+					# Update their opinion
+					if = {
+						limit = {
+							NOR = {
+								has_any_good_relationship_with_character_trigger = { CHARACTER = scope:employee }
+
+								has_relation_soulmate = scope:liege
+
+								has_demoted_or_divorced_as_ps_opinion_trigger = {
+									TARGET = scope:liege
+								}
+							}
+							opinion = {
+								target = scope:employee
+								value <= low_positive_opinion
+							}
+						}
+						# Update the head of the harem's opinion on the Grand Consort
 						if = {
 							limit = {
-								NOR = {
-									has_relation_best_friend = scope:employee
-									has_relation_friend = scope:employee
-									has_relation_soulmate = scope:employee
-									has_relation_lover = scope:employee
-
-									has_relation_soulmate = scope:liege
-
-									has_demoted_or_divorced_as_ps_opinion_trigger = {
-										TARGET = scope:liege
+								OR = {
+									is_head_of_the_harem_trigger = {
+										LIEGE = scope:liege
+									}
+									is_high_consort_trigger = {
+										LIEGE = scope:liege
+									}
+									scope:liege.primary_spouse ?= this
+									AND = {
+										NOT = { is_consort_of = scope:liege }
+										harem_politics_evil_consort_trigger = yes
+										trigger_if = {
+											limit = {
+												hp_accepts_harems = no
+											}
+											OR = {
+												has_trait = ambitious
+												has_trait = arrogant
+												has_trait = greedy
+											}
+										}
+										trigger_else = {
+											hp_accepts_harems = yes
+										}
 									}
 								}
-								opinion = {
-									target = scope:employee
-									value <= low_positive_opinion
+								OR = {
+									has_trait = craven
+									has_trait = paranoid
+									has_trait = shy
+
+									harem_politics_evil_consort_trigger = yes
+									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:employee }
 								}
+								NOT = { has_trait = trusting }
 							}
-							# Update the head of the harem's opinion on the Grand Consort
 							if = {
 								limit = {
-									OR = {
-										is_head_of_the_harem_trigger = {
-											LIEGE = scope:liege
-										}
-										is_high_consort_trigger = {
-											LIEGE = scope:liege
-										}
-										scope:liege.primary_spouse ?= this
-										AND = {
-											NOT = { is_consort_of = scope:liege }
-											harem_politics_evil_consort_trigger = yes
-											trigger_if = {
-												limit = {
-													hp_accepts_harems = no
-												}
-												OR = {
-													has_trait = ambitious
-													has_trait = arrogant
-													has_trait = greedy
-												}
-											}
-											trigger_else = {
-												hp_accepts_harems = yes
-											}
-										}
-									}
-									OR = {
-										has_trait = craven
-										has_trait = paranoid
-										has_trait = shy
-	
-										harem_politics_evil_consort_trigger = yes
-	
-										has_relation_rival = scope:employee
-										has_relation_nemesis = scope:employee
-									}
-									NOT = { has_trait = trusting }
-								}
-								if = {
-									limit = {
-										scope:employee = {
-											OR = {
-												has_relation_lover = scope:liege
-												has_relation_soulmate = scope:liege
-
-												has_character_modifier = favored_consort_modifier
-												has_character_modifier = beloved_consort_modifier
-												has_character_modifier = favor_boost_modifier
-											}
-										}
-									}
-									add_opinion = {
-										target = scope:employee
-										modifier = threatening_consort_opinion
-										opinion = -10
-									}
-								}
-								else = {
-									add_opinion = {
-										target = scope:employee
-										modifier = threatening_consort_opinion
-										opinion = -5
-									}
-								}
-							}
-							# Others will also update their opinion
-							else_if = {
-								limit = {
-									is_consort_of = scope:liege
-									harem_politics_evil_consort_trigger = yes
-									trigger_if = {
-										limit = {
-											hp_accepts_harems = no
-										}
+									scope:employee = {
 										OR = {
-											has_trait = ambitious
-											has_trait = arrogant
-											has_trait = greedy
+											has_relation_lover = scope:liege
+											has_relation_soulmate = scope:liege
+
+											has_character_modifier = favored_consort_modifier
+											has_character_modifier = beloved_consort_modifier
+											has_character_modifier = favor_boost_modifier
 										}
-									}
-									trigger_else = {
-										hp_accepts_harems = yes
-									}
-									NOR = {
-										is_head_of_the_harem_trigger = {
-											LIEGE = scope:liege
-										}
-										is_high_consort_trigger = {
-											LIEGE = scope:liege
-										}
-										has_opinion_modifier = {
-											target = scope:employee
-											modifier = envy_consort_opinion
-										}
-										has_opinion_modifier = {
-											target = scope:employee
-											modifier = threatening_consort_opinion
-										}
-										has_relation_rival = scope:liege
-										has_relation_nemesis = scope:liege
 									}
 								}
 								add_opinion = {
 									target = scope:employee
-									modifier = envy_consort_opinion
+									modifier = threatening_consort_opinion
+									opinion = -10
+								}
+							}
+							else = {
+								add_opinion = {
+									target = scope:employee
+									modifier = threatening_consort_opinion
+									opinion = -5
 								}
 							}
 						}
-						if = {
+						# Others will also update their opinion
+						else_if = {
 							limit = {
-								scope:employee = {
-									harem_politics_evil_consort_trigger = yes
-								}
 								is_consort_of = scope:liege
+								harem_politics_evil_consort_trigger = yes
+								trigger_if = {
+									limit = {
+										hp_accepts_harems = no
+									}
+									OR = {
+										has_trait = ambitious
+										has_trait = arrogant
+										has_trait = greedy
+									}
+								}
+								trigger_else = {
+									hp_accepts_harems = yes
+								}
 								NOR = {
 									is_head_of_the_harem_trigger = {
 										LIEGE = scope:liege
@@ -831,13 +788,48 @@ high_consort_gained_court_position_effect = {
 									is_high_consort_trigger = {
 										LIEGE = scope:liege
 									}
+									has_opinion_modifier = {
+										target = scope:employee
+										modifier = envy_consort_opinion
+									}
+									has_opinion_modifier = {
+										target = scope:employee
+										modifier = threatening_consort_opinion
+									}
+									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:liege }
 								}
 							}
-							stress_impact = {
-								craven = minor_stress_impact_gain
-								shy = minor_stress_impact_gain
-								paranoid = miniscule_stress_impact_gain
+							add_opinion = {
+								target = scope:employee
+								modifier = envy_consort_opinion
 							}
+						}
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								harem_politics_evil_consort_trigger = yes
+							}
+							is_consort_of = scope:liege
+							NOR = {
+								is_head_of_the_harem_trigger = {
+									LIEGE = scope:liege
+								}
+								is_high_consort_trigger = {
+									LIEGE = scope:liege
+								}
+							}
+							trigger_if = {
+								limit = {
+									exists = scope:liege.primary_spouse
+								}
+								NOT = { this = scope:liege.primary_spouse }
+							}
+						}
+						stress_impact = {
+							craven = minor_stress_impact_gain
+							shy = minor_stress_impact_gain
+							paranoid = miniscule_stress_impact_gain
 						}
 					}
 				}
@@ -920,12 +912,17 @@ high_consort_gained_court_position_effect = {
 									modifier = thankful_consort_relative_opinion
 								}
 							}
-							send_interface_message = {
-								type = event_generic_good_text 
-								title = grand_consort_promotion_t 
-								right_icon = scope:employee
-								left_icon = scope:liege
-								custom_tooltip = $TITLE$_consort_promotion_toast_desc_hp
+							if = {
+								limit = {
+									is_ai = no
+								}
+								send_interface_message = {
+									type = event_generic_good_text 
+									title = grand_consort_promotion_t 
+									right_icon = scope:employee
+									left_icon = scope:liege
+									custom_tooltip = $TITLE$_consort_promotion_toast_desc_hp
+								}
 							}
 						}
 					}
