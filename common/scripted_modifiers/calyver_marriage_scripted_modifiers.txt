@@ -150,6 +150,86 @@
 		}
 	}
 
+	modifier = { # Di Lineage
+		add = {
+			value = -25
+			if = {
+				limit = {
+					scope:recipient = {
+						any_held_title = { is_noble_family_title = yes }
+						is_independent_ruler = no
+						house ?= {
+							is_powerful_family = yes
+						}
+					}
+				}
+				add = 10
+				if = {
+					limit = {
+						scope:recipient.house ?= {
+							is_dominant_family = yes
+						}
+					}
+					add = -10
+				}
+			}
+			if = { # Sovereigns
+				limit = {
+					scope:recipient = {
+						highest_held_title_tier >= tier_kingdom
+						trigger_if = {
+							limit = {
+								government_has_mechanic = administrative
+							}
+							trigger_if = {
+								limit = { tgp_realm_has_ceremonial_liege_trigger = yes }
+								tgp_has_ceremonial_liege_title_trigger = yes
+							}
+							trigger_else = {
+								is_independent_ruler = yes
+							}
+						}
+					}
+				}
+				add = -50
+			}
+			if = {
+				limit = {
+					scope:recipient = {
+						has_trait = arrogant
+					}
+				}
+				add = 15
+			}
+			if = { # Shu sons wanted to "clean" their lineage
+				limit = {
+					scope:recipient = {
+						has_trait = child_of_concubine
+					}
+				}
+				add = 15
+			}
+		}
+		desc = SHU_LINEAGE_HAREM_POLITICS
+		scope:recipient = {
+			culture = { has_cultural_parameter = dishu_system }
+			OR = {
+				this = scope:secondary_recipient
+				AND = {
+					exists = player_heir
+					player_heir_position = {
+						target = scope:secondary_recipient # The Groom
+						value <= 2
+					}
+				}
+			}
+			NOT = { has_trait = humble }
+		}
+		scope:secondary_actor = {
+			has_trait = child_of_concubine
+		}
+	}
+
 	## Vanilla ##
 	modifier = { # Same-sex marriage not supported in recipient's faith
 		add = -1000
