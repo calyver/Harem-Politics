@@ -8,6 +8,7 @@
 		clear_variable_list = harem_head_list
 		clear_variable_list = harem_primary_spouse_list
 		clear_variable_list = harem_top_four_consort_list
+		clear_variable_list = harem_sifei_slots_list
 		clear_variable_list = harem_top_two_consort_list
 		clear_variable_list = harem_top_three_consort_list
 		clear_variable_list = harem_consort_list
@@ -32,7 +33,7 @@ calyver_update_harem_list_effect = {
 		}
 		clear_saved_scope = harem_liege
 	}
-	
+
 	save_scope_as = harem_liege
 	if = {
 		limit = {
@@ -185,7 +186,7 @@ calyver_update_harem_list_effect = {
 						NOR = {
 							scope:harem_liege = {
 								is_target_in_variable_list = {
-									name = harem_top_four_consort_list
+									name = harem_sifei_slots_list
 									target = prev
 								}
 							}
@@ -275,7 +276,7 @@ calyver_update_harem_list_effect = {
 					NOR = {
 						scope:harem_liege = {
 							is_target_in_variable_list = {
-								name = harem_top_four_consort_list
+								name = harem_sifei_slots_list
 								target = prev
 							}
 						}
@@ -295,59 +296,31 @@ calyver_update_harem_list_effect = {
 					}
 				}
 			}
-			ordered_in_list = {
-				list = harem_members_list
-				limit = {
-					is_high_consort_trigger = {
-						LIEGE = scope:harem_liege
-					}
-					NOR = {
-						scope:harem_liege = {
-							is_target_in_variable_list = {
-								name = harem_top_four_consort_list
-								target = prev
-							}
-						}
-						scope:harem_liege = {
-							is_target_in_variable_list = {
-								name = harem_primary_spouse_list
-								target = prev
-							}
-						}
-						scope:harem_liege = {
-							is_target_in_variable_list = {
-								name = harem_head_list
-								target = prev
-							}
-						}
-						this = scope:harem_head
-					}
-				}
-				order_by = {
-	
-					#Favor
-					if = {
-						limit = {
-							has_variable = favor
-						}
-						add = var:favor
-						divide = 50
-					}
-					# Rank
-					if = {
-						limit = {
-							has_court_position = grand_consort_court_position
-						}
-						add = 35
-					}
-				}
-				min = 0
-				scope:harem_liege = {
-					add_to_variable_list = {
-						name = harem_top_four_consort_list
-						target = prev
-					}
-				}
+			# Full court position
+			calyver_filled_high_consort_position_effect = {
+				COURT_POS = grand_consort
+			}
+			calyver_filled_high_consort_position_effect = {
+				COURT_POS = pure_consort
+			}
+			calyver_filled_high_consort_position_effect = {
+				COURT_POS = virtuous_consort
+			}
+			calyver_filled_high_consort_position_effect = {
+				COURT_POS = worthy_consort
+			}
+			# Empty court positions
+			calyver_empty_high_consort_position_effect = {
+				COURT_POS = grand_consort
+			}
+			calyver_empty_high_consort_position_effect = {
+				COURT_POS = pure_consort
+			}
+			calyver_empty_high_consort_position_effect = {
+				COURT_POS = virtuous_consort
+			}
+			calyver_empty_high_consort_position_effect = {
+				COURT_POS = worthy_consort
 			}
 		}
 	}
@@ -1077,7 +1050,7 @@ calyver_update_harem_list_effect = {
 					}
 					scope:harem_liege = {
 						is_target_in_variable_list = {
-							name = harem_top_four_consort_list
+							name = harem_sifei_slots_list
 							target = prev
 						}
 					}
@@ -1121,7 +1094,7 @@ calyver_update_harem_list_effect = {
 					}
 					scope:harem_liege = {
 						is_target_in_variable_list = {
-							name = harem_top_four_consort_list
+							name = harem_sifei_slots_list
 							target = prev
 						}
 					}
@@ -1470,6 +1443,29 @@ calyver_update_harem_list_effect = {
 	}
 }
 
+calyver_filled_high_consort_position_effect = {
+	if = {
+		limit = {
+			scope:harem_liege = { employs_court_position = $COURT_POS$_court_position }
+		}
+		random_court_position_holder = {
+			type = $COURT_POS$_court_position
+			scope:harem_liege = {
+				set_variable = { name = $COURT_POS$_char value = prev }
+				add_to_variable_list = {
+					name = harem_sifei_slots_list
+					target = flag:$COURT_POS$
+				}
+			}
+		}
+	}
+}
+calyver_empty_high_consort_position_effect = {
+	if = {
+		limit = { NOT = { employs_court_position = $COURT_POS$_court_position } }
+		scope:harem_liege = { add_to_variable_list = { name = harem_sifei_slots_list target = flag:$COURT_POS$ } }
+	}
+}
 visit_harem_effect = {
 	if = {
 		limit = {

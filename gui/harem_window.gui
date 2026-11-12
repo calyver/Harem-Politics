@@ -84,18 +84,49 @@ window = {
 				scrollwidget = {
 					vbox = {
 						layoutpolicy_horizontal = expanding
-						layoutpolicy_vertical = expanding   # <-- Add this line!
+						layoutpolicy_vertical = expanding
 						# position = { 0 -100 }
 						harem_dynamicgrid = {
 							datamodel = "[GetPlayer.MakeScope.GetList('harem_primary_spouse_list')]"
 							datamodel_wrap = 4
 							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_primary_spouse_list') ) )]"
 						}
-						harem_dynamicgrid = {
-							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_four_consort_list')]"
-							datamodel_wrap = 4
-							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_top_four_consort_list') ) )]"
-						}
+						
+						# THE FOUR CONSORTS (2x2 Pyramid Tier)
+                        dynamicgridbox = {
+                            name = "harem_sifei_2x2_grid"
+                            datamodel = "[GetPlayer.MakeScope.GetList('harem_sifei_slots_list')]"
+                            datamodel_wrap = 2
+                            flipdirection = yes
+                            visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_sifei_slots_list') ) )]"
+
+                            item = {
+                                widget = {
+                                    size = { 155 190 }
+
+                                    harem_sifei_pedestal = {
+                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'grand_consort' )]"
+                                        datacontext = "[GetPlayer.MakeScope.Var('grand_consort_char').GetCharacter]"
+                                        datacontext = "[GetCourtPositionType( 'grand_consort_court_position' )]"
+                                    }
+									harem_sifei_pedestal = {
+                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'pure_consort' )]"
+                                        datacontext = "[GetPlayer.MakeScope.Var('pure_consort_char').GetCharacter]"
+                                        datacontext = "[GetCourtPositionType( 'pure_consort_court_position' )]"
+                                    }
+									harem_sifei_pedestal = {
+                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'virtuous_consort' )]"
+                                        datacontext = "[GetPlayer.MakeScope.Var('virtuous_consort_char').GetCharacter]"
+                                        datacontext = "[GetCourtPositionType( 'virtuous_consort_court_position' )]"
+                                    }
+									harem_sifei_pedestal = {
+                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'worthy_consort' )]"
+                                        datacontext = "[GetPlayer.MakeScope.Var('worthy_consort_char').GetCharacter]"
+                                        datacontext = "[GetCourtPositionType( 'worthy_consort_court_position' )]"
+                                    }
+                                }
+                            }
+                        }
 						harem_dynamicgrid = {
 							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_two_consort_list')]"
 							datamodel_wrap = 2
@@ -231,6 +262,155 @@ types harem_types {
         size = { 110 110 }  # Reduced from 200 200
         portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
         # mask = "gfx/portraits/portrait_mask_head.dds"
+    }
+
+	# Si Fei Pedestal
+    type harem_sifei_pedestal = widget {
+        allow_outside = yes
+        size = { 155 190 }
+
+        # STATE 1: POSITION IS FILLED
+        vbox = {
+            visible = "[Character.IsValid]"
+            margin_top = 20
+
+            text_single = {
+                text = "[Character.Custom('consort_rank_localization')]"
+                using = Font_Size_Small
+            }
+            text_single = {
+                text = "[Character.GetFirstNameNoTooltip]"
+                using = Font_Size_Small
+            }
+            
+            harem_portrait_head_small = {}
+
+            hbox = {
+                spacing = 5
+                widget = {
+                    size = { 35 35 }
+                    parentanchor = left
+                    coa_house_small = {
+                        datacontext = "[Character.GetHouse]"
+                        parentanchor = center
+                        scale = 0.57
+                    }
+                }
+                text_single = {
+                    text = "[Character.Custom('consort_favor_level')]"
+                    using = Font_Size_Medium
+                    margin_top = -5
+                }
+                text_single = {
+                    text = "consort_temperament"
+                    using = Font_Size_Medium
+                    tooltip = "consort_temperament_tooltip"
+                    margin_top = -5
+                }
+            }
+        }
+
+        # STATE 2: POSITION IS VACANT (Mirrors STATE 1 perfectly)
+        vbox = {
+            visible = "[Not( Character.IsValid )]"
+            margin_top = 20
+
+            text_single = {
+                text = "[CourtPositionType.CalcTriggeredNameNoTooltip( GetPlayer )]"
+                using = Font_Size_Small
+                default_format = "#low"
+                
+                # TOOLTIP MOVED HERE: Now it only appears when hovering on the name
+                tooltip = "[CourtPositionType.GetDescription]" 
+            }
+            
+            text_single = {
+                text = "NOT_HIRED"
+                using = Font_Size_Small
+                default_format = "#weak"
+            }
+
+			widget = {
+                size = { 100 100 }
+                
+                # 1. Base Portrait Frame Background
+                background = {
+                    using = Background_Area_Solid
+                    modify_texture = {
+                        texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+                        blend_mode = alphamultiply
+                        alpha = 0.2
+                        mirror = vertical
+                    }
+                }
+
+                # 2. Game-generated Silhouette for empty characters
+                portrait_button = {
+                    parentanchor = center
+                    size = { 80 100 }
+                    using = portrait_base
+                    portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
+                    mask = "gfx/portraits/portrait_mask_head_small.dds"
+                    effectname = "NoHighlight"
+                    alwaystransparent = yes # Lets the button below catch clicks
+                }
+
+                # 3. Outer Frame Overlay
+                background = {
+                    texture = "gfx/portraits/portrait_frame.dds"
+                    using = Color_Grey
+                    margin = { -4 -4 }
+                    alpha = 0.4
+                    modify_texture = {
+                        texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+                        blend_mode = alphamultiply
+                        mirror = vertical
+                    }
+                }
+
+                # 4. Clickable Appoint Button with strictly isolated hover
+                button = {
+                    size = { 100 100 }
+                    
+                    gfxtype = framedbuttongfx
+                    effectname = "NoHighlight"
+                    upframe = 1
+                    overframe = 2
+
+                    onclick = "[CourtPositionType.OpenAppointWindow( GetPlayer )]"
+
+                    # The strictly localized hover shine!
+                    highlight_icon = {
+                        parentanchor = center
+                        size = { 100 100 }
+                        texture = "gfx/portraits/portrait_frame.dds"
+                        using = Color_Grey
+                        alpha = 0.7
+                        visible = "[IsHovered]" # Only triggers if THIS button is hovered
+                        margin = { -4 -4 }
+                    }
+
+                    button_icon = {
+                        parentanchor = center
+                        size = { 45 45 }
+                        alwaystransparent = yes
+                        texture = "gfx/interface/icons/flat_icons/plus.dds"
+                    }
+                }
+            }
+
+            hbox = {
+                spacing = 5
+                widget = {
+                    size = { 35 35 }
+                    icon = {
+                        parentanchor = center
+                        size = { 28 28 }
+                        texture = "[CourtPositionType.GetIcon]"
+                    }
+                }
+            }
+        }
     }
 
 	# Other consorts' grid
