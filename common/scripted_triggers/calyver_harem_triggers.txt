@@ -1,4 +1,4 @@
-﻿## Consorts and relatives ##
+## Consorts and relatives ##
 is_virgin_trigger = {
 	any_consort = {
 		even_if_dead = yes
@@ -156,25 +156,51 @@ is_active_harem_member_trigger = {
 		LIEGE = $LIEGE$
 	}
 	is_imprisoned = no
-	trigger_if = {
+	trigger_if = { # Consorts are always part of the harem
 		limit = {
-			OR = { 
-				is_consort_of = $LIEGE$
-				$LIEGE$.religion = religion:islam_religion
-			}
+			is_consort_of = $LIEGE$
 		}
 		always = yes
 	}
+	# Four Consorts realm overrides all: grandmother/mother is an active member IF and ONLY IF there are only unranked concubines
+	trigger_else_if = {
+		limit = {
+			$LIEGE$ = {
+				can_have_four_consorts_trigger = yes
+			}
+		}
+		OR = {
+			is_grandparent_of = $LIEGE$
+			is_parent_of = $LIEGE$
+		}
+		$LIEGE$ = {
+			NOR = {
+				exists = primary_spouse
+				any_spouse = {
+					is_courtier_of = $LIEGE$
+				}
+			}
+			employs_high_consort_court_position_trigger = no
+		}
+	}
+	# Islamic realms (when not Four Consorts)
+	trigger_else_if = {
+		limit = {
+			$LIEGE$.religion = religion:islam_religion
+		}
+		always = yes
+	}
+	# Seniority system (when not Four Consorts)
 	trigger_else_if = {
 		limit = {
 			$LIEGE$ = {
 				hp_has_seniority_based_harem_relatives_trigger = yes
 			}
 		}
-		trigger_if = {
+		trigger_if = { # Your elders will manage the harem only if it's small
 			limit = {
 				$LIEGE$ = {
-					can_have_imperial_consorts_trigger = no
+					hp_is_sovereign_trigger = yes
 				}
 			}
 			OR = {
@@ -182,7 +208,7 @@ is_active_harem_member_trigger = {
 				is_grandparent_of = $LIEGE$
 			}
 		}
-		trigger_else = {
+		trigger_else = { # Else, it would be more filial to let a consort manage the harem
 			always = no
 		}
 	}
@@ -478,7 +504,10 @@ calyver_rank_is_superior_trigger = {
 	}
 }
 is_head_of_the_harem_trigger = {
-	# Regular concubines are excluded
+	is_active_harem_member_trigger = {
+		LIEGE = $LIEGE$
+	}
+	# Regular concubines are excluded from being head
 	NOT = {
 		is_regular_concubine_of = {
 			LIEGE = $LIEGE$
@@ -499,15 +528,7 @@ is_head_of_the_harem_trigger = {
 				}
 			}
 		}
-		is_active_harem_member_trigger = {
-			LIEGE = $LIEGE$
-		}
-		NOT = {
-			is_regular_concubine_of = {
-				LIEGE = $LIEGE$
-			}
-		}
-		# Imperial perogative - the Imperial Family outrank everyone
+		# Imperial prerogative - the Imperial Family outranks everyone
 		trigger_if = {
 			limit = {
 				$LIEGE$ = {
@@ -542,173 +563,363 @@ is_head_of_the_harem_trigger = {
 				this = $LIEGE$.liege
 			}
 		}
-		# Muslim hierarchy - elder relatives rank higher
-		trigger_else_if = { #Liege's mother is always the head of the harem
+
+		# 1. Four Consorts Hierarchy (Overrides all other hierarchies): Primary Spouse > Four Consorts (Grand > Pure > Virtuous > Worthy) > Grandmother > Mother
+		trigger_else_if = {
 			limit = {
 				$LIEGE$ = {
-					religion = religion:islam_religion
-					any_parent = {
-						is_active_harem_member_trigger = {
-							LIEGE = $LIEGE$
-						}
-						NOT = { is_consort_of = $LIEGE$ }
-					}
+					can_have_four_consorts_trigger = yes
 				}
 			}
-			is_parent_of = $LIEGE$
-			NOT = { is_consort_of = $LIEGE$ }
-		}
-		trigger_else_if = { #Grandparents
-			limit = {
-				$LIEGE$ = {
-					any_ancestor = {
-						is_grandparent_of = $LIEGE$
-						is_active_harem_member_trigger = {
-							LIEGE = $LIEGE$
-						}
-						NOT = { is_consort_of = $LIEGE$ }
+			# Primary Spouse
+			trigger_if = {
+				limit = {
+					$LIEGE$.primary_spouse ?= {
+						is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
 					}
 				}
+				this = $LIEGE$.primary_spouse
 			}
-			is_grandparent_of = $LIEGE$
-			NOT = { is_consort_of = $LIEGE$ }
-		}
-		trigger_else_if = { #Liege's mother is always the head of the harem
-			limit = {
-				$LIEGE$ = {
-					any_parent = {
-						is_active_harem_member_trigger = {
-							LIEGE = $LIEGE$
-						}
-						NOT = { is_consort_of = $LIEGE$ }
+			# Grand Consort
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = grand_consort_court_position
 					}
 				}
+				has_court_position = grand_consort_court_position
 			}
-			is_parent_of = $LIEGE$
-			NOT = { is_consort_of = $LIEGE$ }
-		}
-		trigger_else_if = { #Unmarried paternal aunt
-			limit = {
-				$LIEGE$ = {
-					any_parent = {
-						any_sibling = {
-							is_active_harem_member_trigger = {
-								LIEGE = $LIEGE$
-							}
+			# Pure Consort
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = pure_consort_court_position
+					}
+				}
+				has_court_position = pure_consort_court_position
+			}
+			# Virtuous Consort
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = virtuous_consort_court_position
+					}
+				}
+				has_court_position = virtuous_consort_court_position
+			}
+			# Worthy Consort
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = worthy_consort_court_position
+					}
+				}
+				has_court_position = worthy_consort_court_position
+			}
+			# Other spouses (if there's any)
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_spouse = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+						}
+					}
+				}
+				is_spouse_of = $LIEGE$
+			}
+			# Grandmother (only active if only unranked concubines exist)
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_ancestor = {
+							is_grandparent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
 							NOT = { is_consort_of = $LIEGE$ }
 						}
 					}
 				}
+				is_grandparent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
 			}
-			is_uncle_or_aunt_of = $LIEGE$
-			NOT = { is_consort_of = $LIEGE$ }
-		}
-		trigger_else_if = { #Unmarried older sisters
-			limit = {
-				$LIEGE$ = {
-					any_sibling = {
-						age > $LIEGE$.age
-						is_active_harem_member_trigger = {
-							LIEGE = $LIEGE$
+			# Mother (only active if only unranked concubines exist)
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_parent = {
+							is_parent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
 						}
-						NOT = { is_consort_of = $LIEGE$ }
 					}
 				}
+				is_parent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
 			}
-			age > $LIEGE$.age
-			NOT = { is_consort_of = $LIEGE$ }
-		}
-		# Consorts
-		trigger_else_if = { #The primary spouse
-			limit = {
-				$LIEGE$.primary_spouse ?= {
-					is_courtier_of = $LIEGE$
-				}
-			}
-			this = $LIEGE$.primary_spouse
-		}
-		trigger_else_if = { #The grand consort
-			limit = {
-				$LIEGE$ = {
-					employs_court_position = grand_consort_court_position
-				}
-			}
-			has_court_position = grand_consort_court_position
-		}
-		trigger_else_if = { #High Consorts
-			limit = {
-				$LIEGE$ = {
-					employs_high_consort_court_position_trigger = yes
-				}
-			}
-			is_high_consort_trigger = {
-				LIEGE = $LIEGE$
+			trigger_else = {
+				always = no
 			}
 		}
-		trigger_else_if = { #Just any spouse
+
+		# 2. Islamic Hierarchy (any tier, when not Four Consorts): Mother > Grandmother > Aunts > Elder Sisters > Primary Spouse > Secondary Spouses
+		trigger_else_if = {
 			limit = {
-				$LIEGE$ = {
-					any_spouse = {
-						is_courtier_of = $LIEGE$
-					}
-				}
+				$LIEGE$.religion = religion:islam_religion
 			}
-			is_spouse_of = $LIEGE$
-		}
-		# Muslim hierarchy - younger relatives rank as fallback
-		trigger_else_if = { #Younger sisters
-			limit = {
-				$LIEGE$ = {
-					any_sibling = {
-						is_active_harem_member_trigger = {
-							LIEGE = $LIEGE$
+			# Mother
+			trigger_if = {
+				limit = {
+					$LIEGE$ = {
+						any_parent = {
+							is_parent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
 						}
-						NOT = { is_consort_of = $LIEGE$ }
 					}
 				}
+				is_parent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
 			}
-			is_sibling_of = $LIEGE$
-			NOT = { is_consort_of = $LIEGE$ }
+			# Grandmother
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_ancestor = {
+							is_grandparent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_grandparent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			# Aunts
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_courtier = {
+							is_uncle_or_aunt_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_uncle_or_aunt_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			# Elder Sisters
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_sibling = {
+							age > $LIEGE$.age
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_sibling_of = $LIEGE$
+				age > $LIEGE$.age
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			# Primary Spouse
+			trigger_else_if = {
+				limit = {
+					$LIEGE$.primary_spouse ?= {
+						is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+					}
+				}
+				this = $LIEGE$.primary_spouse
+			}
+			# The Grand Consort
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = grand_consort_court_position
+					}
+				}
+				has_court_position = grand_consort_court_position
+			}
+			# The High Consorts
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_high_consort_court_position_trigger = yes
+					}
+				}
+				is_high_consort_trigger = { LIEGE = $LIEGE$ }
+			}
+			# Secondary Spouses
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_spouse = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+						}
+					}
+				}
+				is_spouse_of = $LIEGE$
+			}
+			# Younger Sisters fallback
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_sibling = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_sibling_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			trigger_else = {
+				always = no
+			}
 		}
+
+		# 3. Seniority System (Kings and above): Primary Spouse > Four Consorts / Grand Consort > Other Spouses
+		trigger_else_if = {
+			limit = {
+				$LIEGE$ = {
+					hp_is_sovereign_trigger = yes
+					hp_has_seniority_based_harem_relatives_trigger = yes
+				}
+			}
+			trigger_if = {
+				limit = {
+					$LIEGE$.primary_spouse ?= {
+						is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+					}
+				}
+				this = $LIEGE$.primary_spouse
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = grand_consort_court_position
+					}
+				}
+				has_court_position = grand_consort_court_position
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_high_consort_court_position_trigger = yes
+					}
+				}
+				is_high_consort_trigger = { LIEGE = $LIEGE$ }
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_spouse = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+						}
+					}
+				}
+				is_spouse_of = $LIEGE$
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+
+		# 4. Seniority System (Below Kingdom): Grandmother > Mother > Primary Spouse > Other Consorts
+		trigger_else_if = {
+			limit = {
+				$LIEGE$ = {
+					hp_has_seniority_based_harem_relatives_trigger = yes
+				}
+			}
+			trigger_if = {
+				limit = {
+					$LIEGE$ = {
+						any_ancestor = {
+							is_grandparent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_grandparent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_parent = {
+							is_parent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_parent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$.primary_spouse ?= {
+						is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+					}
+				}
+				this = $LIEGE$.primary_spouse
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_spouse = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+						}
+					}
+				}
+				is_spouse_of = $LIEGE$
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+
+		# 5. Fallback for any other realm (e.g. Standard Feudal / Pagan polygamy)
 		trigger_else = {
-			always = no
-		}
-	}
-	trigger_else_if = {
-		limit = {
-			$LIEGE$ = {
-				any_ancestor = {
-					OR = {
-						is_parent_of = $LIEGE$
-						is_grandparent_of = $LIEGE$
+			trigger_if = {
+				limit = {
+					$LIEGE$.primary_spouse ?= {
+						is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
 					}
-					is_eligible_harem_member_trigger = {
-						LIEGE = $LIEGE$
-					}
-					NOT = { is_consort_of = $LIEGE$ }
 				}
+				this = $LIEGE$.primary_spouse
 			}
-		}
-		is_eligible_harem_member_trigger = {
-			LIEGE = $LIEGE$
-		}
-		NOT = { is_consort_of = $LIEGE$ }
-		trigger_if = {
-			limit = {
-				$LIEGE$ = {
-					any_ancestor = {
-						is_grandparent_of = $LIEGE$
-						is_eligible_harem_member_trigger = {
-							LIEGE = $LIEGE$
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = grand_consort_court_position
+					}
+				}
+				has_court_position = grand_consort_court_position
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_high_consort_court_position_trigger = yes
+					}
+				}
+				is_high_consort_trigger = { LIEGE = $LIEGE$ }
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_spouse = {
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
 						}
-						NOT = { is_consort_of = $LIEGE$ }
 					}
 				}
+				is_spouse_of = $LIEGE$
 			}
-			is_grandparent_of = $LIEGE$
-		}
-		trigger_else = {
-			is_parent_of = $LIEGE$
+			trigger_else = {
+				always = no
+			}
 		}
 	}
 	trigger_else = {
@@ -732,16 +943,6 @@ is_worthy_consort_trigger = {
 	has_court_position = worthy_consort_court_position
 	court_owner ?= $LIEGE$
 }
-# is_imperial_consort_trigger = {
-# 	OR = {
-# 		has_character_modifier = imperial_consort_modifier
-# 		has_character_modifier = imperial_lord_modifier
-# 	}
-# 	has_opinion_modifier = {
-# 		modifier = appointed_as_special_consort
-# 		target = $HAREM_LIEGE$
-# 	}
-# }
 is_high_consort_trigger = {
 	OR = {
 		is_grand_consort_trigger = {
@@ -1034,6 +1235,9 @@ can_be_visited_trigger = {
 can_have_imperial_consorts_trigger = {
 	highest_held_title_tier >= tier_kingdom
 	has_settled_harem_trigger = yes
+	hp_is_sovereign_trigger = yes
+}
+hp_is_sovereign_trigger = {
 	custom_tooltip = {
 		text = sovereign_of_realm_tooltip
 		trigger_if = {

@@ -26,6 +26,19 @@ window = {
             blockoverride "button_close" {
                 onclick = "[GetScriptedGui('toggle_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
             }
+
+            button_round = {
+                parentanchor = top|right
+                position = { -45 8 }
+                size = { 30 30 }
+                tooltip = "REFRESH_HAREM_WINDOW_TT"
+                onclick = "[GetScriptedGui('refresh_harem_window').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+                button_icon = {
+                    texture = "gfx/interface/icons/flat_icons/replace.dds"
+                    size = { 20 20 }
+                    parentanchor = center
+                }
+            }
         }
 
         # Special Characters Container
@@ -86,47 +99,41 @@ window = {
 						layoutpolicy_horizontal = expanding
 						layoutpolicy_vertical = expanding
 						# position = { 0 -100 }
-						harem_dynamicgrid = {
-							datamodel = "[GetPlayer.MakeScope.GetList('harem_primary_spouse_list')]"
-							datamodel_wrap = 4
-							visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_primary_spouse_list') ) )]"
+						# THE FOUR CONSORTS (2x2 Dynamic Grid: Filled first, then Vacant)
+						dynamicgridbox = {
+							name = "harem_sifei_2x2_grid"
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_sifei_slots_list')]"
+							datamodel_wrap = 2
+							flipdirection = yes
+							visible = "[GetPlayer.MakeScope.Var('can_have_four_consorts').IsSet]"
+
+							item = {
+								widget = {
+									size = { 155 190 }
+
+									harem_sifei_pedestal = {
+										visible = "[ObjectsEqual( Scope.GetFlagName, 'grand_consort' )]"
+										datacontext = "[GetPlayer.MakeScope.Var('grand_consort_char').GetCharacter]"
+										datacontext = "[GetCourtPositionType( 'grand_consort_court_position' )]"
+									}
+									harem_sifei_pedestal = {
+										visible = "[ObjectsEqual( Scope.GetFlagName, 'pure_consort' )]"
+										datacontext = "[GetPlayer.MakeScope.Var('pure_consort_char').GetCharacter]"
+										datacontext = "[GetCourtPositionType( 'pure_consort_court_position' )]"
+									}
+									harem_sifei_pedestal = {
+										visible = "[ObjectsEqual( Scope.GetFlagName, 'virtuous_consort' )]"
+										datacontext = "[GetPlayer.MakeScope.Var('virtuous_consort_char').GetCharacter]"
+										datacontext = "[GetCourtPositionType( 'virtuous_consort_court_position' )]"
+									}
+									harem_sifei_pedestal = {
+										visible = "[ObjectsEqual( Scope.GetFlagName, 'worthy_consort' )]"
+										datacontext = "[GetPlayer.MakeScope.Var('worthy_consort_char').GetCharacter]"
+										datacontext = "[GetCourtPositionType( 'worthy_consort_court_position' )]"
+									}
+								}
+							}
 						}
-						
-						# THE FOUR CONSORTS (2x2 Pyramid Tier)
-                        dynamicgridbox = {
-                            name = "harem_sifei_2x2_grid"
-                            datamodel = "[GetPlayer.MakeScope.GetList('harem_sifei_slots_list')]"
-                            datamodel_wrap = 2
-                            flipdirection = yes
-                            visible = "[Not( IsDataModelEmpty( GetPlayer.MakeScope.GetList('harem_sifei_slots_list') ) )]"
-
-                            item = {
-                                widget = {
-                                    size = { 155 190 }
-
-                                    harem_sifei_pedestal = {
-                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'grand_consort' )]"
-                                        datacontext = "[GetPlayer.MakeScope.Var('grand_consort_char').GetCharacter]"
-                                        datacontext = "[GetCourtPositionType( 'grand_consort_court_position' )]"
-                                    }
-									harem_sifei_pedestal = {
-                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'pure_consort' )]"
-                                        datacontext = "[GetPlayer.MakeScope.Var('pure_consort_char').GetCharacter]"
-                                        datacontext = "[GetCourtPositionType( 'pure_consort_court_position' )]"
-                                    }
-									harem_sifei_pedestal = {
-                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'virtuous_consort' )]"
-                                        datacontext = "[GetPlayer.MakeScope.Var('virtuous_consort_char').GetCharacter]"
-                                        datacontext = "[GetCourtPositionType( 'virtuous_consort_court_position' )]"
-                                    }
-									harem_sifei_pedestal = {
-                                        visible = "[ObjectsEqual( Scope.GetFlagName, 'worthy_consort' )]"
-                                        datacontext = "[GetPlayer.MakeScope.Var('worthy_consort_char').GetCharacter]"
-                                        datacontext = "[GetCourtPositionType( 'worthy_consort_court_position' )]"
-                                    }
-                                }
-                            }
-                        }
 						harem_dynamicgrid = {
 							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_two_consort_list')]"
 							datamodel_wrap = 2
@@ -333,7 +340,7 @@ types harem_types {
 			widget = {
                 size = { 100 100 }
                 
-                # 1. Base Portrait Frame Background
+                # Base Background
                 background = {
                     using = Background_Area_Solid
                     modify_texture = {
@@ -344,18 +351,7 @@ types harem_types {
                     }
                 }
 
-                # 2. Game-generated Silhouette for empty characters
-                portrait_button = {
-                    parentanchor = center
-                    size = { 80 100 }
-                    using = portrait_base
-                    portrait_texture = "[Character.GetPortrait('environment_head', 'camera_head', 'idle', PdxGetWidgetScreenSize(PdxGuiWidget.Self))]"
-                    mask = "gfx/portraits/portrait_mask_head_small.dds"
-                    effectname = "NoHighlight"
-                    alwaystransparent = yes # Lets the button below catch clicks
-                }
-
-                # 3. Outer Frame Overlay
+                # Outer Frame Overlay
                 background = {
                     texture = "gfx/portraits/portrait_frame.dds"
                     using = Color_Grey
@@ -368,31 +364,23 @@ types harem_types {
                     }
                 }
 
-                # 4. Clickable Appoint Button with strictly isolated hover
+                # Clickable Appoint Button with unknown silhouette
                 button = {
-                    size = { 100 100 }
-                    
+                    parentanchor = center
+                    size = { 80 100 }
                     gfxtype = framedbuttongfx
                     effectname = "NoHighlight"
+                    texture = "gfx/portraits/unknown_portraits/button_unknown_small.dds"
+                    framesize = { 564 780 }
                     upframe = 1
                     overframe = 2
 
-                    onclick = "[CourtPositionType.OpenAppointWindow( GetPlayer )]"
-
-                    # The strictly localized hover shine!
-                    highlight_icon = {
-                        parentanchor = center
-                        size = { 100 100 }
-                        texture = "gfx/portraits/portrait_frame.dds"
-                        using = Color_Grey
-                        alpha = 0.7
-                        visible = "[IsHovered]" # Only triggers if THIS button is hovered
-                        margin = { -4 -4 }
-                    }
+                    onclick = "[CourtPositionType.OpenAppointWindow( GetPlayer.Self )]"
+                    tooltip = "[CourtPositionType.GetDescription]"
 
                     button_icon = {
                         parentanchor = center
-                        size = { 45 45 }
+                        size = { 40 40 }
                         alwaystransparent = yes
                         texture = "gfx/interface/icons/flat_icons/plus.dds"
                     }
