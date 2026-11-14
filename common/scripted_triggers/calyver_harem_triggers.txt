@@ -517,6 +517,25 @@ calyver_rank_is_superior_trigger = {
 					}
 				}
 			}
+			# The Nine Concubines
+			AND = {
+				is_imperial_concubine_trigger = {
+					LIEGE = $HAREM_LIEGE$
+				}
+				$TARGET_CONSORT$ = {
+					trigger_if = {
+						limit = {
+							exists = $HAREM_LIEGE$.primary_spouse
+						}
+						this != $HAREM_LIEGE$.primary_spouse
+					}
+					NOT = {
+						is_ranked_consort_trigger = {
+							LIEGE = $HAREM_LIEGE$
+						}
+					}
+				}
+			}
 			#Spouses
 			AND = {
 				is_spouse_of = $HAREM_LIEGE$
@@ -646,6 +665,15 @@ is_head_of_the_harem_trigger = {
 					}
 				}
 				has_court_position = worthy_consort_court_position
+			}
+			# Imperial Concubine
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = imperial_concubine_court_position
+					}
+				}
+				has_court_position = imperial_concubine_court_position
 			}
 			# Other spouses (if there's any)
 			trigger_else_if = {
@@ -780,6 +808,15 @@ is_head_of_the_harem_trigger = {
 				}
 				is_high_consort_trigger = { LIEGE = $LIEGE$ }
 			}
+			# The Nine Concubines
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = imperial_concubine_court_position
+					}
+				}
+				has_court_position = imperial_concubine_court_position
+			}
 			# Secondary Spouses
 			trigger_else_if = {
 				limit = {
@@ -844,12 +881,48 @@ is_head_of_the_harem_trigger = {
 			trigger_else_if = {
 				limit = {
 					$LIEGE$ = {
+						employs_court_position = imperial_concubine_court_position
+					}
+				}
+				has_court_position = imperial_concubine_court_position
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
 						any_spouse = {
 							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
 						}
 					}
 				}
 				is_spouse_of = $LIEGE$
+			}
+			# Grandmother (only active if only unranked concubines exist)
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_ancestor = {
+							is_grandparent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_grandparent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
+			}
+			# Mother (only active if only unranked concubines exist)
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						any_parent = {
+							is_parent_of = $LIEGE$
+							is_active_harem_member_trigger = { LIEGE = $LIEGE$ }
+							NOT = { is_consort_of = $LIEGE$ }
+						}
+					}
+				}
+				is_parent_of = $LIEGE$
+				NOT = { is_consort_of = $LIEGE$ }
 			}
 			trigger_else = {
 				always = no
@@ -937,6 +1010,14 @@ is_head_of_the_harem_trigger = {
 					}
 				}
 				is_high_consort_trigger = { LIEGE = $LIEGE$ }
+			}
+			trigger_else_if = {
+				limit = {
+					$LIEGE$ = {
+						employs_court_position = imperial_concubine_court_position
+					}
+				}
+				has_court_position = imperial_concubine_court_position
 			}
 			trigger_else_if = {
 				limit = {
@@ -1040,8 +1121,8 @@ is_ranked_consort_trigger = {
 
 has_high_rank_consort_position_trigger = {
 	OR = {
-		has_imperial_concubine_position_trigger = yes
 		has_high_consort_position_trigger = yes
+		has_imperial_concubine_position_trigger = yes
 	}
 }
 
@@ -1054,6 +1135,7 @@ is_secondary_spouse_trigger = {
 		has_court_position = pure_consort_court_position
 		has_court_position = virtuous_consort_court_position
 		has_court_position = worthy_consort_court_position
+		has_court_position = imperial_concubine_court_position
 		any_spouse = {
 			primary_spouse ?= scope:harem_spouse
 		}
@@ -1062,7 +1144,7 @@ is_secondary_spouse_trigger = {
 is_regular_concubine_of = {
 	is_concubine_of = $LIEGE$
 	NOT = {
-		is_high_consort_trigger = {
+		is_ranked_consort_trigger = {
 			LIEGE = $LIEGE$
 		}
 	}
