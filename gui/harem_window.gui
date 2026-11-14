@@ -134,6 +134,19 @@ window = {
 								}
 							}
 						}
+
+						# THE NINE CONCUBINES (3x3 Dynamic Grid: 1 to 3 rows depending on count)
+						dynamicgridbox = {
+							name = "harem_nine_concubines_3x3_grid"
+							datamodel = "[GetPlayer.MakeScope.GetList('harem_nine_concubines_slots_list')]"
+							datamodel_wrap = 3
+							flipdirection = yes
+							visible = "[GetPlayer.MakeScope.Var('can_have_nine_concubines').IsSet]"
+
+							item = {
+								harem_imperial_concubine_pedestal = {}
+							}
+						}
 						harem_dynamicgrid = {
 							datamodel = "[GetPlayer.MakeScope.GetList('harem_top_two_consort_list')]"
 							datamodel_wrap = 2
@@ -429,7 +442,142 @@ types harem_types {
         }
     }
 
-	# Other consorts' grid
+	# Imperial Concubine Pedestal
+    type harem_imperial_concubine_pedestal = widget {
+        allow_outside = yes
+        size = { 155 190 }
+        datacontext = "[Scope.GetCharacter]"
+        datacontext = "[GetCourtPositionType( 'imperial_concubine_court_position' )]"
+
+        # STATE 1: POSITION IS FILLED
+        vbox = {
+            visible = "[Character.IsValid]"
+            margin_top = 20
+
+            text_single = {
+                text = "[Character.Custom('consort_rank_localization')]"
+                using = Font_Size_Small
+            }
+            text_single = {
+                text = "[Character.GetFirstNameNoTooltip]"
+                using = Font_Size_Small
+            }
+            
+            harem_portrait_head_small = {}
+
+            hbox = {
+                spacing = 5
+                widget = {
+                    size = { 35 35 }
+                    parentanchor = left
+                    coa_house_small = {
+                        datacontext = "[Character.GetHouse]"
+                        parentanchor = center
+                        scale = 0.57
+                    }
+                }
+                text_single = {
+                    text = "[Character.Custom('consort_favor_level')]"
+                    using = Font_Size_Medium
+                    margin_top = -5
+                }
+                text_single = {
+                    text = "consort_temperament"
+                    using = Font_Size_Medium
+                    tooltip = "consort_temperament_tooltip"
+                    margin_top = -5
+                }
+            }
+        }
+
+        # STATE 2: POSITION IS VACANT (Mirrors STATE 1)
+        vbox = {
+            visible = "[Not( Character.IsValid )]"
+            margin_top = 20
+
+            text_single = {
+                text = "[CourtPositionType.CalcTriggeredNameNoTooltip( GetPlayer )]"
+                using = Font_Size_Small
+                default_format = "#low"
+                
+                # TOOLTIP: Appears when hovering on the name
+                tooltip = "[CourtPositionType.CalcTriggeredDescription( GetPlayer )]" 
+            }
+            
+            text_single = {
+                text = "NOT_HIRED"
+                using = Font_Size_Small
+                default_format = "#weak"
+            }
+
+			widget = {
+                size = { 100 100 }
+                scissor = yes
+                
+                # Base Background
+                background = {
+                    using = Background_Area_Solid
+                    modify_texture = {
+                        texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+                        blend_mode = alphamultiply
+                        alpha = 0.2
+                        mirror = vertical
+                    }
+                }
+
+                # Outer Frame Overlay
+                background = {
+                    texture = "gfx/portraits/portrait_frame.dds"
+                    using = Color_Grey
+                    margin = { -4 -4 }
+                    alpha = 0.4
+                    modify_texture = {
+                        texture = "gfx/interface/component_masks/mask_fade_vertical.dds"
+                        blend_mode = alphamultiply
+                        mirror = vertical
+                    }
+                }
+
+                # Clickable Appoint Button with unknown silhouette
+                button = {
+                    parentanchor = bottom|hcenter
+                    widgetanchor = bottom|hcenter
+                    position = { 0 0 }
+                    size = { 109 150 }
+                    gfxtype = framedbuttongfx
+                    effectname = "NoHighlight"
+                    texture = "gfx/portraits/unknown_portraits/button_unknown_small.dds"
+                    framesize = { 564 780 }
+                    upframe = 1
+                    overframe = 2
+
+                    onclick = "[CourtPositionType.OpenAppointWindow( GetPlayer.Self )]"
+                    tooltip = "[CourtPositionType.GetDescription]"
+
+                    button_icon = {
+                        parentanchor = bottom|hcenter
+                        widgetanchor = center
+                        position = { 0 -32 }
+                        size = { 32 32 }
+                        alwaystransparent = yes
+                        texture = "gfx/interface/icons/flat_icons/plus.dds"
+                    }
+                }
+            }
+
+            hbox = {
+                spacing = 5
+                widget = {
+                    size = { 35 35 }
+                    icon = {
+                        parentanchor = center
+                        size = { 28 28 }
+                        texture = "[CourtPositionType.GetIcon]"
+                    }
+                }
+            }
+        }
+    }
     type harem_dynamicgrid = dynamicgridbox {
 		name = "harem_grid"
 

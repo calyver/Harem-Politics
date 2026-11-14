@@ -1,4 +1,4 @@
-﻿calyver_toggle_harem_window_effect = {
+calyver_toggle_harem_window_effect = {
 	if = {
 		limit = {
 			has_variable = show_harem_window
@@ -9,6 +9,7 @@
 		clear_variable_list = harem_primary_spouse_list
 		clear_variable_list = harem_top_four_consort_list
 		clear_variable_list = harem_sifei_slots_list
+		clear_variable_list = harem_nine_concubines_slots_list
 		clear_variable_list = harem_top_two_consort_list
 		clear_variable_list = harem_top_three_consort_list
 		clear_variable_list = harem_consort_list
@@ -43,6 +44,12 @@
 			}
 			remove_variable = can_have_four_consorts
 		}
+		if = {
+			limit = {
+				has_variable = can_have_nine_concubines
+			}
+			remove_variable = can_have_nine_concubines
+		}
 		#Remove variables
 		if = { #Can't visit the harem
 			limit = {
@@ -72,6 +79,7 @@ calyver_update_harem_list_effect = {
 	clear_variable_list = harem_primary_spouse_list
 	clear_variable_list = harem_top_four_consort_list
 	clear_variable_list = harem_sifei_slots_list
+	clear_variable_list = harem_nine_concubines_slots_list
 	clear_variable_list = harem_top_two_consort_list
 	clear_variable_list = harem_top_three_consort_list
 	clear_variable_list = harem_consort_list
@@ -105,6 +113,12 @@ calyver_update_harem_list_effect = {
 			has_variable = can_have_four_consorts
 		}
 		remove_variable = can_have_four_consorts
+	}
+	if = {
+		limit = {
+			has_variable = can_have_nine_concubines
+		}
+		remove_variable = can_have_nine_concubines
 	}
 	#Remove variables
 	if = { #Can't visit the harem
@@ -254,6 +268,17 @@ calyver_update_harem_list_effect = {
 			set_variable = can_have_four_consorts
 		}
 		calyver_setup_high_consort_slot_effect = yes
+		if = {
+			limit = {
+				scope:harem_liege = {
+					can_have_imperial_concubines_trigger = yes
+				}
+			}
+			scope:harem_liege = {
+				set_variable = can_have_nine_concubines
+			}
+			calyver_setup_nine_concubines_slot_effect = yes
+		}
 	}
 	# Branch B: Non-Four Consorts (Muslim, Seniority, or Standard realms)
 	else = {
@@ -1043,14 +1068,22 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-					# For China, the Four Consorts are exclusively displayed in Tier 2
+					# For China, the Four Consorts and Nine Concubines are displayed in their own grids
 					trigger_if = {
 						limit = {
 							scope:harem_liege = {
 								can_have_four_consorts_trigger = yes
 							}
 						}
-						has_high_consort_position_trigger = yes
+						OR = {
+							has_high_consort_position_trigger = yes
+							AND = {
+								scope:harem_liege = {
+									can_have_imperial_concubines_trigger = yes
+								}
+								has_imperial_concubine_position_trigger = yes
+							}
+						}
 					}
 				}
 				count >= 1
@@ -1085,14 +1118,22 @@ calyver_update_harem_list_effect = {
 						}
 					}
 					this = scope:harem_head
-					# For China, the Four Consorts are exclusively displayed in Tier 2
+					# For China, the Four Consorts and Nine Concubines are displayed in their own grids
 					trigger_if = {
 						limit = {
 							scope:harem_liege = {
 								can_have_four_consorts_trigger = yes
 							}
 						}
-						has_high_consort_position_trigger = yes
+						OR = {
+							has_high_consort_position_trigger = yes
+							AND = {
+								scope:harem_liege = {
+									can_have_imperial_concubines_trigger = yes
+								}
+								has_imperial_concubine_position_trigger = yes
+							}
+						}
 					}
 				}
 			}
@@ -1504,6 +1545,318 @@ calyver_setup_high_consort_slot_effect = {
 	calyver_empty_high_consort_position_effect = { COURT_POS = pure_consort }
 	calyver_empty_high_consort_position_effect = { COURT_POS = virtuous_consort }
 	calyver_empty_high_consort_position_effect = { COURT_POS = worthy_consort }
+}
+
+calyver_setup_nine_concubines_slot_effect = {
+	# 1. Add all active Imperial Concubines (ordered by favor / age)
+	ordered_court_position_holder = {
+		type = imperial_concubine_court_position
+		order_by = {
+			# Favor
+			if = {
+				limit = {
+					has_variable = favor
+				}
+				add = var:favor
+				divide = 50
+			}
+
+			# Background
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier >= tier_empire
+					}
+				}
+				add = 25
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_kingdom
+					}
+				}
+				add = 20
+			}
+			if = { #Dominant families
+				limit = {
+					any_close_family_member = {
+						government_has_mechanic = administrative
+						house ?= { is_dominant_family = yes }
+						OR = {
+							AND = {
+								exists = scope:harem_liege.top_liege
+								top_liege ?= scope:harem_liege.top_liege
+							}
+							AND = {
+								is_vassal_or_below_of = scope:harem_liege
+							}
+						}
+					}
+				}
+				add = 15
+			}
+			else_if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_duchy
+					}
+				}
+				add = 15
+			}
+
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_county
+					}
+				}
+				add = 10
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						highest_held_title_tier = tier_barony
+					}
+				}
+				add = 5
+			}
+			if = { # Powerful families
+				limit = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:harem_liege
+							AND = {
+								exists = scope:harem_liege.liege
+								liege ?= scope:harem_liege.liege
+								is_powerful_vassal_of = scope:harem_liege.liege
+							}
+						}
+						NAND = {
+							government_has_mechanic = administrative
+							house ?= { is_dominant_family = yes }
+							OR = {
+								AND = {
+									exists = scope:harem_liege.top_liege
+									top_liege ?= scope:harem_liege.top_liege
+								}
+								AND = {
+									is_vassal_or_below_of = scope:harem_liege
+								}
+							}
+						}
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						OR = {
+							is_councillor_of = scope:harem_liege
+							AND = {
+								exists = scope:harem_liege.liege
+								liege ?= scope:harem_liege.liege
+								is_councillor_of = scope:harem_liege.liege
+							}
+						}
+						NAND = {
+							government_has_mechanic = administrative
+							house ?= { is_dominant_family = yes }
+							OR = {
+								AND = {
+									exists = scope:harem_liege.top_liege
+									top_liege ?= scope:harem_liege.top_liege
+								}
+								AND = {
+									is_vassal_or_below_of = scope:harem_liege
+								}
+							}
+						}
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_knight_of = scope:harem_liege
+					}
+				}
+				add = {
+					value = 2
+					if = {
+						limit = {
+							any_close_family_member = {
+								is_knight_of = scope:harem_liege
+								is_acclaimed = yes
+							}
+						}
+						add = {
+							value = 5
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					any_close_family_member = {
+						is_vassal_of = scope:harem_liege
+					}
+				}
+				add = 5
+			}
+			if = {
+				limit = {
+					scope:harem_liege.faith = {
+						NOT = {
+							religion = religion:islam_religion
+						}
+					}
+					is_lowborn = no
+				}
+				add = 10
+			}
+
+			#Culture and religion
+			if = {
+				limit = {
+					culture = scope:harem_liege.culture
+				}
+				add = 15
+			}
+			if = {
+				limit = {
+					faith = scope:harem_liege.faith
+				}
+				add = 15
+			}
+
+			#Number of children
+			if = {
+				limit = {
+					any_child = {
+						is_child_of = scope:harem_liege
+						is_alive = yes
+						count > 0
+					}
+				}
+				every_child = {
+					limit = {
+						is_child_of = scope:harem_liege
+						is_alive = yes
+					}
+					add = {
+						value = 2
+						if = { #Eligible heirs
+							limit = {
+								character_gender_can_inherit_from_trigger = { CHARACTER = scope:harem_liege }
+							}
+							add = 1
+						}
+						if = { #Closer to the throne
+							limit = {
+								scope:harem_liege.primary_title = {
+									place_in_line_of_succession = {
+										target = prev
+										value <= 3
+									}
+								}
+							}
+							add = 1
+						}
+						if = { #Player heir
+							limit = {
+								is_player_heir_of = scope:harem_liege
+							}
+							add = 2
+						}
+						if = { # Muslims value heirs a lot
+							limit = {
+								scope:harem_liege.faith.religion = religion:islam_religion
+							}
+							add = 4
+						}
+					}
+				}
+			}
+		}
+		scope:harem_liege = {
+			add_to_variable_list = {
+				name = harem_nine_concubines_slots_list
+				target = prev
+			}
+		}
+	}
+	# 2. Add empty slots to complete the target rows
+	scope:harem_liege = {
+		# Case A: 6 to 8 consorts -> 3 rows (9 frames total)
+		if = {
+			limit = {
+				any_court_position_holder = {
+					type = imperial_concubine_court_position
+					count >= 6
+				}
+			}
+			if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 6 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_3 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 7 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 8 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+			}
+		}
+		# Case B: 3 to 5 consorts -> 2 rows (6 frames total)
+		else_if = {
+			limit = {
+				any_court_position_holder = {
+					type = imperial_concubine_court_position
+					count >= 3
+				}
+			}
+			if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 3 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_3 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 4 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 5 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+			}
+		}
+		# Case C: 0 to 2 consorts -> 1 row (3 frames total)
+		else = {
+			if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 0 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_3 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 1 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_2 }
+			}
+			else_if = {
+				limit = { any_court_position_holder = { type = imperial_concubine_court_position count = 2 } }
+				add_to_variable_list = { name = harem_nine_concubines_slots_list target = flag:empty_ic_1 }
+			}
+		}
+	}
 }
 visit_harem_effect = {
 	if = {
