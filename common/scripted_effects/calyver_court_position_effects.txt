@@ -1485,6 +1485,327 @@ high_consort_event_appointment_effect = {
 		}
 	}
 }
+
+# Nine Concubines effects
+imperial_concubine_gained_court_position_effect = {
+	scope:liege = {
+		save_scope_as = actor
+		primary_spouse ?= {
+			save_scope_as = liege_actor_primary_spouse
+		}
+		scope:employee = {
+			save_scope_as = imperial_concubine
+		}
+		hidden_effect = {
+			# Shared effects
+			every_courtier = {
+				limit = {
+					this != scope:employee
+					is_active_harem_member_trigger = {
+						LIEGE = scope:liege
+					}
+				}
+				add_to_list = harem_members_list
+			}
+			every_in_list = {
+				list = harem_members_list
+				if = {
+					limit = { # Brand new promotion
+						scope:imperial_concubine = {
+							NOR = {
+								has_demoted_or_divorced_as_ps_opinion_trigger = {
+									TARGET = scope:liege
+								}
+								has_demoted_or_divorced_as_hc_opinion_trigger = {
+									TARGET = scope:liege
+								}
+							}
+							OR = {
+								has_relation_lover = scope:liege
+								has_relation_soulmate = scope:liege
+
+								has_character_modifier = favored_consort_modifier
+								has_character_modifier = beloved_consort_modifier
+								has_character_modifier = favor_boost_modifier
+							}
+						}
+					}
+					# Update their opinion
+					if = {
+						limit = {
+							NOR = {
+								has_any_good_relationship_with_character_trigger = { CHARACTER = scope:employee }
+
+								has_relation_soulmate = scope:liege
+
+								has_demoted_or_divorced_as_ps_opinion_trigger = {
+									TARGET = scope:liege
+								}
+								has_demoted_or_divorced_as_hc_opinion_trigger = {
+									TARGET = scope:liege
+								}
+							}
+							opinion = {
+								target = scope:employee
+								value <= low_positive_opinion
+							}
+						}
+						# Update the head of the harem's opinion on the Grand Consort
+						if = { # The heads will feel threatened if the Imperial Concubine is highly favored
+							limit = {
+								OR = {
+									is_head_of_the_harem_trigger = {
+										LIEGE = scope:liege
+									}
+									is_ranked_consort_trigger = {
+										LIEGE = scope:liege
+									}
+									scope:liege.primary_spouse ?= this
+									AND = {
+										NOT = { is_consort_of = scope:liege }
+										trigger_if = {
+											limit = {
+												hp_accepts_harems = no
+											}
+											OR = {
+												has_trait = ambitious
+												has_trait = arrogant
+												has_trait = greedy
+											}
+										}
+										trigger_else = {
+											hp_accepts_harems = yes
+										}
+									}
+								}
+								OR = {
+									has_trait = craven
+									has_trait = paranoid
+									has_trait = shy
+
+									harem_politics_evil_consort_trigger = yes
+									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:employee }
+								}
+								NOT = { has_trait = trusting }
+							}
+							add_opinion = {
+								target = scope:employee
+								modifier = threatening_consort_opinion
+								opinion = -10
+							}
+						}
+						# Others will lose opinion of the Imperial Concubine is favored
+						else_if = {
+							limit = {
+								is_consort_of = scope:liege
+								harem_politics_evil_consort_trigger = yes
+								trigger_if = {
+									limit = {
+										hp_accepts_harems = no
+									}
+									OR = {
+										has_trait = ambitious
+										has_trait = arrogant
+										has_trait = greedy
+									}
+								}
+								trigger_else = {
+									hp_accepts_harems = yes
+								}
+								NOR = {
+									is_head_of_the_harem_trigger = {
+										LIEGE = scope:liege
+									}
+									is_ranked_consort_trigger = {
+										LIEGE = scope:liege
+									}
+									scope:liege.primary_spouse ?= this
+									has_opinion_modifier = {
+										target = scope:employee
+										modifier = envy_consort_opinion
+									}
+									has_opinion_modifier = {
+										target = scope:employee
+										modifier = threatening_consort_opinion
+									}
+									has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:liege }
+								}
+							}
+							add_opinion = {
+								target = scope:employee
+								modifier = envy_consort_opinion
+							}
+						}
+					}
+					if = {
+						limit = {
+							scope:employee = {
+								harem_politics_evil_consort_trigger = yes
+								OR = {
+									has_character_modifier = beloved_consort_modifier
+									has_character_modifier = favor_boost_modifier
+									has_relation_lover = scope:liege
+									has_relation_soulmate = scope:liege
+								}
+							}
+							is_consort_of = scope:liege
+						}
+						stress_impact = {
+							craven = miniscule_stress_impact_gain
+							shy = miniscule_stress_impact_gain
+							paranoid = miniscule_stress_impact_gain
+						}
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = { 
+				has_trait = just
+				has_imprisonment_reason = scope:employee
+			}
+			stress_impact = {
+				just = miniscule_stress_impact_gain
+			}
+		}
+	}
+	scope:employee = {
+		if = { # They're not a demoted PS
+			limit = {
+				NOT = {
+					has_demoted_or_divorced_as_ps_opinion_trigger = {
+						TARGET = scope:liege
+					}
+				}
+			}
+			clear_negative_consort_modifiers_effect = yes # They're no longer unfavored
+			if = { # Newly appointed HC (true promotion)
+				limit = {
+					NOT = {
+						has_demoted_or_divorced_opinion_trigger = {
+							TARGET = scope:liege
+						}
+					}
+				}
+				if = { # They weren't forced into concubinage
+					limit = {
+						NOT = {
+							has_opinion_modifier = {
+								target = scope:liege
+								modifier = forced_me_concubine_marriage_opinion
+							}
+						}
+					}
+					if = {
+						limit = {
+							OR = {
+								has_trait = ambitious
+								has_trait = arrogant
+								has_trait = greedy
+								hp_accepts_harems = yes
+							}
+						}
+						add_opinion = {
+							target = scope:liege
+							modifier = thankful_consort_opinion
+						}
+					}
+
+					hidden_effect = { # Notify relatives
+						every_close_family_member = {
+							limit = {
+								this != scope:liege
+							}
+							if = {
+								limit = {
+									NOR = {
+										has_opinion_modifier = {
+											target = scope:liege
+											modifier = forced_family_concubine_marriage_opinion
+										}
+										has_opinion_modifier = {
+											target = scope:liege
+											modifier = thankful_consort_relative_opinion
+										}
+									}
+									hp_accepts_harems = yes
+								}
+								add_opinion = {
+									target = scope:liege
+									modifier = thankful_consort_relative_opinion
+								}
+							}
+							if = {
+								limit = {
+									is_ai = no
+								}
+								send_interface_message = {
+									type = event_generic_good_text 
+									title = grand_consort_promotion_t 
+									right_icon = scope:employee
+									left_icon = scope:liege
+									custom_tooltip = $TITLE$_consort_promotion_toast_desc_hp
+								}
+							}
+						}
+					}
+				}
+				# Clan unity
+				add_clan_unity_interaction_effect = {
+					CHARACTER = scope:liege
+					TARGET = scope:employee
+					VALUE = minor_unity_gain
+					DESC = clan_unity_promotion.desc
+					REVERSE_NON_HOUSE_TARGET = no
+				}
+				# House relations
+				calyver_house_relations_effect = {
+					ACTOR = scope:liege
+					RECIPIENT = scope:employee
+					VALUE = house_relation_improve_minor_value
+					REASON = harem_promoted_increase
+					TITLE = scope:dummy_gender
+				}
+				# Favor
+				calyver_favor_huge_gain_effect = yes
+				# Prestige
+				add_prestige = { value = minor_prestige_gain }
+				high_consort_event_appointment_effect = yes
+			}
+			else_if = { # Reinstatement (for previously demoted HC)
+				limit = {
+					has_demoted_or_divorced_opinion_trigger = {
+						TARGET = scope:liege
+					}
+				}
+				if = { # From GC to HC is a quasi-demotion
+					limit = {
+						OR = {
+							has_opinion_modifier = {
+								modifier = demoted_me_as_gc
+								target = scope:liege
+							}
+							has_opinion_modifier = {
+								modifier = divorced_me_as_gc
+								target = scope:liege
+							}
+						}
+					}
+					save_scope_value_as = {
+						name = opinion
+						value = -15
+					}
+				}
+				consort_reinstatement_effect = {
+					REINSTATOR = scope:liege
+					REINSTATED = scope:employee
+				}
+			}
+		}
+	}
+}
+
 # Task effects #
 # Grand Consort tasks effects#
 grand_consort_improve_relationship_effect = {
