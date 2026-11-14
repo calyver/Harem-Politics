@@ -341,7 +341,7 @@ grand_consort_gained_court_position_effect = {
 					limit = { scope:liege.primary_title.tier > tier_empire }
 					add_prestige = { value = major_prestige_gain }
 				}
-				high_consort_event_appointment_effect = yes
+				ranked_consort_event_appointment_effect = yes
 			}
 			else_if = { # Reinstatement (for previously demoted GC/SS)
 				limit = {
@@ -952,7 +952,7 @@ high_consort_gained_court_position_effect = {
 				calyver_favor_huge_gain_effect = yes
 				# Prestige
 				add_prestige = { value = minor_prestige_gain }
-				high_consort_event_appointment_effect = yes
+				ranked_consort_event_appointment_effect = yes
 			}
 			else_if = { # Reinstatement (for previously demoted HC)
 				limit = {
@@ -1196,7 +1196,7 @@ high_consort_revoked_court_position_effect = {
 }
 high_consort_invalidated_court_position_effect = {
 }
-high_consort_event_appointment_effect = {
+ranked_consort_event_appointment_effect = {
 	hidden_effect = {
 		if = {
 			limit = {
@@ -1227,7 +1227,7 @@ high_consort_event_appointment_effect = {
 							has_any_good_relationship_with_character_trigger = { CHARACTER = scope:liege }
 						}
 					}
-					is_high_consort_trigger = {
+					is_ranked_consort_trigger = {
 						LIEGE = scope:liege
 					}
 				}
@@ -1432,8 +1432,14 @@ high_consort_event_appointment_effect = {
 					# Nothing
 					7 = {
 						modifier = {
-							has_character_flag = appointed_hc_event_flag
+							has_character_flag = appointed_rc_event_flag
 							add = -2
+						}
+						modifier = {
+							scope:employee = {
+								has_imperial_concubine_position_trigger = yes
+							}
+							add = 2
 						}
 						modifier = {
 							scope:employee = {
@@ -1671,16 +1677,19 @@ imperial_concubine_gained_court_position_effect = {
 		}
 	}
 	scope:employee = {
-		if = { # They're not a demoted PS
+		if = { # They're not a demoted PS or HC
 			limit = {
-				NOT = {
+				NOR = {
 					has_demoted_or_divorced_as_ps_opinion_trigger = {
+						TARGET = scope:liege
+					}
+					has_demoted_or_divorced_as_hc_opinion_trigger = {
 						TARGET = scope:liege
 					}
 				}
 			}
 			clear_negative_consort_modifiers_effect = yes # They're no longer unfavored
-			if = { # Newly appointed HC (true promotion)
+			if = { # Newly appointed IC (true promotion)
 				limit = {
 					NOT = {
 						has_demoted_or_divorced_opinion_trigger = {
@@ -1734,6 +1743,7 @@ imperial_concubine_gained_court_position_effect = {
 								add_opinion = {
 									target = scope:liege
 									modifier = thankful_consort_relative_opinion
+									opinion = 5
 								}
 							}
 							if = {
@@ -1745,7 +1755,7 @@ imperial_concubine_gained_court_position_effect = {
 									title = grand_consort_promotion_t 
 									right_icon = scope:employee
 									left_icon = scope:liege
-									custom_tooltip = $TITLE$_consort_promotion_toast_desc_hp
+									custom_tooltip = imperial_concubine_promotion_toast_desc_hp
 								}
 							}
 						}
@@ -1755,7 +1765,7 @@ imperial_concubine_gained_court_position_effect = {
 				add_clan_unity_interaction_effect = {
 					CHARACTER = scope:liege
 					TARGET = scope:employee
-					VALUE = minor_unity_gain
+					VALUE = miniscule_unity_gain
 					DESC = clan_unity_promotion.desc
 					REVERSE_NON_HOUSE_TARGET = no
 				}
@@ -1763,38 +1773,20 @@ imperial_concubine_gained_court_position_effect = {
 				calyver_house_relations_effect = {
 					ACTOR = scope:liege
 					RECIPIENT = scope:employee
-					VALUE = house_relation_improve_minor_value
+					VALUE = 0.05
 					REASON = harem_promoted_increase
 					TITLE = scope:dummy_gender
 				}
 				# Favor
-				calyver_favor_huge_gain_effect = yes
+				calyver_favor_big_gain_effect = yes
 				# Prestige
 				add_prestige = { value = minor_prestige_gain }
-				high_consort_event_appointment_effect = yes
+				ranked_consort_event_appointment_effect = yes
 			}
-			else_if = { # Reinstatement (for previously demoted HC)
+			else_if = { # Reinstatement (for previously demoted IC)
 				limit = {
 					has_demoted_or_divorced_opinion_trigger = {
 						TARGET = scope:liege
-					}
-				}
-				if = { # From GC to HC is a quasi-demotion
-					limit = {
-						OR = {
-							has_opinion_modifier = {
-								modifier = demoted_me_as_gc
-								target = scope:liege
-							}
-							has_opinion_modifier = {
-								modifier = divorced_me_as_gc
-								target = scope:liege
-							}
-						}
-					}
-					save_scope_value_as = {
-						name = opinion
-						value = -15
 					}
 				}
 				consort_reinstatement_effect = {
