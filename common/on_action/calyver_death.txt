@@ -184,6 +184,66 @@ calyver_on_death_on_action = {
 						days = 2
 					}
 				}
+				add_to_list = dowager_consort_list
+			}
+			if = {
+				limit = {
+					any_in_list = {
+						list = dowager_consort_list
+						NOT = {
+							has_character_flag = devoted_widow_flag
+						}
+						count >= 3
+					}
+					any_vassal = {
+						government_has_flag = government_is_theocracy
+					}
+				}
+				# Then we look for a suitable temple for the nuns
+				every_vassal = {
+					limit = {
+						government_has_flag = government_is_theocracy
+					}
+					add_to_list = temple_holders_list
+				}
+				ordered_in_list = {
+					list = temple_holders_list
+					order_by = {
+						value = 1
+						# Priority: Same faith as court owner
+						if = {
+							limit = {
+								faith = scope:dead_relation.faith
+							}
+							add = 20
+						}
+						if = {
+							limit = {
+								rite = scope:dead_relation.rite
+							}
+							add = 20
+						}
+						# Priority: Court chaplain or clergy
+						if = {
+							limit = {
+								has_council_position = councillor_court_chaplain
+							}
+							add = 20
+						}
+						if = {
+							limit = {
+								is_clergy = yes
+							}
+							add = 10
+						}
+					}
+					max = 1
+					check_range_bounds = no
+					save_scope_as = temple_liege
+				}
+			}
+			every_in_list = {
+				list = dowager_consort_list
 				trigger_event = {
 					on_action = calyver_imperial_consort_management_on_action
 					days = 1
@@ -207,9 +267,44 @@ calyver_imperial_consort_management_on_action = {
 			}
 			add_trait = devoted_widow
 			remove_character_flag = devoted_widow_flag
+			if = { # Parents go to their children
+				limit = {
+					court_owner ?= {
+						NOT = {
+							is_child_of = prev
+						}
+					}
+					any_child = {
+						is_child_of = scope:dead_relation
+						highest_held_title_tier >= tier_barony
+						is_landed_or_landless_administrative_or_theocratic = yes
+					}
+				}
+				ordered_child = {
+					limit = {
+						is_child_of = scope:dead_relation
+						highest_held_title_tier >= tier_barony
+						is_landed_or_landless_administrative_or_theocratic = yes
+					}
+					order_by = highest_held_title_tier
+					max = 1
+					check_range_bounds = no
+					add_courtier = prev
+				}
+			}
 		}
 		else = {
 			add_trait = devoted
+			# Send them to the imperial nunnery
+			if = {
+				limit = {
+					exists = scope:temple_liege
+				}
+				# Check if this court already identified the nunnery holder
+				scope:temple_liege = {
+					add_courtier = prev
+				}
+			}
 		}
 	}
 }
