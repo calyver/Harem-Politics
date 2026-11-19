@@ -1971,16 +1971,10 @@ offer_concubine = {
 			}
 		}
 
-		trigger_if = { #Landless adventurers check range
-			limit = {
-				scope:puppet_or_actor = {
-					is_landless_adventurer = yes
-				}
-			}
-			ep3_laamp_diplo_range_trigger = {
-				TARGET = scope:recipient
-				LAAMP = scope:puppet_or_actor
-			}
+		#limit range for landless adventurers/merchants
+		exceptional_diplo_range_trigger = {
+			CHARACTER = scope:puppet_or_actor
+			TARGET = scope:recipient
 		}
 	}
 
@@ -2318,6 +2312,7 @@ offer_concubine = {
 						has_character_modifier = forgotten_consort_modifier
 					}
 					has_trait = chaste
+					has_trait = eunuch
 					has_trait_with_flag = age_related_ailment
 					has_trait_with_flag = can_not_marry
 					has_trait_with_flag = illness
@@ -2426,7 +2421,7 @@ offer_concubine = {
 
 		modifier = { # Basic Filtering - slightly modified
 			add = {
-				value = 15
+				value = 20
 				if = {
 					limit = {
 						scope:recipient = {
@@ -2500,7 +2495,7 @@ offer_concubine = {
 
 		modifier = { # If secondary_recipient could be an agent...
 			add = 55
-			scope:puppet_or_actor = {
+			scope:actor = {
 				any_scheme = {
 					scheme_target_character ?= scope:recipient
 					save_temporary_scope_as = scheme_check
@@ -2514,8 +2509,8 @@ offer_concubine = {
 		modifier = { # More likely if it's a neighboring ruler that you want to like you
 			add = 50
 			scope:recipient = {
-				any_neighboring_top_liege_realm_owner = { this = scope:puppet_or_actor }
-				max_military_strength > scope:puppet_or_actor.max_military_strength
+				any_neighboring_top_liege_realm_owner = { this = scope:actor }
+				max_military_strength > scope:actor.max_military_strength
 			}
 		}
 
@@ -2827,7 +2822,7 @@ offer_concubine = {
 		# Vanilla
 		modifier = { # No if it's a same-sex concubinage and actor isn't accepting of it
 			factor = 0
-			scope:puppet_or_actor = {
+			scope:actor = {
 				allowed_to_marry_same_sex_trigger = no
 				scope:recipient = { sex_same_as = scope:secondary_recipient }
 			}
@@ -2843,9 +2838,11 @@ offer_concubine = {
 
 		modifier = { # Age considerations - slightly changed
 			factor = 0
-			OR = {
-				scope:secondary_recipient.age >= 30 # Concubines are meant to be young...
-				scope:secondary_recipient.age > scope:recipient.age_plus_5
+			scope:secondary_recipient = {
+				OR = {
+					age >= 30 # Concubines are meant to be young...
+					age > scope:recipient.age_plus_5
+				}
 			}
 		}
 
@@ -2876,7 +2873,7 @@ offer_concubine = {
 			scope:recipient = {
 				faith = {
 					faith_hostility_level = {
-						target = scope:puppet_or_actor.faith
+						target = scope:actor.faith
 						value >= faith_hostile_level
 					}
 				}
