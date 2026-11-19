@@ -433,3 +433,29 @@ can_be_taken_as_muslim_concubine_trigger = {
 		}
 	}
 }
+
+# The Li Clan stopped marrying empresses / official wives in the late Tang
+is_tang_imperial_line_trigger = {
+	# 1. Check that the Dynastic Cycle is currently NOT in a stable era
+	situation:dynastic_cycle ?= { # Verify exact situation key in common/situations/
+		NOT = { has_situation_top_phase_parameter = era_type_stable }
+	}
+
+	# 2. Target belongs to the Li (Tang) dynasty
+	$CHARACTER$.dynasty ?= dynasty:li_674E_87
+
+	# 3. Tang holds the Mandate, and target is the Emperor or top 4 dynastic heirs
+	title:h_china.holder ?= {
+		dynasty ?= dynasty:li_674E_87
+		OR = {
+			this = $CHARACTER$
+			AND = {
+				exists = player_heir
+				player_heir_position = {
+					target = $CHARACTER$
+					value <= 3 # 0, 1, 2, 3 = 1st through 4th in line
+				}
+			}
+		}
+	}
+}
