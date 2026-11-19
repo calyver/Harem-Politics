@@ -236,6 +236,23 @@ marry_off_interaction = {
 				}
 			}
 		}
+
+		gold = {
+			value = 0
+			if = {
+				limit = {
+					exists = scope:puppet_or_actor
+					exists = scope:recipient
+					scope:puppet_or_actor = {
+						government_has_flag = government_is_merchant
+						is_ai = no
+					}
+					scope:recipient = { NOT = { government_has_flag = government_is_merchant } }
+					scope:secondary_recipient ?= { is_lowborn = no }
+				}
+				add = merchant_marriage_gold_value
+			}
+		}
 	}
 
 	interface_priority = 60
@@ -302,6 +319,46 @@ marry_off_interaction = {
 
 	has_valid_target_showing_failures_only = {
 		marriage_interaction_valid_target_trigger = yes  #Checks marriage status, betrothed, gender, consanguinity, faith hostility etc.
+
+		#Merchants can only marry outside the merchant houses after a patron marriage request, or when already betrothed
+		trigger_if = {
+			limit = {
+				scope:puppet_or_actor = {
+					government_has_flag = government_is_merchant
+					is_ai = no
+				}
+			}
+			custom_tooltip = {
+				text = merchant_marriage_need_request
+				OR = {
+					scope:recipient = { government_has_flag = government_is_merchant }
+					scope:puppet_or_actor = {
+						is_target_in_variable_list = {
+							name = patron_marriage
+							target = scope:recipient
+						}
+					}
+					scope:recipient = {
+						is_betrothed = yes
+						betrothed = {
+							OR = {
+								scope:puppet_or_actor = this
+								scope:secondary_actor ?= this
+							}
+						}
+					}
+					scope:secondary_recipient ?= {
+						is_betrothed = yes
+						betrothed = {
+							OR = {
+								scope:puppet_or_actor = this
+								scope:secondary_actor ?= this
+							}
+						}
+					}
+				}
+			}
+		}
 
 		#Diplomatic availability & prison (located here because these will never be set at the start)
 		scope:recipient = {
@@ -387,9 +444,45 @@ marry_off_interaction = {
 			}
 			if = {
 				limit = {
+					government_has_flag = government_is_merchant
+					is_ai = no
+					scope:recipient = {
+						NOT = { government_has_flag = government_is_merchant }
+					}
+					scope:secondary_recipient ?= { is_lowborn = no }
+				}
+				scope:recipient = {
+					add_gold = merchant_marriage_gold_value
+				}
+				if = {
+					limit = {
+						scope:secondary_recipient = {
+							OR = {
+								this = scope:recipient
+								is_close_or_extended_family_of = scope:recipient
+							}
+						}
+					}
+					add_prestige = merchant_marriage_prestige_value
+				}
+			}
+			if = {
+				limit = {
 					has_variable = grand_wedding_promise_pending
 				}
 				remove_variable = grand_wedding_promise_pending
+			}
+			if = {
+				limit = {
+					is_target_in_variable_list = {
+						name = patron_marriage
+						target = scope:recipient
+					}
+				}
+				remove_list_variable = {
+					name = patron_marriage
+					target = scope:recipient
+				}
 			}
 		}
 	}
@@ -406,10 +499,21 @@ marry_off_interaction = {
 				}
 				remove_variable = grand_wedding_promise_pending
 			}
+			if = {
+				limit = {
+					government_has_flag = government_is_merchant
+					is_ai = no
+					scope:recipient = {
+						NOT = { government_has_flag = government_is_merchant }
+					}
+					scope:secondary_recipient ?= { is_lowborn = no }
+				}
+				add_gold = merchant_marriage_gold_value
+			}
 		}
 
 		# If we're a clan this interaction affects unity
-		add_clan_unity_interaction_effect = {
+		add_house_unity_interaction_effect = {
 			CHARACTER = scope:puppet_or_actor
 			TARGET = scope:recipient
 			VALUE = medium_unity_loss
@@ -425,12 +529,12 @@ marry_off_interaction = {
 	ai_accept = {
 		base = 0 # Should be 0 for all interactions
 
-		marriage_ai_accept_modifier = yes
-
 		# Unity modifiers
 		evaluate_action_increasing_house_unity = {
 			VALUE = 100
 		}
+
+		marriage_ai_accept_modifier = yes
 	}
 
 	send_option = {
