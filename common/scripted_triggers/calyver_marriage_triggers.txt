@@ -9,7 +9,67 @@ can_marry_trigger = {
 	#To account for a person marrying their concubines please use can_marry_character_trigger
 }
 
+###############################
+# MOURNING CONCUBINE HELPERS  #
+###############################
+
+# Is the TAKER (scope:puppet_or_actor) blocked from taking concubines by mourning?
+# ROOT = irrelevant; this checks the taker in $CHARACTER$ param
+# Returns yes = blocked, no = allowed
+mourning_blocks_taker_from_concubinage_trigger = {
+	$CHARACTER$ = {
+		has_character_modifier = mourner_modifier
+	}
+}
+
+# Is ROOT (the potential concubine) blocked from being taken as a concubine by $TAKER$ due to mourning?
+# ROOT = potential concubine
+# $TAKER$ = the character who would take/receive the concubine
+# Returns yes = blocked, no = allowed
+#
+# RULES:
+# - A mourning character who is imprisoned by a FOREIGN ruler can still be taken (captor doesn't care)
+# - A mourning character who is your OWN courtier cannot be taken during mourning
+# - A mourning character who was formerly a consort of the taker's parent cannot be taken during mourning
+# - A non-mourning character is never blocked by this trigger
+mourning_blocks_target_from_concubinage_trigger = {
+	trigger_if = {
+		limit = {
+			has_character_modifier = mourner_modifier
+		}
+		OR = {
+			# Block: they are your own courtier (you respect your court's mourning)
+			AND = {
+				is_courtier_of = $TAKER$
+				NOT = { is_imprisoned_by = $TAKER$ }
+			}
+			# Block: they are a former consort of the taker's parent (parent's widow protection)
+			OR = {
+				any_former_spouse = {
+					even_if_dead = yes
+					any_child = {
+						this = $TAKER$
+					}
+				}
+				any_former_concubinist = {
+					even_if_dead = yes
+					any_child = {
+						this = $TAKER$
+					}
+				}
+			}
+		}
+	}
+	# If they're mourning BUT imprisoned by a foreign ruler → NOT blocked (trigger passes)
+	# If they're not mourning → NOT blocked (trigger_if doesn't fire, passes)
+}
+
+####################################
+# OVERRIDDEN VANILLA TRIGGERS      #
+####################################
+
 make_concubine_is_valid_trigger = {
+	# Actor must be allowed more concubines
 	custom_description = {
 		text = take_concubine_allowed_more
 		object = scope:recipient
@@ -17,53 +77,40 @@ make_concubine_is_valid_trigger = {
 			allowed_more_concubines = yes
 		}
 	}
-	scope:recipient = {
+	# Actor must not be mourning
+	scope:puppet_or_actor = {
 		custom_tooltip = {
-			text = take_concubine_mourning
-			OR = {
-				AND = {
-					is_imprisoned_by = scope:puppet_or_actor
-					is_married = yes
-					OR = {
-						NOT = { 
-							has_character_modifier = mourner_modifier 
-						}
-						AND = {
-							has_character_modifier = mourner_modifier 
-							NOT = {
-								is_courtier_of = scope:puppet_or_actor
-							}
-						}
-					}
-				}
-				AND = {
-					is_married = no
-					OR = {
-						NOT = { 
-							has_character_modifier = mourner_modifier 
-						}
-						AND = {
-							has_character_modifier = mourner_modifier 
-							NOR = { #So that you won't take any of your parent's widows as your concubines right away
-								any_former_spouse = {
-									even_if_dead = yes
-									any_child = {
-										this = scope:puppet_or_actor
-									}
-								}
-								any_former_concubinist = {
-									even_if_dead = yes
-									any_child = {
-										this = scope:puppet_or_actor
-									}
-								}
-							}
-						}
-					}
+			text = take_concubine_mourning_actor
+			NOT = { has_character_modifier = mourner_modifier }
+		}
+	}
+	scope:recipient = {
+		# Vanilla ex-spouse check
+		custom_tooltip = {
+			text = take_concubine_ex_spouse
+			NOT = {
+				has_opinion_modifier = {
+					modifier = divorced_me_opinion
+					target = scope:puppet_or_actor
 				}
 			}
 		}
+		# Marriage status: either imprisoned + married (but not your spouse), or not married
+		OR = {
+			AND = {
+				is_imprisoned_by = scope:puppet_or_actor
+				is_married = yes
+			}
+			is_married = no
+		}
 		is_hostage = no
+		# Mourning check on the target (concubine)
+		custom_tooltip = {
+			text = take_concubine_mourning_target
+			NOT = {
+				mourning_blocks_target_from_concubinage_trigger = { TAKER = scope:puppet_or_actor }
+			}
+		}
 		can_be_taken_as_muslim_concubine_trigger = { 
 			CHARACTER = scope:puppet_or_actor 
 			RECEIVER = scope:puppet_or_actor
@@ -94,9 +141,10 @@ can_become_concubine_of_character_trigger = {
 		}
 		NOT = { is_spouse_of = $CHARACTER$ }
 	}
+	# Mourning: block if the target is a parent's widow of the taker
 	trigger_if = {
-		limit = { 
-			has_character_modifier = mourner_modifier 
+		limit = {
+			has_character_modifier = mourner_modifier
 		}
 		NOR = {
 			any_former_spouse = {
@@ -142,6 +190,8 @@ can_be_offered_as_concubine_to_character_trigger = {
 			is_concubine_of = $GIVER$
 		}
 		number_of_concubines = 0
+		# Mourning: a free mourning courtier cannot be offered as a concubine
+		NOT = { has_character_modifier = mourner_modifier }
 	}
 	trigger_if = {
 		limit = {
