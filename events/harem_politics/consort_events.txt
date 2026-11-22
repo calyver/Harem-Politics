@@ -24161,15 +24161,15 @@ scripted_trigger appointed_high_consort_trigger = {
 		LIEGE = root
 	}
 }
-scripted_effect appoint_to_high_consort_effect = {
+scripted_effect appoint_to_ranked_consort_position_effect = {
 	add_character_flag = {
 		flag = appointed_rc_event_flag
 		days = 2
 	}
-	custom_tooltip = $TITLE$_consort_court_position_aptitude_tooltip
+	custom_tooltip = $TITLE$_court_position_aptitude_tooltip
 	appoint_court_position = {
 		recipient = scope:recipient
-		court_position = $TITLE$_consort_court_position
+		court_position = $TITLE$_court_position
 	}
 }
 
@@ -24225,7 +24225,19 @@ consort_events.2000 = {
 				desc = consort_events.2000.fallback.desc
 			}
 		}
-		desc = consort_events.2000.end.desc
+		first_valid = {
+			triggered_desc = { # You can appoint the Four Consorts
+				trigger = {
+					can_employ_char_to_high_consort_court_position_trigger = {
+						CONSORT = scope:recipient
+					}
+				}
+				desc = consort_events.2000.end.desc
+			}
+			triggered_desc = { # Fallback
+				desc = consort_events.2000.imperial_concubine.end.desc
+			}
+		}
 	}
 	theme = diplomacy_majesty_focus
 	override_background = {
@@ -24242,23 +24254,8 @@ consort_events.2000 = {
 	}
 	
 	trigger = {
-		OR = {
-			can_appoint_char_to_court_position = {
-				CHAR = scope:recipient
-				COURT_POS = grand_consort_court_position
-			}
-			can_appoint_char_to_court_position = {
-				CHAR = scope:recipient
-				COURT_POS = pure_consort_court_position
-			}
-			can_appoint_char_to_court_position = {
-				CHAR = scope:recipient
-				COURT_POS = virtuous_consort_court_position
-			}
-			can_appoint_char_to_court_position = {
-				CHAR = scope:recipient
-				COURT_POS = worthy_consort_court_position
-			}
+		can_employ_char_to_ranked_consort_court_position_trigger = {
+			CONSORT = scope:recipient
 		}
 		can_have_four_consorts_trigger = yes
 	}
@@ -24288,8 +24285,8 @@ consort_events.2000 = {
 				COURT_POS = grand_consort_court_position
 			}
 		}
-		appoint_to_high_consort_effect = {
-			TITLE = grand
+		appoint_to_ranked_consort_position_effect = {
+			TITLE = grand_consort
 		}
 		ai_chance = {
 			base = 20
@@ -24297,6 +24294,12 @@ consort_events.2000 = {
 				WHO = root
 				opinion_target = scope:recipient
 				multiplier = 0.5
+			}
+			modifier = { # Aptitude
+				add = {
+					value = scope:recipient.aptitude:grand_consort_court_position
+					multiply = 0.5
+				}
 			}
 		}
 	}
@@ -24310,8 +24313,8 @@ consort_events.2000 = {
 				COURT_POS = pure_consort_court_position
 			}
 		}
-		appoint_to_high_consort_effect = {
-			TITLE = pure
+		appoint_to_ranked_consort_position_effect = {
+			TITLE = pure_consort
 		}
 		ai_chance = {
 			base = 20
@@ -24319,6 +24322,12 @@ consort_events.2000 = {
 				WHO = root
 				opinion_target = scope:recipient
 				multiplier = 0.5
+			}
+			modifier = { # Aptitude
+				add = {
+					value = scope:recipient.aptitude:pure_consort_court_position
+					multiply = 0.5
+				}
 			}
 		}
 	}
@@ -24332,8 +24341,8 @@ consort_events.2000 = {
 				COURT_POS = virtuous_consort_court_position
 			}
 		}
-		appoint_to_high_consort_effect = {
-			TITLE = virtuous
+		appoint_to_ranked_consort_position_effect = {
+			TITLE = virtuous_consort
 		}
 		ai_chance = {
 			base = 20
@@ -24341,6 +24350,12 @@ consort_events.2000 = {
 				WHO = root
 				opinion_target = scope:recipient
 				multiplier = 0.5
+			}
+			modifier = { # Aptitude
+				add = {
+					value = scope:recipient.aptitude:virtuous_consort_court_position
+					multiply = 0.5
+				}
 			}
 		}
 	}
@@ -24354,8 +24369,8 @@ consort_events.2000 = {
 				COURT_POS = worthy_consort_court_position
 			}
 		}
-		appoint_to_high_consort_effect = {
-			TITLE = worthy
+		appoint_to_ranked_consort_position_effect = {
+			TITLE = worthy_consort
 		}
 		ai_chance = {
 			base = 20
@@ -24364,18 +24379,52 @@ consort_events.2000 = {
 				opinion_target = scope:recipient
 				multiplier = 0.5
 			}
+			modifier = { # Aptitude
+				add = {
+					value = scope:recipient.aptitude:worthy_consort_court_position
+					multiply = 0.5
+				}
+			}
 		}
 	}
 
-	# Changed my mind
+	# Imperial Concubine
 	option = {
 		name = consort_events.2000.e
+		trigger = {
+			can_appoint_char_to_court_position = {
+				CHAR = scope:recipient
+				COURT_POS = imperial_concubine_court_position
+			}
+		}
+		appoint_to_ranked_consort_position_effect = {
+			TITLE = imperial_concubine
+		}
 		ai_chance = {
 			base = 20
 			opinion_modifier = {
 				WHO = root
 				opinion_target = scope:recipient
-				multiplier = -0.5
+				multiplier = 0.5
+			}
+			modifier = { # Aptitude
+				add = {
+					value = scope:recipient.aptitude:imperial_concubine_court_position
+					multiply = 0.5
+				}
+			}
+		}
+	}
+
+	# Changed my mind
+	option = {
+		name = consort_events.2000.f
+		ai_chance = {
+			base = 20
+			opinion_modifier = {
+				WHO = root
+				opinion_target = scope:recipient
+				multiplier = -0.6
 			}
 		}
 	}
