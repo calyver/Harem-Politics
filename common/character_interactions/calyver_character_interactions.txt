@@ -1207,10 +1207,10 @@ summon_to_chambers_interaction = {
 			}
 		}
 		custom_tooltip = {
-			text = rejected_from_bed_recipient
-			scope:recipient = {
+			text = bad_relationship_recipient_trigger
+			scope:puppet_or_actor = {
 				NOT = {
-					has_character_modifier = rejected_from_marriage_bed_modifier
+					has_any_bad_fertility_relationship_with_character_trigger = { CHARACTER = scope:recipient }
 				}
 			}
 		}
@@ -1294,11 +1294,19 @@ summon_to_chambers_interaction = {
 					# Marital duties - rank
 					modifier = {
 						scope:puppet_or_actor.primary_spouse ?= scope:recipient
-						add = 15
+						add = 20
 					}
 					modifier = {
 						scope:recipient = {
 							is_high_consort_trigger = {
+								LIEGE = scope:puppet_or_actor
+							}
+						}
+						add = 5
+					}
+					modifier = {
+						scope:recipient = {
+							is_ranked_consort_trigger = {
 								LIEGE = scope:puppet_or_actor
 							}
 						}
@@ -1309,12 +1317,12 @@ summon_to_chambers_interaction = {
 							is_spouse_of = scope:puppet_or_actor
 							NOR = {
 								this = scope:puppet_or_actor.primary_spouse
-								is_high_consort_trigger = {
+								is_ranked_consort_trigger = {
 									LIEGE = scope:puppet_or_actor
 								}
 							}
 						}
-						add = 5
+						add = 10
 					}
 					# Attraction
 					modifier = {
@@ -1639,20 +1647,6 @@ summon_to_chambers_interaction = {
 		hegemony = 60
 	}
 
-	is_available = {
-		any_child = {
-			is_alive = yes
-			NOR = {
-				has_trait = bastard
-				has_trait = eunuch
-				has_trait = devoted
-				has_trait = disinherited
-			}
-			count < 4
-		}
-		age > 30
-	}
-
 	ai_will_do = {
 		base = 0
 
@@ -1664,6 +1658,7 @@ summon_to_chambers_interaction = {
 						has_trait = bastard
 						has_trait = eunuch
 						has_trait = devoted
+						has_trait = disinherited
 					}
 					count < 4
 				}
@@ -1694,10 +1689,7 @@ summon_to_chambers_interaction = {
 		}
 		modifier = {
 			scope:puppet_or_actor = {
-				OR = {
-					has_relation_lover = scope:recipient
-					has_relation_friend = scope:recipient
-				}
+				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:recipient }
 			}
 			add = 15
 		}
@@ -1722,6 +1714,17 @@ summon_to_chambers_interaction = {
 			add = -15
 			scope:puppet_or_actor.fertility > 0.1
 			scope:recipient.fertility < 0.1
+		}
+		modifier = {
+			scope:puppet_or_actor = {
+				OR = {
+					is_deviant_trigger = yes
+					has_trait = lustful
+					has_trait = seducer
+					has_trait = rakish
+				}
+			}
+			add = 20
 		}
 	}
 }
