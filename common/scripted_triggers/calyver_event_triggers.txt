@@ -1831,6 +1831,122 @@ harem_politics_0011_trigger = {
 	is_at_war = no
 	is_playable_character = yes
 }
+##Your consorts don't like Consort Rong##
+harem_politics_rong_fei_trigger = {
+	is_physically_able_ai_adult = yes
+	is_courtier_of = scope:puppet_or_actor
+
+	harem_politics_unfavored_consort_trigger = no
+	harem_politics_punished_consort_trigger = no
+	is_demoted_consort_trigger = no
+
+	#Isn't unfavored
+	trigger_if = {
+		limit = {
+			has_variable = favor
+		}
+		var:favor >= neutral_consort_lower_limit
+	}
+	has_character_modifier = favor_boost_modifier
+	
+	OR = {
+		has_character_flag = flag_new_consort
+		has_trait = beauty_good_2
+		has_trait = beauty_good_3
+	}
+
+	NOR = {
+		exists = scope:is_being_divorced
+		exists = scope:is_being_set_aside
+	}
+
+	trigger_if = {
+		limit = {
+			exists = scope:puppet_or_actor.primary_spouse
+		}
+		this = scope:puppet_or_actor.primary_spouse
+	}
+
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = scope:puppet_or_actor
+			}
+		}
+		AND = {
+			is_travelling = no
+			scope:puppet_or_actor = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_ying_fei_trigger = {
+	is_physically_able_adult = yes
+	is_healthy = yes
+	is_courtier_of = scope:puppet_or_actor
+	is_imprisoned = no
+	hp_accepts_harems = yes
+	harem_politics_punished_consort_trigger = no
+	NOR = {
+		this = $RONG$
+		AND = {
+			exists = scope:puppet_or_actor.primary_spouse
+			this = scope:puppet_or_actor.primary_spouse
+		}
+		has_trait = forgiving
+		has_trait = compassionate
+		has_trait = content
+		has_trait = humble
+
+		has_trait = shy
+		has_trait = craven
+
+		has_opinion_modifier = {
+			modifier = forced_me_concubine_marriage_opinion
+			target = scope:puppet_or_actor
+		}
+
+		has_relation_potential_friend = $RONG$
+		has_relation_friend = $RONG$
+		has_relation_best_friend = $RONG$
+
+		has_relation_potential_lover = $RONG$
+		has_relation_lover = $RONG$
+		has_relation_soulmate = $RONG$
+	}
+	OR = {
+		AND = {
+			is_travelling = yes
+			current_travel_plan = {
+				travel_plan_owner = scope:puppet_or_actor
+			}
+		}
+		AND = {
+			is_travelling = no
+			scope:puppet_or_actor = {
+				is_travelling = no
+			}
+		}
+	}
+}
+harem_politics_harem_politics_0027_trigger = {
+	is_physically_able_adult = yes
+	is_at_war = no
+	is_landed_or_landless_administrative = yes
+	any_consort = {
+		harem_politics_rong_fei_trigger = yes
+		save_temporary_scope_as = rong_check
+	}
+	any_consort = {
+		harem_politics_ying_fei_trigger = { RONG = scope:rong_check }
+		count >= 2
+	}
+	NOT = {
+		has_character_flag = had_ying_and_rong_event_flag
+	}
+}
 ## You find Imperial Concubine Ying playing in the garden ##
 consort_events_ying_pin_trigger = {
 	is_physically_able_ai_adult = yes
