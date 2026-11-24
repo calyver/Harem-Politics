@@ -3708,7 +3708,7 @@ request_concubine_interaction = {
 			any_vassal = { }
 			OR = {
 				ai_honor <= 0
-				has_trait = lustful
+				has_lustful_adjacent_trait_trigger = yes
 			}
 		}
 	}
@@ -3721,7 +3721,6 @@ request_concubine_interaction = {
 				government_has_flag = government_is_mandala
 			}
 			can_have_imperial_consorts_trigger = yes
-			is_independent_ruler = yes
 		}
 		scope:recipient = {
 			trigger_if = {
@@ -3751,7 +3750,6 @@ request_concubine_interaction = {
 			scope:recipient = {
 				any_courtier = {
 					is_physically_able_adult = yes
-					is_ruler = no
 					could_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
 					trigger_if = {
 						limit = { exists = betrothed }
@@ -3781,11 +3779,38 @@ request_concubine_interaction = {
 		}
 	}
 
-	can_be_picked = {
-		is_adult = yes
-	}
-
 	can_send = {
+		custom_description = {
+			text = character_unavailable_to_be_offered_as_concubine
+			object = scope:secondary_actor
+			scope:secondary_actor = {
+				is_physically_able_adult = yes
+				could_marry_character_trigger = { CHARACTER = scope:puppet_or_actor }
+				trigger_if = {
+					limit = { exists = betrothed }
+					betrothed = {
+						NOR = {
+							this = scope:puppet_or_actor
+							is_courtier_of = scope:puppet_or_actor
+							is_close_family_of = scope:puppet_or_actor
+						}
+					}
+				}
+				trigger_else = {
+					any_consort = { count = 0 }
+					allowed_more_spouses = yes
+				}
+				can_be_taken_as_muslim_concubine_trigger = {  # Can a Muslim be taken as concubine?
+					CHARACTER = scope:puppet_or_actor 
+					RECEIVER = scope:puppet_or_actor
+				}
+				NOT = { has_character_flag = has_been_offered_as_concubine }
+				concubine_demand_respects_mourning_trigger = {
+					ACTOR = scope:puppet_or_actor
+					RECIPIENT = scope:recipient
+				}
+			}
+		}
 	}
 
 	auto_accept = no
@@ -3935,9 +3960,9 @@ request_concubine_interaction = {
 			}
 			desc = AI_ACTOR_FRIEND_REASON
 		}
-		
+
 		modifier = {
-			add = -50
+			add = -35
 			scope:secondary_actor = {
 				is_child_of = scope:recipient
 			}
@@ -3968,18 +3993,11 @@ request_concubine_interaction = {
 
 		# Ambitious characters want to send a concubine to their liege
 		modifier = {
-			add = 15
+			add = 20
 			scope:recipient = {
 				has_trait = ambitious
 			}
 			desc = INTERACTION_AMBITIOUS
-		}
-		modifier = {
-			add = 10
-			scope:recipient = {
-				has_trait = greedy
-			}
-			desc = INTERACTION_GREEDY
 		}
 
 		# Government Authority #
@@ -4089,7 +4107,12 @@ request_concubine_interaction = {
 			add = 50
 			scope:recipient = {
 				NOT = { government_has_mechanic = administrative }
-				is_close_family_of = scope:secondary_actor
+				trigger_if = {
+					limit = {
+						scope:secondary_actor.faith.religion != religion:islam_religion
+					}
+					is_close_family_of = scope:secondary_actor
+				}
 				is_powerful_vassal_of = scope:puppet_or_actor
 			}
 			scope:secondary_actor = {
@@ -4101,7 +4124,12 @@ request_concubine_interaction = {
 			scope:puppet_or_actor = { government_has_mechanic = administrative }
 			scope:recipient = {
 				government_has_mechanic = administrative
-				is_close_family_of = scope:secondary_actor
+				trigger_if = {
+					limit = {
+						scope:secondary_actor.faith.religion != religion:islam_religion
+					}
+					is_close_family_of = scope:secondary_actor
+				}
 				OR = {
 					house ?= {
 						any_house_member = {
@@ -4127,7 +4155,7 @@ request_concubine_interaction = {
 			}
 		}
 		modifier = {
-			add = 10
+			add = 15
 			scope:puppet_or_actor.culture = {
 				has_cultural_parameter = dishu_system
 			}
@@ -4163,13 +4191,6 @@ request_concubine_interaction = {
 				any_close_family_member = {
 					is_consort_of = scope:puppet_or_actor
 				}
-			}
-		}
-		modifier = {
-			factor = 0
-			scope:recipient = {
-				has_any_good_relationship_with_character_trigger = { CHARACTER = scope:puppet_or_actor }
-				has_any_best_good_relationship_with_character_trigger = { CHARACTER = scope:puppet_or_actor }
 			}
 		}
 
@@ -4212,7 +4233,7 @@ request_concubine_interaction = {
 			add_opinion = {
 				target = scope:recipient
 				modifier = upset_opinion
-				opinion = -15
+				opinion = -20
 			}
 		}
 	}
