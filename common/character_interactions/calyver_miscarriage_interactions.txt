@@ -16,21 +16,15 @@ miscarriage_interaction = {
 			is_married = yes
 			is_concubine = yes
 		}
-		is_imprisoned = no
-		NOT = {
-			has_trait = incapable
-		}
-		
+		is_physically_able = yes
 	}
 
 	is_shown = {
 		scope:recipient != scope:actor
-		NOT = { 
-			scope:recipient = { 
+		scope:recipient = {
+			NOT = {
 				is_consort_of = scope:actor
 			}
-		}
-		scope:recipient = {
 			in_diplomatic_range = scope:actor
 			is_pregnant = yes
 			has_trait = pregnant
@@ -38,6 +32,14 @@ miscarriage_interaction = {
 			pregnancy_assumed_father ?= {
 				is_ruler = yes
 				highest_held_title_tier >= tier_county
+				OR = {
+					any_courtier = {
+						this = scope:actor
+					}
+					any_vassal_or_below = {
+						this = scope:actor
+					}
+				}
 				any_consort = {
 					this = scope:actor
 				}
@@ -80,13 +82,6 @@ miscarriage_interaction = {
 	}
 	
 	ai_targets = {
-		ai_recipients = prisoners
-		ai_recipients = courtiers
-		ai_recipients = family
-		ai_recipients = scripted_relations
-		ai_recipients = known_secrets
-		ai_recipients = dynasty
-		ai_recipients = vassals
 		ai_recipients = realm_characters
 	}
 	
@@ -95,10 +90,10 @@ miscarriage_interaction = {
 		base = 0
 		ai_value_modifier = {
 			ai_boldness = 0.15
-			ai_honor = -0.10
+			ai_honor = -0.2
 		}
 		modifier = { #New consorts are less likely to do so
-			add = -5
+			add = -10
 			scope:actor = { has_character_flag = flag_new_consort }
 		}
 		modifier = { #Evil consorts
@@ -106,69 +101,61 @@ miscarriage_interaction = {
 			scope:actor = { harem_politics_evil_consort_trigger = yes }
 		}
 		modifier = { #Rivals
-			add = 25
+			add = 50
 			scope:actor = {
-				OR = {
-					has_relation_potential_rival = scope:recipient
-					has_relation_rival = scope:recipient
-					has_relation_nemesis = scope:recipient
-				}
+				has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:recipient }
 			}
 		}
 		modifier = { #Scheming consorts
-			add = 10
+			add = 15
 			scope:actor = { has_character_modifier = scheming_consort_modifier }
 		}
 		opinion_modifier = { #Opinion
+			who = scope:actor
 			opinion_target = scope:recipient
-			multiplier = -0.25
+			multiplier = -0.3
 		}
 		modifier = { #Favored consorts
-			add = 10
+			add = 15
 			scope:recipient = {
 				has_character_modifier = favored_consort_modifier
 			}
 		}
 		modifier = { #Favored consorts
-			add = 20
+			add = 25
 			scope:recipient = {
 				has_character_modifier = beloved_consort_modifier
 			}
 		}
 		modifier = { #Favored consorts
-			add = 25
+			add = 35
 			scope:recipient = {
 				has_character_modifier = favor_boost_modifier
 			}
 		}
 		modifier = { #The main spouse must protect their position
-			add = 10
+			add = 20
 			scope:actor = {
 				is_married = yes
 				any_spouse = {
 					primary_spouse = scope:actor
+					this = scope:recipient.pregnancy_assumed_father
+					save_temporary_scope_as = temp_liege
 				}
 			}
 			scope:recipient = {
 				OR = {
 					any_close_family_member = {
 						OR = {
-							is_powerful_vassal_of = scope:actor.primary_spouse
-							is_councillor_of = scope:actor.primary_spouse
-							is_parent_of = scope:actor.primary_spouse
+							is_powerful_vassal_of = scope:temp_liege
+							is_councillor_of = scope:temp_liege
+							is_parent_of = scope:temp_liege
 						}
 					}
-					is_high_consort_trigger = {
-						LIEGE = scope:actor
+					is_ranked_consort_trigger = {
+						LIEGE = scope:temp_liege
 					}
-					AND = {
-						is_married = yes
-						any_spouse = {
-							primary_spouse = {
-								this = scope:actor
-							}
-						}
-					}
+					is_spouse_of = scope:temp_liege
 				}
 			}
 		}
@@ -176,38 +163,79 @@ miscarriage_interaction = {
 			add = 15
 			scope:actor = {
 				has_high_consort_position_trigger = yes
+				court_owner ?= {
+					is_consort_of = scope:actor
+					this = scope:recipient.pregnancy_assumed_father
+					save_temporary_scope_as = temp_liege
+				}
 			}
 			scope:recipient = {
 				OR = {
-					any_close_family_member = { #Powerful consorts
+					any_close_family_member = {
 						OR = {
-							AND = {
-								scope:actor = {
-									is_married = yes
-								}
-								is_powerful_vassal_of = scope:actor.primary_spouse
-								is_councillor_of = scope:actor.primary_spouse
-								is_parent_of = scope:actor.primary_spouse
-							}
-							
-							AND = {
-								scope:actor = {
-									is_concubine = yes
-								}
-								is_powerful_vassal_of = scope:actor.concubinist
-								is_councillor_of = scope:actor.concubinist
-								is_parent_of = scope:actor.concubinist
-							}
+							is_powerful_vassal_of = scope:temp_liege
+							is_councillor_of = scope:temp_liege
+							is_parent_of = scope:temp_liege
 						}
 					}
-					AND = {#Other spouses
-						is_married = yes
-						any_spouse = {
-							any_consort = {
-								this = scope:actor
-							}
+					is_ranked_consort_trigger = {
+						LIEGE = scope:temp_liege
+					}
+					is_spouse_of = scope:temp_liege
+				}
+			}
+		}
+		modifier = { #The ICs must protect their position
+			add = 15
+			scope:actor = {
+				has_imperial_concubine_position_trigger = yes
+				court_owner ?= {
+					is_consort_of = scope:actor
+					this = scope:recipient.pregnancy_assumed_father
+					save_temporary_scope_as = temp_liege
+				}
+			}
+			scope:recipient = {
+				OR = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:temp_liege
+							is_councillor_of = scope:temp_liege
+							is_parent_of = scope:temp_liege
 						}
 					}
+					is_ranked_consort_trigger = {
+						LIEGE = scope:temp_liege
+					}
+					is_spouse_of = scope:temp_liege
+				}
+			}
+		}
+		modifier = { # Spouses must protect their position
+			add = 15
+			scope:actor = {
+				any_spouse = {
+					primary_spouse ?= {
+						this != scope:actor
+						this != scope:recipient
+					}
+					this = scope:recipient.pregnancy_assumed_father
+					save_temporary_scope_as = temp_liege
+				}
+			}
+			scope:recipient = {
+				OR = {
+					any_close_family_member = {
+						OR = {
+							is_powerful_vassal_of = scope:temp_liege
+							is_councillor_of = scope:temp_liege
+							is_parent_of = scope:temp_liege
+						}
+					}
+					is_ranked_consort_trigger = {
+						LIEGE = scope:temp_liege
+					}
+					is_spouse_of = scope:temp_liege
 				}
 			}
 		}
@@ -228,10 +256,25 @@ miscarriage_interaction = {
 		modifier = { #Craven consorts
 			add = -10
 			scope:actor = {
-				OR = {
-					has_trait = shy
-					has_trait = craven
-				}
+				has_trait = craven
+			}
+		}
+		modifier = { #Shy consorts
+			add = -10
+			scope:actor = {
+				has_trait = shy
+			}
+		}
+		modifier = { #Paranoid consorts
+			add = 10
+			scope:actor = {
+				has_trait = paranoid
+			}
+		}
+		modifier = { #Brave consorts
+			add = 10
+			scope:actor = {
+				has_trait = brave
 			}
 		}
 		modifier = { #Good consorts
@@ -246,6 +289,6 @@ miscarriage_interaction = {
 			}
 		}
 	}
-	
+
 	auto_accept = yes
 }
