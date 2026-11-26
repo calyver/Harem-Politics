@@ -2124,18 +2124,23 @@ grand_consort_task_balance_favor = {
 
 	scaling_employer_modifiers = {
 		terrible = {
+			fertility = 0.05
 		}
 		poor = {
 			stress_loss_mult = 0.05
+			fertility = 0.05
 		}
 		average = {
-			stress_loss_mult = 0.10
+			stress_loss_mult = 0.1
+			fertility = 0.1
 		}
 		good = {
 			stress_loss_mult = 0.15
+			fertility = 0.15
 		}
 		excellent = {
-			stress_loss_mult = 0.20
+			stress_loss_mult = 0.2
+			fertility = 0.2
 		}
 	}
 
@@ -2161,13 +2166,24 @@ grand_consort_task_balance_favor = {
 					}
 					save_scope_as = favored_consort
 				}
-				send_interface_toast = {
-					type = event_generic_neutral
-					title = grand_consort_task_balance_favor.on_start.t
-					right_icon = scope:favored_consort
+				if = {
+					limit = {
+						is_ai = yes
+					}
 					calyver_stop_favor_boost_effect = {
 						CONSORT = scope:favored_consort
 						HAREM_LIEGE = scope:liege
+					}
+				}
+				else = {
+					send_interface_toast = {
+						type = event_generic_neutral
+						title = grand_consort_task_balance_favor.on_start.t
+						right_icon = scope:favored_consort
+						calyver_stop_favor_boost_effect = {
+							CONSORT = scope:favored_consort
+							HAREM_LIEGE = scope:liege
+						}
 					}
 				}
 			}
@@ -2179,14 +2195,10 @@ grand_consort_task_balance_favor = {
 	}
 
 	ai_will_do = {
-		value = 25
+		value = 15
 		value = {
 			add = ai_compassion
-			multiply = 0.2
-		}
-		add = {
-			value = "scope:liege.opinion(scope:employee)"
-			multiply = 0.10
+			multiply = 0.5
 		}
 		# Low aptitude
 		if = {
@@ -2212,12 +2224,27 @@ grand_consort_task_balance_favor = {
 			limit = {
 				any_court_position_holder = {
 					type = grand_consort_court_position
-					aptitude:grand_consort_court_position >= 4
+					aptitude:grand_consort_court_position >= 3
+				}
+			}
+			add = 10
+		}
+		if = {
+			limit = {
+				any_court_position_holder = {
+					type = grand_consort_court_position
+					aptitude:grand_consort_court_position > 3
 				}
 			}
 			add = 10
 		}
 		#Traits
+		if = {
+			limit = {
+				has_lustful_adjacent_trait_trigger = yes
+			}
+			add = 25
+		}
 		if = {
 			limit = {
 				has_trait = temperate
@@ -2247,13 +2274,7 @@ grand_consort_task_balance_favor = {
 					count >= 4
 				}
 			}
-			add = 35
-		}
-		if = {
-			limit = {
-				monthly_character_income < monthly_court_position_task_cost_double
-			}
-			add = -1000
+			add = 45
 		}
 	}
 }
