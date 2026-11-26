@@ -433,11 +433,9 @@ grand_consort_court_position = {
 				court_owner ?= {
 					can_have_four_consorts_trigger = yes
 					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
-						is_female = yes
-					}
 				}
+				has_court_position = grand_consort_court_position
+				is_female = yes
 			}
 		}
 		animation = fanning_coyly
@@ -469,11 +467,9 @@ grand_consort_court_position = {
 				court_owner ?= {
 					can_have_four_consorts_trigger = yes
 					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
-						is_male = yes
-					}
 				}
+				has_court_position = grand_consort_court_position
+				is_male = yes
 			}
 		}
 		animation = fanning_coyly
@@ -506,11 +502,9 @@ grand_consort_court_position = {
 				court_owner ?= {
 					culture_has_east_asian_heritage_pillar_trigger = yes
 					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
-						is_male = yes
-					}
 				}
+				has_court_position = grand_consort_court_position
+				is_male = yes
 			}
 		}
 		animation = fanning_coyly
@@ -543,11 +537,9 @@ grand_consort_court_position = {
 				court_owner ?= {
 					culture_has_east_asian_heritage_pillar_trigger = yes
 					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
-						is_female = yes
-					}
 				}
+				has_court_position = grand_consort_court_position
+				is_female = yes
 			}
 		}
 		animation = fanning_coyly
@@ -576,11 +568,9 @@ grand_consort_court_position = {
 			trigger_else = {
 				court_owner ?= {
 					employs_court_position = grand_consort_court_position
-					any_court_position_holder = {
-						type = grand_consort_court_position
-						is_male = yes
-					}
 				}
+				has_court_position = grand_consort_court_position
+				is_male = yes
 			}
 		}
 		animation = personality_honorable
@@ -1542,7 +1532,7 @@ grand_consort_court_position = {
 		good = {
 			court_grandeur_baseline_add = 2
 			monthly_court_grandeur_change_mult = 0.15
-			stress_loss_mult = 0.10
+			stress_loss_mult = 0.1
 			legitimacy_gain_mult = 0.05
 		}
 		excellent = {
@@ -1578,6 +1568,14 @@ grand_consort_court_position = {
 	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
 	ai_position_score = {
 		value = 100
+		if = {
+			limit = {
+				scope:liege = {
+					can_have_four_consorts_trigger = yes
+				}
+			}
+			add = 700
+		}
 		if = {
 			limit = {
 				scope:liege = {
@@ -1653,64 +1651,14 @@ grand_consort_court_position = {
 						}
 						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
 						is_imprisoned = no
+						this = scope:employee
 					}
 					diarch ?= {
 						this != scope:liege.primary_spouse
 					}
 					has_diarchy_active_parameter = diarchy_is_vizierate
-
 				}
-				add = 10
-			}
-			# There is no PS
-			if = {
-				limit = {
-					OR = {
-						NOT = {
-							exists = primary_spouse
-						}
-						primary_spouse ?= {
-							OR = {
-								is_imprisoned = yes
-								NOR = {
-									is_courtier_of = scope:liege
-									is_vassal_of = scope:liege
-								}
-							}
-						}
-					}
-				}
-				add = 25
-			}
-			# Big harems need help in management
-			if = {
-				limit = {
-					any_consort = {
-						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
-						count >= 6
-					}
-				}
-				add = {
-					value = 15
-					if = {
-						limit = {
-							any_consort = {
-								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
-								count >= 8
-							}
-						}
-						add = 10
-					}
-					if = { # More if we need a secondary spouse to take command among the secondary spouses
-						limit = {
-							any_spouse = {
-								is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
-								count >= 4
-							}
-						}
-						add = 10
-					}
-				}
+				add = 15
 			}
 			# Noble birth
 			if = {
@@ -1719,7 +1667,7 @@ grand_consort_court_position = {
 						is_lowborn = yes
 					}
 				}
-				add = -15
+				add = -25
 			}
 			if = {
 				limit = {
@@ -1740,7 +1688,7 @@ grand_consort_court_position = {
 						}
 					}
 				}
-				add = 10
+				add = 20
 			}
 			if = {
 				limit = {
@@ -1751,7 +1699,7 @@ grand_consort_court_position = {
 						}
 					}
 				}
-				add = 10
+				add = 15
 			}
 			if = {
 				limit = {
@@ -1765,7 +1713,23 @@ grand_consort_court_position = {
 						}
 					}
 				}
-				add = 25
+				add = 50
+			}
+			if = {
+				limit = {
+					scope:employee = {
+						any_close_family_member = {
+							top_liege ?= {
+								this = scope:liege.top_liege
+							}
+							house ?= {
+								is_dominant_family = yes
+							}
+							NOT = { is_child_of = scope:liege }
+						}
+					}
+				}
+				add = 75
 			}
 			if = {
 				limit = {
@@ -1776,7 +1740,7 @@ grand_consort_court_position = {
 						}
 					}
 				}
-				add = 50
+				add = 75
 			}
 			if = {
 				limit = {
@@ -1840,6 +1804,7 @@ grand_consort_court_position = {
 			if = {
 				limit = {
 					any_child = {
+						even_if_dead = yes
 						is_child_of = scope:employee
 						is_bastard_child_trigger = no
 						NOT = {
@@ -1849,6 +1814,7 @@ grand_consort_court_position = {
 				}
 				every_child = {
 					limit = {
+						even_if_dead = yes
 						is_child_of = scope:employee
 						is_bastard_child_trigger = no
 						NOT = {
@@ -1861,7 +1827,7 @@ grand_consort_court_position = {
 							limit = {
 								is_player_heir_of = scope:liege
 							}
-							add = 20
+							add = 25
 						}
 						if = {
 							limit = {
@@ -1877,7 +1843,7 @@ grand_consort_court_position = {
 				limit = {
 					has_relation_soulmate = scope:employee
 				}
-				add = 50
+				add = 75
 			}
 			if = {
 				limit = {
@@ -1886,25 +1852,25 @@ grand_consort_court_position = {
 						has_relation_best_friend = scope:employee
 					}
 				}
-				add = 25
+				add = 50
 			}
-			else_if = {
+			if = {
 				limit = {
 					has_relation_friend = scope:employee
 				}
-				add = 15
+				add = 25
 			}
 			if = {
 				limit = {
 					has_relation_rival = scope:employee
 				}
-				add = -20
+				add = -50
 			}
 			else_if = {
 				limit = {
 					has_relation_nemesis = scope:employee
 				}
-				add = -35
+				add = -75
 			}
 			# Favor
 			if = {
@@ -1913,15 +1879,15 @@ grand_consort_court_position = {
 						harem_politics_beloved_consort_trigger = yes
 					}
 				}
-				add = 20
+				add = 75
 			}
-			if = {
+			else_if = {
 				limit = {
 					scope:employee = {
 						harem_politics_favored_consort_trigger = yes
 					}
 				}
-				add = 15
+				add = 50
 			}
 			if = {
 				limit = {
@@ -1929,7 +1895,7 @@ grand_consort_court_position = {
 						has_character_modifier = favor_boost_modifier
 					}
 				}
-				add = 10
+				add = 25
 			}
 			if = {
 				limit = {
@@ -1937,7 +1903,7 @@ grand_consort_court_position = {
 						harem_politics_unfavored_consort_trigger = yes
 					}
 				}
-				add = -10
+				add = -20
 			}
 			if = {
 				limit = {
@@ -1945,7 +1911,7 @@ grand_consort_court_position = {
 						harem_politics_forgotten_consort_trigger = yes
 					}
 				}
-				add = -10
+				add = -30
 			}
 			# Opinion
 			add = {
