@@ -1327,7 +1327,7 @@ grand_consort_task_instill_virtues = {
 			}
 		}
 	}
-	# Checked til here. Continue in next line
+
 	on_yearly = {
 		save_scope_as = grand_consort_position_holder
 		liege_or_court_owner = { save_scope_as = notification_character }
@@ -1413,18 +1413,12 @@ grand_consort_task_instill_virtues = {
 						weight = {
 							base = 10
 							modifier = { #Tier difference
-								tier_difference = {
-									target = scope:notification_character
-									value >= 0
-								}
+								highest_held_title_tier >= scope:notification_character.highest_held_title_tier
 								add = {
 									value = 10
 									if = {
 										limit = {
-											tier_difference = {
-												target = scope:notification_character
-												value >= 1
-											}
+											highest_held_title_tier > scope:notification_character.highest_held_title_tier
 										}
 										add = 10
 									}
@@ -1443,7 +1437,7 @@ grand_consort_task_instill_virtues = {
 									}
 								}
 								add = {
-									value = 5
+									value = 10
 									if = {
 										limit = {
 											faith = {
@@ -1453,18 +1447,20 @@ grand_consort_task_instill_virtues = {
 												}
 											}
 										}
-										add = 5
+										add = 10
 									}
 								}
 							}
 							modifier = { #Claimants
+								add = 15
 								any_claim = {
-									tier >= tier_county
-									any_de_jure_top_liege = {
-										this = scope:notification_character
+									holder ?= {
+										OR = {
+											this = scope:notification_character
+											target_is_liege_or_above = scope:notification_character
+										}
 									}
 								}
-								add = 5
 							}
 							modifier = { #Monogamous characters are more intrigued by rulers with many consorts
 								hp_accepts_harems = no
@@ -1472,26 +1468,30 @@ grand_consort_task_instill_virtues = {
 							}
 							modifier = { #Strong rulers
 								max_military_strength >= scope:notification_charactermax_military_strength
-								add = 20
+								add = {
+									value = 10
+									if = {
+										limit = {
+											max_military_strength > scope:notification_charactermax_military_strength
+										}
+										add = 20
+									}
+								}
 							}
 							modifier = { #Captured their relative
 								has_opinion_modifier = {
 									modifier = forced_family_concubine_marriage_opinion
 									target = scope:notification_character
 								}
-								add = 10
+								add = 15
 							}
 							modifier = { #Enemies
-								OR = {
-									has_relation_rival = scope:notification_character
-									has_relation_nemesis = scope:notification_character
-								}
-								add = 10
+								has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:notification_character }
+								add = 40
 							}
 							modifier = { #Suzerains won't invade us anyways
-								exists = scope:notification_character.suzerain
-								this = scope:notification_character.suzerain
-								add = -10
+								scope:notification_character.suzerain ?= this
+								add = -15
 							}
 						}
 						save_scope_as = ruler_scope
@@ -1570,6 +1570,7 @@ grand_consort_task_instill_virtues = {
 									}
 								}	
 								is_powerful_vassal_of = scope:notification_character
+								is_councillor_of = scope:notification_character
 							}
 							harem_politics_grand_consort_task_valid_vassal_trigger = {
 								OVERLORD = scope:notification_character
@@ -1585,6 +1586,13 @@ grand_consort_task_instill_virtues = {
 						}
 						weight = {
 							base = 10
+							modifier = { #Tier difference
+								tier_difference = {
+									target = scope:notification_character
+									value = -1
+								}
+								add = 15
+							}
 							opinion_modifier = { #Opinion
 								WHO = this
 								opinion_target = scope:notification_character
@@ -1598,7 +1606,7 @@ grand_consort_task_instill_virtues = {
 									}
 								}
 								add = {
-									value = 5
+									value = 10
 									if = {
 										limit = {
 											faith = {
@@ -1608,18 +1616,16 @@ grand_consort_task_instill_virtues = {
 												}
 											}
 										}
-										add = 5
+										add = 10
 									}
 								}
 							}
 							modifier = { #Claimants
 								any_claim = {
 									tier >= tier_county
-									any_de_jure_top_liege = {
-										this = scope:notification_character
-									}
+									holder = scope:notification_character
 								}
-								add = 5
+								add = 15
 							}
 							modifier = { #Monogamous characters are more intrigued by rulers with many consorts
 								hp_accepts_harems = no
@@ -1627,30 +1633,37 @@ grand_consort_task_instill_virtues = {
 							}
 							modifier = { #Strong rulers
 								max_military_strength >= scope:notification_charactermax_military_strength
-								add = 20
+								add = {
+									value = 10
+									if = {
+										limit = {
+											max_military_strength > scope:notification_charactermax_military_strength
+										}
+										add = 20
+									}
+								}
 							}
+
 							modifier = { #Captured their relative
 								has_opinion_modifier = {
 									modifier = forced_family_concubine_marriage_opinion
 									target = scope:notification_character
 								}
-								add = 10
+								add = 15
 							}
 							modifier = { #Powerful vassal
 								is_powerful_vassal_of = scope:notification_character
 								add = 10
 							}
 							modifier = { #Enemies
-								OR = {
-									has_relation_rival = scope:notification_character
-									has_relation_nemesis = scope:notification_character
-								}
-								add = 10
+								has_any_bad_relationship_with_character_trigger = { CHARACTER = scope:notification_character }
+								add = 40
 							}
+
 							modifier = { #Part of a faction
 								is_a_faction_member = yes
 								add = {
-									value = 10
+									value = 15
 									if = {
 										limit = {
 											is_a_faction_leader = yes
@@ -1663,6 +1676,7 @@ grand_consort_task_instill_virtues = {
 						save_scope_as = ruler_scope
 					}
 				}
+				# Checked til here. Continue in the next line
 				5 = { #Impressing a tributary
 					trigger = {
 						any_tributary = {
