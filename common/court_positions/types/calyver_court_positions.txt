@@ -3754,7 +3754,7 @@ virtuous_consort_court_position = {
 	}
 	# Scripted value to determine whether an AI will hire/fire a position or not. Hires over 0, fires under -50. Look in _court_positions.info for more extensive documentation!
 	ai_position_score = {
-		value = 150
+		value = 700
 		if = {
 			limit = {
 				scope:liege = {
@@ -3790,14 +3790,45 @@ virtuous_consort_court_position = {
 		}
 		if = {
 			limit = {
+				scope:liege = {
+					any_consort = {
+						is_valid_for_favor_system_trigger = { HAREM_LIEGE = scope:liege }
+						count > 11
+					}
+				}
+			}
+			add = 50
+		}
+		if = {
+			limit = {
 				scope:liege.highest_held_title_tier > tier_empire
 			}
 			add = 50
 		}
+		# There's no PS
+		scope:liege = {
+			if = {
+				limit = {
+					OR = {
+						is_married = no
+						primary_spouse ?= {
+							OR = {
+								is_imprisoned = yes
+								NOR = {
+									is_courtier_of = scope:liege
+									is_vassal_of = scope:liege
+								}
+							}
+						}
+					}
+				}
+				add = 50
+			}
+		}
 		add = court_position_debt_considerations_value
 	}
 	ai_candidate_score = {
-		value = 75
+		value = 80
 		add = scope:base_value
 		add = high_consort_candidate_score_base_value
 		add = high_consort_candidate_aptitude_value
