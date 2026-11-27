@@ -1635,11 +1635,70 @@ grand_consort_court_position = {
 		}
 		add = court_position_debt_considerations_value
 	}
+
 	ai_candidate_score = {
-		value = 75
+		value = 80
 		add = scope:base_value
-		add = court_position_candidate_score_base_value
-		add = court_position_candidate_aptitude_value
+
+		# 1. Replaces court_position_candidate_score_base_value (exempts Imperial Concubines)
+		scope:liege = {
+			if = {
+				limit = {
+					has_relation_rival = scope:employee
+				}
+				add = -1000
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:firing_court_position }
+					scope:employee = {
+						has_any_court_position = yes
+						NOT = { has_court_position = imperial_concubine_court_position }
+					}
+				}
+				add = -150
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:firing_court_position }
+					government_has_flag = government_is_merchant
+					monthly_character_income < merchant_ai_court_position_min_income_value
+				}
+				add = -10000
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:firing_court_position }
+					government_has_flag = government_is_republic
+					is_landless_ruler = yes
+					monthly_character_balance < merchant_ai_court_position_min_income_value
+				}
+				add = -10000
+			}
+		}
+
+		# 2. Replaces court_position_candidate_aptitude_value (lets aptitude do the heavy lifting)
+		scope:employee = {
+			add = {
+				value = scope:employee_aptitude
+				multiply = 15 # Terrible = 0, Poor = +15, Average = +30, Good = +45, Excellent = +60
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:firing_court_position }
+					scope:highest_available_aptitude > scope:employee_aptitude
+				}
+				add = -25
+			}
+			if = {
+				limit = {
+					scope:employee_aptitude <= 0
+				}
+				add = -30 # Discourages hiring Terrible candidates
+			}
+		}
+
+		# 3. Personal & political overrides not fully covered by aptitude
 		scope:liege = {
 			# If the PS isn't in the council, they should be the GC
 			if = {
@@ -1661,265 +1720,89 @@ grand_consort_court_position = {
 				}
 				add = 15
 			}
-			# Noble birth
+
+			# Noble birth safeguard (extra strict for Four Consorts / Noble Consort)
 			if = {
 				limit = {
-					scope:employee = {
-						is_lowborn = yes
-					}
+					scope:employee = { is_lowborn = yes }
 				}
 				add = -25
-			}
-			if = {
-				limit = {
-					scope:employee = { #We don't want to make a lowborn the PS
-						is_lowborn = yes
-						is_spouse_of = scope:liege
-					}
-				}
-				add = -35
-			}
-			# Powerful relatives
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							NOT = { is_child_of = scope:liege }
-							is_allied_to = scope:liege
-						}
-					}
-				}
-				add = 20
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							is_vassal_of = scope:liege
-							NOT = { is_child_of = scope:liege }
-						}
-					}
-				}
-				add = 15
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							OR = {
-								is_powerful_vassal_of = scope:liege
-								is_councillor_of = scope:liege
-							}
-							NOT = { is_child_of = scope:liege }
-						}
-					}
-				}
-				add = 50
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							top_liege ?= {
-								this = scope:liege.top_liege
-							}
-							house ?= {
-								is_dominant_family = yes
-							}
-							NOT = { is_child_of = scope:liege }
-						}
-					}
-				}
-				add = 75
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							is_liege_or_above_of = scope:liege
-							NOT = { is_child_of = scope:liege }
-						}
-					}
-				}
-				add = 75
-			}
-			if = {
-				limit = {
-					scope:employee = {
-						any_close_family_member = {
-							tier_difference = {
-								target = scope:liege
-								value >= -2
-							}
-							NOT = { is_child_of = scope:liege }
-						}
-					}
-				}
-				add = {
-					value = 5
-					if = {
-						limit = {
-							scope:employee = {
-								any_close_family_member = {
-									tier_difference = {
-										target = scope:liege
-										value >= -1
-									}
-									NOT = { is_child_of = scope:liege }
-								}
-							}
-						}
-						add = 5
-					}
-					if = {
-						limit = {
-							scope:employee = {
-								any_close_family_member = {
-									tier_difference = {
-										target = scope:liege
-										value >= 0
-									}
-									NOT = { is_child_of = scope:liege }
-								}
-							}
-						}
-						add = 10
-					}
-					if = {
-						limit = {
-							scope:employee = {
-								any_close_family_member = {
-									tier_difference = {
-										target = scope:liege
-										value >= 1
-									}
-									NOT = { is_child_of = scope:liege }
-								}
-							}
-						}
-						add = 30
-					}
-				}
-			}
-			# Children
-			if = {
-				limit = {
-					any_child = {
-						even_if_dead = yes
-						is_child_of = scope:employee
-						is_bastard_child_trigger = no
-						NOT = {
-							has_trait = disinherited
-						}
-					}
-				}
-				every_child = {
+				if = {
 					limit = {
-						even_if_dead = yes
-						is_child_of = scope:employee
-						is_bastard_child_trigger = no
-						NOT = {
-							has_trait = disinherited
-						}
+						can_have_four_consorts_trigger = yes
 					}
-					add = {
-						value = 10
-						if = {
-							limit = {
-								is_player_heir_of = scope:liege
-							}
-							add = 25
-						}
-						if = {
-							limit = {
-								character_gender_can_inherit_from_trigger = { CHARACTER = scope:liege }
-							}
-							add = 5
-						}
+					add = -80
+				}
+				if = {
+					limit = {
+						scope:employee = { is_spouse_of = scope:liege }
 					}
+					add = -35
 				}
 			}
-			# Relations
+
+			# Personal Relations
 			if = {
 				limit = {
 					has_relation_soulmate = scope:employee
 				}
-				add = 75
+				add = 60
 			}
-			if = {
+			else_if = {
 				limit = {
 					OR = {
 						has_relation_lover = scope:employee
 						has_relation_best_friend = scope:employee
 					}
 				}
-				add = 50
+				add = 35
 			}
-			if = {
+			else_if = {
 				limit = {
 					has_relation_friend = scope:employee
 				}
-				add = 25
+				add = 15
 			}
+
+			# Favor (trimmed down since aptitude already rewards/penalizes favor)
 			if = {
 				limit = {
-					has_relation_rival = scope:employee
+					scope:employee = { harem_politics_beloved_consort_trigger = yes }
 				}
-				add = -50
+				add = 35
 			}
 			else_if = {
 				limit = {
-					has_relation_nemesis = scope:employee
+					scope:employee = { harem_politics_favored_consort_trigger = yes }
 				}
-				add = -75
-			}
-			# Favor
-			if = {
-				limit = {
-					scope:employee = {
-						harem_politics_beloved_consort_trigger = yes
-					}
-				}
-				add = 75
-			}
-			else_if = {
-				limit = {
-					scope:employee = {
-						harem_politics_favored_consort_trigger = yes
-					}
-				}
-				add = 50
+				add = 20
 			}
 			if = {
 				limit = {
-					scope:employee = {
-						has_character_modifier = favor_boost_modifier
-					}
+					scope:employee = { has_character_modifier = favor_boost_modifier }
 				}
-				add = 25
+				add = 15
 			}
 			if = {
 				limit = {
-					scope:employee = {
-						harem_politics_unfavored_consort_trigger = yes
-					}
+					scope:employee = { harem_politics_unfavored_consort_trigger = yes }
 				}
-				add = -20
+				add = -15
 			}
 			if = {
 				limit = {
-					scope:employee = {
-						harem_politics_forgotten_consort_trigger = yes
-					}
+					scope:employee = { harem_politics_forgotten_consort_trigger = yes }
 				}
-				add = -30
+				add = -25
 			}
+
 			# Opinion
 			add = {
 				value = "scope:liege.opinion(scope:employee)"
 				multiply = 0.25
 			}
 		}
+
 		if = { # To stop petitioned positions immediately being fired by the AI
 			limit = {
 				court_position_petition_ai_weight_trigger = { ROLE = grand_consort }
