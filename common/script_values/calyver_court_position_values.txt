@@ -1,4 +1,4 @@
-﻿grand_consort_total_salary_value = {
+grand_consort_total_salary_value = {
 	value = medium_court_position_salary # Update X_salary_tooltip if script_value is changed
 	# Set to 0 with Dynasty Perk Inner Circle
 	if = {
@@ -630,24 +630,10 @@ high_consort_candidate_aptitude_value = {
 	}
 }
 
-# 3. Shared personal & favor overrides for High Consorts
-high_consort_candidate_personal_score_value = {
+# 3. Shared personal relations & favor score for ranked consorts (Four Consorts & Imperial Concubines)
+consort_candidate_relations_and_favor_score_value = {
 	value = 0
 	scope:liege = {
-		# Noble birth safeguard
-		if = {
-			limit = {
-				scope:employee = { is_lowborn = yes }
-			}
-			add = -15
-			if = {
-				limit = {
-					is_spouse_of = scope:employee
-				}
-				add = -15
-			}
-		}
-
 		# Personal Relations
 		if = {
 			limit = {
@@ -702,11 +688,43 @@ high_consort_candidate_personal_score_value = {
 			}
 			add = -25
 		}
+	}
+}
+
+# 4. Personal, noble birth & opinion overrides for the Four Consorts
+high_consort_candidate_personal_score_value = {
+	value = consort_candidate_relations_and_favor_score_value
+	scope:liege = {
+		# Noble birth safeguard
+		if = {
+			limit = {
+				scope:employee = { is_lowborn = yes }
+			}
+			add = -15
+			if = {
+				limit = {
+					is_spouse_of = scope:employee
+				}
+				add = -15
+			}
+		}
 
 		# Opinion
 		add = {
 			value = "scope:liege.opinion(scope:employee)"
 			multiply = 0.25
+		}
+	}
+}
+
+# 5. Personal & higher opinion overrides for Imperial Concubines (no extra lowborn penalty)
+imperial_concubine_candidate_personal_score_value = {
+	value = consort_candidate_relations_and_favor_score_value
+	scope:liege = {
+		# Opinion has double the weight for Imperial Concubines compared to the Four Consorts
+		add = {
+			value = "scope:liege.opinion(scope:employee)"
+			multiply = 0.5
 		}
 	}
 }
